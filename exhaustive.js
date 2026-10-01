@@ -1,4 +1,18 @@
-const { getWords } = require('./data.js');
+const { KR_EN_languageUnits, getWords } = require('./data.js');
+
+const filterArg = process.argv[2];
+
+function getFilteredWords(pos, tag) {
+    let words = getWords(pos, tag);
+    if (filterArg) {
+        words = words.filter(w => {
+            const source = w[6];
+            const tags = w[3] || [];
+            return source === filterArg || tags.includes("devtest");
+        });
+    }
+    return words;
+}
 const { hasBatchim, getStem, applyMorphology } = require('./korean.js');
 
 function generateExhaustive(template) {
@@ -18,33 +32,43 @@ function generateExhaustive(template) {
     let optionsPerToken = tokens.map(token => {
         let options = [];
         if (token.type === "N" || token.type === "N_Phrase") {
-            options = getWords("Noun", token.tag).map(w => w[0]);
+            options = getFilteredWords("Noun", token.tag).map(w => w[0]);
         } else if (token.type === "AVst") {
-            options = getWords("Action Verb", token.tag).map(w => getStem(w[0]));
+            options = getFilteredWords("Action Verb", token.tag).map(w => {
+                let stem = getStem(w[0]);
+                if (w[5] && w[5] !== "regular" && w[5] !== "") stem += `[${w[5]}]`;
+                return stem;
+            });
         } else if (token.type === "DVst") {
-            options = getWords("Descriptive Verb", token.tag).map(w => getStem(w[0]));
+            options = getFilteredWords("Descriptive Verb", token.tag).map(w => {
+                let stem = getStem(w[0]);
+                if (w[5] && w[5] !== "regular" && w[5] !== "") stem += `[${w[5]}]`;
+                return stem;
+            });
         } else if (token.type === "Adv") {
-            options = getWords("Adverb", token.tag).map(w => w[0]);
+            options = getFilteredWords("Adverb", token.tag).map(w => w[0]);
         } else if (token.type === "Clause") {
             options = ["갑니다", "좋아요"];
         } else if (token.type === "VP_AVst") {
-            const avs = getWords("Action Verb", token.tag);
+            const avs = getFilteredWords("Action Verb", token.tag);
             avs.forEach(av => {
                 const tags = av[3];
-                const stem = getStem(av[0]);
-                if (tags.includes("transitive_food")) getWords("Noun", "food").forEach(n => options.push(`${n[0]}을/를 ${stem}`));
-                if (tags.includes("transitive_drink")) getWords("Noun", "drink").forEach(n => options.push(`${n[0]}을/를 ${stem}`));
-                if (tags.includes("intransitive_motion")) getWords("Noun", "place").forEach(n => options.push(`${n[0]}에 ${stem}`));
+                let stem = getStem(av[0]);
+                if (av[5] && av[5] !== "regular" && av[5] !== "") stem += `[${av[5]}]`;
+                if (tags.includes("transitive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(`${n[0]}을/를 ${stem}`));
+                if (tags.includes("transitive_drink")) getFilteredWords("Noun", "drink").forEach(n => options.push(`${n[0]}을/를 ${stem}`));
+                if (tags.includes("intransitive_motion")) getFilteredWords("Noun", "place").forEach(n => options.push(`${n[0]}에 ${stem}`));
             });
             options = [...new Set(options)];
         } else if (token.type === "VP_DVst") {
-            const dvs = getWords("Descriptive Verb", token.tag);
+            const dvs = getFilteredWords("Descriptive Verb", token.tag);
             dvs.forEach(dv => {
                 const tags = dv[3];
-                const stem = getStem(dv[0]);
-                if (tags.includes("descriptive_food")) getWords("Noun", "food").forEach(n => options.push(`${n[0]}이/가 ${stem}`));
-                if (tags.includes("descriptive_person")) getWords("Noun", "person").forEach(n => options.push(`${n[0]}이/가 ${stem}`));
-                if (tags.includes("descriptive_general")) getWords("Noun", "place").forEach(n => options.push(`${n[0]}이/가 ${stem}`));
+                let stem = getStem(dv[0]);
+                if (dv[5] && dv[5] !== "regular" && dv[5] !== "") stem += `[${dv[5]}]`;
+                if (tags.includes("descriptive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(`${n[0]}이/가 ${stem}`));
+                if (tags.includes("descriptive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(`${n[0]}이/가 ${stem}`));
+                if (tags.includes("descriptive_general")) getFilteredWords("Noun", "place").forEach(n => options.push(`${n[0]}이/가 ${stem}`));
             });
             options = [...new Set(options)];
         }
@@ -78,7 +102,7 @@ function generateExhaustive(template) {
 
 const fs = require('fs');
 
-const grammarUnits = getWords("Grammar");
+const grammarUnits = getFilteredWords("Grammar");
 const templates = [];
 grammarUnits.forEach(entry => {
     entry[5].forEach(formula => {

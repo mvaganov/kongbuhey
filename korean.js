@@ -23,6 +23,24 @@ function getVowelHarmony(char) {
 function applyMorphology(text) {
     let resolvedKo = text;
     
+    // Irregular Verbs Handling
+    // 1. b_irregular + 으 -> 우
+    resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\]으\/(니까|면|러|려고)/g, (match, prevChar, suffix) => {
+        // Drop ㅂ (jongseong 17) -> add 우
+        const stemNoB = String.fromCharCode(prevChar.charCodeAt(0) - 17);
+        return stemNoB + '우' + suffix;
+    });
+
+    // 2. b_irregular + 아/어 -> 워
+    resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\]아\/어(요|서|)/g, (match, prevChar, suffix) => {
+        // Drop ㅂ (jongseong 17) -> add 워 (or 와 for 돕다/곱다, but default to 워)
+        const stemNoB = String.fromCharCode(prevChar.charCodeAt(0) - 17);
+        return stemNoB + '워' + suffix;
+    });
+
+    // Strip leftover conjugation markers that didn't trigger an irregular change (or are unimplemented)
+    resolvedKo = resolvedKo.replace(/\[[a-z_]+\]/g, '');
+
     // Resolve particles based on previous character's batchim
     resolvedKo = resolvedKo.replace(/([가-힣])(이\/가|은\/는|을\/를)/g, (match, prevChar, particleStr) => {
         const hasB = hasBatchim(prevChar);
@@ -32,6 +50,15 @@ function applyMorphology(text) {
         return match;
     });
     
+    // Resolve 이/예요 based on batchim
+    resolvedKo = resolvedKo.replace(/([가-힣])이\/예요/g, (match, prevChar) => {
+        if (hasBatchim(prevChar)) {
+            return prevChar + '이에요';
+        } else {
+            return prevChar + '예요';
+        }
+    });
+
     // Resolve 습니다/ㅂ니다 based on previous character's batchim
     resolvedKo = resolvedKo.replace(/([가-힣])(습니다\/ㅂ니다|습니다|ㅂ니다)/g, (match, prevChar, ending) => {
         if (ending === "습니다/ㅂ니다") {
