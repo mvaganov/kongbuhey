@@ -265,7 +265,7 @@ const SUOBI06 = `
 (이)랑: "And" / "with" for listing nouns or denoting accompaniment.
 과/와: "And" / "with" for listing nouns or denoting accompaniment.`;
 const SUOBI07 = `
-불고기: bulgogi: "Fire meat": Cooked beef.
+불고기: bulgogi
 만들다: to make
 맛있다: to be delicious
 맵다: to be spicy
@@ -427,7 +427,7 @@ const SUOBI10 = `
 내일: tomorrow (next day)
 다음일: next task
 다음: next
-달: month, moon: 딸 is daughter, 달다 is sweet or lift or weigh
+달: month, moon
 다음달: next month
 다음주: next week
 모레: a day after tomorrow
@@ -578,7 +578,7 @@ const SUOBI13 = `
 잘: well, good
 권: counting word for books
 벌: counting word for clothes
-자루: counting word for pen/pencil: Stick, hilt, shaft
+자루: counting word for pen/pencil
 장: counting word for paper
 켤레: counting word for shoes/socks/gloves
 -아/어도 되다: "May I..." / "It is okay to..."
@@ -765,7 +765,7 @@ const SUOBI18 = `
 겨울: winter
 -기 / -는 것: Turning verbs into nouns ("to do" → "doing") to talk about hobbies and abilities`;
 const SUOBI19 = `
-민박집: bed and breakfast, guest house: 민박 homestay
+민박집: bed and breakfast, guest house
 전주: Jeonju
 민박하다: to stay at bed and breakfast
 아직: not yet

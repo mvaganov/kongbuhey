@@ -45,6 +45,8 @@ function generateExhaustive(template) {
                 if (w[5] && w[5] !== "regular" && w[5] !== "") stem += `[${w[5]}]`;
                 return stem;
             });
+        } else if (token.type === "Number") {
+            options = getFilteredWords("Number", token.tag).map(w => w[0]);
         } else if (token.type === "Adv") {
             options = getFilteredWords("Adverb", token.tag).map(w => w[0]);
         } else if (token.type === "Clause") {

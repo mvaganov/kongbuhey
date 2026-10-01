@@ -42,11 +42,12 @@ function applyMorphology(text) {
     resolvedKo = resolvedKo.replace(/\[[a-z_]+\]/g, '');
 
     // Resolve particles based on previous character's batchim
-    resolvedKo = resolvedKo.replace(/([가-힣])(이\/가|은\/는|을\/를)/g, (match, prevChar, particleStr) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])(이\/가|은\/는|을\/를|\(이\)랑)/g, (match, prevChar, particleStr) => {
         const hasB = hasBatchim(prevChar);
         if (particleStr === "이/가") return prevChar + (hasB ? "이" : "가");
         if (particleStr === "은/는") return prevChar + (hasB ? "은" : "는");
         if (particleStr === "을/를") return prevChar + (hasB ? "을" : "를");
+        if (particleStr === "(이)랑") return prevChar + (hasB ? "이랑" : "랑");
         return match;
     });
     

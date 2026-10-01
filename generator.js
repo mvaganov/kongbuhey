@@ -47,6 +47,11 @@ function generateSentence(template, depth = 0) {
       replacementKo = stem;
       replacementEn = `[${word[1]}]`;
     }
+    else if (tokenType === "Number") {
+      const word = getRandom(getWords("Number", tag));
+      replacementKo = word[0];
+      replacementEn = `[${word[1]}]`;
+    }
     else if (tokenType === "Clause" || tokenType === "VP") {
       const grammars = getWords("Grammar").filter(g => g[3].includes("declarative") || g[3].includes("suggestion"));
       const grammar = getRandom(grammars);
