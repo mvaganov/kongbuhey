@@ -2,5 +2,6 @@ exhaustive_output.txt
 importer.js
 tag_devtest.js
 test_morphology.js
-import_040506.js
+import_*.js
 check_templates.js
+validate_output.js
