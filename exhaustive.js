@@ -74,6 +74,11 @@ function generateExhaustive(template) {
             });
             options = [...new Set(options)];
         }
+        
+        if (!filterArg && options.length > 5) {
+            options = options.sort(() => 0.5 - Math.random()).slice(0, 5);
+        }
+        
         return options;
     });
 
@@ -113,10 +118,12 @@ grammarUnits.forEach(entry => {
 });
 
 let outputStr = "";
-templates.forEach(t => {
+templates.forEach((t, index) => {
+    process.stdout.write(`\rGenerating: ${index + 1}/${templates.length} templates processed...`);
     outputStr += `\n--- Template: ${t} ---\n`;
     generateExhaustive(t).forEach(s => outputStr += s + "\n");
 });
+process.stdout.write("\n");
 
 fs.writeFileSync('exhaustive_output.txt', outputStr, 'utf8');
 console.log("Wrote output directly to exhaustive_output.txt in UTF-8 format.");
