@@ -1,3 +1,25 @@
+const DATA_SCHEMA = {
+  Korean: 0,
+  English: 1,
+  PartofSpeech: 2,
+  SemanticTags: 3,
+  Disambiguation: 4,
+  Conjugation: 5,
+  Source: 6,
+  FormalityLevel: 7,
+  HonorificRules: 8,
+  0: 'Korean',
+  1: 'English',
+  2: 'PartofSpeech',
+  3: 'SemanticTags',
+  4: 'Disambiguation',
+  5: 'Conjugation',
+  6: 'Source',
+  7: 'FormalityLevel',
+  8: 'HonorificRules'
+};
+Object.freeze(DATA_SCHEMA);
+
 const KR_EN_languageUnits = [
   // Vocabulary from SUOBI01
   ["미국 사람", "American person", "Noun", ["person"], "", "", "SUOBI01", "", ""],
@@ -48,7 +70,7 @@ const KR_EN_languageUnits = [
   ["마시다", "to drink", "Action Verb", ["transitive_drink", "koreanRoot", "devtest"], "", "i_irregular", "SUOBI00", "", "Replace with 드시다 for respected subjects"],
   ["크다", "to be big", "Descriptive Verb", ["descriptive_general", "koreanRoot", "devtest"], "", "eu_irregular", "SUOBI00", "", ""],
   ["맛있다", "to be delicious", "Descriptive Verb", ["descriptive_food", "food_adjective"], "", "regular", "SUOBI00", "", ""],
-  ["가다", "to go", "Action Verb", ["intransitive_motion", "koreanRoot"], "", "regular_a", "SUOBI00", "", ""],
+  ["가다", "to go", "Action Verb", ["intransitive_motion", "koreanRoot", "devtest"], "", "regular_a", "SUOBI00", "", ""],
   ["오늘", "today", "Noun", ["time", "koreanRoot"], "", "", "SUOBI00", "", ""],
   ["내일", "tomorrow", "Noun", ["time", "sinoRoot"], "", "", "SUOBI00", "", ""],
   ["자주", "often", "Adverb", ["frequency", "koreanRoot"], "", "", "SUOBI00", "", ""],
@@ -72,9 +94,9 @@ const KR_EN_languageUnits = [
   ["여기", "here", "Pronoun", ["place"], "", "", "SUOBI02", "", ""],
   ["우리", "we/us/our", "Pronoun", ["person"], "", "", "SUOBI02", "", ""],
   ["이것", "this (thing)", "Pronoun", ["demonstrative"], "", "", "SUOBI02", "", ""],
-  ["컴퓨터", "computer", "Noun", ["object"], "", "", "SUOBI02", "", ""],
+  ["컴퓨터", "computer", "Noun", ["object", "devtest"], "", "", "SUOBI02", "", ""],
   ["거울", "mirror", "Noun", ["object"], "", "", "SUOBI02", "", ""],
-  ["누가", "who (subject)", "Pronoun", ["questionWord", "person"], "subject is unknown person", "", "SUOBI02", "", ""],
+  ["누가", "who (subject)", "Pronoun", ["questionWord", "person", "devtest"], "subject is unknown person", "", "SUOBI02", "", ""],
   ["달력", "calendar", "Noun", ["object"], "", "", "SUOBI02", "", ""],
   ["지도", "map", "Noun", ["object"], "", "", "SUOBI02", "", ""],
   ["문", "door", "Noun", ["object", "sinoRoot"], "", "", "SUOBI02", "", ""],
@@ -103,7 +125,7 @@ const KR_EN_languageUnits = [
   ["학생증", "student ID card", "Noun", ["object", "sinoRoot"], "", "", "SUOBI02", "", ""],
   ["휴대전화", "cell phone", "Noun", ["object", "sinoRoot"], "", "", "SUOBI02", "", ""],
   ["휴지", "tissue", "Noun", ["object"], "", "", "SUOBI02", "", ""],
-  
+
   // Grammar from SUOBI02
   ["이/가 아니에요", "to not be", "Grammar", ["declarative", "negative"], "", ["{N}이/가 아니에요"], "SUOBI02", "Polite Informal (해요체)", "Replace with 께서 for respected subjects"],
   ["이 / 가", "subject marker", "Grammar", ["particle", "subject"], "Marks the grammatical subject", ["{N}이/가"], "SUOBI02", "", "Replace with 께서 for respected subjects"],
@@ -144,10 +166,10 @@ const KR_EN_languageUnits = [
   ["적다", "to be little/few", "Descriptive Verb", ["descriptive_general", "quantity"], "", "regular", "SUOBI03", "", ""],
   ["조용하다", "to be quiet", "Descriptive Verb", ["descriptive_general"], "", "hada", "SUOBI03", "", ""],
   ["춥다", "to be cold", "Descriptive Verb", ["descriptive_general"], "", "b_irregular", "SUOBI03", "", ""],
-  
+
   // Grammar from SUOBI03
-  ["에 (location)", "location marker", "Grammar", ["particle", "location"], "Expresses location of (with 있다/없다)", ["{N}에 있다/없다"], "SUOBI03", "", ""],
-,
+  ["에 (location)", "location marker", "Grammar", ["particle", "location", "devtest"], "Expresses location of (with 있다/없다)", ["{N}에 있다/없다"], "SUOBI03", "", ""],
+  ,
 
   // Vocabulary from SUOBI04
   ["저분", "that person (honorific)", "Noun", ["person", "honorific"], "", "", "SUOBI04", "", ""],
@@ -190,7 +212,7 @@ const KR_EN_languageUnits = [
   ["아르바이트하다", "to work part time", "Action Verb", ["intransitive_general"], "", "hada", "SUOBI04", "", ""],
   ["운동하다", "to exercise", "Action Verb", ["intransitive_general"], "", "hada", "SUOBI04", "", ""],
   ["일하다", "to work", "Action Verb", ["intransitive_general"], "", "hada", "SUOBI04", "", ""],
-  
+
   // Grammar from SUOBI04
   ["을 / 를", "object marker", "Grammar", ["particle", "object"], "", ["{N}을/를"], "SUOBI04", "", ""],
 
@@ -213,14 +235,14 @@ const KR_EN_languageUnits = [
   ["생활", "life/living", "Noun", ["attribute"], "", "", "SUOBI05", "", ""],
   ["여자", "woman", "Noun", ["person"], "", "", "SUOBI05", "", ""],
   ["깨끗하다", "to be clean", "Descriptive Verb", ["descriptive_place", "descriptive_general"], "", "hada", "SUOBI05", "", ""],
-  ["더럽다", "to be dirty", "Descriptive Verb", ["descriptive_place", "descriptive_general"], "", "b_irregular", "SUOBI05", "", ""],
-  ["바쁘다", "to be busy", "Descriptive Verb", ["descriptive_person"], "", "eu_irregular", "SUOBI05", "", ""],
-  ["예쁘다", "to be pretty", "Descriptive Verb", ["descriptive_person"], "", "eu_irregular", "SUOBI05", "", ""],
+  ["더럽다", "to be dirty", "Descriptive Verb", ["descriptive_place", "descriptive_general", "devtest"], "", "b_irregular", "SUOBI05", "", ""],
+  ["바쁘다", "to be busy", "Descriptive Verb", ["descriptive_person", "devtest"], "", "eu_irregular", "SUOBI05", "", ""],
+  ["예쁘다", "to be pretty", "Descriptive Verb", ["descriptive_person", "devtest"], "", "eu_irregular", "SUOBI05", "", ""],
   ["재미없다", "to be not fun", "Descriptive Verb", ["descriptive_general"], "", "regular", "SUOBI05", "", ""],
   ["재미있다", "to be fun", "Descriptive Verb", ["descriptive_general"], "", "regular", "SUOBI05", "", ""],
   ["친절하다", "to be kind", "Descriptive Verb", ["descriptive_person"], "", "hada", "SUOBI05", "", ""],
   ["한가하다", "to be not busy", "Descriptive Verb", ["descriptive_person"], "", "hada", "SUOBI05", "", ""],
-  
+
   // Grammar from SUOBI05
   ["에서", "location action marker", "Grammar", ["particle", "location_action"], "", ["{N}에서 {VP_AVst}"], "SUOBI05", "", ""],
   ["에 (direction)", "direction marker", "Grammar", ["particle", "direction"], "", ["{N}에 {VP_AVst}"], "SUOBI05", "", ""], // Wait, intransitive_motion verbs already use 에 in generator, we don't necessarily need a grammar rule, but we can have it
@@ -277,14 +299,14 @@ const KR_EN_languageUnits = [
   ["분", "minute", "Noun", ["measureWord", "sinoMeasureWord"], "", "", "SUOBI06", "", ""],
   ["나이", "age", "Noun", ["attribute"], "", "", "SUOBI06", "", "Honorific: 연세"],
   ["안", "not", "Adverb", ["negative"], "", "", "SUOBI06", "", ""],
-  
+
   // Grammar from SUOBI06
   ["-지 않다", "to not do/be", "Grammar", ["negative"], "", ["{VP_AVst}지 않아요", "{VP_DVst}지 않아요"], "SUOBI06", "", ""],
   ["에 (time)", "time marker", "Grammar", ["particle", "time"], "", ["{N:time}에 {VP_AVst}"], "SUOBI06", "", ""],
   ["(이)랑", "and/with", "Grammar", ["particle", "conjunction"], "", ["{N}(이)랑 {N}이/가 {VP_DVst}"], "SUOBI06", "", ""],
   ["시간 표현", "time expression", "Grammar", ["N_Phrase", "time"], "", ["{Number:koreanNumber} 시 {Number:sinoNumber} 분"], "SUOBI06", "", ""],
   ["횟수 표현", "number of times", "Grammar", ["Adv"], "", ["{Number:koreanNumber} 번"], "SUOBI06", "", ""]
-,
+  ,
 
   // Vocabulary from SUOBI07
   ["불고기", "bulgogi", "Noun", ["food"], "", "", "SUOBI07", "", ""],
@@ -314,20 +336,20 @@ const KR_EN_languageUnits = [
   ["코미디 영화", "comedy movie", "Noun", ["object"], "", "", "SUOBI07", "", ""],
   ["피자", "pizza", "Noun", ["food"], "", "", "SUOBI07", "", ""],
   ["맛없다", "to be not delicious", "Descriptive Verb", ["descriptive_food"], "", "regular", "SUOBI07", "", ""],
-  ["길다", "to be long", "Descriptive Verb", ["descriptive_general"], "", "l_irregular", "SUOBI07", "", ""],
-  ["놀다", "to play/hang out", "Action Verb", ["intransitive_general"], "", "l_irregular", "SUOBI07", "", ""],
-  ["달다", "to be sweet", "Descriptive Verb", ["descriptive_food"], "", "l_irregular", "SUOBI07", "", ""],
-  ["멀다", "to be far", "Descriptive Verb", ["descriptive_place"], "", "l_irregular", "SUOBI07", "", ""],
-  ["살다", "to live", "Action Verb", ["intransitive_motion"], "", "l_irregular", "SUOBI07", "", ""],
-  ["열다", "to open", "Action Verb", ["transitive_general"], "", "l_irregular", "SUOBI07", "", ""],
-  ["그릇", "bowl", "Noun", ["measureWord", "sinoMeasureWord", "koreanMeasureWord"], "", "", "SUOBI07", "", ""],
+  ["길다", "to be long", "Descriptive Verb", ["descriptive_general", "devtest"], "", "l_irregular", "SUOBI07", "", ""],
+  ["놀다", "to play/hang out", "Action Verb", ["intransitive_general", "devtest"], "", "l_irregular", "SUOBI07", "", ""],
+  ["달다", "to be sweet", "Descriptive Verb", ["descriptive_food", "devtest"], "", "l_irregular", "SUOBI07", "", ""],
+  ["멀다", "to be far", "Descriptive Verb", ["descriptive_place", "devtest"], "", "l_irregular", "SUOBI07", "", ""],
+  ["살다", "to live", "Action Verb", ["intransitive_motion", "devtest"], "", "l_irregular", "SUOBI07", "", ""],
+  ["열다", "to open", "Action Verb", ["transitive_general", "devtest"], "", "l_irregular", "SUOBI07", "", ""],
+  ["그릇", "bowl", "Noun", ["measureWord", "sinoMeasureWord", "koreanMeasureWord", "devtest"], "", "", "SUOBI07", "", ""],
   ["삼겹살", "pork belly", "Noun", ["food"], "", "", "SUOBI07", "", ""],
   ["인분", "portion", "Noun", ["measureWord", "sinoMeasureWord"], "", "", "SUOBI07", "", ""],
   ["시키다", "to order", "Action Verb", ["transitive_general", "transitive_food", "transitive_drink"], "", "regular", "SUOBI07", "", ""],
   ["주다", "to give", "Action Verb", ["transitive_general"], "", "regular", "SUOBI07", "", ""],
   ["여기요", "excuse me, over here!", "Exclamation", ["greeting"], "", "", "SUOBI07", "", ""],
   ["배가 고프다", "to be hungry", "Descriptive Verb", ["descriptive_person"], "", "eu_irregular", "SUOBI07", "", ""],
-  ["같이", "together", "Adverb", ["accompaniment"], "", "", "SUOBI07", "", ""],
+  ["같이", "together", "Adverb", ["accompaniment", "devtest"], "", "", "SUOBI07", "", ""],
   ["김밥", "kimbap", "Noun", ["food"], "", "", "SUOBI07", "", ""],
   ["맥주", "beer", "Noun", ["drink"], "", "", "SUOBI07", "", ""],
   ["앉다", "to sit", "Action Verb", ["intransitive_motion"], "", "regular", "SUOBI07", "", ""],
@@ -337,11 +359,11 @@ const KR_EN_languageUnits = [
   ["잔", "cup", "Noun", ["measureWord", "koreanMeasureWord"], "", "", "SUOBI07", "", ""],
   ["줄", "row", "Noun", ["measureWord", "koreanMeasureWord"], "", "", "SUOBI07", "", ""],
   ["판", "plate/pan", "Noun", ["measureWord", "koreanMeasureWord"], "", "", "SUOBI07", "", ""],
-  
+
   // Grammar from SUOBI07
   ["~았/었어요", "past tense", "Grammar", ["declarative", "past"], "", ["{AVst}았/었어요", "{DVst}았/었어요"], "SUOBI07", "Polite Informal", ""],
   ["~고", "and (clausal)", "Grammar", ["conjunction"], "", ["{VP_AVst}고 {Clause}", "{VP_DVst}고 {Clause}"], "SUOBI07", "", ""]
-,
+  ,
 
   // Vocabulary from SUOBI08
   ["오늘", "today", "Noun", ["time"], "", "", "SUOBI08", "", ""],
@@ -362,22 +384,22 @@ const KR_EN_languageUnits = [
   ["샤워하다", "to take a shower", "Action Verb", ["intransitive_general"], "", "hada", "SUOBI08", "", ""],
   ["그리고", "and", "Adverb", ["conjunction"], "", "", "SUOBI08", "", ""],
   ["먼저", "first", "Adverb", ["sequence"], "", "", "SUOBI08", "", ""],
-  ["뭘", "what", "Pronoun", ["questionWord", "object"], "", "", "SUOBI08", "", ""],
+  ["뭘", "what", "Pronoun", ["questionWord", "object", "devtest"], "", "", "SUOBI08", "", ""],
   ["끝나다", "to finish", "Action Verb", ["intransitive_general"], "", "regular", "SUOBI08", "", ""],
   ["세수하다", "to wash one's face", "Action Verb", ["intransitive_general"], "", "hada", "SUOBI08", "", ""],
   ["일어나다", "to wake up", "Action Verb", ["intransitive_general"], "", "regular", "SUOBI08", "", ""],
   ["자다", "to sleep", "Action Verb", ["intransitive_general"], "", "regular", "SUOBI08", "", "Honorific: 주무시다"],
   ["닦다", "to brush/wipe", "Action Verb", ["transitive_general"], "", "regular", "SUOBI08", "", ""],
-  ["이", "teeth", "Noun", ["bodyPart"], "", "", "SUOBI08", "", ""],
-  ["걷다", "to walk", "Action Verb", ["intransitive_motion"], "", "d_irregular", "SUOBI08", "", ""],
-  ["묻다", "to ask", "Action Verb", ["transitive_person"], "", "d_irregular", "SUOBI08", "", ""],
-  ["싣다", "to load", "Action Verb", ["transitive_general"], "", "d_irregular", "SUOBI08", "", ""],
-  ["받다", "to receive", "Action Verb", ["transitive_general"], "", "regular", "SUOBI08", "", ""],
+  ["이", "teeth", "Noun", ["bodyPart", "devtest"], "", "", "SUOBI08", "", ""],
+  ["걷다", "to walk", "Action Verb", ["intransitive_motion", "devtest"], "", "d_irregular", "SUOBI08", "", ""],
+  ["묻다", "to ask", "Action Verb", ["transitive_person", "devtest"], "", "d_irregular", "SUOBI08", "", ""],
+  ["싣다", "to load", "Action Verb", ["transitive_general", "devtest"], "", "d_irregular", "SUOBI08", "", ""],
+  ["받다", "to receive", "Action Verb", ["transitive_general", "devtest"], "", "regular", "SUOBI08", "", ""],
 
   // Grammar from SUOBI08
   ["도", "also", "Grammar", ["particle", "also"], "", ["{N}도 {VP_AVst}"], "SUOBI08", "", ""],
   ["하고", "and/with", "Grammar", ["particle", "conjunction"], "", ["{N}하고 {N}이/가 {VP_DVst}"], "SUOBI08", "", ""]
-,
+  ,
 
   // Vocabulary from SUOBI09
   ["운동장", "playground", "Noun", ["place"], "", "", "SUOBI09", "", ""],
@@ -423,16 +445,16 @@ const KR_EN_languageUnits = [
   ["많이", "much/many", "Adverb", ["quantity"], "", "", "SUOBI09", "", ""],
   ["아주", "very", "Adverb", ["degree"], "", "", "SUOBI09", "", ""],
   ["조금", "little/few", "Adverb", ["quantity"], "", "", "SUOBI09", "", ""],
-  ["돕다", "to help", "Action Verb", ["transitive_person"], "", "b_irregular", "SUOBI09", "", ""],
+  ["돕다", "to help", "Action Verb", ["transitive_person", "devtest"], "", "b_irregular", "SUOBI09", "", ""],
   ["반갑다", "to be glad", "Descriptive Verb", ["descriptive_person"], "", "b_irregular", "SUOBI09", "", ""],
-  ["쉽다", "to be easy", "Descriptive Verb", ["descriptive_general"], "", "b_irregular", "SUOBI09", "", ""],
+  ["쉽다", "to be easy", "Descriptive Verb", ["descriptive_general", "devtest"], "", "b_irregular", "SUOBI09", "", ""],
   ["어렵다", "to be difficult", "Descriptive Verb", ["descriptive_general"], "", "b_irregular", "SUOBI09", "", ""],
-  ["좁다", "to be narrow", "Descriptive Verb", ["descriptive_place"], "", "b_irregular", "SUOBI09", "", ""],
-  
+  ["좁다", "to be narrow", "Descriptive Verb", ["descriptive_place", "devtest"], "", "b_irregular", "SUOBI09", "", ""],
+
   // Grammar from SUOBI09
   ["~(으)세요", "polite imperative", "Grammar", ["imperative"], "", ["{AVst}으/세요"], "SUOBI09", "Polite Formal", ""],
   ["~고 싶다", "to want to", "Grammar", ["desire"], "", ["{VP_AVst}고 싶어요"], "SUOBI09", "", ""]
-,
+  ,
 
   // Vocabulary from SUOBI10
   ["공원", "park", "Noun", ["place"], "", "", "SUOBI10", "", ""],
@@ -445,7 +467,7 @@ const KR_EN_languageUnits = [
   ["다음일", "next task", "Noun", ["event"], "", "", "SUOBI10", "", ""],
   ["다음", "next", "Noun", ["time_modifier", "time"], "", "", "SUOBI10", "", ""],
   ["달", "month/moon", "Noun", ["time"], "", "", "SUOBI10", "", ""],
-  ["다음달", "next month", "Noun", ["time"], "", "", "SUOBI10", "", ""],
+  ["다음달", "next month", "Noun", ["time", "devtest"], "", "", "SUOBI10", "", ""],
   ["다음주", "next week", "Noun", ["time"], "", "", "SUOBI10", "", ""],
   ["모레", "day after tomorrow", "Noun", ["time"], "", "", "SUOBI10", "", ""],
   ["올해", "this year", "Noun", ["time"], "", "", "SUOBI10", "", ""],
@@ -481,7 +503,7 @@ const KR_EN_languageUnits = [
   ["~아/어서", "because/and then", "Grammar", ["conjunction"], "", ["{VP_AVst}아/어서 {Clause}", "{VP_DVst}아/어서 {Clause}"], "SUOBI10", "", ""],
   ["~(으)ㄹ 거예요", "future tense", "Grammar", ["declarative", "future"], "", ["{AVst}으/ㄹ 거예요"], "SUOBI10", "Polite Informal", ""],
   ["~지만", "but/although", "Grammar", ["conjunction"], "", ["{VP_AVst}지만 {Clause}", "{VP_DVst}지만 {Clause}"], "SUOBI10", "", ""]
-,
+  ,
 
   // Vocabulary from SUOBI11
   ["약속", "appointment", "Noun", ["event"], "", "", "SUOBI11", "", ""],
@@ -506,7 +528,7 @@ const KR_EN_languageUnits = [
   ["박물관", "museum", "Noun", ["place"], "", "", "SUOBI11", "", ""],
   ["영화관", "movie theater", "Noun", ["place"], "", "", "SUOBI11", "", ""],
   ["카페", "cafe", "Noun", ["place"], "", "", "SUOBI11", "", ""],
-  
+
   // Grammar from SUOBI11
   ["~(으)ㄹ게요", "I will", "Grammar", ["declarative", "promise"], "", ["{AVst}으/ㄹ게요"], "SUOBI11", "Polite Informal", ""],
   ["~(으)러 가다/오다", "go/come to do", "Grammar", ["purpose"], "", ["{AVst}으/러 가요", "{AVst}으/러 와요"], "SUOBI11", "", ""],
@@ -553,7 +575,7 @@ const KR_EN_languageUnits = [
   ["~(으)ㄹ 수 있다", "can do", "Grammar", ["ability"], "", ["{AVst}으/ㄹ 수 있어요"], "SUOBI12", "", ""],
   ["~(으)ㄹ 수 없다", "cannot do", "Grammar", ["inability"], "", ["{AVst}으/ㄹ 수 없어요"], "SUOBI12", "", ""],
   ["못 ~ / ~지 못하다", "cannot do (external)", "Grammar", ["inability"], "", ["못 {AVst}아/어요", "{AVst}지 못해요"], "SUOBI12", "", ""]
-,
+  ,
 
   // Vocabulary from SUOBI13
   ["얼마", "how much/many", "Pronoun", ["questionWord", "quantity"], "", "", "SUOBI13", "", ""],
@@ -563,7 +585,7 @@ const KR_EN_languageUnits = [
   ["짧다", "to be short", "Descriptive Verb", ["descriptive_general"], "", "regular", "SUOBI13", "", ""],
   ["더", "more", "Adverb", ["degree"], "", "", "SUOBI13", "", ""],
   ["만", "ten thousand", "Noun", ["number", "sinoNumber"], "", "", "SUOBI13", "", ""],
-  ["값", "price", "Noun", ["attribute"], "", "", "SUOBI13", "", ""],
+  ["값", "price", "Noun", ["attribute", "devtest"], "", "", "SUOBI13", "", ""],
   ["구두", "dress shoes", "Noun", ["object", "shoes"], "", "", "SUOBI13", "", ""],
   ["바지", "pants", "Noun", ["object", "clothes"], "", "", "SUOBI13", "", ""],
   ["백", "hundred", "Noun", ["number", "sinoNumber"], "", "", "SUOBI13", "", ""],
@@ -656,10 +678,10 @@ const KR_EN_languageUnits = [
   ["에게/한테", "to/for", "Grammar", ["particle"], "", ["{N:person}에게", "{N:person}한테"], "SUOBI14", "", ""],
 
   // Grammar from SUOBI14
-  ["~(으)면", "if/when", "Grammar", ["condition"], "", ["{VP_AVst}으/면 {Clause}", "{VP_DVst}으/면 {Clause}"], "SUOBI14", "", ""],
-  ["~는데", "but/and", "Grammar", ["conjunction"], "", ["{VP_AVst}는데 {Clause}"], "SUOBI14", "", ""],
-  ["~(으)ㄴ데", "but/and", "Grammar", ["conjunction"], "", ["{VP_DVst}으/ㄴ데 {Clause}"], "SUOBI14", "", ""]
-,
+  ["~(으)면", "if/when", "Grammar", ["condition", "devtest"], "", ["{VP_AVst}으/면 {Clause}", "{VP_DVst}으/면 {Clause}"], "SUOBI14", "", ""],
+  ["~는데", "but/and", "Grammar", ["conjunction", "devtest"], "", ["{VP_AVst}는데 {Clause}"], "SUOBI14", "", ""],
+  ["~(으)ㄴ데", "but/and", "Grammar", ["conjunction", "devtest"], "", ["{VP_DVst}으/ㄴ데 {Clause}"], "SUOBI14", "", ""]
+  ,
 
   // Vocabulary from SUOBI15
   ["전화번호", "phone number", "Noun", ["object"], "", "", "SUOBI15", "", ""],
@@ -686,9 +708,9 @@ const KR_EN_languageUnits = [
   ["여쭙다", "to ask (honorific)", "Action Verb", ["transitive_general", "transitive_person"], "", "b_irregular", "SUOBI15", "", ""],
 
   // Grammar from SUOBI15
-  ["~(으)ㄴ", "relative clause (verb past / adjective present)", "Grammar", ["modifier"], "", ["{AVst}으/ㄴ {N:place}", "{DVst}으/ㄴ {N:place}"], "SUOBI15", "", ""],
-  ["~는", "relative clause (verb present)", "Grammar", ["modifier"], "", ["{AVst}는 {N:place}"], "SUOBI15", "", ""],
-  ["~(으)ㄹ", "relative clause (future)", "Grammar", ["modifier"], "", ["{AVst}으/ㄹ {N:place}"], "SUOBI15", "", ""],
+  ["~(으)ㄴ", "relative clause (verb past / adjective present)", "Grammar", ["modifier", "devtest"], "", ["{AVst}으/ㄴ {N:place}", "{DVst}으/ㄴ {N:place}"], "SUOBI15", "", ""],
+  ["~는", "relative clause (verb present)", "Grammar", ["modifier", "devtest"], "", ["{AVst}는 {N:place}"], "SUOBI15", "", ""],
+  ["~(으)ㄹ", "relative clause (future)", "Grammar", ["modifier", "devtest"], "", ["{AVst}으/ㄹ {N:place}"], "SUOBI15", "", ""],
   ["께", "to/for (honorific)", "Grammar", ["particle"], "", ["{N:person}께"], "SUOBI15", "", ""],
   ["께서", "subject marker (honorific)", "Grammar", ["particle"], "", ["{N:person}께서"], "SUOBI15", "", ""],
 
@@ -709,7 +731,6 @@ const KR_EN_languageUnits = [
   ["젓가락", "chopsticks", "Noun", ["object"], "", "", "SUOBI16", "", ""],
   ["종업원", "employee", "Noun", ["person", "job"], "", "", "SUOBI16", "", ""],
   ["시간", "hour/time", "Noun", ["time"], "", "", "SUOBI16", "", ""],
-  ["삼성역", "Samsung station", "Noun", ["place"], "", "", "SUOBI16", "", ""],
   ["호선", "subway line", "Noun", ["attribute"], "", "", "SUOBI16", "", ""],
   ["내리다", "to get off", "Action Verb", ["intransitive_general"], "", "regular", "SUOBI16", "", ""],
   ["어떻게", "how", "Adverb", ["questionWord"], "", "", "SUOBI16", "", ""],
@@ -724,10 +745,10 @@ const KR_EN_languageUnits = [
   ["번", "number", "Noun", ["attribute"], "", "", "SUOBI16", "", ""],
 
   // Grammar from SUOBI16
-  ["~(으)시~", "honorific infix", "Grammar", ["honorific"], "", ["{AVst}으/십니다", "{AVst}으/셔요"], "SUOBI16", "", ""],
+  ["~(으)시~", "honorific infix", "Grammar", ["honorific", "devtest"], "", ["{AVst}으/십니다", "{AVst}으/셔요"], "SUOBI16", "", ""],
   ["~(으)ㄴ 적이 있다/없다", "have experience of", "Grammar", ["experience"], "", ["{AVst}으/ㄴ 적이 있어요", "{AVst}으/ㄴ 적이 없어요"], "SUOBI16", "", ""],
   ["보다 (더)", "more than", "Grammar", ["particle"], "", ["{N:place}보다 {DVst}아/어요"], "SUOBI16", "", ""]
-,
+  ,
 
   // Vocabulary from SUOBI17
   ["미터", "meter", "Noun", ["measureWord"], "", "", "SUOBI17", "", ""],
@@ -762,7 +783,7 @@ const KR_EN_languageUnits = [
 
   // Grammar from SUOBI17
   ["~(으)ㄴ 후에 / ~기 전에", "after / before doing", "Grammar", ["time_clause"], "", ["{AVst}으/ㄴ 후에 {Clause}", "{AVst}기 전에 {Clause}"], "SUOBI17", "", ""],
-  ["~(으)면서", "while doing", "Grammar", ["conjunction"], "", ["{AVst}으/면서 {Clause}"], "SUOBI17", "", ""],
+  ["~(으)면서", "while doing", "Grammar", ["conjunction", "devtest"], "", ["{AVst}으/면서 {Clause}"], "SUOBI17", "", ""],
 
   // Vocabulary from SUOBI18
   ["일기예보", "weather forecast", "Noun", ["information"], "", "", "SUOBI18", "", ""],
@@ -793,8 +814,8 @@ const KR_EN_languageUnits = [
   ["겨울", "winter", "Noun", ["time", "season"], "", "", "SUOBI18", "", ""],
 
   // Grammar from SUOBI18
-  ["~기 / ~는 것", "doing", "Grammar", ["modifier", "gerund"], "", ["{AVst}기", "{AVst}는 것"], "SUOBI18", "", ""]
-,
+  ["~기 / ~는 것", "doing", "Grammar", ["modifier", "gerund", "devtest"], "", ["{AVst}기", "{AVst}는 것"], "SUOBI18", "", ""]
+  ,
 
   // Vocabulary from SUOBI19
   ["민박집", "bed and breakfast", "Noun", ["place"], "", "", "SUOBI19", "", ""],
@@ -845,6 +866,7 @@ const KR_EN_languageUnits = [
 
 ];
 
+// Navigate to language units in the cache with `cache[partsOfSpeech][tag]`, or `cache[source]._all`
 const cache = {};
 
 function addLearningUnit(unit) {
@@ -853,14 +875,19 @@ function addLearningUnit(unit) {
     KR_EN_languageUnits.push(unit);
   }
 
-  const pos = unit[2];
-  const tags = unit[3] || [];
+  const pos = unit[DATA_SCHEMA.PartofSpeech];
+  const src = unit[DATA_SCHEMA.Source];
+  const tags = unit[DATA_SCHEMA.SemanticTags] || [];
 
   if (!cache[pos]) {
     cache[pos] = { _all: [] };
   }
+  if (!cache[src]) {
+    cache[src] = { _all: [] };
+  }
 
   cache[pos]._all.push(unit);
+  cache[src]._all.push(unit);
 
   tags.forEach(tag => {
     if (!cache[pos][tag]) {
@@ -884,4 +911,12 @@ function getWords(pos, requiredTag = null) {
   return cache[pos][requiredTag] || [];
 }
 
-module.exports = { KR_EN_languageUnits, addLearningUnit, getWords, rebuildCache };
+function getPartOfSpeechCached(tagName) {
+  let partsOfSpeech = [];
+  for (const [key, value] of Object.entries(cache)) {
+    if (value[tagName]) { partsOfSpeech.push(key); }
+  }
+  return partsOfSpeech;
+}
+
+module.exports = { KR_EN_languageUnits, addLearningUnit, getWords, rebuildCache, getPartOfSpeechCached, cache, DATA_SCHEMA };
