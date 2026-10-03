@@ -54,19 +54,15 @@ function generateExhaustive(template) {
 
     let optionsPerToken = tokens.map(token => {
         let options = [];
-        const KoreanWord = DATA_SCHEMA.Korean;//0
-        const Conjugation = DATA_SCHEMA.Conjugation;//5
-        const SemanticTags = DATA_SCHEMA.SemanticTags;//3
+        const KoreanWord = DATA_SCHEMA.Korean;
+        const Conjugation = DATA_SCHEMA.Conjugation;
+        const SemanticTags = DATA_SCHEMA.SemanticTags;
         if (token.type === "N" || token.type === "N_Phrase") {
             options = getFilteredWords("Noun", token.tag).map(w => w[KoreanWord]);
         } else if (token.type === "AVst") {
-            options = getFilteredWords("Action Verb", token.tag).map(w => {
-                return getConjugatedStem(w[KoreanWord], w[Conjugation]);
-            });
+            options = getFilteredWords("Action Verb", token.tag).map(w => getConjugatedStem(w[KoreanWord], w[Conjugation]));
         } else if (token.type === "DVst") {
-            options = getFilteredWords("Descriptive Verb", token.tag).map(w => {
-                return getConjugatedStem(w[KoreanWord], w[Conjugation]);
-            });
+            options = getFilteredWords("Descriptive Verb", token.tag).map(w => getConjugatedStem(w[KoreanWord], w[Conjugation]));
         } else if (token.type === "Number") {
             options = getFilteredWords("Number", token.tag).map(w => w[KoreanWord]);
         } else if (token.type === "Adv") {

@@ -449,7 +449,7 @@ const KR_EN_languageUnits = [
   ["반갑다", "to be glad", "Descriptive Verb", ["descriptive_person"], "", "b_irregular", "SUOBI09", "", ""],
   ["쉽다", "to be easy", "Descriptive Verb", ["descriptive_general", "devtest"], "", "b_irregular", "SUOBI09", "", ""],
   ["어렵다", "to be difficult", "Descriptive Verb", ["descriptive_general"], "", "b_irregular", "SUOBI09", "", ""],
-  ["좁다", "to be narrow", "Descriptive Verb", ["descriptive_place", "devtest"], "", "b_irregular", "SUOBI09", "", ""],
+  ["좁다", "to be narrow", "Descriptive Verb", ["descriptive_place", "devtest"], "", "regular", "SUOBI09", "", ""],
 
   // Grammar from SUOBI09
   ["~(으)세요", "polite imperative", "Grammar", ["imperative"], "", ["{AVst}으/세요"], "SUOBI09", "Polite Formal", ""],

@@ -28,13 +28,18 @@ function applyMorphology(text) {
     resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\]으\/(니까|면|러|려고|세|시|셔|십|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
         // Drop ㅂ (jongseong 17) -> add 우
         const stemNoB = String.fromCharCode(prevChar.charCodeAt(0) - 17);
+        if (suffix === 'ㄴ') return stemNoB + '운';
+        if (suffix === 'ㄹ') return stemNoB + '울';
         return stemNoB + '우' + suffix;
     });
 
     // 2. b_irregular + 아/어 -> 워
     resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\](아\/어|았\/었)(요|서|어|)/g, (match, prevChar, harmonyMarker, suffix) => {
         const stemNoB = String.fromCharCode(prevChar.charCodeAt(0) - 17);
-        const added = harmonyMarker === "았/었" ? "웠" : "워";
+        let added = harmonyMarker === "았/었" ? "웠" : "워";
+        if (prevChar === '돕' || prevChar === '곱') {
+            added = harmonyMarker === "았/었" ? "왔" : "와";
+        }
         return stemNoB + added + suffix;
     });
 
@@ -42,6 +47,8 @@ function applyMorphology(text) {
     // ㄹ + 으/니까 -> 드니까 (ㄹ drops, 으 drops)
     resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]으\/(니까|면|러|려고|세|시|셔|십|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
         // Drop ㄹ (jongseong 8)
+        if (suffix === 'ㄴ') return String.fromCharCode(prevChar.charCodeAt(0) - 8 + 4); // add ㄴ
+        if (suffix === 'ㄹ') return prevChar; // ㄹ stays ㄹ
         const stemNoL = String.fromCharCode(prevChar.charCodeAt(0) - 8);
         return stemNoL + suffix;
     });
@@ -63,6 +70,8 @@ function applyMorphology(text) {
     resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\]으\/(니까|면|러|려고|세|시|셔|십|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
         // Change ㄷ (jongseong 7) to ㄹ (jongseong 8)
         const stemWithL = String.fromCharCode(prevChar.charCodeAt(0) + 1);
+        if (suffix === 'ㄴ') return stemWithL + '은';
+        if (suffix === 'ㄹ') return stemWithL + '을';
         return stemWithL + '으' + suffix;
     });
 
