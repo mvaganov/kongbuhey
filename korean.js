@@ -317,6 +317,7 @@ function applyMorphology(text) {
     resolvedKo = resolvedKo.replace(/([가-힣])(아\/어|았\/었)(요|서|어|)/g, (match, prevChar, harmonyMarker, suffix) => {
         const harmonyVowel = getVowelHarmony(prevChar);
         if (harmonyMarker === "았/었") {
+            if (harmonyVowel === '여') return prevChar + '였' + suffix;
             return prevChar + (harmonyVowel === '아' ? '았' : '었') + suffix;
         }
         return prevChar + harmonyVowel + suffix;
