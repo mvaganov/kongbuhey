@@ -1,3 +1,161 @@
+let dataModule;
+if (typeof require !== 'undefined') {
+    dataModule = require('./data.js');
+} else {
+    dataModule = window;
+}
+const { getWords, DATA_SCHEMA } = dataModule;
+
+let currentUsageFilter = null;
+let totalOptionsCutToPreventCombinatorialExplosion = 0;
+
+function setCurrentUsageFilter(filter) {
+    currentUsageFilter = filter;
+}
+
+function getTotalOptionsCut() {
+    return totalOptionsCutToPreventCombinatorialExplosion;
+}
+
+function resetTotalOptionsCut() {
+    totalOptionsCutToPreventCombinatorialExplosion = 0;
+}
+
+function getFilteredWords(pos, tag) {
+    let words = getWords(pos, tag);
+    if (currentUsageFilter) {
+        let originalWords = words;
+        words = words.filter(w => {
+            const source = w[DATA_SCHEMA.Source];
+            const tags = w[DATA_SCHEMA.SemanticTags] || [];
+            let isAllowed = currentUsageFilter[source] || tags.includes("devtest");
+            if (!isAllowed) {
+                isAllowed = tags.some(t => currentUsageFilter[t]);
+            }
+            return isAllowed;
+        });
+        if (words.length == 0 && originalWords.length > 0) {
+            words = originalWords.slice(0, 5);
+        }
+    }
+    return words;
+}
+
+function getConjugatedStem(koreanWord, conjugation) {
+    let stem = getStem(koreanWord);
+    if (conjugation && conjugation !== "regular" && conjugation !== "") stem += `[${conjugation}]`;
+    return stem;
+}
+
+function getTokenOptions(token, depth = 0) {
+    let options = [];
+    const KoreanWord = DATA_SCHEMA.Korean;
+    const Conjugation = DATA_SCHEMA.Conjugation;
+    const SemanticTags = DATA_SCHEMA.SemanticTags;
+    
+    if (token.type === "N" || token.type === "N_Phrase") {
+        options = getFilteredWords("Noun", token.tag).map(w => w[KoreanWord]);
+    } else if (token.type === "AVst") {
+        options = getFilteredWords("Action Verb", token.tag).map(w => getConjugatedStem(w[KoreanWord], w[Conjugation]));
+    } else if (token.type === "DVst") {
+        options = getFilteredWords("Descriptive Verb", token.tag).map(w => getConjugatedStem(w[KoreanWord], w[Conjugation]));
+    } else if (token.type === "Number") {
+        options = getFilteredWords("Number", token.tag).map(w => w[KoreanWord]);
+    } else if (token.type === "Adv") {
+        options = getFilteredWords("Adverb", token.tag).map(w => w[KoreanWord]);
+    } else if (token.type === "Clause" || token.type === "VP") {
+        if (depth > 0) {
+            options = ["갑니다", "좋아요"];
+        } else {
+            const grammars = getFilteredWords("Grammar").filter(g => {
+                const tags = g[SemanticTags] || [];
+                return tags.includes("declarative") || tags.includes("suggestion");
+            });
+            if (grammars.length > 0) {
+                grammars.forEach(g => {
+                    const formulas = g[Conjugation];
+                    formulas.forEach(formula => {
+                        const subOptions = generateTemplateOptions(formula, depth + 1);
+                        options.push(...subOptions);
+                    });
+                });
+                options = [...new Set(options)];
+            } else {
+                options = ["갑니다", "좋아요"];
+            }
+        }
+    } else if (token.type === "VP_AVst") {
+        const avs = getFilteredWords("Action Verb", token.tag);
+        avs.forEach(av => {
+            const tags = av[SemanticTags];
+            let stem = getConjugatedStem(av[KoreanWord], av[Conjugation]);
+            if (tags.includes("transitive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(`${n[KoreanWord]}을/를 ${stem}`));
+            if (tags.includes("transitive_drink")) getFilteredWords("Noun", "drink").forEach(n => options.push(`${n[KoreanWord]}을/를 ${stem}`));
+            if (tags.includes("intransitive_motion")) getFilteredWords("Noun", "place").forEach(n => options.push(`${n[KoreanWord]}에 ${stem}`));
+        });
+        options = [...new Set(options)];
+    } else if (token.type === "VP_DVst") {
+        const dvs = getFilteredWords("Descriptive Verb", token.tag);
+        dvs.forEach(dv => {
+            const tags = dv[SemanticTags];
+            let stem = getConjugatedStem(dv[KoreanWord], dv[Conjugation]);
+            if (tags.includes("descriptive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(`${n[KoreanWord]}이/가 ${stem}`));
+            if (tags.includes("descriptive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(`${n[KoreanWord]}이/가 ${stem}`));
+            if (tags.includes("descriptive_general")) getFilteredWords("Noun", "place").forEach(n => options.push(`${n[KoreanWord]}이/가 ${stem}`));
+        });
+        options = [...new Set(options)];
+    }
+
+    if (!currentUsageFilter && options.length > 5) {
+        totalOptionsCutToPreventCombinatorialExplosion += options.length - 5;
+        options = options.sort(() => 0.5 - Math.random()).slice(0, 5);
+    }
+    return options;
+}
+
+function generateTemplateOptions(template, depth = 0) {
+    if (depth > 2) return ["갑니다", "좋아요"];
+
+    const tokenRegex = /\{([^}:]+)(?::([^}]+))?\}/g;
+    let tokens = [];
+    let match;
+    let parts = [];
+    let lastIndex = 0;
+
+    while ((match = tokenRegex.exec(template)) !== null) {
+        parts.push(template.substring(lastIndex, match.index));
+        tokens.push({ type: match[1], tag: match[2], full: match[0] });
+        lastIndex = tokenRegex.lastIndex;
+    }
+    parts.push(template.substring(lastIndex));
+
+    let optionsPerToken = tokens.map(token => getTokenOptions(token, depth));
+
+    const cartesian = (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
+
+    let combinations = [];
+    if (optionsPerToken.length > 0) {
+        combinations = cartesian(...optionsPerToken);
+        if (optionsPerToken.length === 1) {
+            combinations = combinations.map(item => [item]);
+        }
+    } else {
+        return [template];
+    }
+
+    let results = [];
+    combinations.forEach(combo => {
+        let str = "";
+        for (let i = 0; i < parts.length - 1; i++) {
+            str += parts[i] + combo[i];
+        }
+        str += parts[parts.length - 1];
+        results.push(str);
+    });
+
+    return results;
+}
+
 function hasBatchim(char) {
   const code = char.charCodeAt(0) - 44032;
   if (code < 0 || code > 11171) return false;
@@ -284,5 +442,15 @@ function applyMorphology(text) {
 
 // Support both Node.js (for scripts) and Browser (for the app)
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { hasBatchim, getStem, applyMorphology };
+    module.exports = { 
+        hasBatchim, 
+        getStem, 
+        applyMorphology, 
+        getFilteredWords, 
+        setCurrentUsageFilter, 
+        getTokenOptions, 
+        generateTemplateOptions, 
+        getTotalOptionsCut,
+        resetTotalOptionsCut
+    };
 }
