@@ -1,4 +1,4 @@
-const { getPartOfSpeechCached } = require('./data.js');
+const { getPartOfSpeechCached, DATA_SCHEMA } = require('./data.js');
 const { applyMorphology, getFilteredWords, setCurrentUsageFilter, generateTemplateOptions, getTotalOptionsCut, resetTotalOptionsCut } = require('./korean.js');
 
 var requestedTags = undefined;
@@ -25,7 +25,7 @@ const fs = require('fs');
 const grammarUnits = getFilteredWords("Grammar");
 const templates = [];
 grammarUnits.forEach(entry => {
-    entry[5].forEach(formula => {
+    entry[DATA_SCHEMA.Conjugation].forEach(formula => {
         templates.push(formula);
     });
 });
