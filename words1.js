@@ -90,7 +90,7 @@ const class2031 = `
 거리:street, road, distance
 구경거리:attraction, sight to see
 남해:South Sea (of Korea)
-다녀오다:to go and come back
+다녀오다:visit, to go and come back
 도시:city
 동창회:alumni association, reunion
 롤러코스터:roller coaster
@@ -943,7 +943,7 @@ let defaultSources2 = [
 	class2011, class2012, class2021, class2022, class2031, class2032, class2041, class2042, class2051, class2052, class2061, class2062, class2071, class2072, class2081, class2082, class2091, class2092, class2101, class2102,
 	class2111, class2112, class2121, class2122, class2131, class2132, class2141, class2142, class2151, class2152, class2161, class2162, class2171, class2172, class2181, class2182, class2191, class2192, class2201, class2202];
 for (let i = 0; i < defaultSources2.length; ++i) {
-	dataSources.push(createDataSource('class 2 ' + ((i/2|0)+1) + "." + ((i%2)+1), defaultSources2[i], false));
+	dataSources.push(createDataSource('class 2 ' + ((i / 2 | 0) + 1) + "." + ((i % 2) + 1), defaultSources2[i], false));
 }
 
 if (document.readyState === 'complete') {

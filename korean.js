@@ -91,7 +91,15 @@ function getTokenOptions(token, depth = 0) {
             let stem = getConjugatedStem(av[KoreanWord], av[Conjugation]);
             if (tags.includes("transitive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(`${n[KoreanWord]}을/를 ${stem}`));
             if (tags.includes("transitive_drink")) getFilteredWords("Noun", "drink").forEach(n => options.push(`${n[KoreanWord]}을/를 ${stem}`));
+            if (tags.includes("transitive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(`${n[KoreanWord]}을/를 ${stem}`));
+            if (tags.includes("dative_person")) getFilteredWords("Noun", "person").forEach(n => options.push(`${n[KoreanWord]}에게 ${stem}`));
+            if (tags.includes("transitive_general")) {
+                let objs = getFilteredWords("Noun", "object");
+                if (objs.length === 0) objs = getFilteredWords("Noun");
+                objs.forEach(n => options.push(`${n[KoreanWord]}을/를 ${stem}`));
+            }
             if (tags.includes("intransitive_motion")) getFilteredWords("Noun", "place").forEach(n => options.push(`${n[KoreanWord]}에 ${stem}`));
+            if (tags.includes("intransitive_general")) options.push(stem);
         });
         options = [...new Set(options)];
     } else if (token.type === "VP_DVst") {
@@ -101,7 +109,12 @@ function getTokenOptions(token, depth = 0) {
             let stem = getConjugatedStem(dv[KoreanWord], dv[Conjugation]);
             if (tags.includes("descriptive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(`${n[KoreanWord]}이/가 ${stem}`));
             if (tags.includes("descriptive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(`${n[KoreanWord]}이/가 ${stem}`));
-            if (tags.includes("descriptive_general")) getFilteredWords("Noun", "place").forEach(n => options.push(`${n[KoreanWord]}이/가 ${stem}`));
+            if (tags.includes("descriptive_place")) getFilteredWords("Noun", "place").forEach(n => options.push(`${n[KoreanWord]}이/가 ${stem}`));
+            if (tags.includes("descriptive_general")) {
+                let nouns = getFilteredWords("Noun", "object");
+                if (nouns.length === 0) nouns = getFilteredWords("Noun");
+                nouns.forEach(n => options.push(`${n[KoreanWord]}이/가 ${stem}`));
+            }
         });
         options = [...new Set(options)];
     }
@@ -183,7 +196,7 @@ function applyMorphology(text) {
     
     // Irregular Verbs Handling
     // 1. b_irregular + 으 -> 우
-    resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\]으\/(니까|면|러|려고|세|시|셔|십|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\]으\/(니까|면|면서|러|려고|세|시|셔|십|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
         // Drop ㅂ (jongseong 17) -> add 우
         const stemNoB = String.fromCharCode(prevChar.charCodeAt(0) - 17);
         if (suffix === 'ㄴ') return stemNoB + '운';
@@ -201,12 +214,15 @@ function applyMorphology(text) {
         return stemNoB + added + suffix;
     });
 
-    // 3. l_irregular (ㄹ drops before ㄴ, ㅂ, ㅅ and doesn't take 으)
-    // ㄹ + 으/니까 -> 드니까 (ㄹ drops, 으 drops)
-    resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]으\/(니까|면|러|려고|세|시|셔|십|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
-        // Drop ㄹ (jongseong 8)
-        if (suffix === 'ㄴ') return String.fromCharCode(prevChar.charCodeAt(0) - 8 + 4); // add ㄴ
+    // 3. l_irregular (ㄹ drops before ㄴ, ㅂ, ㅅ; doesn't drop before ㅁ, ㄹ, but 으 drops)
+    // e.g., 살다 + 으/니까 -> 사니까, 살다 + 으/면 -> 살면, 열다 + 으/면서 -> 열면서
+    resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]으\/(니까|면|면서|러|려고|세|시|셔|십|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
+        if (suffix === 'ㄴ') return String.fromCharCode(prevChar.charCodeAt(0) - 8 + 4); // drop ㄹ, add ㄴ
         if (suffix === 'ㄹ') return prevChar; // ㄹ stays ㄹ
+        if (suffix === '면' || suffix === '면서' || suffix === '러' || suffix === '려고') {
+            // ㄹ does NOT drop, but 으 drops
+            return prevChar + suffix;
+        }
         const stemNoL = String.fromCharCode(prevChar.charCodeAt(0) - 8);
         return stemNoL + suffix;
     });
@@ -225,7 +241,7 @@ function applyMorphology(text) {
     });
 
     // 4. d_irregular (ㄷ -> ㄹ before vowels 으 and 아/어)
-    resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\]으\/(니까|면|러|려고|세|시|셔|십|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\]으\/(니까|면|면서|러|려고|세|시|셔|십|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
         // Change ㄷ (jongseong 7) to ㄹ (jongseong 8)
         const stemWithL = String.fromCharCode(prevChar.charCodeAt(0) + 1);
         if (suffix === 'ㄴ') return stemWithL + '은';
@@ -270,6 +286,26 @@ function applyMorphology(text) {
         const newReuBlock = String.fromCharCode(44032 + 2940 + (newReuMedial * 28) + newReuJongseong);
         
         return stemWithL + newReuBlock + suffix;
+    });
+
+    // 7. h_irregular (ㅎ drops before vowels; 으 drops; 아/어 blends into ㅐ/였)
+    // h_irregular + 으/(니까|면|면서|러|려고|세|시|셔|십|ㄹ|ㄴ)
+    resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\]으\/(니까|면|면서|러|려고|세|시|셔|십|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
+        // Drop ㅎ (jongseong 27)
+        const stemNoH = String.fromCharCode(prevChar.charCodeAt(0) - 27);
+        if (suffix === 'ㄴ') return String.fromCharCode(stemNoH.charCodeAt(0) + 4); // add ㄴ
+        if (suffix === 'ㄹ') return String.fromCharCode(stemNoH.charCodeAt(0) + 8); // add ㄹ
+        return stemNoH + suffix;
+    });
+
+    // h_irregular + (아/어|았/었) -> vowel changes to ㅐ (medial 1), plus ㅆ if past
+    resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\](아\/어|았\/었)(요|서|어|)/g, (match, prevChar, harmonyMarker, suffix) => {
+        const code = prevChar.charCodeAt(0) - 44032;
+        const initial = Math.floor(code / 588);
+        const newMedial = 1; // ㅐ
+        const newJongseong = harmonyMarker === "았/었" ? 20 : 0; // ㅆ
+        const newChar = String.fromCharCode(44032 + (initial * 588) + (newMedial * 28) + newJongseong);
+        return newChar + suffix;
     });
 
     // Strip leftover conjugation markers that didn't trigger an irregular change (or are unimplemented)
@@ -366,28 +402,37 @@ function applyMorphology(text) {
     });
 
     // Basic Vowel Contractions
-    // Generic 아 + 아 = 아
+    // Generic 아 + 아 = 아, ㅗ + 아 = ㅘ
     resolvedKo = resolvedKo.replace(/([가-힣])아(요|서|)/g, (match, prevChar, suffix) => {
         const code = prevChar.charCodeAt(0) - 44032;
         if (code >= 0) {
             const medial = Math.floor(code / 28) % 21;
             const jongseong = code % 28;
-            if (medial === 0 && jongseong === 0) { // 'ㅏ' vowel, no batchim
-                return prevChar + suffix; // e.g. 가 + 아요 -> 가요
+            if (medial === 0 && jongseong === 0) { // 'ㅏ' vowel, no batchim (가 + 아요 -> 가요)
+                return prevChar + suffix;
+            }
+            if (medial === 8 && jongseong === 0) { // 'ㅗ' vowel, no batchim (보 + 아요 -> 봐요)
+                const initial = Math.floor(code / 588);
+                return String.fromCharCode(44032 + (initial * 588) + (9 * 28) + 0) + suffix;
             }
         }
         return match;
     });
     
-    // Generic 아 + 았 = 았
+    // Generic 아 + 았 = 았, ㅗ + 았 = 왔
     resolvedKo = resolvedKo.replace(/([가-힣])았(어요|어)/g, (match, prevChar, suffix) => {
         const code = prevChar.charCodeAt(0) - 44032;
         if (code >= 0) {
             const medial = Math.floor(code / 28) % 21;
             const jongseong = code % 28;
-            if (medial === 0 && jongseong === 0) { // 'ㅏ' vowel, no batchim
+            if (medial === 0 && jongseong === 0) { // 'ㅏ' vowel, no batchim (가 + 았어요 -> 갔어요)
                 const initial = Math.floor(code / 588);
                 const newChar = String.fromCharCode(44032 + (initial * 588) + (0 * 28) + 20); // 0 is 'ㅏ', 20 is 'ㅆ'
+                return newChar + suffix;
+            }
+            if (medial === 8 && jongseong === 0) { // 'ㅗ' vowel, no batchim (보 + 았어요 -> 봤어요)
+                const initial = Math.floor(code / 588);
+                const newChar = String.fromCharCode(44032 + (initial * 588) + (9 * 28) + 20); // 9 is 'ㅘ', 20 is 'ㅆ'
                 return newChar + suffix;
             }
         }
@@ -408,30 +453,40 @@ function applyMorphology(text) {
     resolvedKo = resolvedKo.replace(/크어서/g, "커서");
     resolvedKo = resolvedKo.replace(/이어요/g, "이에요");
 
-    // Generic 이 + 어 = 여 contraction
+    // Generic 이 + 어 = 여 and ㅜ + 어 = 워 contraction
     resolvedKo = resolvedKo.replace(/([가-힣])어(요|서)/g, (match, prevChar, suffix) => {
         const code = prevChar.charCodeAt(0) - 44032;
         if (code >= 0) {
             const medial = Math.floor(code / 28) % 21;
             const jongseong = code % 28;
-            if (medial === 20 && jongseong === 0) { // 'ㅣ' vowel, no batchim
+            if (medial === 20 && jongseong === 0) { // 'ㅣ' vowel, no batchim (기다리 + 어요 -> 기다려요)
                 const initial = Math.floor(code / 588);
                 const newChar = String.fromCharCode(44032 + (initial * 588) + (6 * 28) + 0); // 6 is 'ㅕ'
+                return newChar + suffix;
+            }
+            if (medial === 13 && jongseong === 0) { // 'ㅜ' vowel, no batchim (배우 + 어요 -> 배워요)
+                const initial = Math.floor(code / 588);
+                const newChar = String.fromCharCode(44032 + (initial * 588) + (14 * 28) + 0); // 14 is 'ㅝ'
                 return newChar + suffix;
             }
         }
         return match;
     });
     
-    // Generic 이 + 었 = 였 contraction
+    // Generic 이 + 었 = 였 and ㅜ + 었 = 웠 contraction
     resolvedKo = resolvedKo.replace(/([가-힣])었(어요|어)/g, (match, prevChar, suffix) => {
         const code = prevChar.charCodeAt(0) - 44032;
         if (code >= 0) {
             const medial = Math.floor(code / 28) % 21;
             const jongseong = code % 28;
-            if (medial === 20 && jongseong === 0) { // 'ㅣ' vowel, no batchim
+            if (medial === 20 && jongseong === 0) { // 'ㅣ' vowel, no batchim (기다리 + 었어요 -> 기다렸어요)
                 const initial = Math.floor(code / 588);
                 const newChar = String.fromCharCode(44032 + (initial * 588) + (6 * 28) + 20); // 6 is 'ㅕ', 20 is 'ㅆ'
+                return newChar + suffix;
+            }
+            if (medial === 13 && jongseong === 0) { // 'ㅜ' vowel, no batchim (배우 + 었어요 -> 배웠어요)
+                const initial = Math.floor(code / 588);
+                const newChar = String.fromCharCode(44032 + (initial * 588) + (14 * 28) + 20); // 14 is 'ㅝ', 20 is 'ㅆ'
                 return newChar + suffix;
             }
         }
