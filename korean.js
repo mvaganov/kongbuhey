@@ -47,6 +47,54 @@ function getConjugatedStem(koreanWord, conjugation) {
     return stem;
 }
 
+class TokenOption {
+    constructor(text, units = []) {
+        this.text = text;
+        this.units = Array.isArray(units) ? units : (units ? [units] : []);
+    }
+    toString() {
+        return this.text;
+    }
+}
+
+let usedUnitIds = new Set();
+
+function markUnitUsed(unit) {
+    if (!unit) return;
+    const id = Array.isArray(unit) ? unit[DATA_SCHEMA.Id] : unit.Id;
+    if (typeof id === 'number') {
+        usedUnitIds.add(id);
+    }
+}
+
+function getUsedUnitIds() {
+    return usedUnitIds;
+}
+
+function resetUsedUnits() {
+    usedUnitIds.clear();
+}
+
+function deduplicateTokenOptions(options) {
+    const seen = new Map();
+    for (let opt of options) {
+        if (!opt) continue;
+        const text = typeof opt === 'string' ? opt : opt.text;
+        const units = (opt instanceof TokenOption) ? opt.units : [];
+        if (!seen.has(text)) {
+            seen.set(text, new TokenOption(text, [...units]));
+        } else {
+            const existing = seen.get(text);
+            for (let u of units) {
+                if (!existing.units.includes(u)) {
+                    existing.units.push(u);
+                }
+            }
+        }
+    }
+    return Array.from(seen.values());
+}
+
 function getTokenOptions(token, depth = 0) {
     let options = [];
     const KoreanWord = DATA_SCHEMA.Korean;
@@ -54,18 +102,18 @@ function getTokenOptions(token, depth = 0) {
     const SemanticTags = DATA_SCHEMA.SemanticTags;
     
     if (token.type === "N" || token.type === "N_Phrase") {
-        options = getFilteredWords("Noun", token.tag).map(w => w[KoreanWord]);
+        options = getFilteredWords("Noun", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
     } else if (token.type === "AVst") {
-        options = getFilteredWords("Action Verb", token.tag).map(w => getConjugatedStem(w[KoreanWord], w[Conjugation]));
+        options = getFilteredWords("Action Verb", token.tag).map(w => new TokenOption(getConjugatedStem(w[KoreanWord], w[Conjugation]), [w]));
     } else if (token.type === "DVst") {
-        options = getFilteredWords("Descriptive Verb", token.tag).map(w => getConjugatedStem(w[KoreanWord], w[Conjugation]));
+        options = getFilteredWords("Descriptive Verb", token.tag).map(w => new TokenOption(getConjugatedStem(w[KoreanWord], w[Conjugation]), [w]));
     } else if (token.type === "Number") {
-        options = getFilteredWords("Number", token.tag).map(w => w[KoreanWord]);
+        options = getFilteredWords("Number", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
     } else if (token.type === "Adv") {
-        options = getFilteredWords("Adverb", token.tag).map(w => w[KoreanWord]);
+        options = getFilteredWords("Adverb", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
     } else if (token.type === "Clause" || token.type === "VP") {
         if (depth > 0) {
-            options = ["갑니다", "좋아요"];
+            options = [new TokenOption("갑니다"), new TokenOption("좋아요")];
         } else {
             const grammars = getFilteredWords("Grammar").filter(g => {
                 const tags = g[SemanticTags] || [];
@@ -75,49 +123,50 @@ function getTokenOptions(token, depth = 0) {
                 grammars.forEach(g => {
                     const formulas = g[Conjugation];
                     formulas.forEach(formula => {
-                        const subOptions = generateTemplateOptions(formula, depth + 1);
-                        options.push(...subOptions);
+                        const subOptions = generateTemplateTokenOptions(formula, depth + 1);
+                        subOptions.forEach(sub => {
+                            options.push(new TokenOption(sub.text, [g, ...sub.units]));
+                        });
                     });
                 });
-                options = [...new Set(options)];
             } else {
-                options = ["갑니다", "좋아요"];
+                options = [new TokenOption("갑니다"), new TokenOption("좋아요")];
             }
         }
     } else if (token.type === "VP_AVst") {
         const avs = getFilteredWords("Action Verb", token.tag);
         avs.forEach(av => {
-            const tags = av[SemanticTags];
+            const tags = av[SemanticTags] || [];
             let stem = getConjugatedStem(av[KoreanWord], av[Conjugation]);
-            if (tags.includes("transitive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(`${n[KoreanWord]}을/를 ${stem}`));
-            if (tags.includes("transitive_drink")) getFilteredWords("Noun", "drink").forEach(n => options.push(`${n[KoreanWord]}을/를 ${stem}`));
-            if (tags.includes("transitive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(`${n[KoreanWord]}을/를 ${stem}`));
-            if (tags.includes("dative_person")) getFilteredWords("Noun", "person").forEach(n => options.push(`${n[KoreanWord]}에게 ${stem}`));
+            if (tags.includes("transitive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+            if (tags.includes("transitive_drink")) getFilteredWords("Noun", "drink").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+            if (tags.includes("transitive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+            if (tags.includes("dative_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}에게 ${stem}`, [av, n])));
             if (tags.includes("transitive_general")) {
                 let objs = getFilteredWords("Noun", "object");
                 if (objs.length === 0) objs = getFilteredWords("Noun");
-                objs.forEach(n => options.push(`${n[KoreanWord]}을/를 ${stem}`));
+                objs.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
             }
-            if (tags.includes("intransitive_motion")) getFilteredWords("Noun", "place").forEach(n => options.push(`${n[KoreanWord]}에 ${stem}`));
-            if (tags.includes("intransitive_general")) options.push(stem);
+            if (tags.includes("intransitive_motion")) getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}에 ${stem}`, [av, n])));
+            if (tags.includes("intransitive_general")) options.push(new TokenOption(stem, [av]));
         });
-        options = [...new Set(options)];
     } else if (token.type === "VP_DVst") {
         const dvs = getFilteredWords("Descriptive Verb", token.tag);
         dvs.forEach(dv => {
-            const tags = dv[SemanticTags];
+            const tags = dv[SemanticTags] || [];
             let stem = getConjugatedStem(dv[KoreanWord], dv[Conjugation]);
-            if (tags.includes("descriptive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(`${n[KoreanWord]}이/가 ${stem}`));
-            if (tags.includes("descriptive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(`${n[KoreanWord]}이/가 ${stem}`));
-            if (tags.includes("descriptive_place")) getFilteredWords("Noun", "place").forEach(n => options.push(`${n[KoreanWord]}이/가 ${stem}`));
+            if (tags.includes("descriptive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
+            if (tags.includes("descriptive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
+            if (tags.includes("descriptive_place")) getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
             if (tags.includes("descriptive_general")) {
                 let nouns = getFilteredWords("Noun", "object");
                 if (nouns.length === 0) nouns = getFilteredWords("Noun");
-                nouns.forEach(n => options.push(`${n[KoreanWord]}이/가 ${stem}`));
+                nouns.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
             }
         });
-        options = [...new Set(options)];
     }
+
+    options = deduplicateTokenOptions(options);
 
     if (!currentUsageFilter && options.length > 5) {
         totalOptionsCutToPreventCombinatorialExplosion += options.length - 5;
@@ -126,8 +175,8 @@ function getTokenOptions(token, depth = 0) {
     return options;
 }
 
-function generateTemplateOptions(template, depth = 0) {
-    if (depth > 2) return ["갑니다", "좋아요"];
+function generateTemplateTokenOptions(template, depth = 0) {
+    if (depth > 2) return [new TokenOption("갑니다"), new TokenOption("좋아요")];
 
     const tokenRegex = /\{([^}:]+)(?::([^}]+))?\}/g;
     let tokens = [];
@@ -153,20 +202,43 @@ function generateTemplateOptions(template, depth = 0) {
             combinations = combinations.map(item => [item]);
         }
     } else {
-        return [template];
+        return [new TokenOption(template, [])];
     }
 
     let results = [];
     combinations.forEach(combo => {
         let str = "";
+        let comboUnits = [];
         for (let i = 0; i < parts.length - 1; i++) {
-            str += parts[i] + combo[i];
+            const opt = combo[i];
+            const text = (opt && opt.text !== undefined) ? opt.text : String(opt);
+            str += parts[i] + text;
+            if (opt && opt.units) {
+                comboUnits.push(...opt.units);
+            }
         }
         str += parts[parts.length - 1];
-        results.push(str);
+
+        const uniqueUnits = [];
+        for (let u of comboUnits) {
+            if (u && !uniqueUnits.includes(u)) {
+                uniqueUnits.push(u);
+            }
+        }
+        results.push(new TokenOption(str, uniqueUnits));
     });
 
     return results;
+}
+
+function generateTemplateOptions(template, depth = 0) {
+    const tokenOptions = generateTemplateTokenOptions(template, depth);
+    tokenOptions.forEach(opt => {
+        if (opt && opt.units) {
+            opt.units.forEach(u => markUnitUsed(u));
+        }
+    });
+    return tokenOptions.map(opt => opt.text);
 }
 
 function hasBatchim(char) {
@@ -506,7 +578,11 @@ if (typeof module !== 'undefined' && module.exports) {
         setCurrentUsageFilter, 
         getTokenOptions, 
         generateTemplateOptions, 
+        generateTemplateTokenOptions,
         getTotalOptionsCut,
-        resetTotalOptionsCut
+        resetTotalOptionsCut,
+        markUnitUsed,
+        getUsedUnitIds,
+        resetUsedUnits
     };
 }

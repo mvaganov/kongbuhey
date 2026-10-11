@@ -1,5 +1,5 @@
-const { getPartOfSpeechCached, DATA_SCHEMA, cache } = require('./data.js');
-const { applyMorphology, getFilteredWords, setCurrentUsageFilter, generateTemplateOptions, getTotalOptionsCut, resetTotalOptionsCut, hasBatchim, getStem } = require('./korean.js');
+const { getPartOfSpeechCached, DATA_SCHEMA, cache, KR_EN_languageUnits } = require('./data.js');
+const { applyMorphology, getFilteredWords, setCurrentUsageFilter, generateTemplateOptions, getTotalOptionsCut, resetTotalOptionsCut, hasBatchim, getStem, markUnitUsed, getUsedUnitIds, resetUsedUnits } = require('./korean.js');
 const fs = require('fs');
 
 var requestedTags = undefined;
@@ -91,6 +91,7 @@ function generateSemanticSentence(template, depth = 0, incomingContext = {}) {
             if (!word) {
                 replacementKo = "N/A";
             } else {
+                markUnitUsed(word);
                 const sv = parseSemanticVector(word);
                 if (sv.prod) currentContext.produced_state = sv.prod;
                 if (sv.polarity !== undefined) currentContext.polarity = sv.polarity;
@@ -106,27 +107,32 @@ function generateSemanticSentence(template, depth = 0, incomingContext = {}) {
                     let nounWords = getFilteredWords("Noun", reqTag).filter(w => parseSemanticVector(w).domain);
                     if (nounWords.length === 0) nounWords = getFilteredWords("Noun", reqTag);
                     const obj = getRandom(nounWords) || ["무엇"];
+                    if (obj) markUnitUsed(obj);
                     const particle = hasBatchim(obj[KoreanWord].slice(-1)) ? "을" : "를";
                     replacementKo = `${obj[KoreanWord]}${particle} ${stem}`;
                 } else if (tags.includes("transitive_person")) {
                     let nounWords = getFilteredWords("Noun", "person");
                     const obj = getRandom(nounWords) || ["사람"];
+                    if (obj) markUnitUsed(obj);
                     const particle = hasBatchim(obj[KoreanWord].slice(-1)) ? "을" : "를";
                     replacementKo = `${obj[KoreanWord]}${particle} ${stem}`;
                 } else if (tags.includes("dative_person")) {
                     let nounWords = getFilteredWords("Noun", "person");
                     const obj = getRandom(nounWords) || ["사람"];
+                    if (obj) markUnitUsed(obj);
                     replacementKo = `${obj[KoreanWord]}에게 ${stem}`;
                 } else if (tags.includes("transitive_general")) {
                     let nounWords = getFilteredWords("Noun", "object");
                     if (nounWords.length === 0) nounWords = getFilteredWords("Noun");
                     const obj = getRandom(nounWords) || ["것"];
+                    if (obj) markUnitUsed(obj);
                     const particle = hasBatchim(obj[KoreanWord].slice(-1)) ? "을" : "를";
                     replacementKo = `${obj[KoreanWord]}${particle} ${stem}`;
                 } else if (tags.includes("intransitive_motion")) {
                     let placeWords = getFilteredWords("Noun", "place").filter(w => parseSemanticVector(w).domain);
                     if (placeWords.length === 0) placeWords = getFilteredWords("Noun", "place");
                     const place = getRandom(placeWords) || ["어디"];
+                    if (place) markUnitUsed(place);
                     replacementKo = `${place[KoreanWord]}에 ${stem}`;
                 } else {
                     replacementKo = stem;
@@ -160,6 +166,7 @@ function generateSemanticSentence(template, depth = 0, incomingContext = {}) {
             if (!word) {
                 replacementKo = "N/A";
             } else {
+                markUnitUsed(word);
                 let stem = getStem(word[KoreanWord]);
                 if (word[Conjugation] && word[Conjugation] !== "regular" && word[Conjugation] !== "") stem += `[${word[Conjugation]}]`;
 
@@ -170,22 +177,26 @@ function generateSemanticSentence(template, depth = 0, incomingContext = {}) {
                     if (tags.includes("descriptive_food")) {
                         let nouns = getFilteredWords("Noun", "food");
                         const n = getRandom(nouns) || ["음식"];
+                        if (n) markUnitUsed(n);
                         const particle = hasBatchim(n[KoreanWord].slice(-1)) ? "이" : "가";
                         replacementKo = `${n[KoreanWord]}${particle} ${stem}`;
                     } else if (tags.includes("descriptive_person")) {
                         let nouns = getFilteredWords("Noun", "person");
                         const n = getRandom(nouns) || ["사람"];
+                        if (n) markUnitUsed(n);
                         const particle = hasBatchim(n[KoreanWord].slice(-1)) ? "이" : "가";
                         replacementKo = `${n[KoreanWord]}${particle} ${stem}`;
                     } else if (tags.includes("descriptive_place")) {
                         let nouns = getFilteredWords("Noun", "place");
                         const n = getRandom(nouns) || ["곳"];
+                        if (n) markUnitUsed(n);
                         const particle = hasBatchim(n[KoreanWord].slice(-1)) ? "이" : "가";
                         replacementKo = `${n[KoreanWord]}${particle} ${stem}`;
                     } else if (tags.includes("descriptive_general")) {
                         let nouns = getFilteredWords("Noun", "object");
                         if (nouns.length === 0) nouns = getFilteredWords("Noun");
                         const n = getRandom(nouns) || ["것"];
+                        if (n) markUnitUsed(n);
                         const particle = hasBatchim(n[KoreanWord].slice(-1)) ? "이" : "가";
                         replacementKo = `${n[KoreanWord]}${particle} ${stem}`;
                     } else {
@@ -205,6 +216,7 @@ function generateSemanticSentence(template, depth = 0, incomingContext = {}) {
             const grammar = getRandom(grammars);
 
             if (grammar) {
+                markUnitUsed(grammar);
                 const formula = getRandom(grammar[Conjugation]);
                 const sub = generateSemanticSentence(formula, depth + 1, currentContext);
                 replacementKo = sub.ko;
@@ -221,7 +233,13 @@ function generateSemanticSentence(template, depth = 0, incomingContext = {}) {
             }
 
             if (words.length > 0) {
-                replacementKo = getRandom(words)[KoreanWord];
+                const chosen = getRandom(words);
+                if (chosen) {
+                    markUnitUsed(chosen);
+                    replacementKo = chosen[KoreanWord];
+                } else {
+                    replacementKo = "N/A";
+                }
             } else {
                 replacementKo = "N/A";
             }
@@ -322,6 +340,7 @@ function runSemanticTests(currentGrammarUnits) {
                 resultLog += header + "\n";
                 for (let i = 0; i < 2; i++) {
                     const res = generateSemanticSentence(formula, 0, sv);
+                    markUnitUsed(gu);
                     const resolved = applyMorphology(res.ko);
                     validateSentence(resolved, gu[KoreanWord]);
                     const line = `  Sample ${i + 1}: ${resolved}`;
@@ -336,23 +355,28 @@ function runSemanticTests(currentGrammarUnits) {
 
 // --- Execution ---
 
+resetUsedUnits();
 validateSemanticVectors();
 
 const grammarUnits = getFilteredWords("Grammar");
 const templates = [];
 grammarUnits.forEach(entry => {
     entry[DATA_SCHEMA.Conjugation].forEach(formula => {
-        templates.push(formula);
+        templates.push({ formula, grammarUnit: entry });
     });
 });
 
 let outputStr = "";
-templates.forEach((t, index) => {
+templates.forEach(({ formula, grammarUnit }, index) => {
     resetTotalOptionsCut();
     process.stdout.write(`\rGenerating: ${index + 1}/${templates.length} templates processed...`);
-    outputStr += `\n--- Template: ${t} ---\n`;
-    generateExhaustive(t).forEach(s => {
-        validateSentence(s, t);
+    outputStr += `\n--- Template: ${formula} ---\n`;
+    const generated = generateExhaustive(formula);
+    if (generated.length > 0) {
+        markUnitUsed(grammarUnit);
+    }
+    generated.forEach(s => {
+        validateSentence(s, formula);
         outputStr += s + "\n";
     });
     let cutCount = getTotalOptionsCut();
@@ -365,6 +389,71 @@ process.stdout.write("\n");
 // Append semantic tests to exhaustive output
 const semanticResults = runSemanticTests(grammarUnits);
 outputStr += semanticResults;
+
+function generateCoverageReport(filter) {
+    const usedIds = getUsedUnitIds();
+    let inScopeUnits = [];
+    let scopeName = "";
+
+    if (filter) {
+        scopeName = Object.keys(filter).join(", ");
+        inScopeUnits = KR_EN_languageUnits.filter(u => {
+            const src = u[DATA_SCHEMA.Source];
+            const tags = u[DATA_SCHEMA.SemanticTags] || [];
+            return filter[src] || tags.some(t => filter[t]);
+        });
+    } else {
+        scopeName = "All Units (Entire Curriculum)";
+        inScopeUnits = KR_EN_languageUnits;
+    }
+
+    const usedInScope = inScopeUnits.filter(u => usedIds.has(u[DATA_SCHEMA.Id]));
+    const unusedInScope = inScopeUnits.filter(u => !usedIds.has(u[DATA_SCHEMA.Id]));
+
+    const totalInScope = inScopeUnits.length;
+    const usedCount = usedInScope.length;
+    const unusedCount = unusedInScope.length;
+    const usedPct = totalInScope > 0 ? ((usedCount / totalInScope) * 100).toFixed(1) : "0.0";
+    const unusedPct = totalInScope > 0 ? ((unusedCount / totalInScope) * 100).toFixed(1) : "0.0";
+
+    const reportLines = [];
+    reportLines.push("==================================================");
+    reportLines.push("           LANGUAGE UNIT COVERAGE REPORT          ");
+    reportLines.push("==================================================");
+    reportLines.push(`Scope: ${scopeName}`);
+    reportLines.push(`In-Scope Units:  ${totalInScope}`);
+    reportLines.push(`Used Units:      ${usedCount} (${usedPct}%)`);
+    reportLines.push(`Unused Units:    ${unusedCount} (${unusedPct}%)`);
+    reportLines.push(`Total Used Across All Curriculum Units: ${usedIds.size}/${KR_EN_languageUnits.length}`);
+    reportLines.push("--------------------------------------------------");
+
+    if (unusedInScope.length === 0) {
+        reportLines.push("All in-scope language units were used in sentence generation! (100% Coverage)");
+    } else {
+        reportLines.push(`Unused Language Units in Scope (${unusedInScope.length}):`);
+        unusedInScope.forEach(unit => {
+            const id = String(unit[DATA_SCHEMA.Id]).padStart(4, ' ');
+            const ko = unit[DATA_SCHEMA.Korean];
+            const en = unit[DATA_SCHEMA.English];
+            const pos = unit[DATA_SCHEMA.PartofSpeech];
+            const src = unit[DATA_SCHEMA.Source];
+            const tags = (unit[DATA_SCHEMA.SemanticTags] || []).join(", ");
+            const tagStr = tags ? ` [tags: ${tags}]` : "";
+            reportLines.push(`  [ID ${id}] ${ko} (${pos}, ${src}) - "${en}"${tagStr}`);
+        });
+    }
+    reportLines.push("==================================================");
+
+    return reportLines;
+}
+
+const coverageReport = generateCoverageReport(requestedTags);
+
+// Print coverage report to console
+console.log("\n" + coverageReport.join("\n"));
+
+// Append coverage report to exhaustive_output.txt with '--- ' prefix on every line so validator skips it
+outputStr += "\n" + coverageReport.map(line => `--- ${line}`).join("\n") + "\n";
 
 fs.writeFileSync('exhaustive_output.txt', outputStr, 'utf8');
 console.log("\nWrote output directly to exhaustive_output.txt in UTF-8 format.");
