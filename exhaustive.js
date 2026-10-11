@@ -225,7 +225,11 @@ function generateSemanticSentence(template, depth = 0, incomingContext = {}) {
             }
         }
         else {
-            let words = getFilteredWords(tokenType === "N" ? "Noun" : (tokenType === "Number" ? "Number" : "Adverb"), tag);
+            let posToFetch = "Noun";
+            if (tokenType === "Number") posToFetch = "Number";
+            else if (tokenType === "Adv") posToFetch = "Adverb";
+            else if (tokenType === "Exclamation") posToFetch = "Exclamation";
+            let words = getFilteredWords(posToFetch, tag);
 
             if (applyConstraint && currentContext.logic === "cause_effect" && currentContext.produced_state) {
                 const domainWords = words.filter(w => parseSemanticVector(w).domain);

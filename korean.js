@@ -111,6 +111,8 @@ function getTokenOptions(token, depth = 0) {
         options = getFilteredWords("Number", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
     } else if (token.type === "Adv") {
         options = getFilteredWords("Adverb", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
+    } else if (token.type === "Exclamation") {
+        options = getFilteredWords("Exclamation", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
     } else if (token.type === "Clause" || token.type === "VP") {
         if (depth > 0) {
             options = [new TokenOption("갑니다"), new TokenOption("좋아요")];
@@ -392,6 +394,12 @@ function applyMorphology(text) {
         if (particleStr === "(이)랑") return prevChar + (hasB ? "이랑" : "랑");
         return match;
     });
+
+    // Resolve contracted pronouns and irregular pronoun-particle combinations
+    resolvedKo = resolvedKo.replace(/누가가/g, '누가');
+    resolvedKo = resolvedKo.replace(/뭘을/g, '뭘');
+    resolvedKo = resolvedKo.replace(/(^|[^가-힣])저가([^가-힣]|$)/g, (m, p1, p2) => p1 + '제가' + p2);
+    resolvedKo = resolvedKo.replace(/(^|[^가-힣])누구가([^가-힣]|$)/g, (m, p1, p2) => p1 + '누가' + p2);
     
     // Resolve 이/예요 based on batchim
     resolvedKo = resolvedKo.replace(/([가-힣])이\/예요/g, (match, prevChar) => {

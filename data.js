@@ -90,6 +90,7 @@ const KR_EN_languageUnits = [
 	["-기 때문에", "because of", "Grammar", ["reason", "conjunction"], "", ["{VP_AVst}기 때문에 {Clause}", "{VP_DVst}기 때문에 {Clause}", "{N} 때문에 {Clause}"], "SUOBI00", "", ""],
 	["이다", "to be", "Descriptive Verb", ["particle"], "", "regular", "SUOBI00", "", "Copula verb", '{"logic":"identify"}'],
 	["입니다", "is/are", "Grammar", ["declarative", "present", "honorific"], "", ["{N}입니다"], "SUOBI00", "Formal Polite (합쇼체)", ""],
+	["부사 표현", "adverb expression", "Grammar", ["adverb", "modifier", "devtest"], "", ["{Adv} {Clause}"], "SUOBI00", "", "", '{"logic":"modifier", "domain":"any"}'],
 
 	// Vocabulary from SUOBI02
 	["교실", "classroom", "Noun", ["place", "sinoRoot"], "", "", "SUOBI02", "", "", '{"domain":"place", "traits":["room"]}'],
@@ -902,6 +903,34 @@ function addLearningUnit(unit) {
 		}
 		cache[pos][tag].push(unit);
 	});
+
+	// Substantives: Pronouns function as nominals (체언) and are included in the Noun cache
+	if (pos === "Pronoun") {
+		if (!cache["Noun"]) {
+			cache["Noun"] = { _all: [] };
+		}
+		cache["Noun"]._all.push(unit);
+		tags.forEach(tag => {
+			if (!cache["Noun"][tag]) {
+				cache["Noun"][tag] = [];
+			}
+			cache["Noun"][tag].push(unit);
+		});
+	}
+
+	// Exclamations/Interjections: Sentence-level modifiers (감탄사) included in Adverb cache
+	if (pos === "Exclamation") {
+		if (!cache["Adverb"]) {
+			cache["Adverb"] = { _all: [] };
+		}
+		cache["Adverb"]._all.push(unit);
+		tags.forEach(tag => {
+			if (!cache["Adverb"][tag]) {
+				cache["Adverb"][tag] = [];
+			}
+			cache["Adverb"][tag].push(unit);
+		});
+	}
 }
 
 function rebuildCache() {
