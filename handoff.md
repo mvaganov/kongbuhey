@@ -13,14 +13,16 @@
 ## Current Architecture & Files
 
 ### 1. `data.js` (The Data Schema)
-Contains the finalized 10-element schema array for Language Units (Vocabulary and Grammar):
-`[Korean, English, Part of Speech, [Semantic Tags], Disambiguation, Conjugation Rules/Formula, Source Variable, Formality Level, Honorific Rules, Semantic Vector]`
+Contains the 10-element schema array for Language Units (Vocabulary and Grammar):
+`[Korean, English, Part of Speech, [Semantic Tags], Disambiguation, Conjugation Rules/Formula, Source Variable, Formality Level, Honorific Rules, Semantic Vector, id]`
 
 * **Semantic Tags:** Used to ensure sentences are structurally logical (e.g., `transitive_food` verbs only pair with `food` or `drink` nouns).
 * **Semantic Vectors (NEW):** We have added a 10th element: a human-readable JSON string defining the semantic domain, polarity, and logical constraints of the word. E.g., `{"domain":"consume", "req":"food", "prod":"satiety", "polarity": 1}`. 
 * **Current State:** 
     * All vocabulary and grammar from `words0.js` (SUOBI00 through SUOBI20) have been successfully imported and tested.
-    * **128 words (all `devtest` items + 81 new words)** have been patched with explicit Semantic Vectors to test the contextual generation constraints.
+    * **250+ units (SUOBI00 through SUOBI10, plus devtest items)** have been tagged with Semantic Tags and Semantic Vectors.
+    * Recent completed batches: SUOBI08 (31 units), SUOBI09 (50 units), and SUOBI10 (44 units) — totaling 125 units verified with 100% unit coverage and clean passes across all exhaustive and validation tests.
+    * Morphology updates: irregular pronoun contraction support (`누가를` -> `누구를`, `누가에게` -> `누구에게`, `누가는` -> `누구는`, `누가도` -> `누구도`), verb phrase sports/transportation/place expansions (`transitive_sports`, `transitive_transportation`, `transitive_place`).
 
 ### 2. `semantic_test.js` (Contextual Generation Proof-of-Concept)
 A new script that proves the Semantic Vector architecture works. It contains a `generateSemanticSentence()` algorithm that:

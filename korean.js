@@ -149,6 +149,19 @@ function getTokenOptions(token, depth = 0) {
                 if (objs.length === 0) objs = getFilteredWords("Noun");
                 objs.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
             }
+            if (tags.includes("transitive_sports")) {
+                let sports = getFilteredWords("Noun", "sports");
+                if (sports.length === 0) sports = getFilteredWords("Noun", "activity");
+                sports.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+            }
+            if (tags.includes("transitive_transportation")) {
+                let trans = getFilteredWords("Noun", "transportation");
+                trans.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+            }
+            if (tags.includes("transitive_place")) {
+                let places = getFilteredWords("Noun", "place");
+                places.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+            }
             if (tags.includes("intransitive_motion")) getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}에 ${stem}`, [av, n])));
             if (tags.includes("intransitive_general")) options.push(new TokenOption(stem, [av]));
         });
@@ -397,6 +410,10 @@ function applyMorphology(text) {
 
     // Resolve contracted pronouns and irregular pronoun-particle combinations
     resolvedKo = resolvedKo.replace(/누가가/g, '누가');
+    resolvedKo = resolvedKo.replace(/누가를/g, '누구를');
+    resolvedKo = resolvedKo.replace(/누가에게/g, '누구에게');
+    resolvedKo = resolvedKo.replace(/누가는/g, '누구는');
+    resolvedKo = resolvedKo.replace(/누가도/g, '누구도');
     resolvedKo = resolvedKo.replace(/뭘을/g, '뭘');
     resolvedKo = resolvedKo.replace(/(^|[^가-힣])저가([^가-힣]|$)/g, (m, p1, p2) => p1 + '제가' + p2);
     resolvedKo = resolvedKo.replace(/(^|[^가-힣])누구가([^가-힣]|$)/g, (m, p1, p2) => p1 + '누가' + p2);

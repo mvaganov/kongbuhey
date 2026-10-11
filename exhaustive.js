@@ -128,6 +128,25 @@ function generateSemanticSentence(template, depth = 0, incomingContext = {}) {
                     if (obj) markUnitUsed(obj);
                     const particle = hasBatchim(obj[KoreanWord].slice(-1)) ? "을" : "를";
                     replacementKo = `${obj[KoreanWord]}${particle} ${stem}`;
+                } else if (tags.includes("transitive_sports")) {
+                    let nounWords = getFilteredWords("Noun", "sports");
+                    if (nounWords.length === 0) nounWords = getFilteredWords("Noun", "activity");
+                    const obj = getRandom(nounWords) || ["운동"];
+                    if (obj) markUnitUsed(obj);
+                    const particle = hasBatchim(obj[KoreanWord].slice(-1)) ? "을" : "를";
+                    replacementKo = `${obj[KoreanWord]}${particle} ${stem}`;
+                } else if (tags.includes("transitive_transportation")) {
+                    let nounWords = getFilteredWords("Noun", "transportation");
+                    const obj = getRandom(nounWords) || ["차"];
+                    if (obj) markUnitUsed(obj);
+                    const particle = hasBatchim(obj[KoreanWord].slice(-1)) ? "을" : "를";
+                    replacementKo = `${obj[KoreanWord]}${particle} ${stem}`;
+                } else if (tags.includes("transitive_place")) {
+                    let nounWords = getFilteredWords("Noun", "place");
+                    const obj = getRandom(nounWords) || ["곳"];
+                    if (obj) markUnitUsed(obj);
+                    const particle = hasBatchim(obj[KoreanWord].slice(-1)) ? "을" : "를";
+                    replacementKo = `${obj[KoreanWord]}${particle} ${stem}`;
                 } else if (tags.includes("intransitive_motion")) {
                     let placeWords = getFilteredWords("Noun", "place").filter(w => parseSemanticVector(w).domain);
                     if (placeWords.length === 0) placeWords = getFilteredWords("Noun", "place");
