@@ -30,17 +30,22 @@ A new script that proves the Semantic Vector architecture works. It contains a `
 *   Enforces logical rules (e.g., `으/니까` forces a positive cause to yield a positive effect; `는데` forces contrast).
 *   **Tunable Strictness:** Contains a `SemanticConfig` object that allows weighting the constraints (`0.0` = total random novelty, `1.0` = strict semantic adherence). This ensures the "mad-libs" absurdity is preserved, while specific grammars (like contrast) can have their strictness set to 1.0 to prevent complete nonsense.
 
-### 3. `korean.js` (The Morphology Engine)
-A robust, centralized module that handles complex rules of Korean text manipulation. It exports `applyMorphology(text)`. (Handles batchim, vowel harmony, honorific infixes, irregular verbs, and contractions).
+### 3. `korean.js` (Morphology & Semantic Generation Engine)
+A robust, centralized module that handles complex rules of Korean text manipulation and semantic generation:
+*   Exports `applyMorphology(text)` (handles batchim, vowel harmony, honorific infixes, irregular verbs, contractions).
+*   **Semantic Generation**: Houses `generateSemanticSentence(template, context)` and `SemanticConfig` migrated from `exhaustive.js`.
+*   **Language Unit Tree (LUT)**: `generateSemanticSentence` produces `{ ko, context, tree }` tracking the hierarchical tree of language unit IDs / templates used to produce the sentence.
+*   **Tree Ingestion / Reconstruction**: `reconstructFromLanguageUnitTree(tree)` ingests the LUT and reproduces the identical pre-morphology sentence string.
+*   **Flattening & Compact Base64 Encoding**: `flattenLanguageUnitTree(tree)` extracts unique unit IDs into a 1D array; `encodeLanguageUnitIds(idsOrTree)` and `decodeLanguageUnitIds(token)` serialize these IDs into a URL-safe, compact Base64 token for copy/pasting and UI toggling.
 
 ### 4. `generator.js` & `exhaustive.js`
 `generator.js` takes templates and randomly injects vocabulary. `exhaustive.js` runs Cartesian tests.
+*   `exhaustive.js` supports `--tokens` (`--token`, `--lut`) CLI argument to print URL-safe Base64 LUT tokens inline next to generated sentences (e.g. `미국은 [CAAkAA]`).
 
 ---
 
 ## Next Steps for the Next Agent
 
 1. **Batch Process Remaining Semantic Vectors**: There are roughly 500 language units left in `data.js` that need Semantic Vectors. Write a script to batch-process them or continue the manual processing in chunks. The emerging schema involves 4 types: Nouns (Entities), Action Verbs (Events), Descriptive Verbs (States), and Grammar (Logic Gates).
-2. **Integrate Semantic Logic into `korean.js`**: Migrate the logic from `semantic_test.js` (including the `SemanticConfig` tunability and Noun identification constraints for the Copula `{N}이/예요`) directly into the main `generator.js` or `korean.js` so it affects all native sentence generation.
-3. **Continue Bulk Migration (`words1.js`)**: Once semantic vectors are stable, continue migrating the units from `words1.js`. The user enforces a very strict workflow: Migrate one or two sections at a time and IMMEDIATELY run `node exhaustive.js [SourceTag]` to validate the morphology.
-4. **Phase 2 (UI Development) [ON HOLD]**: Wait for the user to explicitly green-light moving to Phase 2. Once they do, build `index.html` and `index.css` with a premium, highly polished aesthetic (modern fonts, smooth micro-animations, rich colors, glassmorphism) tailored for the Web UI.
+2. **Continue Bulk Migration (`words1.js`)**: Once semantic vectors are stable, continue migrating the units from `words1.js`. The user enforces a very strict workflow: Migrate one or two sections at a time and IMMEDIATELY run `node exhaustive.js [SourceTag]` to validate the morphology.
+3. **Phase 2 (UI Development) [ON HOLD]**: Wait for the user to explicitly green-light moving to Phase 2. Once they do, build `index.html` and `index.css` with a premium, highly polished aesthetic (modern fonts, smooth micro-animations, rich colors, glassmorphism) tailored for the Web UI. Harness the LUT tokens to easily toggle/filter units in the study UI.

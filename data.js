@@ -10,6 +10,7 @@ const DATA_SCHEMA = {
 	HonorificRules: 8,
 	SemanticVector: 9,
 	Id: 10,
+	TagSet: 11,
 	0: 'Korean',
 	1: 'English',
 	2: 'PartofSpeech',
@@ -20,7 +21,8 @@ const DATA_SCHEMA = {
 	7: 'FormalityLevel',
 	8: 'HonorificRules',
 	9: 'SemanticVector',
-	10: 'Id'
+	10: 'Id',
+	11: 'TagSet'
 };
 Object.freeze(DATA_SCHEMA);
 
@@ -886,6 +888,7 @@ function addLearningUnit(unit) {
 	const pos = unit[DATA_SCHEMA.PartofSpeech];
 	const src = unit[DATA_SCHEMA.Source];
 	const tags = unit[DATA_SCHEMA.SemanticTags] || [];
+	unit[DATA_SCHEMA.TagSet] = new Set(tags);
 
 	if (!cache[pos]) {
 		cache[pos] = { _all: [] };
@@ -955,4 +958,26 @@ function getPartOfSpeechCached(tagName) {
 	return partsOfSpeech;
 }
 
-module.exports = { KR_EN_languageUnits, addLearningUnit, getWords, rebuildCache, getPartOfSpeechCached, cache, DATA_SCHEMA };
+function hasTag(unit, ...tags) {
+	if (!unit) return false;
+	const tagSet = unit[DATA_SCHEMA.TagSet];
+	if (tagSet) {
+		if (tags.length === 1) return tagSet.has(tags[0]);
+		for (let i = 0; i < tags.length; i++) {
+			if (tagSet.has(tags[i])) return true;
+		}
+		return false;
+	}
+	const unitTags = unit[DATA_SCHEMA.SemanticTags];
+	if (!Array.isArray(unitTags)) return false;
+	if (tags.length === 1) return unitTags.includes(tags[0]);
+	return tags.some(t => unitTags.includes(t));
+}
+
+if (typeof window !== 'undefined') {
+	window.hasTag = hasTag;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+	module.exports = { KR_EN_languageUnits, addLearningUnit, getWords, rebuildCache, getPartOfSpeechCached, cache, DATA_SCHEMA, hasTag };
+}

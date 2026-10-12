@@ -5,6 +5,18 @@ if (typeof require !== 'undefined') {
     dataModule = window;
 }
 const { getWords, DATA_SCHEMA } = dataModule;
+const hasTag = dataModule.hasTag || function(unit, ...tags) {
+    if (!unit) return false;
+    const tagSet = unit[DATA_SCHEMA.TagSet];
+    if (tagSet) {
+        if (tags.length === 1) return tagSet.has(tags[0]);
+        for (let i = 0; i < tags.length; i++) if (tagSet.has(tags[i])) return true;
+        return false;
+    }
+    const unitTags = unit[DATA_SCHEMA.SemanticTags] || [];
+    if (tags.length === 1) return unitTags.includes(tags[0]);
+    return tags.some(t => unitTags.includes(t));
+};
 
 let currentUsageFilter = null;
 let totalOptionsCutToPreventCombinatorialExplosion = 0;
@@ -27,9 +39,9 @@ function getFilteredWords(pos, tag) {
         let originalWords = words;
         words = words.filter(w => {
             const source = w[DATA_SCHEMA.Source];
-            const tags = w[DATA_SCHEMA.SemanticTags] || [];
-            let isAllowed = currentUsageFilter[source] || tags.includes("devtest");
+            let isAllowed = currentUsageFilter[source] || hasTag(w, "devtest");
             if (!isAllowed) {
+                const tags = w[DATA_SCHEMA.SemanticTags] || [];
                 isAllowed = tags.some(t => currentUsageFilter[t]);
             }
             return isAllowed;
@@ -118,8 +130,7 @@ function getTokenOptions(token, depth = 0) {
             options = [new TokenOption("갑니다"), new TokenOption("좋아요")];
         } else {
             const grammars = getFilteredWords("Grammar").filter(g => {
-                const tags = g[SemanticTags] || [];
-                return tags.includes("declarative") || tags.includes("suggestion");
+                return hasTag(g, "declarative", "suggestion");
             });
             if (grammars.length > 0) {
                 grammars.forEach(g => {
@@ -138,42 +149,40 @@ function getTokenOptions(token, depth = 0) {
     } else if (token.type === "VP_AVst") {
         const avs = getFilteredWords("Action Verb", token.tag);
         avs.forEach(av => {
-            const tags = av[SemanticTags] || [];
             let stem = getConjugatedStem(av[KoreanWord], av[Conjugation]);
-            if (tags.includes("transitive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-            if (tags.includes("transitive_drink")) getFilteredWords("Noun", "drink").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-            if (tags.includes("transitive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-            if (tags.includes("dative_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}에게 ${stem}`, [av, n])));
-            if (tags.includes("transitive_general")) {
+            if (hasTag(av, "transitive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+            if (hasTag(av, "transitive_drink")) getFilteredWords("Noun", "drink").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+            if (hasTag(av, "transitive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+            if (hasTag(av, "dative_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}에게 ${stem}`, [av, n])));
+            if (hasTag(av, "transitive_general")) {
                 let objs = getFilteredWords("Noun", "object");
                 if (objs.length === 0) objs = getFilteredWords("Noun");
                 objs.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
             }
-            if (tags.includes("transitive_sports")) {
+            if (hasTag(av, "transitive_sports")) {
                 let sports = getFilteredWords("Noun", "sports");
                 if (sports.length === 0) sports = getFilteredWords("Noun", "activity");
                 sports.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
             }
-            if (tags.includes("transitive_transportation")) {
+            if (hasTag(av, "transitive_transportation")) {
                 let trans = getFilteredWords("Noun", "transportation");
                 trans.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
             }
-            if (tags.includes("transitive_place")) {
+            if (hasTag(av, "transitive_place")) {
                 let places = getFilteredWords("Noun", "place");
                 places.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
             }
-            if (tags.includes("intransitive_motion")) getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}에 ${stem}`, [av, n])));
-            if (tags.includes("intransitive_general")) options.push(new TokenOption(stem, [av]));
+            if (hasTag(av, "intransitive_motion")) getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}에 ${stem}`, [av, n])));
+            if (hasTag(av, "intransitive_general")) options.push(new TokenOption(stem, [av]));
         });
     } else if (token.type === "VP_DVst") {
         const dvs = getFilteredWords("Descriptive Verb", token.tag);
         dvs.forEach(dv => {
-            const tags = dv[SemanticTags] || [];
             let stem = getConjugatedStem(dv[KoreanWord], dv[Conjugation]);
-            if (tags.includes("descriptive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
-            if (tags.includes("descriptive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
-            if (tags.includes("descriptive_place")) getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
-            if (tags.includes("descriptive_general")) {
+            if (hasTag(dv, "descriptive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
+            if (hasTag(dv, "descriptive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
+            if (hasTag(dv, "descriptive_place")) getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
+            if (hasTag(dv, "descriptive_general")) {
                 let nouns = getFilteredWords("Noun", "object");
                 if (nouns.length === 0) nouns = getFilteredWords("Noun");
                 nouns.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
@@ -254,6 +263,632 @@ function generateTemplateOptions(template, depth = 0) {
         }
     });
     return tokenOptions.map(opt => opt.text);
+}
+
+// --- Semantic Vector & Contextual Sentence Generation ---
+
+const SemanticConfig = {
+    globalStrictness: 0.5,
+    grammarOverrides: {
+        "contrast": 1.0,
+        "condition": 0.3
+    }
+};
+
+function getRandom(arr) {
+    if (!arr || arr.length === 0) return null;
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function parseSemanticVector(unit) {
+    if (!unit) return {};
+    const sv = unit[DATA_SCHEMA.SemanticVector];
+    if (sv) {
+        try {
+            return typeof sv === 'object' ? sv : JSON.parse(sv);
+        } catch (e) {
+            return {};
+        }
+    }
+    return {};
+}
+
+function shouldApplySemanticConstraint(context) {
+    let activeStrictness = SemanticConfig.globalStrictness;
+    if (context && context.logic && SemanticConfig.grammarOverrides[context.logic] !== undefined) {
+        activeStrictness = SemanticConfig.grammarOverrides[context.logic];
+    }
+    return Math.random() < activeStrictness;
+}
+
+let templateToGrammarMap = null;
+
+function initTemplateToGrammarMap() {
+    if (templateToGrammarMap) return templateToGrammarMap;
+    templateToGrammarMap = new Map();
+    const allGrammars = getWords("Grammar");
+    allGrammars.forEach(gu => {
+        if (!gu) return;
+        const formulas = gu[DATA_SCHEMA.Conjugation];
+        if (Array.isArray(formulas)) {
+            formulas.forEach((formula, idx) => {
+                if (!templateToGrammarMap.has(formula)) {
+                    templateToGrammarMap.set(formula, { grammarUnit: gu, formulaIndex: idx });
+                }
+            });
+        }
+    });
+    return templateToGrammarMap;
+}
+
+function findGrammarUnitForTemplate(template) {
+    if (!template || typeof template !== 'string') return null;
+    const map = initTemplateToGrammarMap();
+    if (map.has(template)) return map.get(template);
+    // Attempt fuzzy match by trimming whitespace
+    const trimmed = template.trim();
+    if (map.has(trimmed)) return map.get(trimmed);
+    return null;
+}
+
+function buildActionVerbPhrase(word, stem, chosenNoun = null) {
+    const KoreanWord = DATA_SCHEMA.Korean;
+    let noun = chosenNoun;
+    let particleType = "object"; // "object" (을/를), "dative" (에게), "location" (에), "none"
+    let tagMatched = null;
+
+    if (hasTag(word, "transitive_food") || hasTag(word, "transitive_drink")) {
+        tagMatched = hasTag(word, "transitive_food") ? "food" : "drink";
+        particleType = "object";
+    } else if (hasTag(word, "transitive_person")) {
+        tagMatched = "person";
+        particleType = "object";
+    } else if (hasTag(word, "dative_person")) {
+        tagMatched = "person";
+        particleType = "dative";
+    } else if (hasTag(word, "transitive_general")) {
+        tagMatched = "object";
+        particleType = "object";
+    } else if (hasTag(word, "transitive_sports")) {
+        tagMatched = "sports";
+        particleType = "object";
+    } else if (hasTag(word, "transitive_transportation")) {
+        tagMatched = "transportation";
+        particleType = "object";
+    } else if (hasTag(word, "transitive_place")) {
+        tagMatched = "place";
+        particleType = "object";
+    } else if (hasTag(word, "intransitive_motion")) {
+        tagMatched = "place";
+        particleType = "location";
+    } else {
+        particleType = "none";
+    }
+
+    if (particleType === "none") {
+        return { text: stem, noun: null };
+    }
+
+    if (!noun) {
+        let nounWords = getFilteredWords("Noun", tagMatched);
+        if (tagMatched === "food" || tagMatched === "drink" || tagMatched === "place") {
+            const domainWords = nounWords.filter(w => parseSemanticVector(w).domain);
+            if (domainWords.length > 0) nounWords = domainWords;
+        }
+        if (nounWords.length === 0 && tagMatched === "sports") {
+            nounWords = getFilteredWords("Noun", "activity");
+        }
+        if (nounWords.length === 0 && tagMatched === "object") {
+            nounWords = getFilteredWords("Noun");
+        }
+        if (nounWords.length === 0) {
+            nounWords = getWords("Noun", tagMatched);
+            if (nounWords.length === 0) nounWords = getWords("Noun");
+        }
+        noun = getRandom(nounWords);
+        if (noun) markUnitUsed(noun);
+    }
+
+    if (!noun) {
+        return { text: stem, noun: null };
+    }
+
+    const nounKo = typeof noun === 'string' ? noun : noun[KoreanWord];
+    let phrase = "";
+    if (particleType === "object") {
+        const p = hasBatchim(nounKo.slice(-1)) ? "을" : "를";
+        phrase = `${nounKo}${p} ${stem}`;
+    } else if (particleType === "dative") {
+        phrase = `${nounKo}에게 ${stem}`;
+    } else if (particleType === "location") {
+        phrase = `${nounKo}에 ${stem}`;
+    } else {
+        phrase = stem;
+    }
+
+    return { text: phrase, noun };
+}
+
+function buildDescriptiveVerbPhrase(word, stem, chosenNoun = null) {
+    const KoreanWord = DATA_SCHEMA.Korean;
+    let noun = chosenNoun;
+    let tagMatched = null;
+
+    if (hasTag(word, "descriptive_food")) {
+        tagMatched = "food";
+    } else if (hasTag(word, "descriptive_person")) {
+        tagMatched = "person";
+    } else if (hasTag(word, "descriptive_place")) {
+        tagMatched = "place";
+    } else if (hasTag(word, "descriptive_general")) {
+        tagMatched = "object";
+    }
+
+    if (!tagMatched) {
+        return { text: stem, noun: null };
+    }
+
+    if (!noun) {
+        let nouns = getFilteredWords("Noun", tagMatched);
+        if (nouns.length === 0 && tagMatched === "object") {
+            nouns = getFilteredWords("Noun");
+        }
+        if (nouns.length === 0) {
+            nouns = getWords("Noun", tagMatched);
+            if (nouns.length === 0) nouns = getWords("Noun");
+        }
+        noun = getRandom(nouns);
+        if (noun) markUnitUsed(noun);
+    }
+
+    if (!noun) {
+        return { text: stem, noun: null };
+    }
+
+    const nounKo = typeof noun === 'string' ? noun : noun[KoreanWord];
+    const particle = hasBatchim(nounKo.slice(-1)) ? "이" : "가";
+    return { text: `${nounKo}${particle} ${stem}`, noun };
+}
+
+function expandSemanticActionVerb(tokenType, currentContext, applyConstraint) {
+    let words = getFilteredWords("Action Verb");
+
+    if (applyConstraint && currentContext.req_domain) {
+        const domainWords = words.filter(w => parseSemanticVector(w).domain === currentContext.req_domain);
+        if (domainWords.length > 0) words = domainWords;
+    }
+
+    const svWords = words.filter(w => parseSemanticVector(w).domain);
+    if (svWords.length > 0) words = svWords;
+
+    const word = getRandom(words);
+    if (!word) return { text: "N/A", verb: null, noun: null };
+
+    markUnitUsed(word);
+    const sv = parseSemanticVector(word);
+    if (sv.prod) currentContext.produced_state = sv.prod;
+    if (sv.polarity !== undefined) currentContext.polarity = sv.polarity;
+
+    let stem = getConjugatedStem(word[DATA_SCHEMA.Korean], word[DATA_SCHEMA.Conjugation]);
+
+    if (tokenType === "AVst") {
+        return { text: stem, verb: word, noun: null };
+    }
+    const phrase = buildActionVerbPhrase(word, stem);
+    return { text: phrase.text, verb: word, noun: phrase.noun };
+}
+
+function expandSemanticDescriptiveVerb(tokenType, currentContext, applyConstraint) {
+    let words = getFilteredWords("Descriptive Verb");
+
+    if (applyConstraint && currentContext.logic === "cause_effect") {
+        const matchingWords = words.filter(w => {
+            let sv = parseSemanticVector(w);
+            let matchesPolarity = (sv.polarity === currentContext.polarity);
+            let matchesProduced = (sv.req === currentContext.produced_state || sv.req === "any" || sv.domain === "state");
+            return matchesPolarity && matchesProduced;
+        });
+        if (matchingWords.length > 0) words = matchingWords;
+    } else if (applyConstraint && currentContext.logic === "contrast") {
+        const matchingWords = words.filter(w => {
+            let sv = parseSemanticVector(w);
+            let matchesPolarity = (sv.polarity !== currentContext.polarity && sv.polarity !== 0);
+            return matchesPolarity;
+        });
+        if (matchingWords.length > 0) words = matchingWords;
+    }
+
+    const svWords = words.filter(w => parseSemanticVector(w).domain);
+    if (svWords.length > 0) words = svWords;
+
+    const word = getRandom(words);
+    if (!word) return { text: "N/A", verb: null, noun: null };
+
+    markUnitUsed(word);
+    let stem = getConjugatedStem(word[DATA_SCHEMA.Korean], word[DATA_SCHEMA.Conjugation]);
+
+    if (tokenType === "DVst") {
+        return { text: stem, verb: word, noun: null };
+    }
+    const phrase = buildDescriptiveVerbPhrase(word, stem);
+    return { text: phrase.text, verb: word, noun: phrase.noun };
+}
+
+function expandSemanticClause(depth, currentContext) {
+    const KoreanWord = DATA_SCHEMA.Korean;
+    const Conjugation = DATA_SCHEMA.Conjugation;
+
+    let grammars = getFilteredWords("Grammar").filter(g => {
+        const sv = parseSemanticVector(g);
+        return hasTag(g, "declarative") && (sv.logic === "declarative" || g[KoreanWord].includes("아요") || g[KoreanWord].includes("습니다"));
+    });
+    if (grammars.length === 0) {
+        grammars = getFilteredWords("Grammar").filter(g => hasTag(g, "declarative"));
+    }
+    if (grammars.length === 0) {
+        grammars = getFilteredWords("Grammar");
+    }
+    const grammar = getRandom(grammars);
+
+    if (grammar) {
+        markUnitUsed(grammar);
+        const formula = getRandom(grammar[Conjugation]);
+        const sub = generateSemanticSentence(formula, depth + 1, currentContext);
+        return { text: sub.ko, tree: sub.tree };
+    }
+    return { text: "좋아요", tree: "좋아요" };
+}
+
+function expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint) {
+    let posToFetch = "Noun";
+    if (tokenType === "Number") posToFetch = "Number";
+    else if (tokenType === "Adv") posToFetch = "Adverb";
+    else if (tokenType === "Exclamation") posToFetch = "Exclamation";
+
+    let words = getFilteredWords(posToFetch, tag);
+
+    if (applyConstraint && currentContext.logic === "cause_effect" && currentContext.produced_state) {
+        const domainWords = words.filter(w => parseSemanticVector(w).domain);
+        if (domainWords.length > 0) words = domainWords;
+    }
+
+    if (words.length > 0) {
+        const chosen = getRandom(words);
+        if (chosen) {
+            markUnitUsed(chosen);
+            return { text: chosen[DATA_SCHEMA.Korean], unit: chosen };
+        }
+    }
+    return { text: "N/A", unit: null };
+}
+
+function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {}) {
+    if (depth > 2) return { ko: "좋아요", context: {}, tree: "좋아요" };
+
+    let template = "";
+    let grammarId = null;
+
+    if (typeof templateOrUnit === 'number') {
+        const units = typeof KR_EN_languageUnits !== 'undefined' ? KR_EN_languageUnits : dataModule.KR_EN_languageUnits;
+        const gu = units ? units[templateOrUnit] : null;
+        if (gu) {
+            grammarId = gu[DATA_SCHEMA.Id];
+            template = getRandom(gu[DATA_SCHEMA.Conjugation]) || "";
+        } else {
+            template = String(templateOrUnit);
+            grammarId = template;
+        }
+    } else if (Array.isArray(templateOrUnit) && typeof templateOrUnit[DATA_SCHEMA.Id] === 'number') {
+        grammarId = templateOrUnit[DATA_SCHEMA.Id];
+        template = getRandom(templateOrUnit[DATA_SCHEMA.Conjugation]) || "";
+    } else if (typeof templateOrUnit === 'string') {
+        template = templateOrUnit;
+        const match = findGrammarUnitForTemplate(template);
+        if (match && match.grammarUnit) {
+            const gu = match.grammarUnit;
+            const formulas = gu[DATA_SCHEMA.Conjugation] || [];
+            if (formulas.length > 1 && match.formulaIndex > 0) {
+                const sigs = formulas.map(f => (f.match(/\{[^}]+\}/g) || []).join(','));
+                if (sigs[match.formulaIndex] === sigs[0]) {
+                    grammarId = template;
+                } else {
+                    grammarId = gu[DATA_SCHEMA.Id];
+                }
+            } else {
+                grammarId = gu[DATA_SCHEMA.Id];
+            }
+        } else {
+            grammarId = template;
+        }
+    } else {
+        template = String(templateOrUnit);
+        grammarId = template;
+    }
+
+    let koResult = template;
+    let currentContext = { ...incomingContext };
+    const childrenTree = [];
+
+    const tokenRegex = /\{([^}:]+)(?::([^}]+))?\}/g;
+    let match;
+
+    while ((match = tokenRegex.exec(koResult)) !== null) {
+        const token = match[0];
+        const tokenType = match[1];
+        const tag = match[2];
+
+        const applyConstraint = shouldApplySemanticConstraint(currentContext);
+
+        let replacementKo = "";
+        let childNode = null;
+
+        if (tokenType === "VP_AVst" || tokenType === "AVst") {
+            const exp = expandSemanticActionVerb(tokenType, currentContext, applyConstraint);
+            replacementKo = exp.text;
+            if (exp.verb) {
+                if (exp.noun) {
+                    const nounId = typeof exp.noun[DATA_SCHEMA.Id] === 'number' ? exp.noun[DATA_SCHEMA.Id] : exp.noun[DATA_SCHEMA.Korean];
+                    childNode = [exp.verb[DATA_SCHEMA.Id], nounId];
+                } else {
+                    childNode = exp.verb[DATA_SCHEMA.Id];
+                }
+            } else {
+                childNode = replacementKo;
+            }
+        } else if (tokenType === "VP_DVst" || tokenType === "DVst") {
+            const exp = expandSemanticDescriptiveVerb(tokenType, currentContext, applyConstraint);
+            replacementKo = exp.text;
+            if (exp.verb) {
+                if (exp.noun) {
+                    const nounId = typeof exp.noun[DATA_SCHEMA.Id] === 'number' ? exp.noun[DATA_SCHEMA.Id] : exp.noun[DATA_SCHEMA.Korean];
+                    childNode = [exp.verb[DATA_SCHEMA.Id], nounId];
+                } else {
+                    childNode = exp.verb[DATA_SCHEMA.Id];
+                }
+            } else {
+                childNode = replacementKo;
+            }
+        } else if (tokenType === "Clause" || tokenType === "VP") {
+            const exp = expandSemanticClause(depth, currentContext);
+            replacementKo = exp.text;
+            childNode = exp.tree;
+        } else {
+            const exp = expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint);
+            replacementKo = exp.text;
+            childNode = exp.unit ? exp.unit[DATA_SCHEMA.Id] : replacementKo;
+        }
+
+        childrenTree.push(childNode);
+        koResult = koResult.replace(token, replacementKo || "N/A");
+        tokenRegex.lastIndex = 0;
+    }
+
+    const tree = [grammarId, ...childrenTree];
+    return { ko: koResult, context: currentContext, tree };
+}
+
+function reconstructFromLanguageUnitTree(tree) {
+    if (tree === null || tree === undefined) return "";
+    if (typeof tree === 'string') return tree;
+    if (typeof tree === 'number') {
+        const units = typeof KR_EN_languageUnits !== 'undefined' ? KR_EN_languageUnits : dataModule.KR_EN_languageUnits;
+        const u = units ? units[tree] : null;
+        return u ? u[DATA_SCHEMA.Korean] : String(tree);
+    }
+    if (!Array.isArray(tree) || tree.length === 0) return "";
+
+    const units = typeof KR_EN_languageUnits !== 'undefined' ? KR_EN_languageUnits : dataModule.KR_EN_languageUnits;
+    const grammarRef = tree[0];
+    const children = tree.slice(1);
+
+    let template = "";
+    let grammarUnit = null;
+
+    if (typeof grammarRef === 'number') {
+        grammarUnit = units ? units[grammarRef] : null;
+        if (grammarUnit && Array.isArray(grammarUnit[DATA_SCHEMA.Conjugation])) {
+            const formulas = grammarUnit[DATA_SCHEMA.Conjugation];
+            if (formulas.length === 1) {
+                template = formulas[0];
+            } else {
+                // Determine which formula matches the children based on first child's part of speech
+                const firstChild = children[0];
+                let isActionVerb = false;
+                let isDescriptiveVerb = false;
+
+                if (typeof firstChild === 'number') {
+                    const u = units ? units[firstChild] : null;
+                    if (u) {
+                        isActionVerb = u[DATA_SCHEMA.PartofSpeech] === 'Action Verb';
+                        isDescriptiveVerb = u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb';
+                    }
+                } else if (Array.isArray(firstChild) && typeof firstChild[0] === 'number') {
+                    const u = units ? units[firstChild[0]] : null;
+                    if (u) {
+                        isActionVerb = u[DATA_SCHEMA.PartofSpeech] === 'Action Verb';
+                        isDescriptiveVerb = u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb';
+                    }
+                }
+
+                if (isActionVerb) {
+                    template = formulas.find(f => f.includes('AVst')) || formulas[0];
+                } else if (isDescriptiveVerb) {
+                    template = formulas.find(f => f.includes('DVst')) || formulas[0];
+                } else {
+                    template = formulas[0];
+                }
+            }
+        } else {
+            template = String(grammarRef);
+        }
+    } else if (typeof grammarRef === 'string') {
+        template = grammarRef;
+    } else {
+        template = String(grammarRef);
+    }
+
+    let koResult = template;
+    const tokenRegex = /\{([^}:]+)(?::([^}]+))?\}/g;
+    let match;
+    let childIndex = 0;
+
+    while ((match = tokenRegex.exec(koResult)) !== null) {
+        const token = match[0];
+        const tokenType = match[1];
+        const child = children[childIndex++];
+
+        let replacement = "";
+        if (tokenType === "VP_AVst" || tokenType === "AVst") {
+            let verbId = null;
+            let nounId = null;
+            if (Array.isArray(child)) {
+                verbId = child[0];
+                nounId = child.length > 1 ? child[1] : null;
+            } else if (typeof child === 'number') {
+                verbId = child;
+            }
+
+            const verb = (verbId !== null && units) ? units[verbId] : null;
+            const noun = (nounId !== null && units && typeof nounId === 'number') ? units[nounId] : (typeof nounId === 'string' ? nounId : null);
+
+            if (verb) {
+                let stem = getStem(verb[DATA_SCHEMA.Korean]);
+                if (verb[DATA_SCHEMA.Conjugation] && verb[DATA_SCHEMA.Conjugation] !== "regular" && verb[DATA_SCHEMA.Conjugation] !== "") {
+                    stem += `[${verb[DATA_SCHEMA.Conjugation]}]`;
+                }
+                if (tokenType === "AVst") {
+                    replacement = stem;
+                } else {
+                    const phrase = buildActionVerbPhrase(verb, stem, noun);
+                    replacement = phrase.text;
+                }
+            } else {
+                replacement = typeof child === 'string' ? child : "N/A";
+            }
+        } else if (tokenType === "VP_DVst" || tokenType === "DVst") {
+            let verbId = null;
+            let nounId = null;
+            if (Array.isArray(child)) {
+                verbId = child[0];
+                nounId = child.length > 1 ? child[1] : null;
+            } else if (typeof child === 'number') {
+                verbId = child;
+            }
+
+            const verb = (verbId !== null && units) ? units[verbId] : null;
+            const noun = (nounId !== null && units && typeof nounId === 'number') ? units[nounId] : (typeof nounId === 'string' ? nounId : null);
+
+            if (verb) {
+                let stem = getStem(verb[DATA_SCHEMA.Korean]);
+                if (verb[DATA_SCHEMA.Conjugation] && verb[DATA_SCHEMA.Conjugation] !== "regular" && verb[DATA_SCHEMA.Conjugation] !== "") {
+                    stem += `[${verb[DATA_SCHEMA.Conjugation]}]`;
+                }
+                if (tokenType === "DVst") {
+                    replacement = stem;
+                } else {
+                    const phrase = buildDescriptiveVerbPhrase(verb, stem, noun);
+                    replacement = phrase.text;
+                }
+            } else {
+                replacement = typeof child === 'string' ? child : "N/A";
+            }
+        } else if (tokenType === "Clause" || tokenType === "VP") {
+            replacement = reconstructFromLanguageUnitTree(child);
+        } else {
+            // Terminal (Noun, Number, Adv, Exclamation)
+            if (typeof child === 'number' && units && units[child]) {
+                replacement = units[child][DATA_SCHEMA.Korean];
+            } else if (Array.isArray(child) && child.length === 1 && typeof child[0] === 'number' && units && units[child[0]]) {
+                replacement = units[child[0]][DATA_SCHEMA.Korean];
+            } else {
+                replacement = String(child || "N/A");
+            }
+        }
+
+        koResult = koResult.replace(token, replacement || "N/A");
+        tokenRegex.lastIndex = 0;
+    }
+
+    return koResult;
+}
+
+function flattenLanguageUnitTree(tree) {
+    const ids = new Set();
+
+    function traverse(node) {
+        if (node === null || node === undefined) return;
+        if (typeof node === 'number') {
+            ids.add(node);
+            return;
+        }
+        if (typeof node === 'string') {
+            const match = findGrammarUnitForTemplate(node);
+            if (match && match.grammarUnit && typeof match.grammarUnit[DATA_SCHEMA.Id] === 'number') {
+                ids.add(match.grammarUnit[DATA_SCHEMA.Id]);
+            }
+            return;
+        }
+        if (Array.isArray(node)) {
+            // If it's a Language Unit itself (has DATA_SCHEMA fields)
+            if (typeof node[DATA_SCHEMA.Id] === 'number') {
+                ids.add(node[DATA_SCHEMA.Id]);
+                return;
+            }
+            for (let item of node) {
+                traverse(item);
+            }
+            return;
+        }
+        if (typeof node === 'object' && typeof node.Id === 'number') {
+            ids.add(node.Id);
+            return;
+        }
+    }
+
+    traverse(tree);
+    return Array.from(ids).sort((a, b) => a - b);
+}
+
+function encodeLanguageUnitIds(idsOrTree) {
+    let ids = [];
+    if (Array.isArray(idsOrTree) && idsOrTree.some(x => Array.isArray(x) || typeof x === 'string')) {
+        ids = flattenLanguageUnitTree(idsOrTree);
+    } else if (Array.isArray(idsOrTree)) {
+        ids = Array.from(new Set(idsOrTree)).filter(x => typeof x === 'number').sort((a, b) => a - b);
+    } else if (typeof idsOrTree === 'number') {
+        ids = [idsOrTree];
+    }
+
+    const u16 = new Uint16Array(ids);
+    const bytes = new Uint8Array(u16.buffer, u16.byteOffset, u16.byteLength);
+
+    if (typeof Buffer !== 'undefined') {
+        return Buffer.from(bytes).toString('base64url');
+    }
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function decodeLanguageUnitIds(token) {
+    if (!token || typeof token !== 'string') return [];
+    let b64 = token.replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+
+    let bytes;
+    if (typeof Buffer !== 'undefined') {
+        bytes = new Uint8Array(Buffer.from(b64, 'base64'));
+    } else {
+        const binary = atob(b64);
+        bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    }
+
+    const count = Math.floor(bytes.byteLength / 2);
+    const u16 = new Uint16Array(bytes.buffer, bytes.byteOffset, count);
+    return Array.from(u16);
 }
 
 function hasBatchim(char) {
@@ -594,20 +1229,43 @@ function applyMorphology(text) {
 }
 
 // Support both Node.js (for scripts) and Browser (for the app)
+const exportedMembers = { 
+    hasBatchim, 
+    getStem, 
+    applyMorphology, 
+    getFilteredWords, 
+    setCurrentUsageFilter, 
+    getTokenOptions, 
+    generateTemplateOptions, 
+    generateTemplateTokenOptions,
+    getTotalOptionsCut,
+    resetTotalOptionsCut,
+    markUnitUsed,
+    getUsedUnitIds,
+    resetUsedUnits,
+    hasTag,
+    getRandom,
+    parseSemanticVector,
+    SemanticConfig,
+    shouldApplySemanticConstraint,
+    findGrammarUnitForTemplate,
+    buildActionVerbPhrase,
+    buildDescriptiveVerbPhrase,
+    expandSemanticActionVerb,
+    expandSemanticDescriptiveVerb,
+    expandSemanticClause,
+    expandSemanticTerminal,
+    generateSemanticSentence,
+    reconstructFromLanguageUnitTree,
+    flattenLanguageUnitTree,
+    encodeLanguageUnitIds,
+    decodeLanguageUnitIds
+};
+
+if (typeof window !== 'undefined') {
+    Object.assign(window, exportedMembers);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { 
-        hasBatchim, 
-        getStem, 
-        applyMorphology, 
-        getFilteredWords, 
-        setCurrentUsageFilter, 
-        getTokenOptions, 
-        generateTemplateOptions, 
-        generateTemplateTokenOptions,
-        getTotalOptionsCut,
-        resetTotalOptionsCut,
-        markUnitUsed,
-        getUsedUnitIds,
-        resetUsedUnits
-    };
+    module.exports = exportedMembers;
 }
