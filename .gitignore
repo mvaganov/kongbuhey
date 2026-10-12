@@ -7,3 +7,4 @@ check_templates.js
 validate_output.js
 exhaustive_output_devtest.txt
 finiteUseScripts/
+exhaustive_output_*.txt

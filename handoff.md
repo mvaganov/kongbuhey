@@ -20,9 +20,9 @@ Contains the 10-element schema array for Language Units (Vocabulary and Grammar)
 * **Semantic Vectors (NEW):** We have added a 10th element: a human-readable JSON string defining the semantic domain, polarity, and logical constraints of the word. E.g., `{"domain":"consume", "req":"food", "prod":"satiety", "polarity": 1}`. 
 * **Current State:** 
     * All vocabulary and grammar from `words0.js` (SUOBI00 through SUOBI20) have been successfully imported and tested.
-    * **250+ units (SUOBI00 through SUOBI10, plus devtest items)** have been tagged with Semantic Tags and Semantic Vectors.
-    * Recent completed batches: SUOBI08 (31 units), SUOBI09 (50 units), and SUOBI10 (44 units) — totaling 125 units verified with 100% unit coverage and clean passes across all exhaustive and validation tests.
-    * Morphology updates: irregular pronoun contraction support (`누가를` -> `누구를`, `누가에게` -> `누구에게`, `누가는` -> `누구는`, `누가도` -> `누구도`), verb phrase sports/transportation/place expansions (`transitive_sports`, `transitive_transportation`, `transitive_place`).
+    * **360+ units (SUOBI00 through SUOBI13, plus devtest items)** have been tagged with Semantic Tags and Semantic Vectors.
+    * Recent completed batches: SUOBI08 (31 units), SUOBI09 (50 units), SUOBI10 (44 units), SUOBI11 (24 units), SUOBI12 (39 units), SUOBI13 (50 units) — totaling 238 units verified with 100% unit coverage and clean passes across all exhaustive and validation tests.
+    * Morphology updates: irregular pronoun contraction support (`누가를` -> `누구를`, `누가에게` -> `누구에게`, `누가는` -> `누구는`, `누가도` -> `누구도`), verb phrase expansions (`transitive_sports`, `transitive_transportation`, `transitive_place`), and vowel contractions for `도` and `야` suffixes (`마셔야 돼요`, `해도 돼요`, `가도 돼요`, `봐야 돼요`).
 
 ### 2. `semantic_test.js` (Contextual Generation Proof-of-Concept)
 A new script that proves the Semantic Vector architecture works. It contains a `generateSemanticSentence()` algorithm that:
