@@ -20,9 +20,18 @@ Contains the 10-element schema array for Language Units (Vocabulary and Grammar)
 * **Semantic Vectors (NEW):** We have added a 10th element: a human-readable JSON string defining the semantic domain, polarity, and logical constraints of the word. E.g., `{"domain":"consume", "req":"food", "prod":"satiety", "polarity": 1}`. 
 * **Current State:** 
     * All vocabulary and grammar from `words0.js` (SUOBI00 through SUOBI20) have been successfully imported and tested.
-    * **360+ units (SUOBI00 through SUOBI13, plus devtest items)** have been tagged with Semantic Tags and Semantic Vectors.
-    * Recent completed batches: SUOBI08 (31 units), SUOBI09 (50 units), SUOBI10 (44 units), SUOBI11 (24 units), SUOBI12 (39 units), SUOBI13 (50 units) — totaling 238 units verified with 100% unit coverage and clean passes across all exhaustive and validation tests.
-    * Morphology updates: irregular pronoun contraction support (`누가를` -> `누구를`, `누가에게` -> `누구에게`, `누가는` -> `누구는`, `누가도` -> `누구도`), verb phrase expansions (`transitive_sports`, `transitive_transportation`, `transitive_place`), and vowel contractions for `도` and `야` suffixes (`마셔야 돼요`, `해도 돼요`, `가도 돼요`, `봐야 돼요`).
+    * **100% of all language units in `data.js` (754 units, SUOBI00 through SUOBI20)** now have complete Semantic Tags and Semantic Vectors.
+    * Recent completed batches: 
+      - SUOBI17 (31 units): 100% coverage (31/31), 2,189 generated sentences validated with 0 errors.
+      - SUOBI18 (27 units): 100% coverage (27/27), 1,142 generated sentences validated with 0 errors.
+      - SUOBI19 (20 units): 100% coverage (20/20), 1,533 generated sentences validated with 0 errors.
+      - SUOBI20 (23 units): 100% coverage (23/23), 762 generated sentences validated with 0 errors.
+      - Fixed stray double-comma syntax elision in `data.js` and completed semantic vectors for 6 early grammar entries in SUOBI00/SUOBI02.
+    * Morphology updates: 
+      - Irregular pronoun contraction support (`누가를` -> `누구를`, `누가에게` -> `누구에게`, `누가는` -> `누구는`, `누가도` -> `누구도`).
+      - Verb phrase expansions (`transitive_sports`, `transitive_transportation`, `transitive_place`).
+      - Vowel contractions for `도` and `야` suffixes (`마셔야 돼요`, `해도 돼요`, `가도 돼요`, `봐야 돼요`).
+      - Vowel contractions for `ㅐ`, `ㅓ`, `ㅔ` stems with `어`/`었` (`보내다` + `어요`/`었어요` -> `보내요`/`보냈어요`; `서다` + `어요`/`었어요` -> `서요`/`섰어요`).
 
 ### 2. `semantic_test.js` (Contextual Generation Proof-of-Concept)
 A new script that proves the Semantic Vector architecture works. It contains a `generateSemanticSentence()` algorithm that:
@@ -46,6 +55,5 @@ A robust, centralized module that handles complex rules of Korean text manipulat
 
 ## Next Steps for the Next Agent
 
-1. **Batch Process Remaining Semantic Vectors**: There are roughly 500 language units left in `data.js` that need Semantic Vectors. Write a script to batch-process them or continue the manual processing in chunks. The emerging schema involves 4 types: Nouns (Entities), Action Verbs (Events), Descriptive Verbs (States), and Grammar (Logic Gates).
-2. **Continue Bulk Migration (`words1.js`)**: Once semantic vectors are stable, continue migrating the units from `words1.js`. The user enforces a very strict workflow: Migrate one or two sections at a time and IMMEDIATELY run `node exhaustive.js [SourceTag]` to validate the morphology.
-3. **Phase 2 (UI Development) [ON HOLD]**: Wait for the user to explicitly green-light moving to Phase 2. Once they do, build `index.html` and `index.css` with a premium, highly polished aesthetic (modern fonts, smooth micro-animations, rich colors, glassmorphism) tailored for the Web UI. Harness the LUT tokens to easily toggle/filter units in the study UI.
+1. **Continue Bulk Migration (`words1.js`)**: All units from `words0.js` (SUOBI00 through SUOBI20) are 100% complete and tagged with semantic vectors. Proceed to migrating language units from `words1.js`. The user enforces a very strict workflow: Migrate one or two sections at a time and IMMEDIATELY run `node exhaustive.js [SourceTag]` to validate the morphology.
+2. **Phase 2 (UI Development) [ON HOLD]**: Wait for the user to explicitly green-light moving to Phase 2. Once they do, build `index.html` and `index.css` with a premium, highly polished aesthetic (modern fonts, smooth micro-animations, rich colors, glassmorphism) tailored for the Web UI. Harness the LUT tokens to easily toggle/filter units in the study UI.

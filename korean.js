@@ -1195,6 +1195,9 @@ function applyMorphology(text) {
                 const newChar = String.fromCharCode(44032 + (initial * 588) + (14 * 28) + 0); // 14 is 'ㅝ'
                 return newChar + suffix;
             }
+            if ((medial === 1 || medial === 4 || medial === 5) && jongseong === 0) { // 'ㅐ', 'ㅓ', 'ㅔ' vowel (보내 + 어요 -> 보내요, 서 + 어요 -> 서요)
+                return prevChar + suffix;
+            }
         }
         return match;
     });
@@ -1213,6 +1216,10 @@ function applyMorphology(text) {
             if (medial === 13 && jongseong === 0) { // 'ㅜ' vowel, no batchim (배우 + 었어요 -> 배웠어요)
                 const initial = Math.floor(code / 588);
                 const newChar = String.fromCharCode(44032 + (initial * 588) + (14 * 28) + 20); // 14 is 'ㅝ', 20 is 'ㅆ'
+                return newChar + suffix;
+            }
+            if ((medial === 1 || medial === 4 || medial === 5) && jongseong === 0) { // 'ㅐ', 'ㅓ', 'ㅔ' vowel (보내 + 었어요 -> 보냈어요)
+                const newChar = String.fromCharCode(prevChar.charCodeAt(0) + 20); // 20 is 'ㅆ'
                 return newChar + suffix;
             }
         }
