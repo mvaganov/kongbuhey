@@ -52,6 +52,7 @@ A robust, centralized module that handles complex rules of Korean text manipulat
     - **Tensification (경음화)**: `학교` -> `[학꾜]`, `식당` -> `[식땅]`, `약국` -> `[약꾹]`, `갈 거예요` -> `[갈 꺼예요]`.
     - **Aspiration & ㅎ Rules (격음화 및 ㅎ 탈락)**: `좋아요` -> `[조아]`, `많아요` -> `[마나]`, `도착해요` -> `[도차캐요]`, `깨끗해요` -> `[깨끄태요]`, `복잡해요` -> `[복짜패요]`.
     - **Palatalization (구개음화)**: `같이` -> `[가치]`, `굳이` -> `[구지]`, `끝이` -> `[끄치]`.
+    - **Explicit Exceptions Reference**: For full documentation of statutory exceptions to the standard pronunciation rules (e.g., `밟다 [밥따]`, `맑게 [말께]`, substantive morpheme boundary liaison `밭 아래 [바다래]`, lateralization exceptions `생산량 [생산냥]`, saisori tensification, and 'ㄴ' insertion), see [pronunciation_exceptions.md](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/pronunciation_exceptions.md).
 *   **Semantic Generation**: Houses `generateSemanticSentence(template, context)` and `SemanticConfig` migrated from `exhaustive.js`.
 *   **Language Unit Tree (LUT)**: `generateSemanticSentence` produces `{ ko, context, tree }` tracking the hierarchical tree of language unit IDs / templates used to produce the sentence.
 *   **Tree Ingestion / Reconstruction**: `reconstructFromLanguageUnitTree(tree)` ingests the LUT and reproduces the identical pre-morphology sentence string.
@@ -67,4 +68,5 @@ A robust, centralized module that handles complex rules of Korean text manipulat
 ## Next Steps for the Next Agent
 
 1. **Continue Bulk Migration (`words1.js`)**: All units from `words0.js` (SUOBI00 through SUOBI20) are 100% complete and tagged with semantic vectors. Proceed to migrating language units from `words1.js`. The user enforces a very strict workflow: Migrate one or two sections at a time and IMMEDIATELY run `node exhaustive.js [SourceTag]` to validate the morphology.
-2. **Phase 2 (UI Development) [ON HOLD]**: Wait for the user to explicitly green-light moving to Phase 2. Once they do, build `index.html` and `index.css` with a premium, highly polished aesthetic (modern fonts, smooth micro-animations, rich colors, glassmorphism) tailored for the Web UI. Harness the LUT tokens to easily toggle/filter units in the study UI.
+2. **Pronunciation Rule Exceptions [DEFERRED]**: Consult [pronunciation_exceptions.md](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/pronunciation_exceptions.md) for explicit exceptions (substantive morpheme boundaries like `옷 안 [오단]`, verb stem dissimilations like `맑게 [말께]`, non-lateralizing Sino-Korean words like `생산량 [생산냥]`). Implement these in `korean.js` later when green-lit.
+3. **Phase 2 (UI Development) [ON HOLD]**: Wait for the user to explicitly green-light moving to Phase 2. Once they do, build `index.html` and `index.css` with a premium, highly polished aesthetic (modern fonts, smooth micro-animations, rich colors, glassmorphism) tailored for the Web UI. Harness the LUT tokens to easily toggle/filter units in the study UI.
