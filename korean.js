@@ -1229,11 +1229,369 @@ function applyMorphology(text) {
     return resolvedKo;
 }
 
+// =========================================================================
+// Standard Korean Pronunciation (표준 발음법) Engine
+// Implements the official phonetic rules published by the
+// National Institute of Korean Language (국립국어원 표준 발음법)
+// =========================================================================
+
+const HANGUL_INITIALS = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+const HANGUL_MEDIALS = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
+const HANGUL_FINALS = ['', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+
+function decomposeHangul(char) {
+    const code = char.charCodeAt(0) - 0xAC00;
+    if (code < 0 || code >= 11172) return null;
+    const initial = Math.floor(code / 588);
+    const medial = Math.floor((code % 588) / 28);
+    const final = code % 28;
+    return { initial, medial, final };
+}
+
+function composeHangul(initial, medial, final = 0) {
+    return String.fromCharCode(0xAC00 + (initial * 588) + (medial * 28) + final);
+}
+
+// Map single final to initial consonant counterpart (for liaison before vowel)
+const FINAL_TO_INITIAL = {
+    1: 0,   // ㄱ -> ㄱ
+    2: 1,   // ㄲ -> ㄲ
+    4: 2,   // ㄴ -> ㄴ
+    7: 3,   // ㄷ -> ㄷ
+    8: 5,   // ㄹ -> ㄹ
+    16: 6,  // ㅁ -> ㅁ
+    17: 7,  // ㅂ -> ㅂ
+    19: 9,  // ㅅ -> ㅅ
+    20: 10, // ㅆ -> ㅆ
+    22: 12, // ㅈ -> ㅈ
+    23: 14, // ㅊ -> ㅊ
+    24: 15, // ㅋ -> ㅋ
+    25: 16, // ㅌ -> ㅌ
+    26: 17  // ㅍ -> ㅍ
+};
+
+// Tensification of initial consonants: ㄱ->ㄲ, ㄷ->ㄸ, ㅂ->ㅃ, ㅅ->ㅆ, ㅈ->ㅉ
+const TENSIFY_INITIAL = {
+    0: 1,   // ㄱ -> ㄲ
+    3: 4,   // ㄷ -> ㄸ
+    7: 8,   // ㅂ -> ㅃ
+    9: 10,  // ㅅ -> ㅆ
+    12: 13  // ㅈ -> ㅉ
+};
+
+// Known monosyllabic verb/adjective roots ending in nasal ㄴ/ㅁ that trigger tensification on consonant endings
+const NASAL_VERB_ROOTS = new Set(['신', '안', '앉', '삼', '젊', '닮', '감', '품', '숨', '넘']);
+
+function getPronunciationWord(word) {
+    const chars = [];
+    const hangulIndices = [];
+
+    for (let i = 0; i < word.length; i++) {
+        const d = decomposeHangul(word[i]);
+        if (d) {
+            chars.push(d);
+            hangulIndices.push(chars.length - 1);
+        } else {
+            chars.push(word[i]);
+        }
+    }
+
+    if (hangulIndices.length === 0) return word;
+
+    const H = hangulIndices.map(idx => chars[idx]);
+    const originalSyllables = hangulIndices.map(idx => word[idx]);
+
+    // Pass 1: Consonant + ㅢ -> ㅣ (제5항 다만 1)
+    for (let i = 0; i < H.length; i++) {
+        if (H[i].initial !== 11 && H[i].medial === 19) { // not ㅇ, vowel is ㅢ
+            H[i].medial = 20; // ㅣ
+        }
+    }
+
+    // Pass 2: Palatalization (구개음화 - 제17항: ㄷ, ㅌ + 이/여 -> ㅈ, ㅊ)
+    for (let i = 0; i < H.length - 1; i++) {
+        const cur = H[i];
+        const next = H[i + 1];
+
+        if (next.initial === 11 && (next.medial === 20 || next.medial === 6)) { // ㅇ + ㅣ / ㅕ
+            if (cur.final === 7) { // ㄷ + 이 -> [지]
+                cur.final = 0;
+                next.initial = 12; // ㅈ
+            } else if (cur.final === 25) { // ㅌ + 이 -> [치]
+                cur.final = 0;
+                next.initial = 14; // ㅊ
+            } else if (cur.final === 13) { // ㄾ + 이 -> [ㄹ치]
+                cur.final = 8; // ㄹ
+                next.initial = 14; // ㅊ
+            }
+        } else if (next.initial === 18 && (next.medial === 20 || next.medial === 6)) { // ㄷ + 히 -> [치]
+            if (cur.final === 7) {
+                cur.final = 0;
+                next.initial = 14; // ㅊ
+            }
+        }
+    }
+
+    // Pass 3: ㅎ assimilation & merging (격음화 및 ㅎ 탈락 - 제12항)
+    for (let i = 0; i < H.length - 1; i++) {
+        const cur = H[i];
+        const next = H[i + 1];
+
+        // Case A: cur.final contains ㅎ
+        if (cur.final === 27) { // ㅎ
+            if (next.initial === 11) { // followed by vowel
+                cur.final = 0; // drops
+            } else if (next.initial === 0) { // + ㄱ -> ㅋ
+                cur.final = 0; next.initial = 15;
+            } else if (next.initial === 3) { // + ㄷ -> ㅌ
+                cur.final = 0; next.initial = 16;
+            } else if (next.initial === 12) { // + ㅈ -> ㅊ
+                cur.final = 0; next.initial = 14;
+            } else if (next.initial === 9) { // + ㅅ -> ㅆ
+                cur.final = 0; next.initial = 10;
+            } else if (next.initial === 2) { // + ㄴ -> ㄴ
+                cur.final = 4; // [ㄴ]
+            }
+        } else if (cur.final === 6) { // ㄶ (ㄴㅎ)
+            if (next.initial === 11) { // followed by vowel -> [ㄴ] transfers
+                cur.final = 0; next.initial = 2; // ㄴ
+            } else if (next.initial === 0) { // + ㄱ -> ㅋ
+                cur.final = 4; next.initial = 15;
+            } else if (next.initial === 3) { // + ㄷ -> ㅌ
+                cur.final = 4; next.initial = 16;
+            } else if (next.initial === 12) { // + ㅈ -> ㅊ
+                cur.final = 4; next.initial = 14;
+            } else if (next.initial === 9) { // + ㅅ -> ㅆ
+                cur.final = 4; next.initial = 10;
+            } else if (next.initial === 2) { // + ㄴ -> ㄴ
+                cur.final = 4;
+            }
+        } else if (cur.final === 15) { // ㅀ (ㄹㅎ)
+            if (next.initial === 11) { // followed by vowel -> [ㄹ] transfers
+                cur.final = 0; next.initial = 5; // ㄹ
+            } else if (next.initial === 0) { // + ㄱ -> ㅋ
+                cur.final = 8; next.initial = 15;
+            } else if (next.initial === 3) { // + ㄷ -> ㅌ
+                cur.final = 8; next.initial = 16;
+            } else if (next.initial === 12) { // + ㅈ -> ㅊ
+                cur.final = 8; next.initial = 14;
+            } else if (next.initial === 9) { // + ㅅ -> ㅆ
+                cur.final = 8; next.initial = 10;
+            } else if (next.initial === 2) { // + ㄴ -> ㄹㄹ
+                cur.final = 8; next.initial = 5;
+            }
+        }
+        // Case B: next.initial is ㅎ (18) preceded by stop codas
+        else if (next.initial === 18) {
+            // ㄱ-family
+            if ([1, 2, 3, 24].includes(cur.final)) { // ㄱ, ㄲ, ㄳ, ㅋ
+                cur.final = 0; next.initial = 15; // ㅋ
+            } else if (cur.final === 9) { // ㄺ
+                cur.final = 8; next.initial = 15; // ㅋ
+            }
+            // ㄷ-family
+            else if ([7, 19, 20, 25].includes(cur.final)) { // ㄷ, ㅅ, ㅆ, ㅌ
+                cur.final = 0; next.initial = 16; // ㅌ
+            } else if ([22, 23].includes(cur.final)) { // ㅈ, ㅊ
+                cur.final = 0; next.initial = 14; // ㅊ
+            } else if (cur.final === 5) { // ㄵ
+                cur.final = 4; next.initial = 14; // ㅊ
+            }
+            // ㅂ-family
+            else if ([17, 14, 18, 26].includes(cur.final)) { // ㅂ, ㄿ, ㅄ, ㅍ
+                cur.final = 0; next.initial = 17; // ㅍ
+            } else if (cur.final === 11) { // ㄼ
+                cur.final = 8; next.initial = 17; // ㅍ
+            }
+        }
+    }
+
+    // Pass 4: Special merger: ㅅ/ㅆ coda before ㅅ onset (e.g. 있습니다 -> 이씀니다)
+    for (let i = 0; i < H.length - 1; i++) {
+        const cur = H[i];
+        const next = H[i + 1];
+        if ((cur.final === 19 || cur.final === 20) && next.initial === 9) { // ㅅ or ㅆ + ㅅ
+            cur.final = 0;
+            next.initial = 10; // ㅆ
+        } else if (cur.final === 18 && next.initial === 9) { // ㅄ + ㅅ -> ㅂ + ㅆ
+            cur.final = 17; // ㅂ
+            next.initial = 10; // ㅆ
+        }
+    }
+
+    // Pass 5: Liaison (연음 법칙 - 제13항, 제14항)
+    for (let i = 0; i < H.length - 1; i++) {
+        const cur = H[i];
+        const next = H[i + 1];
+
+        if (cur.final > 0 && cur.final !== 21 && next.initial === 11) { // coda > 0, not ㅇ (21), next onset is ㅇ (11)
+            if (FINAL_TO_INITIAL[cur.final] !== undefined) {
+                // Single coda (or ㄲ, ㅆ)
+                next.initial = FINAL_TO_INITIAL[cur.final];
+                cur.final = 0;
+            } else {
+                // Double codas (겹받침)
+                switch (cur.final) {
+                    case 3: // ㄳ -> ㄱ, ㅆ
+                        cur.final = 1; next.initial = 10; break;
+                    case 5: // ㄵ -> ㄴ, ㅈ
+                        cur.final = 4; next.initial = 12; break;
+                    case 6: // ㄶ -> ㄴ
+                        cur.final = 0; next.initial = 2; break;
+                    case 9: // ㄺ -> ㄹ, ㄱ
+                        cur.final = 8; next.initial = 0; break;
+                    case 10: // ㄻ -> ㄹ, ㅁ
+                        cur.final = 8; next.initial = 6; break;
+                    case 11: // ㄼ -> ㄹ, ㅂ
+                        cur.final = 8; next.initial = 7; break;
+                    case 12: // ㄽ -> ㄹ, ㅆ
+                        cur.final = 8; next.initial = 10; break;
+                    case 13: // ㄾ -> ㄹ, ㅌ
+                        cur.final = 8; next.initial = 16; break;
+                    case 14: // ㄿ -> ㄹ, ㅍ
+                        cur.final = 8; next.initial = 17; break;
+                    case 15: // ㅀ -> ㄹ
+                        cur.final = 0; next.initial = 5; break;
+                    case 18: // ㅄ -> ㅂ, ㅆ
+                        cur.final = 17; next.initial = 10; break;
+                }
+            }
+        }
+    }
+
+    // Pass 6: Coda Simplification / Neutralization (자음군 단순화 & 음절 끝소리 규칙 - 제8~11항)
+    for (let i = 0; i < H.length; i++) {
+        const cur = H[i];
+        const next = (i < H.length - 1) ? H[i + 1] : null;
+
+        if (cur.final > 0) {
+            // Double codas
+            if (cur.final === 3) cur.final = 1; // ㄳ -> ㄱ
+            else if (cur.final === 5) cur.final = 4; // ㄵ -> ㄴ
+            else if (cur.final === 6) cur.final = 4; // ㄶ -> ㄴ
+            else if (cur.final === 12) cur.final = 8; // ㄽ -> ㄹ
+            else if (cur.final === 13) cur.final = 8; // ㄾ -> ㄹ
+            else if (cur.final === 14) cur.final = 17; // ㄿ -> ㅂ
+            else if (cur.final === 15) cur.final = 8; // ㅀ -> ㄹ
+            else if (cur.final === 18) cur.final = 17; // ㅄ -> ㅂ
+            else if (cur.final === 10) cur.final = 16; // ㄻ -> ㅁ
+            else if (cur.final === 11) { // ㄼ -> ㅂ if '밟' before consonant, else ㄹ
+                if (originalSyllables[i] === '밟') {
+                    cur.final = 17; // ㅂ
+                } else {
+                    cur.final = 8; // ㄹ
+                }
+            } else if (cur.final === 9) { // ㄺ -> ㄹ before ㄱ onset, else ㄱ
+                if (next && next.initial === 0) {
+                    cur.final = 8; // ㄹ
+                } else {
+                    cur.final = 1; // ㄱ
+                }
+            }
+
+            // Single coda neutralization (7 representative codas: 1:ㄱ, 4:ㄴ, 7:ㄷ, 8:ㄹ, 16:ㅁ, 17:ㅂ, 21:ㅇ)
+            if (cur.final === 2 || cur.final === 24) cur.final = 1; // ㄲ, ㅋ -> ㄱ
+            else if ([19, 20, 22, 23, 25, 27].includes(cur.final)) cur.final = 7; // ㅅ, ㅆ, ㅈ, ㅊ, ㅌ, ㅎ -> ㄷ
+            else if (cur.final === 26) cur.final = 17; // ㅍ -> ㅂ
+        }
+    }
+
+    // Pass 7: Tensification (경음화 - 제23항, 제24항, 제27항)
+    for (let i = 0; i < H.length - 1; i++) {
+        const cur = H[i];
+        const next = H[i + 1];
+
+        // 7A: After stop codas [ㄱ (1), ㄷ (7), ㅂ (17)]
+        if (cur.final === 1 || cur.final === 7 || cur.final === 17) {
+            if (TENSIFY_INITIAL[next.initial] !== undefined) {
+                next.initial = TENSIFY_INITIAL[next.initial];
+            }
+        }
+        // 7B: Verb stems ending in nasal (ㄴ, ㅁ) before consonant endings (-다, -고, -지, -자)
+        else if ((cur.final === 4 || cur.final === 16) && NASAL_VERB_ROOTS.has(originalSyllables[i])) {
+            const nextOriginalDecomposed = decomposeHangul(originalSyllables[i + 1]);
+            if (nextOriginalDecomposed && nextOriginalDecomposed.initial !== 11) { // originally NOT vowel
+                if (TENSIFY_INITIAL[next.initial] !== undefined) {
+                    next.initial = TENSIFY_INITIAL[next.initial];
+                }
+            }
+        }
+        // 7C: Modifier -(으)ㄹ before 거예요, 것, 수, 줄
+        else if (cur.final === 8) {
+            if (next.initial === 0 && next.medial === 4) { // 거 (in 거예요 / 것)
+                next.initial = 1; // ㄲ
+            } else if (next.initial === 9 && next.medial === 13) { // 수
+                next.initial = 10; // ㅆ
+            } else if (next.initial === 12 && next.medial === 13) { // 줄
+                next.initial = 13; // ㅉ
+            }
+        }
+    }
+
+    // Pass 8: Nasalization (비음화 - 제18항, 제19항)
+    for (let i = 0; i < H.length - 1; i++) {
+        const cur = H[i];
+        const next = H[i + 1];
+
+        // 8A: ㄹ nasalization after ㅁ (16), ㅇ (21), ㄱ (1), ㅂ (17), ㄷ (7)
+        if (next.initial === 5) { // next onset is ㄹ
+            if (cur.final === 16 || cur.final === 21) { // ㅁ, ㅇ + ㄹ -> ㅁ/ㅇ + ㄴ
+                next.initial = 2; // ㄴ
+            } else if (cur.final === 1) { // ㄱ + ㄹ -> ㅇ + ㄴ
+                cur.final = 21; next.initial = 2;
+            } else if (cur.final === 17) { // ㅂ + ㄹ -> ㅁ + ㄴ
+                cur.final = 16; next.initial = 2;
+            } else if (cur.final === 7) { // ㄷ + ㄹ -> ㄴ + ㄴ
+                cur.final = 4; next.initial = 2;
+            }
+        }
+
+        // 8B: Stop codas before ㄴ (2) or ㅁ (6)
+        if (next.initial === 2 || next.initial === 6) {
+            if (cur.final === 1) cur.final = 21; // ㄱ -> ㅇ
+            else if (cur.final === 7) cur.final = 4; // ㄷ -> ㄴ
+            else if (cur.final === 17) cur.final = 16; // ㅂ -> ㅁ
+        }
+    }
+
+    // Pass 9: Lateralization (유음화 - 제20항: ㄴ+ㄹ -> ㄹ+ㄹ, ㄹ+ㄴ -> ㄹ+ㄹ)
+    for (let i = 0; i < H.length - 1; i++) {
+        const cur = H[i];
+        const next = H[i + 1];
+
+        if (cur.final === 4 && next.initial === 5) { // ㄴ + ㄹ -> ㄹ + ㄹ
+            cur.final = 8; // ㄹ
+        } else if (cur.final === 8 && next.initial === 2) { // ㄹ + ㄴ -> ㄹ + ㄹ
+            next.initial = 5; // ㄹ
+        }
+    }
+
+    // Reassemble syllables
+    for (let i = 0; i < hangulIndices.length; i++) {
+        const idx = hangulIndices[i];
+        chars[idx] = composeHangul(H[i].initial, H[i].medial, H[i].final);
+    }
+
+    return chars.join('');
+}
+
+function getPronunciation(text) {
+    if (!text || typeof text !== 'string') return text;
+
+    // Process contiguous Hangul sequences, preserving whitespace and punctuation
+    return text.replace(/([가-힣]+)/g, (match) => {
+        return getPronunciationWord(match);
+    });
+}
+
 // Support both Node.js (for scripts) and Browser (for the app)
 const exportedMembers = { 
     hasBatchim, 
     getStem, 
     applyMorphology, 
+    decomposeHangul,
+    composeHangul,
+    getPronunciation,
     getFilteredWords, 
     setCurrentUsageFilter, 
     getTokenOptions, 

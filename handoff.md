@@ -42,6 +42,16 @@ A new script that proves the Semantic Vector architecture works. It contains a `
 ### 3. `korean.js` (Morphology & Semantic Generation Engine)
 A robust, centralized module that handles complex rules of Korean text manipulation and semantic generation:
 *   Exports `applyMorphology(text)` (handles batchim, vowel harmony, honorific infixes, irregular verbs, contractions).
+*   **Standard Korean Pronunciation Engine (`getPronunciation(text)`)**:
+    - Converts Hangul strings into their official phonetic pronunciation (in Hangul), implementing the National Institute of Korean Language standard rules (국립국어원 표준 발음법):
+    - **Liaison (연음 법칙)**: `한국어` -> `[한구거]`, `밥을` -> `[바블]`, `꽃이` -> `[꼬치]`.
+    - **Double Batchim Simplification (자음군 단순화)**: `닭` -> `[닥]`, `값` -> `[갑]`, `앉다` -> `[안따]`; with vowel liaison: `닭이` -> `[달기]`, `값이` -> `[갑씨]`, `앉아요` -> `[안자요]`.
+    - **Coda Neutralization (음절 끝소리 규칙)**: 7 representative codas [ㄱ, ㄴ, ㄷ, ㄹ, ㅁ, ㅂ, ㅇ] (`꽃` -> `[꼳]`, `옷` -> `[옫]`).
+    - **Nasalization (비음화)**: `한국말` -> `[한궁말]`, `국물` -> `[궁물]`, `밥물` -> `[밤물]`, `먹습니다` -> `[먹씀니다]`, `갑니다` -> `[감니다]`, `독립` -> `[동닙]`, `심리` -> `[심니]`.
+    - **Lateralization (유음화)**: `신라` -> `[실라]`, `설날` -> `[설랄]`, `칼날` -> `[칼랄]`.
+    - **Tensification (경음화)**: `학교` -> `[학꾜]`, `식당` -> `[식땅]`, `약국` -> `[약꾹]`, `갈 거예요` -> `[갈 꺼예요]`.
+    - **Aspiration & ㅎ Rules (격음화 및 ㅎ 탈락)**: `좋아요` -> `[조아]`, `많아요` -> `[마나]`, `도착해요` -> `[도차캐요]`, `깨끗해요` -> `[깨끄태요]`, `복잡해요` -> `[복짜패요]`.
+    - **Palatalization (구개음화)**: `같이` -> `[가치]`, `굳이` -> `[구지]`, `끝이` -> `[끄치]`.
 *   **Semantic Generation**: Houses `generateSemanticSentence(template, context)` and `SemanticConfig` migrated from `exhaustive.js`.
 *   **Language Unit Tree (LUT)**: `generateSemanticSentence` produces `{ ko, context, tree }` tracking the hierarchical tree of language unit IDs / templates used to produce the sentence.
 *   **Tree Ingestion / Reconstruction**: `reconstructFromLanguageUnitTree(tree)` ingests the LUT and reproduces the identical pre-morphology sentence string.
@@ -50,6 +60,7 @@ A robust, centralized module that handles complex rules of Korean text manipulat
 ### 4. `generator.js` & `exhaustive.js`
 `generator.js` takes templates and randomly injects vocabulary. `exhaustive.js` runs Cartesian tests.
 *   `exhaustive.js` supports `--tokens` (`--token`, `--lut`) CLI argument to print URL-safe Base64 LUT tokens inline next to generated sentences (e.g. `미국은 [CAAkAA]`).
+*   `exhaustive.js` supports `--pronunciation` (`--pronounce`, `--pr`, `--pron`) CLI argument to optionally append standard Hangul pronunciation after every generated phrase (e.g. `미국은 [미구근]`, `먹습니다 [먹씀니다]`). Both flags can be used together (e.g. `미국은 [미구근] [CAAkAA]`).
 
 ---
 

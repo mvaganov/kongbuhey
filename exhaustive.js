@@ -1,36 +1,42 @@
 const { getPartOfSpeechCached, DATA_SCHEMA, cache, KR_EN_languageUnits, hasTag } = require('./data.js');
-const { 
-	applyMorphology, 
-	getFilteredWords, 
-	setCurrentUsageFilter, 
-	generateTemplateOptions, 
+const {
+	applyMorphology,
+	getFilteredWords,
+	setCurrentUsageFilter,
+	generateTemplateOptions,
 	generateTemplateTokenOptions,
-	getTotalOptionsCut, 
-	resetTotalOptionsCut, 
-	hasBatchim, 
-	getStem, 
-	markUnitUsed, 
-	getUsedUnitIds, 
-	resetUsedUnits, 
-	SemanticConfig, 
-	generateSemanticSentence, 
+	getTotalOptionsCut,
+	resetTotalOptionsCut,
+	hasBatchim,
+	getStem,
+	markUnitUsed,
+	getUsedUnitIds,
+	resetUsedUnits,
+	SemanticConfig,
+	generateSemanticSentence,
 	reconstructFromLanguageUnitTree,
 	flattenLanguageUnitTree,
 	encodeLanguageUnitIds,
 	decodeLanguageUnitIds,
 	findGrammarUnitForTemplate,
-	parseSemanticVector, 
-	getRandom 
+	parseSemanticVector,
+	getRandom,
+	getPronunciation
 } = require('./korean.js');
 const fs = require('fs');
 
 let showTokens = false;
+let showPronunciation = false;
 var requestedTags = undefined;
 if (process.argv.length > 2) {
 	for (let i = 2; i < process.argv.length; ++i) {
 		let arg = process.argv[i];
 		if (arg === '--tokens' || arg === '--token' || arg === '--lut' || arg === 'tokens') {
 			showTokens = true;
+			continue;
+		}
+		if (arg === '--pronunciation' || arg === '--pronounce' || arg === '--pr' || arg === '--pron' || arg === 'pronunciation') {
+			showPronunciation = true;
 			continue;
 		}
 		let posTags = getPartOfSpeechCached(arg);
@@ -50,12 +56,16 @@ function generateExhaustive(template, grammarUnit) {
 	return unresolvedCombinations.map(c => {
 		if (c && c.units) c.units.forEach(u => markUnitUsed(u));
 		const s = applyMorphology(c.text);
+		let formatted = s;
+		if (showPronunciation) {
+			formatted += ` \"${getPronunciation(s)}\"`;
+		}
 		if (showTokens && grammarUnit) {
 			const unitIds = [grammarUnit[DATA_SCHEMA.Id], ...(c.units || []).map(u => u[DATA_SCHEMA.Id])];
 			const token = encodeLanguageUnitIds(unitIds);
-			return `${s} [${token}]`;
+			formatted += ` [${token}]`;
 		}
-		return s;
+		return { raw: s, formatted: formatted };
 	});
 }
 
@@ -137,6 +147,9 @@ function runSemanticTests(currentGrammarUnits) {
 			}
 
 			let line = `  Sample ${i + 1}: ${resolved}`;
+			if (showPronunciation) {
+				line += ` [${getPronunciation(resolved)}]`;
+			}
 			if (showTokens && res.tree) {
 				const token = encodeLanguageUnitIds(res.tree);
 				line += ` [${token}]`;
@@ -169,6 +182,9 @@ function runSemanticTests(currentGrammarUnits) {
 					}
 
 					let line = `  Sample ${i + 1}: ${resolved}`;
+					if (showPronunciation) {
+						line += ` [${getPronunciation(resolved)}]`;
+					}
 					if (showTokens && res.tree) {
 						const token = encodeLanguageUnitIds(res.tree);
 						line += ` [${token}]`;
@@ -204,9 +220,9 @@ templates.forEach(({ formula, grammarUnit }, index) => {
 	if (generated.length > 0) {
 		markUnitUsed(grammarUnit);
 	}
-	generated.forEach(s => {
-		validateSentence(s, formula);
-		outputStr += s + "\n";
+	generated.forEach(item => {
+		validateSentence(item.raw, formula);
+		outputStr += item.formatted + "\n";
 	});
 	let cutCount = getTotalOptionsCut();
 	if (cutCount > 0) {
