@@ -18,6 +18,24 @@ const hasTag = dataModule.hasTag || function(unit, ...tags) {
     return tags.some(t => unitTags.includes(t));
 };
 
+// --- Proper Names (User-editable collection of common Korean names) ---
+let properNames = ["민수", "지훈", "수진"];
+
+function getProperNames() {
+    return properNames;
+}
+
+function setProperNames(names) {
+    if (Array.isArray(names)) {
+        properNames = [...names];
+    }
+}
+
+function getRandomProperName() {
+    if (!properNames || properNames.length === 0) return "민수";
+    return properNames[Math.floor(Math.random() * properNames.length)];
+}
+
 let currentUsageFilter = null;
 let totalOptionsCutToPreventCombinatorialExplosion = 0;
 
@@ -113,7 +131,14 @@ function getTokenOptions(token, depth = 0) {
     const Conjugation = DATA_SCHEMA.Conjugation;
     const SemanticTags = DATA_SCHEMA.SemanticTags;
     
-    if (token.type === "N" || token.type === "N_Phrase") {
+    if (token.type === "Name" || token.isProperName || (token.type === "N" && (token.tag === "name" || token.tag === "properName"))) {
+        const name = getRandomProperName();
+        options = [new TokenOption(name, [])];
+    } else if (token.type === "properNoun") {
+        const seeGrammar = getFilteredWords("Grammar").find(g => g[KoreanWord] === "씨") || getWords("Grammar").find(g => g[KoreanWord] === "씨");
+        const name = getRandomProperName();
+        options = [new TokenOption(name + "씨", seeGrammar ? [seeGrammar] : [])];
+    } else if (token.type === "N" || token.type === "N_Phrase") {
         options = getFilteredWords("Noun", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
     } else if (token.type === "AVst") {
         options = getFilteredWords("Action Verb", token.tag).map(w => new TokenOption(getConjugatedStem(w[KoreanWord], w[Conjugation]), [w]));
@@ -210,7 +235,14 @@ function generateTemplateTokenOptions(template, depth = 0) {
 
     while ((match = tokenRegex.exec(template)) !== null) {
         parts.push(template.substring(lastIndex, match.index));
-        tokens.push({ type: match[1], tag: match[2], full: match[0] });
+        const afterToken = template.substring(tokenRegex.lastIndex);
+        const isBeforeSsi = match[1] === "N" && (afterToken.startsWith("씨") || afterToken.startsWith(" 씨"));
+        tokens.push({ 
+            type: match[1], 
+            tag: match[2], 
+            full: match[0],
+            isProperName: isBeforeSsi || match[1] === "Name" || match[2] === "properName" || match[2] === "name"
+        });
         lastIndex = tokenRegex.lastIndex;
     }
     parts.push(template.substring(lastIndex));
@@ -328,6 +360,8 @@ function findGrammarUnitForTemplate(template) {
     // Attempt fuzzy match by trimming whitespace
     const trimmed = template.trim();
     if (map.has(trimmed)) return map.get(trimmed);
+    if ((trimmed === "{Name}씨" || trimmed === "{Name} 씨" || trimmed === "{N} 씨") && map.has("{N}씨")) return map.get("{N}씨");
+    if ((trimmed === "{N}씨" || trimmed === "{Name} 씨" || trimmed === "{N} 씨") && map.has("{Name}씨")) return map.get("{Name}씨");
     return null;
 }
 
@@ -540,6 +574,13 @@ function expandSemanticClause(depth, currentContext) {
 }
 
 function expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint) {
+    if (tokenType === "Name" || tag === "name" || tag === "properName") {
+        return { text: getRandomProperName(), unit: null };
+    }
+    if (tokenType === "properNoun") {
+        const seeGrammar = getFilteredWords("Grammar").find(g => g[DATA_SCHEMA.Korean] === "씨") || getWords("Grammar").find(g => g[DATA_SCHEMA.Korean] === "씨");
+        return { text: getRandomProperName() + "씨", unit: seeGrammar || null };
+    }
     let posToFetch = "Noun";
     if (tokenType === "Number") posToFetch = "Number";
     else if (tokenType === "Adv") posToFetch = "Adverb";
@@ -622,7 +663,18 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
         let replacementKo = "";
         let childNode = null;
 
-        if (tokenType === "VP_AVst" || tokenType === "AVst") {
+        const afterToken = koResult.substring(match.index + token.length);
+        const isProperName = tokenType === "Name" || tag === "properName" || tag === "name" || (tokenType === "N" && (afterToken.startsWith("씨") || afterToken.startsWith(" 씨")));
+
+        if (isProperName) {
+            replacementKo = getRandomProperName();
+            childNode = replacementKo;
+        } else if (tokenType === "properNoun") {
+            const seeGrammar = getFilteredWords("Grammar").find(g => g[DATA_SCHEMA.Korean] === "씨") || getWords("Grammar").find(g => g[DATA_SCHEMA.Korean] === "씨");
+            const name = getRandomProperName();
+            replacementKo = name + "씨";
+            childNode = seeGrammar ? [seeGrammar[DATA_SCHEMA.Id], name] : replacementKo;
+        } else if (tokenType === "VP_AVst" || tokenType === "AVst") {
             const exp = expandSemanticActionVerb(tokenType, currentContext, applyConstraint);
             replacementKo = exp.text;
             if (exp.verb) {
@@ -1618,7 +1670,11 @@ const exportedMembers = {
     reconstructFromLanguageUnitTree,
     flattenLanguageUnitTree,
     encodeLanguageUnitIds,
-    decodeLanguageUnitIds
+    decodeLanguageUnitIds,
+    properNames,
+    getProperNames,
+    setProperNames,
+    getRandomProperName
 };
 
 if (typeof window !== 'undefined') {

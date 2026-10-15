@@ -51,7 +51,7 @@ const KR_EN_languageUnits = [
 	["감사하다", "to be thankful", "Descriptive Verb", ["greeting", "emotion"], "", "hada", "SUOBI01", "Formal", "", '{"domain":"state", "req":"person", "polarity":1}'],
 	["괜찮다", "to be okay", "Descriptive Verb", ["emotion"], "", "regular", "SUOBI01", "", "", '{"domain":"state", "req":"any", "polarity":1}'],
 	["죄송하다", "to be sorry", "Descriptive Verb", ["emotion"], "", "hada", "SUOBI01", "Formal", "", '{"domain":"state", "req":"person", "polarity":-1}'],
-	["씨", "Mr./Ms.", "Noun", ["person", "honorific"], "", "", "SUOBI01", "", "Attached to names", '{"logic":"honorific"}'],
+	["씨", "Mr./Ms.", "Grammar", ["properNoun", "person", "honorific"], "Attached to names", ["{N}씨"], "SUOBI01", "", "Attached to names", '{"domain":"person", "traits":["properNoun", "honorific"], "logic":"honorific"}'],
 	["학생", "student", "Noun", ["person", "profession", "sinoRoot"], "", "", "SUOBI01", "", "", '{"domain":"person", "traits":["profession"]}'],
 	["회사원", "company worker", "Noun", ["person", "profession", "sinoRoot"], "", "", "SUOBI01", "", "", '{"domain":"person", "traits":["profession"]}'],
 	["아니요", "no", "Exclamation", ["greeting"], "", "", "SUOBI01", "Polite", "", '{"logic":"negative"}'],

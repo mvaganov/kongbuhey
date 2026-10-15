@@ -32,6 +32,7 @@ Contains the 10-element schema array for Language Units (Vocabulary and Grammar)
       - Verb phrase expansions (`transitive_sports`, `transitive_transportation`, `transitive_place`).
       - Vowel contractions for `도` and `야` suffixes (`마셔야 돼요`, `해도 돼요`, `가도 돼요`, `봐야 돼요`).
       - Vowel contractions for `ㅐ`, `ㅓ`, `ㅔ` stems with `어`/`었` (`보내다` + `어요`/`었어요` -> `보내요`/`보냈어요`; `서다` + `어요`/`었어요` -> `서요`/`섰어요`).
+      - Transitioned "씨" from Noun to Grammar with formula `["{N}씨"]` resulting in a proper noun clause; added modular `properNames` list (`["민수", "지훈", "수진"]`) with `getProperNames()` / `setProperNames()` for random name injection.
 
 ### 2. `semantic_test.js` (Contextual Generation Proof-of-Concept)
 A new script that proves the Semantic Vector architecture works. It contains a `generateSemanticSentence()` algorithm that:
