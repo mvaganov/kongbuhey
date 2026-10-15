@@ -1236,14 +1236,14 @@ function applyMorphology(text) {
 
     resolvedKo = resolvedKo.replace(/오아(요|서|도|야)/g, (m, s) => "와" + s);
     resolvedKo = resolvedKo.replace(/오았어요/g, "왔어요");
-    resolvedKo = resolvedKo.replace(/하여(요|서|도|야)/g, (m, s) => "해" + s);
+    resolvedKo = resolvedKo.replace(/하여(요|서|도|야|지|져|졌)/g, (m, s) => "해" + s);
     resolvedKo = resolvedKo.replace(/하였어요/g, "했어요");
     resolvedKo = resolvedKo.replace(/마시(아|어)(요|서|도|야)/g, (m, v, s) => "마셔" + s);
     resolvedKo = resolvedKo.replace(/크(아|어)(요|서|도|야)/g, (m, v, s) => "커" + s);
     resolvedKo = resolvedKo.replace(/이어요/g, "이에요");
 
     // Generic 이 + 어 = 여 and ㅜ + 어 = 워 contraction
-    resolvedKo = resolvedKo.replace(/([가-힣])어(요|서|도|야)/g, (match, prevChar, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])어(요|서|도|야|지|져|졌)/g, (match, prevChar, suffix) => {
         const code = prevChar.charCodeAt(0) - 44032;
         if (code >= 0) {
             const medial = Math.floor(code / 28) % 21;

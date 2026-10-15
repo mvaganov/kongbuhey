@@ -57,6 +57,14 @@ function normalizeColumnName(col) {
     return found ? found.name : clean;
 }
 
+// --- Default Source Generator (::YYYYMMDD) ---
+function getDefaultSource(date = new Date()) {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    return `::${yyyy}${mm}${dd}`;
+}
+
 // --- Data Loading ---
 function loadData(filePath = DATA_FILE_PATH) {
     // Clear node cache to get fresh data
@@ -659,7 +667,24 @@ function executeUpdateFromFile(inputFile, explicitCols = null, options = {}) {
             updatedCount++;
             updatedIds.push(targetId);
         } else {
+            // Check if record is a section comment
+            if (rec.comment || rec._comment || rec.Comment) {
+                const commentText = rec.comment || rec._comment || rec.Comment;
+                const commentLine = commentText.startsWith('//') ? `\t${commentText}` : `\t// ${commentText}`;
+                if (!lines.some(l => l.trim() === commentLine.trim())) {
+                    let closeIdx = lines.findIndex(l => l.trim().startsWith('];'));
+                    if (closeIdx === -1) closeIdx = lines.length;
+                    lines.splice(closeIdx, 0, commentLine);
+                }
+                return;
+            }
+
             // Insert new row
+            const defaultSource = options.source || getDefaultSource();
+            const resolvedSource = (rec.Source && rec.Source.trim() && !options.source)
+                ? rec.Source.trim()
+                : (options.source || (rec.Source && rec.Source.trim()) || defaultSource);
+
             const newUnit = [
                 rec.Korean || "",
                 rec.English || "",
@@ -667,7 +692,7 @@ function executeUpdateFromFile(inputFile, explicitCols = null, options = {}) {
                 rec.SemanticTags || [],
                 rec.Disambiguation || "",
                 rec.Conjugation || "",
-                rec.Source || "SUOBI01",
+                resolvedSource,
                 rec.FormalityLevel || "",
                 rec.HonorificRules || "",
                 rec.SemanticVector || ""
@@ -690,6 +715,17 @@ function executeUpdateFromFile(inputFile, explicitCols = null, options = {}) {
             insertedCount++;
         }
     });
+
+    // If units were inserted, ensure the last unit in the array has no trailing comma
+    if (insertedCount > 0) {
+        let closeIdx = lines.findIndex(l => l.trim().startsWith('];'));
+        for (let i = closeIdx - 1; i >= 0; i--) {
+            if (lines[i].trim().startsWith('[') && !lines[i].trim().startsWith('//')) {
+                lines[i] = lines[i].replace(/,\s*$/, '');
+                break;
+            }
+        }
+    }
 
     if (!options.dryRun && (updatedCount > 0 || insertedCount > 0)) {
         writeDataFile(lines, dataPath);
@@ -815,6 +851,11 @@ function executeInsert(insertStr, options = {}) {
     const lines = fileContent.split('\n');
     const unitIndices = getUnitLineIndices(lines);
 
+    const defaultSource = options.source || getDefaultSource();
+    const resolvedSource = (record.Source && record.Source.trim() && !options.source)
+        ? record.Source.trim()
+        : (options.source || (record.Source && record.Source.trim()) || defaultSource);
+
     const newUnit = [
         record.Korean || "",
         record.English || "",
@@ -822,7 +863,7 @@ function executeInsert(insertStr, options = {}) {
         record.SemanticTags || [],
         record.Disambiguation || "",
         record.Conjugation || "",
-        record.Source || "SUOBI01",
+        resolvedSource,
         record.FormalityLevel || "",
         record.HonorificRules || "",
         record.SemanticVector || ""
@@ -980,6 +1021,12 @@ COMMANDS:
   DELETE FROM KR_EN_languageUnits WHERE <cond>
     Delete matching language units from data.js.
 
+OPTIONS:
+  --source, -s <name>   Source tag for newly inserted units (default: ::YYYYMMDD timestamp)
+  --format <fmt>        Output format for SELECT: json (default), jsonl, tsv, table, raw
+  --dry-run             Preview changes without modifying data.js
+  --data <path>         Target data file path (default: ./data.js)
+
 EXAMPLES:
   # 1. Query columns and output to file:
   node select.js SELECT Korean, English, Id, SemanticVector > output.txt
@@ -997,6 +1044,10 @@ EXAMPLES:
 
   # 5. Inline update:
   node select.js "UPDATE SET FormalityLevel = 'Formal' WHERE Korean = '감사하다'"
+
+  # 6. Insert new units with custom or default timestamp Source:
+  node select.js INSERT FROMFILE new_units.json --source class2012
+  node select.js "INSERT INTO KR_EN_languageUnits (Korean, English) VALUES ('사과', 'apple')"
 `);
 }
 
@@ -1011,6 +1062,7 @@ function runCli() {
     let format = null;
     let dryRun = false;
     let dataFile = DATA_FILE_PATH;
+    let source = null;
 
     const filteredArgs = [];
     for (let i = 0; i < rawArgs.length; i++) {
@@ -1021,6 +1073,10 @@ function runCli() {
             dryRun = true;
         } else if (arg === '--data' && i + 1 < rawArgs.length) {
             dataFile = rawArgs[++i];
+        } else if ((arg === '--source' || arg === '-s') && i + 1 < rawArgs.length) {
+            source = rawArgs[++i];
+        } else if (arg.startsWith('--source=')) {
+            source = arg.substring(9);
         } else {
             filteredArgs.push(arg);
         }
@@ -1033,7 +1089,7 @@ function runCli() {
     }
 
     try {
-        const result = execute(commandStr, { format, dryRun, dataFile });
+        const result = execute(commandStr, { format, dryRun, dataFile, source });
         if (result.results !== undefined) {
             // SELECT output
             console.log(formatResults(result.results, result.format));

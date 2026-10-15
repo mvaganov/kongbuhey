@@ -867,8 +867,30 @@ const KR_EN_languageUnits = [
 	["크리스마스트리", "Christmas tree", "Noun", ["object"], "", "", "SUOBI20", "", "", '{"domain":"entity", "type":"decoration", "traits":["holiday"]}'],
 	["한글날", "Hangul Proclamation day", "Noun", ["time", "event"], "", "", "SUOBI20", "", "", '{"domain":"culture", "type":"holiday", "traits":["hangul"], "polarity":1}'],
 	["휴가", "vacation", "Noun", ["time", "event"], "", "", "SUOBI20", "", "", '{"domain":"leisure", "type":"work_break", "polarity":1}'],
-	["휴일", "holiday", "Noun", ["time", "event"], "", "", "SUOBI20", "", "", '{"domain":"time", "type":"day_off", "polarity":1}']
+	["휴일", "holiday", "Noun", ["time", "event"], "", "", "SUOBI20", "", "", '{"domain":"time", "type":"day_off", "polarity":1}'],
 
+	// Vocabulary from class2011
+	["건강하다", "healthy", "Descriptive Verb", ["descriptive_person", "descriptive_general"], "", "hada", "class2011", "", "", '{"domain":"state", "req":"person", "polarity":1}'],
+	["광고 회사", "advertising company", "Noun", ["place"], "", "", "class2011", "", "", '{"domain":"place", "traits":["facility", "work", "advertising"]}'],
+	["그만두다", "to quit/leave", "Action Verb", ["transitive_general"], "", "regular", "class2011", "", "", '{"domain":"action", "req":"activity", "prod":"ceased", "polarity":-1}'],
+	["다니다", "to attend/go", "Action Verb", ["intransitive_motion", "intransitive_place"], "", "regular", "class2011", "", "", '{"domain":"motion", "req":"place", "traits":["regular_commute"], "polarity":0}'],
+	["무역 회사", "trading company", "Noun", ["place"], "", "", "class2011", "", "", '{"domain":"place", "traits":["facility", "work", "trade"]}'],
+	["방송국", "broadcasting station", "Noun", ["place"], "", "", "class2011", "", "", '{"domain":"place", "traits":["facility", "broadcasting"]}'],
+	["사귀다", "to make friends with", "Action Verb", ["transitive_person"], "", "regular", "class2011", "", "", '{"domain":"social", "req":"person", "prod":"friendship", "polarity":1}'],
+	["신문사", "newspaper company", "Noun", ["place"], "", "", "class2011", "", "", '{"domain":"place", "traits":["facility", "work", "newspaper"]}'],
+	["오랜만이다", "to have been a long time", "Descriptive Verb", ["greeting", "descriptive_general"], "", "regular", "class2011", "", "", '{"domain":"social", "traits":["greeting", "reunion"], "polarity":1}'],
+	["익숙하다", "to be familiar", "Descriptive Verb", ["descriptive_general"], "", "hada", "class2011", "", "", '{"domain":"state", "req":"any", "traits":["familiar"], "polarity":1}'],
+	["잡지사", "magazine company", "Noun", ["place"], "", "", "class2011", "", "", '{"domain":"place", "traits":["facility", "work", "magazine"]}'],
+	["점점", "gradually", "Adverb", ["degree"], "", "", "class2011", "", "", '{"domain":"modifier", "traits":["gradual", "progressive"], "polarity":0}'],
+	["즐겁다", "to be pleasant/joyful", "Descriptive Verb", ["descriptive_general", "descriptive_person", "emotion"], "", "b_irregular", "class2011", "", "", '{"domain":"emotion", "req":"person", "traits":["pleasant", "joyful"], "polarity":1}'],
+	["지내다", "to spend time/get along", "Action Verb", ["intransitive_general"], "", "regular", "class2011", "", "", '{"domain":"state", "req":"person", "traits":["living", "routine"], "polarity":0}'],
+	["직장", "workplace", "Noun", ["place"], "", "", "class2011", "", "", '{"domain":"place", "traits":["facility", "work"]}'],
+	["출근하다", "to go to work", "Action Verb", ["intransitive_general", "intransitive_place"], "", "hada", "class2011", "", "", '{"domain":"activity", "req":"person", "traits":["work", "commute"], "polarity":0}'],
+	["출판사", "publisher", "Noun", ["place"], "", "", "class2011", "", "", '{"domain":"place", "traits":["facility", "work", "publishing"]}'],
+	["항공사", "airline", "Noun", ["place"], "", "", "class2011", "", "", '{"domain":"place", "traits":["facility", "transportation", "airline"]}'],
+	// Grammar from class2011
+	["-게", "so that / in a manner of (adverbial)", "Grammar", [], "", ["{DVst}게 {VP_AVst}아/어요"], "class2011", "", "", '{"logic":"adverbial", "domain":"manner"}'],
+	["-어지다", "to become / get (changed state)", "Grammar", [], "", ["{DVst}아/어져요", "{DVst}아/어졌어요"], "class2011", "", "", '{"logic":"change_of_state", "domain":"aspect", "prod":"become"}']
 ];
 
 // Navigate to language units in the cache with `cache[partsOfSpeech][tag]`, or `cache[source]._all`
