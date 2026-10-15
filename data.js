@@ -2,7 +2,7 @@ const DATA_SCHEMA = {
 	Korean: 0,
 	English: 1,
 	PartofSpeech: 2,
-	SemanticTags: 3,
+	SemanticTags: 3, // Array<string> in raw definition; replaced with Set<string> when added to main language units list via addLearningUnit
 	Disambiguation: 4,
 	Conjugation: 5,
 	Source: 6,
@@ -10,7 +10,6 @@ const DATA_SCHEMA = {
 	HonorificRules: 8,
 	SemanticVector: 9,
 	Id: 10,
-	TagSet: 11,
 	0: 'Korean',
 	1: 'English',
 	2: 'PartofSpeech',
@@ -21,8 +20,7 @@ const DATA_SCHEMA = {
 	7: 'FormalityLevel',
 	8: 'HonorificRules',
 	9: 'SemanticVector',
-	10: 'Id',
-	11: 'TagSet'
+	10: 'Id'
 };
 Object.freeze(DATA_SCHEMA);
 
@@ -886,8 +884,9 @@ function addLearningUnit(unit) {
 
 	const pos = unit[DATA_SCHEMA.PartofSpeech];
 	const src = unit[DATA_SCHEMA.Source];
-	const tags = unit[DATA_SCHEMA.SemanticTags] || [];
-	unit[DATA_SCHEMA.TagSet] = new Set(tags);
+	const rawTags = unit[DATA_SCHEMA.SemanticTags] || [];
+	const tagsSet = (rawTags instanceof Set) ? rawTags : new Set(rawTags);
+	unit[DATA_SCHEMA.SemanticTags] = tagsSet;
 
 	if (!cache[pos]) {
 		cache[pos] = { _all: [] };
@@ -899,7 +898,7 @@ function addLearningUnit(unit) {
 	cache[pos]._all.push(unit);
 	cache[src]._all.push(unit);
 
-	tags.forEach(tag => {
+	tagsSet.forEach(tag => {
 		if (!cache[pos][tag]) {
 			cache[pos][tag] = [];
 		}
@@ -912,7 +911,7 @@ function addLearningUnit(unit) {
 			cache["Noun"] = { _all: [] };
 		}
 		cache["Noun"]._all.push(unit);
-		tags.forEach(tag => {
+		tagsSet.forEach(tag => {
 			if (!cache["Noun"][tag]) {
 				cache["Noun"][tag] = [];
 			}
@@ -926,7 +925,7 @@ function addLearningUnit(unit) {
 			cache["Adverb"] = { _all: [] };
 		}
 		cache["Adverb"]._all.push(unit);
-		tags.forEach(tag => {
+		tagsSet.forEach(tag => {
 			if (!cache["Adverb"][tag]) {
 				cache["Adverb"][tag] = [];
 			}
@@ -959,18 +958,20 @@ function getPartOfSpeechCached(tagName) {
 
 function hasTag(unit, ...tags) {
 	if (!unit) return false;
-	const tagSet = unit[DATA_SCHEMA.TagSet];
-	if (tagSet) {
-		if (tags.length === 1) return tagSet.has(tags[0]);
+	const unitTags = unit[DATA_SCHEMA.SemanticTags];
+	if (!unitTags) return false;
+	if (unitTags instanceof Set) {
+		if (tags.length === 1) return unitTags.has(tags[0]);
 		for (let i = 0; i < tags.length; i++) {
-			if (tagSet.has(tags[i])) return true;
+			if (unitTags.has(tags[i])) return true;
 		}
 		return false;
 	}
-	const unitTags = unit[DATA_SCHEMA.SemanticTags];
-	if (!Array.isArray(unitTags)) return false;
-	if (tags.length === 1) return unitTags.includes(tags[0]);
-	return tags.some(t => unitTags.includes(t));
+	if (Array.isArray(unitTags)) {
+		if (tags.length === 1) return unitTags.includes(tags[0]);
+		return tags.some(t => unitTags.includes(t));
+	}
+	return false;
 }
 
 if (typeof window !== 'undefined') {

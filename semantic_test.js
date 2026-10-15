@@ -1,4 +1,4 @@
-const { getWords, DATA_SCHEMA } = require('./data.js');
+const { getWords, DATA_SCHEMA, hasTag } = require('./data.js');
 const { applyMorphology, hasBatchim, getStem } = require('./korean.js');
 
 function getRandom(arr) {
@@ -70,14 +70,13 @@ function generateSemanticSentence(template, depth = 0, incomingContext = {}) {
 				let stem = getStem(word[KoreanWord]);
 				if (word[Conjugation] && word[Conjugation] !== "regular" && word[Conjugation] !== "") stem += `[${word[Conjugation]}]`;
 
-				const tags = word[Tags] || [];
-				if (tags.includes("transitive_food") || tags.includes("transitive_drink")) {
-					let nounWords = getWords("Noun", tags.includes("transitive_food") ? "food" : "drink");
+				if (hasTag(word, "transitive_food") || hasTag(word, "transitive_drink")) {
+					let nounWords = getWords("Noun", hasTag(word, "transitive_food") ? "food" : "drink");
 					nounWords = nounWords.filter(w => parseSemanticVector(w).domain);
 					const obj = getRandom(nounWords) || ["무엇"];
 					const particle = hasBatchim(obj[KoreanWord].slice(-1)) ? "을" : "를";
 					replacementKo = `${obj[KoreanWord]}${particle} ${stem}`;
-				} else if (tags.includes("intransitive_motion")) {
+				} else if (hasTag(word, "intransitive_motion")) {
 					let placeWords = getWords("Noun", "place").filter(w => parseSemanticVector(w).domain);
 					const place = getRandom(placeWords) || ["어디"];
 					replacementKo = `${place[KoreanWord]}에 ${stem}`;
@@ -118,7 +117,7 @@ function generateSemanticSentence(template, depth = 0, incomingContext = {}) {
 			}
 		}
 		else if (tokenType === "Clause" || tokenType === "VP") {
-			let grammars = getWords("Grammar").filter(g => g[Tags].includes("declarative"));
+			let grammars = getWords("Grammar").filter(g => hasTag(g, "declarative"));
 			grammars = grammars.filter(g => parseSemanticVector(g).logic); // force devtest grammar
 			const grammar = getRandom(grammars);
 

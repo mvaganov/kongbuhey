@@ -7,15 +7,19 @@ if (typeof require !== 'undefined') {
 const { getWords, DATA_SCHEMA } = dataModule;
 const hasTag = dataModule.hasTag || function(unit, ...tags) {
     if (!unit) return false;
-    const tagSet = unit[DATA_SCHEMA.TagSet];
-    if (tagSet) {
-        if (tags.length === 1) return tagSet.has(tags[0]);
-        for (let i = 0; i < tags.length; i++) if (tagSet.has(tags[i])) return true;
-        return false;
+    const unitTags = unit[DATA_SCHEMA.SemanticTags];
+    if (unitTags) {
+        if (unitTags instanceof Set) {
+            if (tags.length === 1) return unitTags.has(tags[0]);
+            for (let i = 0; i < tags.length; i++) if (unitTags.has(tags[i])) return true;
+            return false;
+        }
+        if (Array.isArray(unitTags)) {
+            if (tags.length === 1) return unitTags.includes(tags[0]);
+            return tags.some(t => unitTags.includes(t));
+        }
     }
-    const unitTags = unit[DATA_SCHEMA.SemanticTags] || [];
-    if (tags.length === 1) return unitTags.includes(tags[0]);
-    return tags.some(t => unitTags.includes(t));
+    return false;
 };
 
 // --- Proper Names (User-editable collection of common Korean names) ---
@@ -59,8 +63,15 @@ function getFilteredWords(pos, tag) {
             const source = w[DATA_SCHEMA.Source];
             let isAllowed = currentUsageFilter[source] || hasTag(w, "devtest");
             if (!isAllowed) {
-                const tags = w[DATA_SCHEMA.SemanticTags] || [];
-                isAllowed = tags.some(t => currentUsageFilter[t]);
+                const tags = w[DATA_SCHEMA.SemanticTags];
+                if (tags) {
+                    for (let t of tags) {
+                        if (currentUsageFilter[t]) {
+                            isAllowed = true;
+                            break;
+                        }
+                    }
+                }
             }
             return isAllowed;
         });

@@ -16,7 +16,7 @@
 Contains the 10-element schema array for Language Units (Vocabulary and Grammar):
 `[Korean, English, Part of Speech, [Semantic Tags], Disambiguation, Conjugation Rules/Formula, Source Variable, Formality Level, Honorific Rules, Semantic Vector, id]`
 
-* **Semantic Tags:** Used to ensure sentences are structurally logical (e.g., `transitive_food` verbs only pair with `food` or `drink` nouns).
+* **Semantic Tags:** Used to ensure sentences are structurally logical (e.g., `transitive_food` verbs only pair with `food` or `drink` nouns). Defined as `Array<string>` in raw data and converted in-place to `Set<string>` via `addLearningUnit` for $O(1)$ lookup performance without redundant `TagSet` storage.
 * **Semantic Vectors (NEW):** We have added a 10th element: a human-readable JSON string defining the semantic domain, polarity, and logical constraints of the word. E.g., `{"domain":"consume", "req":"food", "prod":"satiety", "polarity": 1}`. 
 * **Current State:** 
     * All vocabulary and grammar from `words0.js` (SUOBI00 through SUOBI20) have been successfully imported and tested.

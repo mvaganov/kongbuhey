@@ -245,15 +245,13 @@ function generateCoverageReport(filter) {
 		inScopeUnits = KR_EN_languageUnits.filter(u => {
 			const src = u[DATA_SCHEMA.Source];
 			if (filter[src]) return true;
-			const tagSet = u[DATA_SCHEMA.TagSet];
-			if (tagSet) {
-				for (let t of tagSet) {
+			const tags = u[DATA_SCHEMA.SemanticTags];
+			if (tags) {
+				for (let t of tags) {
 					if (filter[t]) return true;
 				}
-				return false;
 			}
-			const tags = u[DATA_SCHEMA.SemanticTags] || [];
-			return tags.some(t => filter[t]);
+			return false;
 		});
 	} else {
 		scopeName = "All Units (Entire Curriculum)";
@@ -290,7 +288,7 @@ function generateCoverageReport(filter) {
 			const en = unit[DATA_SCHEMA.English];
 			const pos = unit[DATA_SCHEMA.PartofSpeech];
 			const src = unit[DATA_SCHEMA.Source];
-			const tags = (unit[DATA_SCHEMA.SemanticTags] || []).join(", ");
+			const tags = Array.from(unit[DATA_SCHEMA.SemanticTags] || []).join(", ");
 			const tagStr = tags ? ` [tags: ${tags}]` : "";
 			reportLines.push(`  [ID ${id}] ${ko} (${pos}, ${src}) - "${en}"${tagStr}`);
 		});
