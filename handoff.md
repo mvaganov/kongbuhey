@@ -64,6 +64,16 @@ A robust, centralized module that handles complex rules of Korean text manipulat
 *   `exhaustive.js` supports `--tokens` (`--token`, `--lut`) CLI argument to print URL-safe Base64 LUT tokens inline next to generated sentences (e.g. `미국은 [CAAkAA]`).
 *   `exhaustive.js` supports `--pronunciation` (`--pronounce`, `--pr`, `--pron`) CLI argument to optionally append standard Hangul pronunciation after every generated phrase (e.g. `미국은 [미구근]`, `먹습니다 [먹씀니다]`). Both flags can be used together (e.g. `미국은 [미구근] [CAAkAA]`).
 
+### 5. `select.js` (SQL-like Data Subsetting & Batch Modification Tool)
+Pure JavaScript CLI and programmatic module for querying, exporting, and updating subsets of `KR_EN_languageUnits` in `data.js` without loading all 750+ units into LLM context:
+*   **Querying (`SELECT`)**: Filter by columns (`Korean`, `English`, `Id`, `SemanticVector`, `SemanticTags`, `Source`, etc.), condition (`WHERE Source = 'SUOBI01' AND SemanticTags CONTAINS 'food'`), order, and limit (`LIMIT 10`). Output formats include `json` (default), `jsonl`, `tsv`, `table` (ASCII), and `raw` (JS array literal).
+*   **File Update Workflow (`UPDATE ... FROMFILE`)**:
+    *   Export subset: `node select.js SELECT Korean, English, Id, SemanticVector WHERE Source = 'SUOBI01' > output.txt`
+    *   Agent/user performs targeted inspection or edits in `output.txt`.
+    *   Update back to `data.js`: `node select.js UPDATE Korean, English, Id, SemanticVector FROMFILE output.txt`
+    *   Also supports `--dry-run` to preview changes safely without writing.
+*   **Safety & Comment Preservation**: In-place line-mapping modifies target rows directly without disturbing comments (such as `// Vocabulary from SUOBI01`), validates syntax via temporary files before committing, and automatically supports Windows UTF-16LE, UTF-8 BOM, and standard UTF-8 encodings.
+
 ---
 
 ## Next Steps for the Next Agent
