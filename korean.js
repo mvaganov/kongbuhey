@@ -136,6 +136,127 @@ function deduplicateTokenOptions(options) {
     return Array.from(seen.values());
 }
 
+// --- Korean Number Generators ---
+const SINO_DIGITS = ["", "일", "이", "삼", "사", "오", "육", "칠", "팔", "구"];
+const PURE_KOREAN_TENS = ["", "열", "스물", "서른", "마흔", "쉰", "예순", "일흔", "여든", "아흔"];
+const PURE_KOREAN_ONES_CARDINAL = ["", "하나", "둘", "셋", "넷", "다섯", "여섯", "일곱", "여덟", "아홉"];
+const PURE_KOREAN_ONES_ATTRIBUTIVE = ["", "한", "두", "세", "네", "다섯", "여섯", "일곱", "여덟", "아홉"];
+
+function getSinoNumber(n) {
+    if (n === 0) return "영";
+    if (n === 10000) return "만";
+    if (n < 0 || n > 10000) throw new Error(`Sino-Korean numbers supported for 0..10000, got ${n}`);
+    
+    let result = "";
+    const thousands = Math.floor(n / 1000);
+    if (thousands > 0) {
+        result += (thousands === 1 ? "천" : SINO_DIGITS[thousands] + "천");
+    }
+    const hundreds = Math.floor((n % 1000) / 100);
+    if (hundreds > 0) {
+        result += (hundreds === 1 ? "백" : SINO_DIGITS[hundreds] + "백");
+    }
+    const tens = Math.floor((n % 100) / 10);
+    if (tens > 0) {
+        result += (tens === 1 ? "십" : SINO_DIGITS[tens] + "십");
+    }
+    const ones = n % 10;
+    if (ones > 0) {
+        result += SINO_DIGITS[ones];
+    }
+    return result;
+}
+
+function getKoreanNumber(n, isAttributive = false) {
+    if (n === 0) return "영";
+    if (n < 0 || n > 99) throw new Error(`Pure Korean numbers supported for 0..99, got ${n}`);
+    
+    // Exactly 20 has special attributive form "스무"
+    if (n === 20 && isAttributive) {
+        return "스무";
+    }
+    
+    const tens = Math.floor(n / 10);
+    const ones = n % 10;
+    const onesArr = isAttributive ? PURE_KOREAN_ONES_ATTRIBUTIVE : PURE_KOREAN_ONES_CARDINAL;
+    
+    if (tens === 0) {
+        return onesArr[ones];
+    }
+    if (ones === 0) {
+        return PURE_KOREAN_TENS[tens];
+    }
+    return PURE_KOREAN_TENS[tens] + onesArr[ones];
+}
+
+const KOREAN_NUMBER_VALUES = {
+    // Pure Korean
+    "영": 0,
+    "하나": 1, "한": 1,
+    "둘": 2, "두": 2,
+    "셋": 3, "세": 3,
+    "넷": 4, "네": 4,
+    "다섯": 5, "여섯": 6, "일곱": 7, "여덟": 8, "아홉": 9,
+    "열": 10,
+    "열하나": 11, "열한": 11,
+    "열둘": 12, "열두": 12,
+    "열셋": 13, "열세": 13,
+    "열넷": 14, "열네": 14,
+    "열다섯": 15, "열여섯": 16, "열일곱": 17, "열여덟": 18, "열아홉": 19,
+    "스물": 20, "스무": 20,
+    "서른": 30, "마흔": 40, "쉰": 50, "예순": 60, "일흔": 70, "여든": 80, "아흔": 90,
+    // Sino-Korean
+    "일": 1, "이": 2, "삼": 3, "사": 4, "오": 5, "육": 6, "칠": 7, "팔": 8, "구": 9,
+    "십": 10, "이십": 20, "삼십": 30, "사십": 40, "오십": 50,
+    "육십": 60, "칠십": 70, "팔십": 80, "구십": 90,
+    "백": 100, "천": 1000, "만": 10000
+};
+
+function getNumberTokenOptions(baseTag, min, max, isAttributive) {
+    const options = [];
+    const KoreanWord = DATA_SCHEMA.Korean;
+    const words = getFilteredWords("Number", baseTag);
+
+    // If small range (<= 10), generate all numbers in range
+    if (max - min + 1 <= 10) {
+        for (let i = min; i <= max; i++) {
+            const text = (baseTag === "sinoNumber") ? getSinoNumber(i) : getKoreanNumber(i, isAttributive);
+            const matchingUnit = words.find(w => w[KoreanWord] === text);
+            options.push(new TokenOption(text, matchingUnit ? [matchingUnit] : []));
+        }
+        return deduplicateTokenOptions(options);
+    }
+
+    // For larger ranges, ensure all relevant in-scope units are included to guarantee curriculum coverage
+    words.forEach(w => {
+        // Skip explicitly opposite-mode units
+        if (isAttributive && hasTag(w, "counting") && !hasTag(w, "attributive")) return;
+        if (!isAttributive && hasTag(w, "attributive") && !hasTag(w, "counting")) return;
+        const val = KOREAN_NUMBER_VALUES[w[KoreanWord]];
+        if (val !== undefined && (val < min || val > max)) return;
+        options.push(new TokenOption(w[KoreanWord], [w]));
+    });
+
+    // Also include boundary values and sample composites
+    const sampleNumbers = [min, max];
+    if (min + 1 < max) sampleNumbers.push(min + 1);
+    if (max - 1 > min) sampleNumbers.push(max - 1);
+    const mid1 = Math.floor(min + (max - min) * 0.25);
+    const mid2 = Math.floor(min + (max - min) * 0.5);
+    const mid3 = Math.floor(min + (max - min) * 0.75);
+    sampleNumbers.push(mid1, mid2, mid3);
+
+    sampleNumbers.forEach(n => {
+        if (n >= min && n <= max) {
+            const text = (baseTag === "sinoNumber") ? getSinoNumber(n) : getKoreanNumber(n, isAttributive);
+            const matchingUnit = words.find(w => w[KoreanWord] === text);
+            options.push(new TokenOption(text, matchingUnit ? [matchingUnit] : []));
+        }
+    });
+
+    return deduplicateTokenOptions(options);
+}
+
 function getTokenOptions(token, depth = 0) {
     let options = [];
     const KoreanWord = DATA_SCHEMA.Korean;
@@ -149,14 +270,29 @@ function getTokenOptions(token, depth = 0) {
         const seeGrammar = getFilteredWords("Grammar").find(g => g[KoreanWord] === "씨") || getWords("Grammar").find(g => g[KoreanWord] === "씨");
         const name = getRandomProperName();
         options = [new TokenOption(name + "씨", seeGrammar ? [seeGrammar] : [])];
-    } else if (token.type === "N" || token.type === "N_Phrase") {
+    } else if (token.type === "N" || token.type === "Noun" || token.type === "N_Phrase") {
         options = getFilteredWords("Noun", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
     } else if (token.type === "AVst") {
         options = getFilteredWords("Action Verb", token.tag).map(w => new TokenOption(getConjugatedStem(w[KoreanWord], w[Conjugation]), [w]));
     } else if (token.type === "DVst") {
         options = getFilteredWords("Descriptive Verb", token.tag).map(w => new TokenOption(getConjugatedStem(w[KoreanWord], w[Conjugation]), [w]));
     } else if (token.type === "Number") {
-        options = getFilteredWords("Number", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
+        const rangeMatch = token.tag ? token.tag.match(/^([a-zA-Z_]+)\((\d+)\s*,\s*(\d+)\)$/) : null;
+        if (rangeMatch) {
+            const baseTag = rangeMatch[1];
+            const min = parseInt(rangeMatch[2], 10);
+            const max = parseInt(rangeMatch[3], 10);
+            const isAttributive = !!token.isFollowedByMeasureWord;
+            options = getNumberTokenOptions(baseTag, min, max, isAttributive);
+        } else {
+            let words = getFilteredWords("Number", token.tag);
+            if (token.isFollowedByMeasureWord) {
+                words = words.filter(w => !hasTag(w, "counting") || hasTag(w, "attributive"));
+            } else {
+                words = words.filter(w => !hasTag(w, "attributive") || hasTag(w, "counting"));
+            }
+            options = words.map(w => new TokenOption(w[KoreanWord], [w]));
+        }
     } else if (token.type === "Adv") {
         options = getFilteredWords("Adverb", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
     } else if (token.type === "Exclamation") {
@@ -247,12 +383,14 @@ function generateTemplateTokenOptions(template, depth = 0) {
     while ((match = tokenRegex.exec(template)) !== null) {
         parts.push(template.substring(lastIndex, match.index));
         const afterToken = template.substring(tokenRegex.lastIndex);
-        const isBeforeSsi = match[1] === "N" && (afterToken.startsWith("씨") || afterToken.startsWith(" 씨"));
+        const isBeforeSsi = (match[1] === "N" || match[1] === "Noun") && (afterToken.startsWith("씨") || afterToken.startsWith(" 씨"));
+        const isFollowedByMeasureWord = /^\s*\{(?:Noun|N):.*measureWord/i.test(afterToken) || /^\s*[가-힣]/.test(afterToken);
         tokens.push({ 
             type: match[1], 
             tag: match[2], 
             full: match[0],
-            isProperName: isBeforeSsi || match[1] === "Name" || match[2] === "properName" || match[2] === "name"
+            isProperName: isBeforeSsi || match[1] === "Name" || match[2] === "properName" || match[2] === "name",
+            isFollowedByMeasureWord: isFollowedByMeasureWord
         });
         lastIndex = tokenRegex.lastIndex;
     }
@@ -715,6 +853,28 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
             const exp = expandSemanticClause(depth, currentContext);
             replacementKo = exp.text;
             childNode = exp.tree;
+        } else if (tokenType === "Number" && tag && tag.includes("(")) {
+            const rangeMatch = tag.match(/^([a-zA-Z_]+)\((\d+)\s*,\s*(\d+)\)$/);
+            if (rangeMatch) {
+                const baseTag = rangeMatch[1];
+                const min = parseInt(rangeMatch[2], 10);
+                const max = parseInt(rangeMatch[3], 10);
+                const val = Math.floor(Math.random() * (max - min + 1)) + min;
+                const isFollowedByMeasureWord = /^\s*\{(?:Noun|N):.*measureWord/i.test(afterToken) || /^\s*[가-힣]/.test(afterToken);
+                replacementKo = (baseTag === "sinoNumber") ? getSinoNumber(val) : getKoreanNumber(val, isFollowedByMeasureWord);
+                const words = getFilteredWords("Number", baseTag);
+                const matchedUnit = words.find(w => w[DATA_SCHEMA.Korean] === replacementKo);
+                if (matchedUnit) {
+                    markUnitUsed(matchedUnit);
+                    childNode = matchedUnit[DATA_SCHEMA.Id];
+                } else {
+                    childNode = replacementKo;
+                }
+            } else {
+                const exp = expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint);
+                replacementKo = exp.text;
+                childNode = exp.unit ? exp.unit[DATA_SCHEMA.Id] : replacementKo;
+            }
         } else {
             const exp = expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint);
             replacementKo = exp.text;
@@ -1685,7 +1845,11 @@ const exportedMembers = {
     properNames,
     getProperNames,
     setProperNames,
-    getRandomProperName
+    getRandomProperName,
+    getSinoNumber,
+    getKoreanNumber,
+    getNumberTokenOptions,
+    KOREAN_NUMBER_VALUES
 };
 
 if (typeof window !== 'undefined') {

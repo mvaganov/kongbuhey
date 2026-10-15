@@ -27,6 +27,14 @@ Contains the 10-element schema array for Language Units (Vocabulary and Grammar)
       - SUOBI19 (20 units): 100% coverage (20/20), 1,533 generated sentences validated with 0 errors.
       - SUOBI20 (23 units): 100% coverage (23/23), 762 generated sentences validated with 0 errors.
       - `class2011` (20 units from `words1.js`): 100% coverage (20/20), 2,605 generated sentences validated with 0 errors. Inserted using `select.js INSERT FROMFILE`.
+      - **SUOBI06 Number Expansion**: Added 22 new Number units (Pure Korean cardinal counting `하나, 둘, 셋, 넷, 열하나, 열둘, 스물`, attributive `스무`, tens `서른, 마흔, 쉰, 예순, 일흔, 여든, 아흔`, and Sino-Korean `육십, 칠십, 팔십, 구십, 백, 천, 만`) and 6 new Grammar units for counting and measure word expressions:
+        1. `{Number:sinoNumber(1,10)} {Noun:sinoMeasureWord}`
+        2. `{Number:koreanNumber(1,10)} {Noun:koreanMeasureWord}`
+        3. `{Number:sinoNumber(1,10000)} {Noun:sinoMeasureWord}`
+        4. `{Number:koreanNumber(1,99)} {Noun:koreanMeasureWord}`
+        5. `{Number:sinoNumber(1,10000)}` (simple counting)
+        6. `{Number:koreanNumber(1,50)}` (simple counting)
+        SUOBI06 maintains 100% coverage (84/84 in-scope units used) and 0 morphology errors across 12,899 generated sentences.
     * Morphology updates: 
       - Irregular pronoun contraction support (`누가를` -> `누구를`, `누가에게` -> `누구에게`, `누가는` -> `누구는`, `누가도` -> `누구도`).
       - Verb phrase expansions (`transitive_sports`, `transitive_transportation`, `transitive_place`).
@@ -34,6 +42,8 @@ Contains the 10-element schema array for Language Units (Vocabulary and Grammar)
       - Vowel contractions for `ㅐ`, `ㅓ`, `ㅔ` stems with `어`/`었` (`보내다` + `어요`/`었어요` -> `보내요`/`보냈어요`; `서다` + `어요`/`었어요` -> `서요`/`섰어요`).
       - Vowel contractions and harmony for `-아/어지다` (`건강하여져요` -> `건강해져요`, `따뜻하여지다` -> `따뜻해지다`).
       - Transitioned "씨" from Noun to Grammar with formula `["{N}씨"]` resulting in a proper noun clause; added modular `properNames` list (`["민수", "지훈", "수진"]`) with `getProperNames()` / `setProperNames()` for random name injection.
+      - Number generation engines `getSinoNumber(n)` (0..10000) and `getKoreanNumber(n, isAttributive)` (0..99), handling pure Korean cardinal counting (`하나, 둘, 셋, 넷, 스물`) vs attributive before measure words (`한, 두, 세, 네, 스무`).
+      - Dedicated exhaustive test suite: `number_test.js` tests all 10,001 Sino-Korean numbers (0..10000) and 200 Pure Korean forms (0..99 cardinal + attributive), checking Hangul validity, pronunciation, milestones, and data consistency (30,630 assertions, 100% pass).
 
 ### 2. `semantic_test.js` (Contextual Generation Proof-of-Concept)
 A new script that proves the Semantic Vector architecture works. It contains a `generateSemanticSentence()` algorithm that:
