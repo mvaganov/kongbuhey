@@ -16,17 +16,18 @@
 Contains the 12-element schema array for Language Units (Vocabulary and Grammar):
 `[Id, Korean, English, Part of Speech, [Semantic Tags], Disambiguation, Conjugation Rules/Formula, Source Variable, PriorityScore, Formality Level, Honorific Rules, Semantic Vector]`
 
-* **Id (Position 0):** A dedicated first-class column at index 0 of every array row. Sized and initialized directly in the source data to prevent dynamic array reallocation, memory fragmentation, and property hacking at runtime.
-* **PriorityScore (Position 8, after Source):** A first-class column heavily informed by the Test of Proficiency in Korean (TOPIK I/II) and NIKL basic vocabulary rankings, quantized onto a 1–5 learner priority scale:
-  - **Tier 1 (Top Essential / Day 1)**: Top ~200 items (foundational pronouns `저/제`, copulas, survival verbs `가다/오다/먹다`, greetings `네/아니요/안녕하다/감사하다`).
+* **Id (Position 0):**
+* **PriorityScore (Position 8, after Source):** heavily informed by the Test of Proficiency in Korean (TOPIK I/II) and NIKL basic vocabulary rankings, quantized onto a 1–5 learner priority scale:
+  - **Tier 1 (Top Essential)**: Top ~200 items (foundational pronouns `저/제`, copulas, survival verbs `가다/오다/먹다`, greetings `네/아니요/안녕하다/감사하다`).
   - **Tier 2 (Core Beginner / TOPIK I Level 1)**: Top ~1,000 words (indispensable daily objects, question words, basic adjectives/verbs, core food/family).
   - **Tier 3 (Elementary / TOPIK I Level 2)**: Words ~1,000–2,500 (common situational vocabulary, transportation, weather, clothing, secondary professions).
   - **Tier 4 (Intermediate / TOPIK II Level 3–4)**: Words ~2,500–5,000 (secondary vocabulary, specialized services, secondary countries like `노르웨이`, `케냐`).
   - **Tier 5 (Advanced / Low Priority / Niche)**: Words 5,000+ (rare, situational, or cultural items like `세배하다`, `크리스마스트리`).
 * **Semantic Tags:** Used to ensure sentences are structurally logical (e.g., `transitive_food` verbs only pair with `food` or `drink` nouns). Defined as `Array<string>` in raw data and converted in-place to `Set<string>` via `addLearningUnit` for $O(1)$ lookup performance without redundant `TagSet` storage.
 * **Semantic Vectors:** A human-readable JSON string defining the semantic domain, polarity, and logical constraints of the word. E.g., `{"domain":"consume", "req":"food", "prod":"satiety", "polarity": 1}`. 
+
 * **Current State:** 
-    * **100% of all language units in `data.js` (802 units: SUOBI00 through SUOBI20, and class2011 from `words1.js`)** now have complete `Id`, `PriorityScore`, `SemanticTags`, and `SemanticVectors`.
+    * **100% of all language units in `data.js` (802 units: SUOBI00 through SUOBI20, and class2011 from `words1.js`)**.
     * Recent completed batches: 
       - SUOBI17 (31 units): 100% coverage (31/31), 2,189 generated sentences validated with 0 errors.
       - SUOBI18 (27 units): 100% coverage (27/27), 1,142 generated sentences validated with 0 errors.
@@ -51,13 +52,7 @@ Contains the 12-element schema array for Language Units (Vocabulary and Grammar)
       - Number generation engines `getSinoNumber(n)` (0..10000) and `getKoreanNumber(n, isAttributive)` (0..99), handling pure Korean cardinal counting (`하나, 둘, 셋, 넷, 스물`) vs attributive before measure words (`한, 두, 세, 네, 스무`).
       - Dedicated exhaustive test suite: `number_test.js` tests all 10,001 Sino-Korean numbers (0..10000) and 200 Pure Korean forms (0..99 cardinal + attributive), checking Hangul validity, pronunciation, milestones, and data consistency (30,630 assertions, 100% pass).
 
-### 2. `semantic_test.js` (Contextual Generation Proof-of-Concept)
-A new script that proves the Semantic Vector architecture works. It contains a `generateSemanticSentence()` algorithm that:
-*   Builds sentences sequentially, passing a `currentContext` object between clauses.
-*   Enforces logical rules (e.g., `으/니까` forces a positive cause to yield a positive effect; `는데` forces contrast).
-*   **Tunable Strictness:** Contains a `SemanticConfig` object that allows weighting the constraints (`0.0` = total random novelty, `1.0` = strict semantic adherence). This ensures the "mad-libs" absurdity is preserved, while specific grammars (like contrast) can have their strictness set to 1.0 to prevent complete nonsense.
-
-### 3. `korean.js` (Morphology & Semantic Generation Engine)
+### 2. `korean.js` (Morphology & Semantic Generation Engine)
 A robust, centralized module that handles complex rules of Korean text manipulation and semantic generation:
 *   Exports `applyMorphology(text)` (handles batchim, vowel harmony, honorific infixes, irregular verbs, contractions).
 *   **Standard Korean Pronunciation Engine (`getPronunciation(text)`)**:
@@ -72,16 +67,17 @@ A robust, centralized module that handles complex rules of Korean text manipulat
     - **Palatalization (구개음화)**: `같이` -> `[가치]`, `굳이` -> `[구지]`, `끝이` -> `[끄치]`.
     - **Explicit Exceptions Reference**: For full documentation of statutory exceptions to the standard pronunciation rules (e.g., `밟다 [밥따]`, `맑게 [말께]`, substantive morpheme boundary liaison `밭 아래 [바다래]`, lateralization exceptions `생산량 [생산냥]`, saisori tensification, and 'ㄴ' insertion), see [pronunciation_exceptions.md](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/pronunciation_exceptions.md).
 *   **Semantic Generation**: Houses `generateSemanticSentence(template, context)` and `SemanticConfig` migrated from `exhaustive.js`.
+*   **Tunable Strictness:** Contains a `SemanticConfig` object that allows weighting the constraints (`0.0` = total random novelty, `1.0` = strict semantic adherence). This ensures the "mad-libs" absurdity is preserved, while specific grammars (like contrast) can have their strictness set to 1.0 to prevent complete nonsense.
 *   **Language Unit Tree (LUT)**: `generateSemanticSentence` produces `{ ko, context, tree }` tracking the hierarchical tree of language unit IDs / templates used to produce the sentence.
 *   **Tree Ingestion / Reconstruction**: `reconstructFromLanguageUnitTree(tree)` ingests the LUT and reproduces the identical pre-morphology sentence string.
 *   **Flattening & Compact Base64 Encoding**: `flattenLanguageUnitTree(tree)` extracts unique unit IDs into a 1D array; `encodeLanguageUnitIds(idsOrTree)` and `decodeLanguageUnitIds(token)` serialize these IDs into a URL-safe, compact Base64 token for copy/pasting and UI toggling.
 
-### 4. `generator.js` & `exhaustive.js`
+### 3. `generator.js` & `exhaustive.js`
 `generator.js` takes templates and randomly injects vocabulary. `exhaustive.js` runs Cartesian tests.
 *   `exhaustive.js` supports `--tokens` (`--token`, `--lut`) CLI argument to print URL-safe Base64 LUT tokens inline next to generated sentences (e.g. `미국은 [CAAkAA]`).
-*   `exhaustive.js` supports `--pronunciation` (`--pronounce`, `--pr`, `--pron`) CLI argument to optionally append standard Hangul pronunciation after every generated phrase (e.g. `미국은 [미구근]`, `먹습니다 [먹씀니다]`). Both flags can be used together (e.g. `미국은 [미구근] [CAAkAA]`).
+*   `exhaustive.js` supports `--pronunciation` (`--pronounce`, `--pr`, `--pron`) CLI argument to optionally append standard Hangul pronunciation after every generated phrase (e.g. `미국은 "미구근"`, `먹습니다 "먹씀니다"`). Both flags can be used together (e.g. `미국은 "미구근" [CAAkAA]`).
 
-### 5. `select.js` (SQL-like Data Subsetting & Batch Modification Tool)
+### 4. `select.js` (SQL-like Data Subsetting & Batch Modification Tool)
 Pure JavaScript CLI and programmatic module for querying, exporting, and updating subsets of `KR_EN_languageUnits` in `data.js` without loading all 750+ units into LLM context:
 *   **Querying (`SELECT`)**: Filter by columns (`Korean`, `English`, `Id`, `SemanticVector`, `SemanticTags`, `Source`, etc.), condition (`WHERE Source = 'SUOBI01' AND SemanticTags CONTAINS 'food'`), order, and limit (`LIMIT 10`). Output formats include `json` (default), `jsonl`, `tsv`, `table` (ASCII), and `raw` (JS array literal).
 *   **File Update Workflow (`UPDATE ... FROMFILE`)**:
@@ -112,7 +108,7 @@ Pure JavaScript CLI and programmatic module for querying, exporting, and updatin
     *   Explicit `--format <fmt>` CLI flag or inline `FORMAT <fmt>` query keyword always overrides automatic detection.
 *   **Safety & Comment Preservation**: In-place line-mapping modifies target rows directly without disturbing comments (such as `// Vocabulary from SUOBI01`), validates syntax via temporary files before committing, and automatically supports Windows UTF-16LE, UTF-8 BOM, and standard UTF-8 encodings. Section comment records (`{ "comment": "// ..." }`) in input files are also preserved during insertion without duplication.
 
-### 6. `homonyms.js` (Korean Homonym, Stem & Phonetic Confusables Engine)
+### 5. `homonyms.js` (Korean Homonym, Stem & Phonetic Confusables Engine)
 Maps surface Hangul tokens to:
 1. **Direct Unit References (`number`)**: Direct vocabulary matches or base verb stems (e.g. `2` for `저`, `44` for `가`, `11` for `사람`).
 2. **Language Unit Trees (`Array`)**: Canonical LUTs `[grammarId, [childId]]` representing morphological combinations yielding that surface token or portmanteau (e.g. `간`: `[[644, [44]], ...]` from `가다` + `-(으)ㄴ`; `저는`: `[[36, [2]]]` from `저` + `은/는`; `누가`: `[[96, [30]], 66]` from `누구` + `이/가`).
@@ -128,6 +124,12 @@ Maps surface Hangul tokens to:
     *   `node homonyms.js top [10]`: Displays the most confusable tokens.
     *   `node homonyms.js least [10]`: Displays the least confusable tokens.
     *   `node homonyms.js stats`: Summary metrics of total tokens, direct units, LUTs, and phonetic links.
+*   **Full Dataset Ingestion Status**:
+    *   100% of all vocabulary units from `data.js` (SUOBI00 through SUOBI20, and `class2011`) are fully ingested.
+    *   **Total Tokens**: 1,517 distinct surface tokens.
+    *   **Total Entries**: 1,713 mapped references (1,013 direct units, 570 LUT combinations, and 130 mutual phonetic links).
+    *   **Strict Integrity**: 0 non-Hangul keys, 0 orphan confusable links.
+    *   Exhaustive test suite (`node exhaustive.js`) passes all 1,235 sentences with 0 errors.
 
 ---
 
