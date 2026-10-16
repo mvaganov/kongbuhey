@@ -13,14 +13,20 @@
 ## Current Architecture & Files
 
 ### 1. `data.js` (The Data Schema)
-Contains the 10-element schema array for Language Units (Vocabulary and Grammar):
-`[Korean, English, Part of Speech, [Semantic Tags], Disambiguation, Conjugation Rules/Formula, Source Variable, Formality Level, Honorific Rules, Semantic Vector, id]`
+Contains the 12-element schema array for Language Units (Vocabulary and Grammar):
+`[Id, Korean, English, Part of Speech, [Semantic Tags], Disambiguation, Conjugation Rules/Formula, Source Variable, PriorityScore, Formality Level, Honorific Rules, Semantic Vector]`
 
+* **Id (Position 0):** A dedicated first-class column at index 0 of every array row. Sized and initialized directly in the source data to prevent dynamic array reallocation, memory fragmentation, and property hacking at runtime.
+* **PriorityScore (Position 8, after Source):** A first-class column heavily informed by the Test of Proficiency in Korean (TOPIK I/II) and NIKL basic vocabulary rankings, quantized onto a 1–5 learner priority scale:
+  - **Tier 1 (Top Essential / Day 1)**: Top ~200 items (foundational pronouns `저/제`, copulas, survival verbs `가다/오다/먹다`, greetings `네/아니요/안녕하다/감사하다`).
+  - **Tier 2 (Core Beginner / TOPIK I Level 1)**: Top ~1,000 words (indispensable daily objects, question words, basic adjectives/verbs, core food/family).
+  - **Tier 3 (Elementary / TOPIK I Level 2)**: Words ~1,000–2,500 (common situational vocabulary, transportation, weather, clothing, secondary professions).
+  - **Tier 4 (Intermediate / TOPIK II Level 3–4)**: Words ~2,500–5,000 (secondary vocabulary, specialized services, secondary countries like `노르웨이`, `케냐`).
+  - **Tier 5 (Advanced / Low Priority / Niche)**: Words 5,000+ (rare, situational, or cultural items like `세배하다`, `크리스마스트리`).
 * **Semantic Tags:** Used to ensure sentences are structurally logical (e.g., `transitive_food` verbs only pair with `food` or `drink` nouns). Defined as `Array<string>` in raw data and converted in-place to `Set<string>` via `addLearningUnit` for $O(1)$ lookup performance without redundant `TagSet` storage.
-* **Semantic Vectors (NEW):** We have added a 10th element: a human-readable JSON string defining the semantic domain, polarity, and logical constraints of the word. E.g., `{"domain":"consume", "req":"food", "prod":"satiety", "polarity": 1}`. 
+* **Semantic Vectors:** A human-readable JSON string defining the semantic domain, polarity, and logical constraints of the word. E.g., `{"domain":"consume", "req":"food", "prod":"satiety", "polarity": 1}`. 
 * **Current State:** 
-    * All vocabulary and grammar from `words0.js` (SUOBI00 through SUOBI20) have been successfully imported and tested.
-    * **100% of all language units in `data.js` (774 units: SUOBI00 through SUOBI20, and class2011 from `words1.js`)** now have complete Semantic Tags and Semantic Vectors.
+    * **100% of all language units in `data.js` (802 units: SUOBI00 through SUOBI20, and class2011 from `words1.js`)** now have complete `Id`, `PriorityScore`, `SemanticTags`, and `SemanticVectors`.
     * Recent completed batches: 
       - SUOBI17 (31 units): 100% coverage (31/31), 2,189 generated sentences validated with 0 errors.
       - SUOBI18 (27 units): 100% coverage (27/27), 1,142 generated sentences validated with 0 errors.
@@ -90,6 +96,20 @@ Pure JavaScript CLI and programmatic module for querying, exporting, and updatin
         - Use `--source <name>` (or `-s <name>`) to explicitly assign a curriculum source tag to newly inserted units.
         - If `--source` is not provided on the CLI, any unit-level `Source` key specified in the input file will be preserved.
         - If no `Source` is specified anywhere (neither via CLI flag nor in the record), `select.js` automatically assigns a generated date-based source string prefixed by colons in the format `::YYYYMMDD` (e.g. `::20261016`).
+*   **Schema Alteration (`ADD`)**:
+    *   Dynamically add new columns to `DATA_SCHEMA` and all unit rows in `data.js`:
+        - `node select.js "ADD PriorityScore 99 AFTER Source"`
+        - `node select.js "ADD id 0 FIRST"`
+    *   Supports positions `FIRST`, `LAST`, `AFTER <col>`, and `BEFORE <col>`, with support for string, numeric, boolean, or array default values and `--dry-run`.
+*   **Context Window Efficiency & Dynamic Format Selection**:
+    *   To optimize LLM context window token density, `select.js` defaults to tab-delimited (`tsv`) for low-complexity column sets and `json` for high-complexity queries when no explicit format is specified.
+    *   **Complexity Scoring**:
+        - Standard scalar columns (`Id`, `Korean`, `English`, `PartofSpeech`, `Disambiguation`, `Source`, `PriorityScore`, `FormalityLevel`, `HonorificRules`): 1 point each.
+        - `SemanticTags` and `Conjugation` (arrays): 2 points each.
+        - `SemanticVector` (nested JSON dictionary): 4 points.
+        - `*` (all columns): sums to 17 points.
+    *   Queries with score $\le 8$ default to `tsv` (e.g. `SELECT Id Korean English PriorityScore`), achieving ~60-75% token reduction over verbose JSON. Queries with score $> 8$ (or `*`) default to `json` for nested data clarity.
+    *   Explicit `--format <fmt>` CLI flag or inline `FORMAT <fmt>` query keyword always overrides automatic detection.
 *   **Safety & Comment Preservation**: In-place line-mapping modifies target rows directly without disturbing comments (such as `// Vocabulary from SUOBI01`), validates syntax via temporary files before committing, and automatically supports Windows UTF-16LE, UTF-8 BOM, and standard UTF-8 encodings. Section comment records (`{ "comment": "// ..." }`) in input files are also preserved during insertion without duplication.
 
 ---

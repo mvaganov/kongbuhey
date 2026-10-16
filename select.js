@@ -19,7 +19,7 @@ const path = require('path');
 const DATA_FILE_PATH = path.resolve(__dirname, 'data.js');
 
 // --- Schema Definitions ---
-const SCHEMA_COLUMNS = [
+let SCHEMA_COLUMNS = [
     { name: "Korean", index: 0, type: "string" },
     { name: "English", index: 1, type: "string" },
     { name: "PartofSpeech", index: 2, type: "string" },
@@ -33,6 +33,32 @@ const SCHEMA_COLUMNS = [
     { name: "Id", index: 10, type: "number" }
 ];
 
+function getSchemaColumns(DATA_SCHEMA) {
+    if (!DATA_SCHEMA) return SCHEMA_COLUMNS;
+    const cols = [];
+    for (let i = 0; ; i++) {
+        if (DATA_SCHEMA[i] !== undefined) {
+            const name = DATA_SCHEMA[i];
+            let type = "string";
+            if (name === "Id" || name === "PriorityScore") type = "number";
+            else if (name === "SemanticTags") type = "tags";
+            else if (name === "Conjugation") type = "conjugation";
+            else if (name === "SemanticVector") type = "json";
+            cols.push({ name, index: i, type });
+        } else {
+            break;
+        }
+    }
+    return cols.length > 0 ? cols : SCHEMA_COLUMNS;
+}
+
+try {
+    const initialData = require(DATA_FILE_PATH);
+    if (initialData && initialData.DATA_SCHEMA) {
+        SCHEMA_COLUMNS = getSchemaColumns(initialData.DATA_SCHEMA);
+    }
+} catch (_) {}
+
 const COLUMN_ALIASES = {
     "korean": "Korean", "ko": "Korean",
     "english": "English", "en": "English",
@@ -41,6 +67,7 @@ const COLUMN_ALIASES = {
     "disambiguation": "Disambiguation", "disambig": "Disambiguation",
     "conjugation": "Conjugation", "formula": "Conjugation", "conjugationrules": "Conjugation", "conjugation_rules": "Conjugation",
     "source": "Source", "src": "Source", "curriculum": "Source",
+    "priorityscore": "PriorityScore", "priority": "PriorityScore", "score": "PriorityScore", "ps": "PriorityScore",
     "formalitylevel": "FormalityLevel", "formality": "FormalityLevel", "formality_level": "FormalityLevel",
     "honorificrules": "HonorificRules", "honorific": "HonorificRules", "honorific_rules": "HonorificRules",
     "semanticvector": "SemanticVector", "vector": "SemanticVector", "semantic_vector": "SemanticVector", "sv": "SemanticVector",
@@ -74,6 +101,10 @@ function loadData(filePath = DATA_FILE_PATH) {
     const KR_EN_languageUnits = dataModule.KR_EN_languageUnits;
     const DATA_SCHEMA = dataModule.DATA_SCHEMA;
 
+    if (DATA_SCHEMA) {
+        SCHEMA_COLUMNS = getSchemaColumns(DATA_SCHEMA);
+    }
+
     // Ensure Id is assigned to each unit
     KR_EN_languageUnits.forEach((unit, idx) => {
         unit[DATA_SCHEMA.Id] = idx;
@@ -105,38 +136,75 @@ function unitToRecord(unit, selectedCols = null, DATA_SCHEMA) {
     return record;
 }
 
-function formatUnitLine(unit, isLast = false) {
-    const ko = JSON.stringify(unit[0] ?? "");
-    const en = JSON.stringify(unit[1] ?? "");
-    const pos = JSON.stringify(unit[2] ?? "");
-
-    let tagsArr = [];
-    if (unit[3] instanceof Set) tagsArr = Array.from(unit[3]);
-    else if (Array.isArray(unit[3])) tagsArr = unit[3];
-    const tagsStr = tagsArr.length === 0 ? "[]" : `[${tagsArr.map(t => JSON.stringify(t)).join(', ')}]`;
-
-    const disambig = JSON.stringify(unit[4] ?? "");
-
-    let conjStr = '""';
-    if (Array.isArray(unit[5])) {
-        conjStr = unit[5].length === 0 ? "[]" : `[${unit[5].map(c => JSON.stringify(c)).join(', ')}]`;
-    } else {
-        conjStr = JSON.stringify(unit[5] ?? "");
+function formatColumnValue(colName, val) {
+    const canonical = normalizeColumnName(colName);
+    if (canonical === 'Id') {
+        const num = typeof val === 'number' ? val : (parseInt(val, 10) || 0);
+        return String(num);
     }
-
-    const src = JSON.stringify(unit[6] ?? "");
-    const formality = JSON.stringify(unit[7] ?? "");
-    const honorific = JSON.stringify(unit[8] ?? "");
-
-    let svStr = '""';
-    const rawSv = unit[9];
-    if (rawSv !== undefined && rawSv !== null && rawSv !== "") {
-        const s = typeof rawSv === 'object' ? JSON.stringify(rawSv) : String(rawSv);
-        svStr = (s.startsWith('{') && !s.includes("'")) ? `'${s}'` : JSON.stringify(s);
+    if (canonical === 'PriorityScore') {
+        const num = typeof val === 'number' ? val : (Number(val) || 99);
+        return String(num);
     }
+    if (canonical === 'SemanticTags') {
+        let tagsArr = [];
+        if (val instanceof Set) tagsArr = Array.from(val);
+        else if (Array.isArray(val)) tagsArr = val;
+        return tagsArr.length === 0 ? "[]" : `[${tagsArr.map(t => JSON.stringify(t)).join(', ')}]`;
+    }
+    if (canonical === 'Conjugation') {
+        if (Array.isArray(val)) {
+            return val.length === 0 ? "[]" : `[${val.map(c => JSON.stringify(c)).join(', ')}]`;
+        }
+        return JSON.stringify(val ?? "");
+    }
+    if (canonical === 'SemanticVector') {
+        if (val !== undefined && val !== null && val !== "") {
+            const s = typeof val === 'object' ? JSON.stringify(val) : String(val);
+            return (s.startsWith('{') && !s.includes("'")) ? `'${s}'` : JSON.stringify(s);
+        }
+        return '""';
+    }
+    if (typeof val === 'number') {
+        return String(val);
+    }
+    return JSON.stringify(val ?? "");
+}
 
-    const elements = [ko, en, pos, tagsStr, disambig, conjStr, src, formality, honorific, svStr];
+function formatUnitLine(unit, isLast = false, schemaCols = SCHEMA_COLUMNS) {
+    const elements = schemaCols.map(col => {
+        const val = unit[col.index];
+        return formatColumnValue(col.name, val);
+    });
     return `\t[${elements.join(', ')}]${isLast ? "" : ","}`;
+}
+
+function buildUnitFromRecord(rec, resolvedSource, newId = 0, schemaCols = SCHEMA_COLUMNS) {
+    return schemaCols.map(col => {
+        if (col.name === 'Id') {
+            return (rec.Id !== undefined && rec.Id !== null && rec.Id !== "" && !isNaN(rec.Id))
+                ? parseInt(rec.Id, 10)
+                : newId;
+        }
+        if (col.name === 'Source') {
+            return (rec.Source && rec.Source.trim()) || resolvedSource;
+        }
+        if (col.name === 'PriorityScore') {
+            return (rec.PriorityScore !== undefined && rec.PriorityScore !== null && rec.PriorityScore !== "" && !isNaN(rec.PriorityScore))
+                ? Number(rec.PriorityScore)
+                : 99;
+        }
+        if (col.name === 'SemanticTags') {
+            let tagsArr = [];
+            if (rec.SemanticTags instanceof Set) tagsArr = Array.from(rec.SemanticTags);
+            else if (Array.isArray(rec.SemanticTags)) tagsArr = rec.SemanticTags;
+            return tagsArr;
+        }
+        if (col.name === 'PartofSpeech') {
+            return rec.PartofSpeech || "Noun";
+        }
+        return rec[col.name] !== undefined ? rec[col.name] : (col.type === 'number' ? 0 : "");
+    });
 }
 
 // --- WHERE Clause Evaluation ---
@@ -284,6 +352,31 @@ function evaluateWhereClause(whereStr, unit, DATA_SCHEMA) {
 }
 
 // --- Query Execution (SELECT) ---
+// --- Column Complexity & Default Format Engine ---
+const COMPLEXITY_THRESHOLD = 8;
+
+const COLUMN_COMPLEXITY_WEIGHTS = {
+    'SemanticTags': 2,
+    'Conjugation': 2,
+    'SemanticVector': 4
+};
+
+function getColumnComplexity(selectedCols, DATA_SCHEMA) {
+    if (!selectedCols || selectedCols.length === 0 || selectedCols[0] === '*') {
+        return SCHEMA_COLUMNS.reduce((sum, col) => sum + (COLUMN_COMPLEXITY_WEIGHTS[col.name] || 1), 0);
+    }
+    let total = 0;
+    for (const col of selectedCols) {
+        const canonical = normalizeColumnName(col);
+        if (canonical === '*') {
+            return SCHEMA_COLUMNS.reduce((sum, c) => sum + (COLUMN_COMPLEXITY_WEIGHTS[c.name] || 1), 0);
+        }
+        total += COLUMN_COMPLEXITY_WEIGHTS[canonical] || 1;
+    }
+    return total;
+}
+
+// --- SELECT Execution ---
 function executeSelect(queryStr, options = {}) {
     const { KR_EN_languageUnits, DATA_SCHEMA } = loadData(options.dataFile || DATA_FILE_PATH);
 
@@ -293,11 +386,14 @@ function executeSelect(queryStr, options = {}) {
         q = q.substring(6).trim();
     }
 
-    // Extract FORMAT if present
-    let format = options.format || 'json';
+    // Extract FORMAT if explicitly provided
+    let explicitFormat = null;
+    if (options.format) {
+        explicitFormat = options.format.toLowerCase();
+    }
     const formatMatch = q.match(/\bFORMAT\s+([\w]+)\b/i);
     if (formatMatch) {
-        format = formatMatch[1].toLowerCase();
+        explicitFormat = formatMatch[1].toLowerCase();
         q = q.replace(formatMatch[0], '').trim();
     }
 
@@ -345,6 +441,13 @@ function executeSelect(queryStr, options = {}) {
         ? q.split(',').map(c => c.trim()).filter(Boolean)
         : q.split(/\s+/).map(c => c.trim()).filter(Boolean);
     const selectedCols = rawCols.length === 0 ? ['*'] : rawCols.map(normalizeColumnName);
+
+    // Determine format: explicit takes priority; otherwise use column complexity
+    let format = explicitFormat;
+    if (!format) {
+        const complexity = getColumnComplexity(selectedCols, DATA_SCHEMA);
+        format = complexity <= COMPLEXITY_THRESHOLD ? 'tsv' : 'json';
+    }
 
     // Filter rows
     let results = [];
@@ -434,19 +537,8 @@ function formatResults(results, format = 'json') {
 
         case 'raw': {
             return results.map(r => {
-                const u = [
-                    r.Korean ?? "",
-                    r.English ?? "",
-                    r.PartofSpeech ?? "",
-                    r.SemanticTags ?? [],
-                    r.Disambiguation ?? "",
-                    r.Conjugation ?? "",
-                    r.Source ?? "",
-                    r.FormalityLevel ?? "",
-                    r.HonorificRules ?? "",
-                    r.SemanticVector ?? ""
-                ];
-                return formatUnitLine(u, false);
+                const u = buildUnitFromRecord(r, r.Source || getDefaultSource(), r.Id ?? 0, SCHEMA_COLUMNS);
+                return formatUnitLine(u, false, SCHEMA_COLUMNS);
             }).join('\n');
         }
 
@@ -685,18 +777,7 @@ function executeUpdateFromFile(inputFile, explicitCols = null, options = {}) {
                 ? rec.Source.trim()
                 : (options.source || (rec.Source && rec.Source.trim()) || defaultSource);
 
-            const newUnit = [
-                rec.Korean || "",
-                rec.English || "",
-                rec.PartofSpeech || "Noun",
-                rec.SemanticTags || [],
-                rec.Disambiguation || "",
-                rec.Conjugation || "",
-                resolvedSource,
-                rec.FormalityLevel || "",
-                rec.HonorificRules || "",
-                rec.SemanticVector || ""
-            ];
+            const newUnit = buildUnitFromRecord(rec, resolvedSource, unitIndices.length + insertedCount, SCHEMA_COLUMNS);
 
             // Find closing `];`
             let closeIdx = lines.findIndex(l => l.trim().startsWith('];'));
@@ -856,18 +937,7 @@ function executeInsert(insertStr, options = {}) {
         ? record.Source.trim()
         : (options.source || (record.Source && record.Source.trim()) || defaultSource);
 
-    const newUnit = [
-        record.Korean || "",
-        record.English || "",
-        record.PartofSpeech || "Noun",
-        record.SemanticTags || [],
-        record.Disambiguation || "",
-        record.Conjugation || "",
-        resolvedSource,
-        record.FormalityLevel || "",
-        record.HonorificRules || "",
-        record.SemanticVector || ""
-    ];
+    const newUnit = buildUnitFromRecord(record, resolvedSource, unitIndices.length, SCHEMA_COLUMNS);
 
     let closeIdx = lines.findIndex(l => l.trim().startsWith('];'));
     if (closeIdx === -1) closeIdx = lines.length;
@@ -939,6 +1009,200 @@ function executeDelete(deleteStr, options = {}) {
     return { deleted: deletedCount, dryRun: !!options.dryRun };
 }
 
+// --- ADD Column Execution ---
+function parseAddCommand(str) {
+    const trimmed = str.trim();
+    const match = trimmed.match(/^ADD\s+([`'"]?[\w.-]+[`'"]?)\s+([`'"]?.*?['"]?)\s+(AFTER\s+[`'"]?[\w.-]+[`'"]?|BEFORE\s+[`'"]?[\w.-]+[`'"]?|FIRST|LAST)$/i);
+    if (!match) {
+        throw new Error("Invalid ADD statement. Syntax: ADD <colName> <defaultValue> (AFTER <col> | BEFORE <col> | FIRST | LAST)");
+    }
+    const rawCol = match[1].trim().replace(/^[`'"]+|[`'"]+$/g, '');
+    let rawVal = match[2].trim();
+    let val;
+    if ((rawVal.startsWith("'") && rawVal.endsWith("'")) || (rawVal.startsWith('"') && rawVal.endsWith('"'))) {
+        val = rawVal.substring(1, rawVal.length - 1);
+    } else if (!isNaN(rawVal) && rawVal !== '') {
+        val = Number(rawVal);
+    } else if ((rawVal.startsWith('[') && rawVal.endsWith(']')) || (rawVal.startsWith('{') && rawVal.endsWith('}'))) {
+        try { val = JSON.parse(rawVal); } catch (_) { val = rawVal; }
+    } else if (rawVal.toLowerCase() === 'true') {
+        val = true;
+    } else if (rawVal.toLowerCase() === 'false') {
+        val = false;
+    } else if (rawVal.toLowerCase() === 'null') {
+        val = null;
+    } else {
+        val = rawVal;
+    }
+
+    const posStr = match[3].trim();
+    let placement = null;
+    let targetCol = null;
+
+    if (/^FIRST$/i.test(posStr)) {
+        placement = 'FIRST';
+    } else if (/^LAST$/i.test(posStr)) {
+        placement = 'LAST';
+    } else {
+        const afterMatch = posStr.match(/^AFTER\s+([`'"]?[\w.-]+[`'"]?)$/i);
+        if (afterMatch) {
+            placement = 'AFTER';
+            targetCol = afterMatch[1].trim().replace(/^[`'"]+|[`'"]+$/g, '');
+        } else {
+            const beforeMatch = posStr.match(/^BEFORE\s+([`'"]?[\w.-]+[`'"]?)$/i);
+            if (beforeMatch) {
+                placement = 'BEFORE';
+                targetCol = beforeMatch[1].trim().replace(/^[`'"]+|[`'"]+$/g, '');
+            } else {
+                throw new Error(`Unrecognized position in ADD command: "${posStr}"`);
+            }
+        }
+    }
+
+    return { colName: rawCol, defaultValue: val, placement, targetCol };
+}
+
+function executeAddColumn(commandStr, options = {}) {
+    const { colName, defaultValue, placement, targetCol } = parseAddCommand(commandStr);
+    const dataPath = options.dataFile || DATA_FILE_PATH;
+    const fileContent = fs.readFileSync(dataPath, 'utf8');
+    const lines = fileContent.split('\n');
+
+    const { KR_EN_languageUnits, DATA_SCHEMA } = loadData(dataPath);
+
+    let canonicalCol = normalizeColumnName(colName);
+    if (!canonicalCol) {
+        canonicalCol = colName.charAt(0).toUpperCase() + colName.slice(1);
+    }
+    if (colName.toLowerCase() === 'id') {
+        canonicalCol = 'Id';
+    } else if (colName.toLowerCase() === 'priorityscore') {
+        canonicalCol = 'PriorityScore';
+    }
+
+    const unitIndices = getUnitLineIndices(lines);
+    if (unitIndices.length === 0) {
+        throw new Error("No language units found in target data file.");
+    }
+
+    // Determine current physical columns in the array rows
+    const firstRowText = lines[unitIndices[0]].trim().replace(/,$/, '');
+    const firstRowArr = eval(firstRowText);
+    const physicalColCount = firstRowArr.length;
+
+    // Get current ordered columns from DATA_SCHEMA up to physicalColCount
+    const currentPhysicalCols = [];
+    for (let i = 0; i < physicalColCount; i++) {
+        if (DATA_SCHEMA[i] !== undefined) {
+            currentPhysicalCols.push(DATA_SCHEMA[i]);
+        }
+    }
+
+    // Check if canonicalCol is already physically in the rows
+    if (currentPhysicalCols.includes(canonicalCol)) {
+        throw new Error(`Column "${canonicalCol}" already exists in ${path.basename(dataPath)}.`);
+    }
+
+    // Calculate insert index in physical columns
+    let insertIdx = -1;
+    if (placement === 'FIRST') {
+        insertIdx = 0;
+    } else if (placement === 'LAST') {
+        insertIdx = currentPhysicalCols.length;
+    } else if (placement === 'AFTER') {
+        const normTarget = normalizeColumnName(targetCol);
+        const idx = currentPhysicalCols.indexOf(normTarget);
+        if (idx === -1) {
+            throw new Error(`Target column "${targetCol}" not found in current physical schema.`);
+        }
+        insertIdx = idx + 1;
+    } else if (placement === 'BEFORE') {
+        const normTarget = normalizeColumnName(targetCol);
+        const idx = currentPhysicalCols.indexOf(normTarget);
+        if (idx === -1) {
+            throw new Error(`Target column "${targetCol}" not found in current physical schema.`);
+        }
+        insertIdx = idx;
+    }
+
+    // New physical columns
+    const newPhysicalCols = [...currentPhysicalCols];
+    newPhysicalCols.splice(insertIdx, 0, canonicalCol);
+
+    // If Id is NOT yet in newPhysicalCols, keep it at the end in DATA_SCHEMA as dynamic/virtual
+    const allSchemaCols = [...newPhysicalCols];
+    if (!allSchemaCols.includes('Id')) {
+        allSchemaCols.push('Id');
+    }
+
+    // Construct new schema definitions for formatting
+    const newSchemaCols = newPhysicalCols.map((name, index) => {
+        let type = 'string';
+        if (name === 'Id' || name === 'PriorityScore') type = 'number';
+        else if (name === 'SemanticTags') type = 'tags';
+        else if (name === 'Conjugation') type = 'conjugation';
+        else if (name === 'SemanticVector') type = 'json';
+        return { name, index, type };
+    });
+
+    // 1. Update each unit line in `lines` (before modifying lines length at the top)
+    unitIndices.forEach((lineIdx, unitIdx) => {
+        const rawText = lines[lineIdx].trim().replace(/,$/, '');
+        const row = eval(rawText);
+        row.splice(insertIdx, 0, defaultValue);
+        const isLast = (unitIdx === unitIndices.length - 1);
+        lines[lineIdx] = formatUnitLine(row, isLast, newSchemaCols);
+    });
+
+    // 2. Update DATA_SCHEMA block at the top of data.js
+    let schemaStart = -1;
+    let schemaEnd = -1;
+    for (let i = 0; i < lines.length; i++) {
+        if (lines[i].trim().startsWith('const DATA_SCHEMA = {')) {
+            schemaStart = i;
+        }
+        if (schemaStart !== -1 && lines[i].trim().startsWith('Object.freeze(DATA_SCHEMA);')) {
+            schemaEnd = i;
+            break;
+        }
+    }
+
+    if (schemaStart === -1 || schemaEnd === -1) {
+        throw new Error("Could not locate DATA_SCHEMA definition block in data.js.");
+    }
+
+    const schemaBlockLines = [
+        'const DATA_SCHEMA = {'
+    ];
+    allSchemaCols.forEach((col, idx) => {
+        const comment = col === 'SemanticTags' ? ' // Array<string> in raw definition; replaced with Set<string> when added to main language units list via addLearningUnit' : '';
+        schemaBlockLines.push(`\t${col}: ${idx},${comment}`);
+    });
+    allSchemaCols.forEach((col, idx) => {
+        const isLast = (idx === allSchemaCols.length - 1);
+        schemaBlockLines.push(`\t${idx}: '${col}'${isLast ? '' : ','}`);
+    });
+    schemaBlockLines.push('};');
+    schemaBlockLines.push('Object.freeze(DATA_SCHEMA);');
+
+    lines.splice(schemaStart, (schemaEnd - schemaStart + 1), ...schemaBlockLines);
+
+    if (!options.dryRun) {
+        writeDataFile(lines, dataPath);
+        // Refresh local SCHEMA_COLUMNS
+        SCHEMA_COLUMNS = getSchemaColumns(loadData(dataPath).DATA_SCHEMA);
+    }
+
+    return {
+        added: canonicalCol,
+        index: insertIdx,
+        defaultValue,
+        count: unitIndices.length,
+        dryRun: !!options.dryRun,
+        message: `Success: Added column '${canonicalCol}' at index ${insertIdx} with default value ${JSON.stringify(defaultValue)} in ${path.basename(dataPath)} (${unitIndices.length} units modified)${options.dryRun ? ' [DRY RUN]' : ''}.`
+    };
+}
+
 // --- Main Command Dispatcher ---
 function execute(commandStr, options = {}) {
     const trimmed = commandStr.trim();
@@ -980,6 +1244,8 @@ function execute(commandStr, options = {}) {
         return executeInsert(trimmed, options);
     } else if (upper.startsWith('DELETE')) {
         return executeDelete(trimmed, options);
+    } else if (upper.startsWith('ADD')) {
+        return executeAddColumn(trimmed, options);
     } else if (upper.startsWith('COUNT')) {
         const whereClause = trimmed.substring(5).replace(/^\s*WHERE\s*/i, '').trim();
         const res = executeSelect(`SELECT Id WHERE ${whereClause}`, options);
@@ -1002,10 +1268,10 @@ USAGE:
 COMMANDS:
   SELECT <cols> [WHERE <cond>] [ORDER BY <col> [ASC|DESC]] [LIMIT <n>] [FORMAT <fmt>]
     Extract a subset of language units matching criteria.
-    Available columns: Korean, English, PartofSpeech, SemanticTags, Disambiguation,
-                       Conjugation, Source, FormalityLevel, HonorificRules, SemanticVector, Id, *
+    Available columns: Id, Korean, English, PartofSpeech, SemanticTags, Disambiguation,
+                       Conjugation, Source, PriorityScore, FormalityLevel, HonorificRules, SemanticVector, *
 
-    Formats: json (default), jsonl, tsv, table, raw
+    Formats: tsv (default for low complexity), json (default for high complexity / *), jsonl, table, raw
 
   UPDATE [cols...] FROMFILE <filename>
     Update language units in data.js using data from a file (JSON, JSONL, TSV, or raw JS).
@@ -1021,9 +1287,12 @@ COMMANDS:
   DELETE FROM KR_EN_languageUnits WHERE <cond>
     Delete matching language units from data.js.
 
+  ADD <colName> <defaultValue> (AFTER <col> | BEFORE <col> | FIRST | LAST)
+    Add a new column into data.js schema and all unit rows.
+
 OPTIONS:
   --source, -s <name>   Source tag for newly inserted units (default: ::YYYYMMDD timestamp)
-  --format <fmt>        Output format for SELECT: json (default), jsonl, tsv, table, raw
+  --format <fmt>        Output format for SELECT: tsv, json, jsonl, table, raw (auto-detected by complexity if omitted)
   --dry-run             Preview changes without modifying data.js
   --data <path>         Target data file path (default: ./data.js)
 
@@ -1093,6 +1362,9 @@ function runCli() {
         if (result.results !== undefined) {
             // SELECT output
             console.log(formatResults(result.results, result.format));
+        } else if (result.added !== undefined) {
+            // ADD column output
+            console.log(result.message);
         } else if (result.updated !== undefined) {
             // UPDATE output
             console.log(`Success: Updated ${result.updated} unit(s) in ${path.basename(dataFile)}${result.inserted ? ` (inserted ${result.inserted})` : ''}${result.dryRun ? ' [DRY RUN]' : ''}.`);
@@ -1122,6 +1394,7 @@ module.exports = {
     executeUpdateInline,
     executeInsert,
     executeDelete,
+    executeAddColumn,
     formatResults,
     loadData,
     DATA_SCHEMA: SCHEMA_COLUMNS
