@@ -9,3 +9,4 @@ exhaustive_output_devtest.txt
 finiteUseScripts/
 exhaustive_output_*.txt
 output.txt
+scratch/

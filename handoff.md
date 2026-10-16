@@ -112,6 +112,23 @@ Pure JavaScript CLI and programmatic module for querying, exporting, and updatin
     *   Explicit `--format <fmt>` CLI flag or inline `FORMAT <fmt>` query keyword always overrides automatic detection.
 *   **Safety & Comment Preservation**: In-place line-mapping modifies target rows directly without disturbing comments (such as `// Vocabulary from SUOBI01`), validates syntax via temporary files before committing, and automatically supports Windows UTF-16LE, UTF-8 BOM, and standard UTF-8 encodings. Section comment records (`{ "comment": "// ..." }`) in input files are also preserved during insertion without duplication.
 
+### 6. `homonyms.js` (Korean Homonym, Stem & Phonetic Confusables Engine)
+Maps surface Hangul tokens to:
+1. **Direct Unit References (`number`)**: Direct vocabulary matches or base verb stems (e.g. `2` for `저`, `44` for `가`, `11` for `사람`).
+2. **Language Unit Trees (`Array`)**: Canonical LUTs `[grammarId, [childId]]` representing morphological combinations yielding that surface token or portmanteau (e.g. `간`: `[[644, [44]], ...]` from `가다` + `-(으)ㄴ`; `저는`: `[[36, [2]]]` from `저` + `은/는`; `누가`: `[[96, [30]], 66]` from `누구` + `이/가`).
+3. **Phonetic Minimal Pairs (`string` prefixed with `_`)**: Phonologically adjacent syllables generated via Jamo voice-onset-time, aspiration, tenseness, vowel proximity, and coda neutralization (e.g. `_물` for `문`, `_적다` for `작다`, `_아요` for `어요`).
+   - **Mutual & Vocabulary-Grounded**: Confusable `_neighbor` entries are strictly pruned unless the neighbor actually exists as an active entry in the dictionary.
+   - **Dynamic Insertion Linking**: During `addHomonymEntry`, any new token checks for phonetic confusion against existing entries, automatically linking them bidirectionally. Eliminates phantom false positives and minimizes token footprint.
+
+**Key Capabilities & CLI**:
+*   **Incremental Batch Updates**: `node homonyms.js update [--source S1,S2] [--ids start..end] [--clean] [--dry-run]`
+*   **Reverse Ingestion & Paragraph Parsing**: `node homonyms.js parse "<paragraph>"` breaks down real Korean text into matching lexical units, LUT trees, and prefixes/suffixes.
+*   **Token Confusability Scoring**: Weighted score based on $(N_{\text{direct}} \times 1.0) + (N_{\text{LUT}} \times 1.2) + (N_{\text{phonetic}} \times 0.8)$.
+*   **Rankings & Analytics**:
+    *   `node homonyms.js top [10]`: Displays the most confusable tokens.
+    *   `node homonyms.js least [10]`: Displays the least confusable tokens.
+    *   `node homonyms.js stats`: Summary metrics of total tokens, direct units, LUTs, and phonetic links.
+
 ---
 
 ## Next Steps for the Next Agent
