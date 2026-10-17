@@ -12,6 +12,50 @@
  *
  * Output Formats: json (default), jsonl, tsv, table, raw
  */
+function printHelp() {
+    console.log(`select.js - SQL-like CLI for data.js KR_EN_languageUnits (pure JS, zero dependencies)
+
+USAGE:
+  node select.js <COMMAND> [OPTIONS]
+
+COMMANDS:
+  SELECT <cols|*> [WHERE <cond>] [ORDER BY <col> [ASC|DESC]] [LIMIT <n>] [OFFSET <n>] [FORMAT <fmt>]
+  COUNT [WHERE <cond>]                      Count matching rows (returns single int)
+  UPDATE [cols...] FROMFILE <file>          Update matching rows by Id (or Korean)
+  UPDATE [KR_EN_languageUnits] SET <col>=<val> [WHERE <cond>]
+  INSERT FROMFILE <file> [--source <tag>]   Insert units (JSON/TSV). Provide explicit Id to avoid collisions!
+  INSERT INTO KR_EN_languageUnits (<cols>) VALUES (<vals>)
+  DELETE FROM KR_EN_languageUnits WHERE <cond>
+  ADD <col> <defaultVal> (FIRST|LAST|AFTER <c>|BEFORE <c>)   Alter schema & rows
+
+OPTIONS:
+  --source, -s <tag>   Curriculum source for inserted units (default: ::YYYYMMDD)
+  --format <fmt>       tsv, json, jsonl, table, raw
+                       (Auto: TSV if complexity <= 8, else JSON. Weights: vector=4, tags=2, conj=2, other=1)
+  --dry-run            Preview changes without modifying data.js
+  --data <path>        Custom data file (default: ./data.js)
+
+SCHEMA COLUMNS (aliases: id, ko, en, pos, tags, disambig, conj, src, score, formality, honorific, vector):
+  0. Id (int, PK)               6. Conjugation (str rule or array of formulas)
+  1. Korean (str)               7. Source (curriculum tag, e.g. SUOBI01, class2012)
+  2. English (str)              8. PriorityScore (int 1-5, TOPIK learner tier)
+  3. PartofSpeech (str)         9. FormalityLevel (str)
+  4. SemanticTags (str[])      10. HonorificRules (str)
+  5. Disambiguation (str)      11. SemanticVector (JSON str, e.g. {"domain":"..."})
+
+WHERE OPERATORS:
+  =, !=, <, >, <=, >=, AND, OR, LIKE '%pat%', NOT LIKE, CONTAINS 'tag', NOT CONTAINS, IN ('a','b'), NOT IN
+
+KEY LLM WORKFLOW PATTERNS:
+  Find next ID:  node select.js "SELECT Id ORDER BY Id DESC LIMIT 1"
+  Count rows:    node select.js "COUNT WHERE Source = 'class2012'"
+  Query to TSV:  node select.js "SELECT Id, Korean, English WHERE Source = 'SUOBI01'"
+  Export subset: node select.js "SELECT Id, Korean, SemanticVector WHERE Id < 50" > output.txt
+  Update back:   node select.js UPDATE Korean, SemanticVector FROMFILE output.txt
+  Insert batch:  node select.js INSERT FROMFILE new_units.json --source class2012 --dry-run
+  Inspect tag:   node select.js "SELECT Id, Korean WHERE SemanticTags CONTAINS 'food' LIMIT 10"
+`);
+}
 
 const fs = require('fs');
 const path = require('path');
@@ -20,17 +64,18 @@ const DATA_FILE_PATH = path.resolve(__dirname, 'data.js');
 
 // --- Schema Definitions ---
 let SCHEMA_COLUMNS = [
-    { name: "Korean", index: 0, type: "string" },
-    { name: "English", index: 1, type: "string" },
-    { name: "PartofSpeech", index: 2, type: "string" },
-    { name: "SemanticTags", index: 3, type: "tags" },
-    { name: "Disambiguation", index: 4, type: "string" },
-    { name: "Conjugation", index: 5, type: "conjugation" },
-    { name: "Source", index: 6, type: "string" },
-    { name: "FormalityLevel", index: 7, type: "string" },
-    { name: "HonorificRules", index: 8, type: "string" },
-    { name: "SemanticVector", index: 9, type: "json" },
-    { name: "Id", index: 10, type: "number" }
+    { name: "Id", index: 0, type: "number" },
+    { name: "Korean", index: 1, type: "string" },
+    { name: "English", index: 2, type: "string" },
+    { name: "PartofSpeech", index: 3, type: "string" },
+    { name: "SemanticTags", index: 4, type: "tags" },
+    { name: "Disambiguation", index: 5, type: "string" },
+    { name: "Conjugation", index: 6, type: "conjugation" },
+    { name: "Source", index: 7, type: "string" },
+    { name: "PriorityScore", index: 8, type: "number" },
+    { name: "FormalityLevel", index: 9, type: "string" },
+    { name: "HonorificRules", index: 10, type: "string" },
+    { name: "SemanticVector", index: 11, type: "json" }
 ];
 
 function getSchemaColumns(DATA_SCHEMA) {
@@ -57,7 +102,7 @@ try {
     if (initialData && initialData.DATA_SCHEMA) {
         SCHEMA_COLUMNS = getSchemaColumns(initialData.DATA_SCHEMA);
     }
-} catch (_) {}
+} catch (_) { }
 
 const COLUMN_ALIASES = {
     "korean": "Korean", "ko": "Korean",
@@ -655,7 +700,7 @@ function parseInputFile(filePath, explicitCols = null) {
                 if (idx < vals.length) {
                     let v = vals[idx].trim();
                     if ((v.startsWith('{') && v.endsWith('}')) || (v.startsWith('[') && v.endsWith(']'))) {
-                        try { v = JSON.parse(v); } catch (_) {}
+                        try { v = JSON.parse(v); } catch (_) { }
                     }
                     rec[h] = v;
                 }
@@ -686,7 +731,7 @@ function parseInputFile(filePath, explicitCols = null) {
                     }
                     rawMatches.push(rec);
                 }
-            } catch (_) {}
+            } catch (_) { }
         }
     }
     if (rawMatches.length > 0) return rawMatches;
@@ -836,7 +881,7 @@ function executeUpdateInline(setClause, whereClause, options = {}) {
             } else if (!isNaN(val)) {
                 val = Number(val);
             } else if ((val.startsWith('{') && val.endsWith('}')) || (val.startsWith('[') && val.endsWith(']'))) {
-                try { val = JSON.parse(val); } catch (_) {}
+                try { val = JSON.parse(val); } catch (_) { }
             }
             assignments.push({ col, val });
         }
@@ -917,7 +962,7 @@ function executeInsert(insertStr, options = {}) {
         if ((v.startsWith("'") && v.endsWith("'")) || (v.startsWith('"') && v.endsWith('"'))) {
             v = v.substring(1, v.length - 1);
         } else if ((v.startsWith('[') && v.endsWith(']')) || (v.startsWith('{') && v.endsWith('}'))) {
-            try { v = JSON.parse(v); } catch (_) {}
+            try { v = JSON.parse(v); } catch (_) { }
         }
         vals.push(v);
     }
@@ -1256,69 +1301,6 @@ function execute(commandStr, options = {}) {
 }
 
 // --- CLI Runner ---
-function printHelp() {
-    console.log(`
-Kongbuhey Data Manipulation CLI (select.js)
-===========================================
-Pure JavaScript SQL-like tool for extracting, querying, and updating language units in data.js.
-
-USAGE:
-  node select.js <COMMAND> [OPTIONS]
-
-COMMANDS:
-  SELECT <cols> [WHERE <cond>] [ORDER BY <col> [ASC|DESC]] [LIMIT <n>] [FORMAT <fmt>]
-    Extract a subset of language units matching criteria.
-    Available columns: Id, Korean, English, PartofSpeech, SemanticTags, Disambiguation,
-                       Conjugation, Source, PriorityScore, FormalityLevel, HonorificRules, SemanticVector, *
-
-    Formats: tsv (default for low complexity), json (default for high complexity / *), jsonl, table, raw
-
-  UPDATE [cols...] FROMFILE <filename>
-    Update language units in data.js using data from a file (JSON, JSONL, TSV, or raw JS).
-    Matches existing rows by Id (or Korean) and modifies only specified columns.
-
-  UPDATE [KR_EN_languageUnits] SET <col> = <val> [WHERE <cond>]
-    Inline SQL update of matching records in data.js.
-
-  INSERT INTO KR_EN_languageUnits (<cols...>) VALUES (<vals...>)
-  INSERT FROMFILE <filename>
-    Insert new language unit(s) into data.js.
-
-  DELETE FROM KR_EN_languageUnits WHERE <cond>
-    Delete matching language units from data.js.
-
-  ADD <colName> <defaultValue> (AFTER <col> | BEFORE <col> | FIRST | LAST)
-    Add a new column into data.js schema and all unit rows.
-
-OPTIONS:
-  --source, -s <name>   Source tag for newly inserted units (default: ::YYYYMMDD timestamp)
-  --format <fmt>        Output format for SELECT: tsv, json, jsonl, table, raw (auto-detected by complexity if omitted)
-  --dry-run             Preview changes without modifying data.js
-  --data <path>         Target data file path (default: ./data.js)
-
-EXAMPLES:
-  # 1. Query columns and output to file:
-  node select.js SELECT Korean, English, Id, SemanticVector > output.txt
-
-  # 2. Query with filter and table display:
-  node select.js "SELECT Id, Korean, English, PartofSpeech WHERE Source = 'SUOBI01' LIMIT 10 FORMAT table"
-
-  # 3. Filter by tag or wildcard:
-  node select.js "SELECT Id, Korean, SemanticTags WHERE SemanticTags CONTAINS 'food'"
-  node select.js "SELECT Id, Korean, English WHERE Korean LIKE '%씨%'"
-
-  # 4. Update data.js from an edited file:
-  node select.js UPDATE Korean, English, Id, SemanticVector FROMFILE output.txt
-  node select.js UPDATE FROMFILE output.txt
-
-  # 5. Inline update:
-  node select.js "UPDATE SET FormalityLevel = 'Formal' WHERE Korean = '감사하다'"
-
-  # 6. Insert new units with custom or default timestamp Source:
-  node select.js INSERT FROMFILE new_units.json --source class2012
-  node select.js "INSERT INTO KR_EN_languageUnits (Korean, English) VALUES ('사과', 'apple')"
-`);
-}
 
 function runCli() {
     const rawArgs = process.argv.slice(2);

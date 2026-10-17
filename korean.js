@@ -914,31 +914,52 @@ function reconstructFromLanguageUnitTree(tree) {
             if (formulas.length === 1) {
                 template = formulas[0];
             } else {
-                // Determine which formula matches the children based on first child's part of speech
-                const firstChild = children[0];
-                let isActionVerb = false;
-                let isDescriptiveVerb = false;
-
-                if (typeof firstChild === 'number') {
-                    const u = units ? units[firstChild] : null;
-                    if (u) {
-                        isActionVerb = u[DATA_SCHEMA.PartofSpeech] === 'Action Verb';
-                        isDescriptiveVerb = u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb';
+                // Determine which formula matches the children based on token count and token types
+                const candidate = formulas.find(f => {
+                    const tokens = f.match(/\{[^}:]+(?::[^}]+)?\}/g) || [];
+                    if (tokens.length !== children.length) return false;
+                    for (let i = 0; i < tokens.length; i++) {
+                        const m = tokens[i].match(/^\{([^}:]+)/);
+                        if (!m) continue;
+                        const type = m[1];
+                        const child = children[i];
+                        if (type === 'Clause' && !Array.isArray(child)) return false;
+                        const unitId = typeof child === 'number' ? child : (Array.isArray(child) && typeof child[0] === 'number' ? child[0] : null);
+                        const u = (unitId !== null && units) ? units[unitId] : null;
+                        if (type === 'Adv' && u && u[DATA_SCHEMA.PartofSpeech] !== 'Adverb') return false;
+                        if (type === 'VP_AVst' && u && u[DATA_SCHEMA.PartofSpeech] === 'Adverb') return false;
                     }
-                } else if (Array.isArray(firstChild) && typeof firstChild[0] === 'number') {
-                    const u = units ? units[firstChild[0]] : null;
-                    if (u) {
-                        isActionVerb = u[DATA_SCHEMA.PartofSpeech] === 'Action Verb';
-                        isDescriptiveVerb = u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb';
-                    }
-                }
+                    return true;
+                });
 
-                if (isActionVerb) {
-                    template = formulas.find(f => f.includes('AVst')) || formulas[0];
-                } else if (isDescriptiveVerb) {
-                    template = formulas.find(f => f.includes('DVst')) || formulas[0];
+                if (candidate) {
+                    template = candidate;
                 } else {
-                    template = formulas[0];
+                    const firstChild = children[0];
+                    let isActionVerb = false;
+                    let isDescriptiveVerb = false;
+
+                    if (typeof firstChild === 'number') {
+                        const u = units ? units[firstChild] : null;
+                        if (u) {
+                            isActionVerb = u[DATA_SCHEMA.PartofSpeech] === 'Action Verb';
+                            isDescriptiveVerb = u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb';
+                        }
+                    } else if (Array.isArray(firstChild) && typeof firstChild[0] === 'number') {
+                        const u = units ? units[firstChild[0]] : null;
+                        if (u) {
+                            isActionVerb = u[DATA_SCHEMA.PartofSpeech] === 'Action Verb';
+                            isDescriptiveVerb = u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb';
+                        }
+                    }
+
+                    if (isActionVerb) {
+                        template = formulas.find(f => f.includes('AVst')) || formulas[0];
+                    } else if (isDescriptiveVerb) {
+                        template = formulas.find(f => f.includes('DVst')) || formulas[0];
+                    } else {
+                        template = formulas[0];
+                    }
                 }
             }
         } else {
@@ -1231,6 +1252,12 @@ function applyMorphology(text) {
         const newReuBlock = String.fromCharCode(44032 + 2940 + (newReuMedial * 28) + newReuJongseong);
         
         return stemWithL + newReuBlock + suffix;
+    });
+
+    // 6b. reo_irregular (러 불규칙: 푸르다 -> 푸르러, 푸르렀다)
+    resolvedKo = resolvedKo.replace(/([가-힣])르\[reo_irregular\](아\/어|았\/었)(요|서|어|도|야|)/g, (match, preChar, harmonyMarker, suffix) => {
+        const isPast = harmonyMarker === "았/었";
+        return preChar + "르" + (isPast ? "렀" : "러") + suffix;
     });
 
     // 7. h_irregular (ㅎ drops before vowels; 으 drops; 아/어 blends into ㅐ/였)
