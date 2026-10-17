@@ -16,56 +16,26 @@
 Contains the 12-element schema array for Language Units (Vocabulary and Grammar):
 `[Id, Korean, English, Part of Speech, [Semantic Tags], Disambiguation, Conjugation Rules/Formula, Source Variable, PriorityScore, Formality Level, Honorific Rules, Semantic Vector]`
 
-* **Id (Position 0):**
-* **PriorityScore (Position 8, after Source):** heavily informed by the Test of Proficiency in Korean (TOPIK I/II) and NIKL basic vocabulary rankings, quantized onto a 1–5 learner priority scale:
-  - **Tier 1 (Top Essential)**: Top ~200 items (foundational pronouns `저/제`, copulas, survival verbs `가다/오다/먹다`, greetings `네/아니요/안녕하다/감사하다`).
-  - **Tier 2 (Core Beginner / TOPIK I Level 1)**: Top ~1,000 words (indispensable daily objects, question words, basic adjectives/verbs, core food/family).
-  - **Tier 3 (Elementary / TOPIK I Level 2)**: Words ~1,000–2,500 (common situational vocabulary, transportation, weather, clothing, secondary professions).
-  - **Tier 4 (Intermediate / TOPIK II Level 3–4)**: Words ~2,500–5,000 (secondary vocabulary, specialized services, secondary countries like `노르웨이`, `케냐`).
-  - **Tier 5 (Advanced / Low Priority / Niche)**: Words 5,000+ (rare, situational, or cultural items like `세배하다`, `크리스마스트리`).
-* **Semantic Tags:** Used to ensure sentences are structurally logical (e.g., `transitive_food` verbs only pair with `food` or `drink` nouns). Defined as `Array<string>` in raw data and converted in-place to `Set<string>` via `addLearningUnit` for $O(1)$ lookup performance without redundant `TagSet` storage.
-* **Semantic Vectors:** A human-readable JSON string defining the semantic domain, polarity, and logical constraints of the word. E.g., `{"domain":"consume", "req":"food", "prod":"satiety", "polarity": 1}`. 
+* **Id (Position 0):** Dedicated integer index (0..N).
+* **PriorityScore (Position 8, after Source):** Quantized 1–5 learner priority scale informed by TOPIK I/II and NIKL frequency:
+  - **Tier 1 (Top Essential)**: Top ~200 items (pronouns `저/제`, copulas, survival verbs `가다/오다/먹다`, greetings).
+  - **Tier 2 (Core Beginner / TOPIK I Level 1)**: Top ~1,000 words (daily objects, question words, basic verbs/adjectives).
+  - **Tier 3 (Elementary / TOPIK I Level 2)**: ~1,000–2,500 words (situational vocabulary, transport, weather, clothing).
+  - **Tier 4 (Intermediate / TOPIK II Level 3–4)**: ~2,500–5,000 words (secondary vocabulary, specialized services).
+  - **Tier 5 (Advanced / Niche)**: 5,000+ words (rare, cultural, or highly situational items).
+* **Semantic Tags:** Array converted in-place to `Set<string>` via `addLearningUnit` for $O(1)$ grammar pairing checks.
+* **Semantic Vectors:** JSON string defining domain, prerequisites, products, and polarity (e.g. `{"domain":"consume", "req":"food", "prod":"satiety", "polarity": 1}`).
 
-* **Current State:** 
-    * **100% of all language units in `data.js` (802 units: SUOBI00 through SUOBI20, and class2011 from `words1.js`)**.
-    * Recent completed batches: 
-      - SUOBI17 (31 units): 100% coverage (31/31), 2,189 generated sentences validated with 0 errors.
-      - SUOBI18 (27 units): 100% coverage (27/27), 1,142 generated sentences validated with 0 errors.
-      - SUOBI19 (20 units): 100% coverage (20/20), 1,533 generated sentences validated with 0 errors.
-      - SUOBI20 (23 units): 100% coverage (23/23), 762 generated sentences validated with 0 errors.
-      - `class2011` (20 units from `words1.js`): 100% coverage (20/20), 2,605 generated sentences validated with 0 errors. Inserted using `select.js INSERT FROMFILE`.
-      - **SUOBI06 Number Expansion**: Added 22 new Number units (Pure Korean cardinal counting `하나, 둘, 셋, 넷, 열하나, 열둘, 스물`, attributive `스무`, tens `서른, 마흔, 쉰, 예순, 일흔, 여든, 아흔`, and Sino-Korean `육십, 칠십, 팔십, 구십, 백, 천, 만`) and 6 new Grammar units for counting and measure word expressions:
-        1. `{Number:sinoNumber(1,10)} {Noun:sinoMeasureWord}`
-        2. `{Number:koreanNumber(1,10)} {Noun:koreanMeasureWord}`
-        3. `{Number:sinoNumber(1,10000)} {Noun:sinoMeasureWord}`
-        4. `{Number:koreanNumber(1,99)} {Noun:koreanMeasureWord}`
-        5. `{Number:sinoNumber(1,10000)}` (simple counting)
-        6. `{Number:koreanNumber(1,50)}` (simple counting)
-        SUOBI06 maintains 100% coverage (84/84 in-scope units used) and 0 morphology errors across 12,899 generated sentences.
-    * Morphology updates: 
-      - Irregular pronoun contraction support (`누가를` -> `누구를`, `누가에게` -> `누구에게`, `누가는` -> `누구는`, `누가도` -> `누구도`).
-      - Verb phrase expansions (`transitive_sports`, `transitive_transportation`, `transitive_place`).
-      - Vowel contractions for `도` and `야` suffixes (`마셔야 돼요`, `해도 돼요`, `가도 돼요`, `봐야 돼요`).
-      - Vowel contractions for `ㅐ`, `ㅓ`, `ㅔ` stems with `어`/`었` (`보내다` + `어요`/`었어요` -> `보내요`/`보냈어요`; `서다` + `어요`/`었어요` -> `서요`/`섰어요`).
-      - Vowel contractions and harmony for `-아/어지다` (`건강하여져요` -> `건강해져요`, `따뜻하여지다` -> `따뜻해지다`).
-      - Transitioned "씨" from Noun to Grammar with formula `["{N}씨"]` resulting in a proper noun clause; added modular `properNames` list (`["민수", "지훈", "수진"]`) with `getProperNames()` / `setProperNames()` for random name injection.
-      - Number generation engines `getSinoNumber(n)` (0..10000) and `getKoreanNumber(n, isAttributive)` (0..99), handling pure Korean cardinal counting (`하나, 둘, 셋, 넷, 스물`) vs attributive before measure words (`한, 두, 세, 네, 스무`).
-      - Dedicated exhaustive test suite: `number_test.js` tests all 10,001 Sino-Korean numbers (0..10000) and 200 Pure Korean forms (0..99 cardinal + attributive), checking Hangul validity, pronunciation, milestones, and data consistency (30,630 assertions, 100% pass).
+* **Current Dataset Status:** 
+  - **802 units (100% complete)**: Covers `SUOBI00` through `SUOBI20`, plus `class2011` from `words1.js`.
+  - All units have complete `Id`, `PriorityScore`, `SemanticTags`, and `SemanticVector` fields.
+  - Number support: Full Sino-Korean (0..10,000) and Pure Korean (0..99 cardinal/attributive) generation with counter measure formulas validated via `number_test.js` (30,630 assertions, 100% pass).
+  - Sentence validation: 100% pass rate with 0 errors across Cartesian test suites (`node exhaustive.js`).
 
 ### 2. `korean.js` (Morphology & Semantic Generation Engine)
 A robust, centralized module that handles complex rules of Korean text manipulation and semantic generation:
 *   Exports `applyMorphology(text)` (handles batchim, vowel harmony, honorific infixes, irregular verbs, contractions).
-*   **Standard Korean Pronunciation Engine (`getPronunciation(text)`)**:
-    - Converts Hangul strings into their official phonetic pronunciation (in Hangul), implementing the National Institute of Korean Language standard rules (국립국어원 표준 발음법):
-    - **Liaison (연음 법칙)**: `한국어` -> `[한구거]`, `밥을` -> `[바블]`, `꽃이` -> `[꼬치]`.
-    - **Double Batchim Simplification (자음군 단순화)**: `닭` -> `[닥]`, `값` -> `[갑]`, `앉다` -> `[안따]`; with vowel liaison: `닭이` -> `[달기]`, `값이` -> `[갑씨]`, `앉아요` -> `[안자요]`.
-    - **Coda Neutralization (음절 끝소리 규칙)**: 7 representative codas [ㄱ, ㄴ, ㄷ, ㄹ, ㅁ, ㅂ, ㅇ] (`꽃` -> `[꼳]`, `옷` -> `[옫]`).
-    - **Nasalization (비음화)**: `한국말` -> `[한궁말]`, `국물` -> `[궁물]`, `밥물` -> `[밤물]`, `먹습니다` -> `[먹씀니다]`, `갑니다` -> `[감니다]`, `독립` -> `[동닙]`, `심리` -> `[심니]`.
-    - **Lateralization (유음화)**: `신라` -> `[실라]`, `설날` -> `[설랄]`, `칼날` -> `[칼랄]`.
-    - **Tensification (경음화)**: `학교` -> `[학꾜]`, `식당` -> `[식땅]`, `약국` -> `[약꾹]`, `갈 거예요` -> `[갈 꺼예요]`.
-    - **Aspiration & ㅎ Rules (격음화 및 ㅎ 탈락)**: `좋아요` -> `[조아]`, `많아요` -> `[마나]`, `도착해요` -> `[도차캐요]`, `깨끗해요` -> `[깨끄태요]`, `복잡해요` -> `[복짜패요]`.
-    - **Palatalization (구개음화)**: `같이` -> `[가치]`, `굳이` -> `[구지]`, `끝이` -> `[끄치]`.
-    - **Explicit Exceptions Reference**: For full documentation of statutory exceptions to the standard pronunciation rules (e.g., `밟다 [밥따]`, `맑게 [말께]`, substantive morpheme boundary liaison `밭 아래 [바다래]`, lateralization exceptions `생산량 [생산냥]`, saisori tensification, and 'ㄴ' insertion), see [pronunciation_exceptions.md](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/pronunciation_exceptions.md).
+*   **Standard Korean Pronunciation Engine (`getPronunciation(text)`)**: Converts Hangul text into standard phonetic Hangul (국립국어원 표준 발음법), implementing liaison, double batchim simplification, 7-coda neutralization, nasalization, lateralization, tensification, aspiration / ㅎ-elimination, and palatalization. (See [pronunciation_exceptions.md](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/pronunciation_exceptions.md) for statutory exception references).
 *   **Semantic Generation**: Houses `generateSemanticSentence(template, context)` and `SemanticConfig` migrated from `exhaustive.js`.
 *   **Tunable Strictness:** Contains a `SemanticConfig` object that allows weighting the constraints (`0.0` = total random novelty, `1.0` = strict semantic adherence). This ensures the "mad-libs" absurdity is preserved, while specific grammars (like contrast) can have their strictness set to 1.0 to prevent complete nonsense.
 *   **Language Unit Tree (LUT)**: `generateSemanticSentence` produces `{ ko, context, tree }` tracking the hierarchical tree of language unit IDs / templates used to produce the sentence.
@@ -124,12 +94,7 @@ Maps surface Hangul tokens to:
     *   `node homonyms.js top [10]`: Displays the most confusable tokens.
     *   `node homonyms.js least [10]`: Displays the least confusable tokens.
     *   `node homonyms.js stats`: Summary metrics of total tokens, direct units, LUTs, and phonetic links.
-*   **Full Dataset Ingestion Status**:
-    *   100% of all vocabulary units from `data.js` (SUOBI00 through SUOBI20, and `class2011`) are fully ingested.
-    *   **Total Tokens**: 1,517 distinct surface tokens.
-    *   **Total Entries**: 1,713 mapped references (1,013 direct units, 570 LUT combinations, and 130 mutual phonetic links).
-    *   **Strict Integrity**: 0 non-Hangul keys, 0 orphan confusable links.
-    *   Exhaustive test suite (`node exhaustive.js`) passes all 1,235 sentences with 0 errors.
+*   **Dataset Status**: 100% of `data.js` vocabulary ingested (1,517 tokens, 1,713 mapped entries: 1,013 direct units, 570 LUT combinations, and 130 mutual phonetic links). 0 non-Hangul keys, 0 orphan links. Exhaustive tests pass with 0 errors.
 
 ---
 
