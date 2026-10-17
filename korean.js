@@ -1162,7 +1162,7 @@ function applyMorphology(text) {
     
     // Irregular Verbs Handling
     // 1. b_irregular + 으 -> 우
-    resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\]으\/(니까|면|면서|러|려고|세|시|셔|십|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
         // Drop ㅂ (jongseong 17) -> add 우
         const stemNoB = String.fromCharCode(prevChar.charCodeAt(0) - 17);
         if (suffix === 'ㄴ') return stemNoB + '운';
@@ -1171,7 +1171,7 @@ function applyMorphology(text) {
     });
 
     // 2. b_irregular + 아/어 -> 워
-    resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\](아\/어|았\/었)(요|서|어|도|야|라|)/g, (match, prevChar, harmonyMarker, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, prevChar, harmonyMarker, suffix) => {
         const stemNoB = String.fromCharCode(prevChar.charCodeAt(0) - 17);
         let added = harmonyMarker === "았/었" ? "웠" : "워";
         if (prevChar === '돕' || prevChar === '곱') {
@@ -1182,10 +1182,10 @@ function applyMorphology(text) {
 
     // 3. l_irregular (ㄹ drops before ㄴ, ㅂ, ㅅ; doesn't drop before ㅁ, ㄹ, but 으 drops)
     // e.g., 살다 + 으/니까 -> 사니까, 살다 + 으/면 -> 살면, 열다 + 으/면서 -> 열면서
-    resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]으\/(니까|면|면서|러|려고|세|시|셔|십|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
         if (suffix === 'ㄴ') return String.fromCharCode(prevChar.charCodeAt(0) - 8 + 4); // drop ㄹ, add ㄴ
         if (suffix === 'ㄹ') return prevChar; // ㄹ stays ㄹ
-        if (suffix === '면' || suffix === '면서' || suffix === '러' || suffix === '려고') {
+        if (suffix === '면' || suffix === '면서' || suffix === '러' || suffix === '려고' || suffix === '려면' || suffix === '로' || suffix === '라고') {
             // ㄹ does NOT drop, but 으 drops
             return prevChar + suffix;
         }
@@ -1207,7 +1207,7 @@ function applyMorphology(text) {
     });
 
     // 4. d_irregular (ㄷ -> ㄹ before vowels 으 and 아/어)
-    resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\]으\/(니까|면|면서|러|려고|세|시|셔|십|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
         // Change ㄷ (jongseong 7) to ㄹ (jongseong 8)
         const stemWithL = String.fromCharCode(prevChar.charCodeAt(0) + 1);
         if (suffix === 'ㄴ') return stemWithL + '은';
@@ -1215,14 +1215,14 @@ function applyMorphology(text) {
         return stemWithL + '으' + suffix;
     });
 
-    resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\](아\/어|았\/었)(요|서|어|도|야|라|)/g, (match, prevChar, harmonyMarker, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, prevChar, harmonyMarker, suffix) => {
         // Change ㄷ (jongseong 7) to ㄹ (jongseong 8)
         const stemWithL = String.fromCharCode(prevChar.charCodeAt(0) + 1);
         return stemWithL + harmonyMarker + suffix; // harmony is resolved later
     });
 
     // 5. eu_irregular (drop 으, use previous vowel for harmony)
-    resolvedKo = resolvedKo.replace(/([가-힣])\[eu_irregular\](아\/어|았\/었)(요|서|어|도|야|라|)/g, (match, prevChar, harmonyMarker, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])\[eu_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, prevChar, harmonyMarker, suffix) => {
         const idx = resolvedKo.indexOf(match);
         let harmonyVowel = '어';
         if (idx > 0) {
@@ -1240,7 +1240,7 @@ function applyMorphology(text) {
     });
 
     // 6. reu_irregular (르 drops, previous gets ㄹ batchim, 르 becomes 라/러)
-    resolvedKo = resolvedKo.replace(/([가-힣])르\[reu_irregular\](아\/어|았\/었)(요|서|어|도|야|라|)/g, (match, preReu, harmonyMarker, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])르\[reu_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, preReu, harmonyMarker, suffix) => {
         // Add ㄹ batchim (8) to preReu
         const stemWithL = String.fromCharCode(preReu.charCodeAt(0) + 8);
         
@@ -1255,14 +1255,14 @@ function applyMorphology(text) {
     });
 
     // 6b. reo_irregular (러 불규칙: 푸르다 -> 푸르러, 푸르렀다)
-    resolvedKo = resolvedKo.replace(/([가-힣])르\[reo_irregular\](아\/어|았\/었)(요|서|어|도|야|라|)/g, (match, preChar, harmonyMarker, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])르\[reo_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, preChar, harmonyMarker, suffix) => {
         const isPast = harmonyMarker === "았/었";
         return preChar + "르" + (isPast ? "렀" : "러") + suffix;
     });
 
     // 7. h_irregular (ㅎ drops before vowels; 으 drops; 아/어 blends into ㅐ/였)
-    // h_irregular + 으/(니까|면|면서|러|려고|세|시|셔|십|ㄹ|ㄴ)
-    resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\]으\/(니까|면|면서|러|려고|세|시|셔|십|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
+    // h_irregular + 으/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)
+    resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
         // Drop ㅎ (jongseong 27)
         const stemNoH = String.fromCharCode(prevChar.charCodeAt(0) - 27);
         if (suffix === 'ㄴ') return String.fromCharCode(stemNoH.charCodeAt(0) + 4); // add ㄴ
@@ -1271,7 +1271,7 @@ function applyMorphology(text) {
     });
 
     // h_irregular + (아/어|았/었) -> vowel changes to ㅐ (medial 1), plus ㅆ if past
-    resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\](아\/어|았\/었)(요|서|어|도|야|라|)/g, (match, prevChar, harmonyMarker, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, prevChar, harmonyMarker, suffix) => {
         const code = prevChar.charCodeAt(0) - 44032;
         const initial = Math.floor(code / 588);
         const newMedial = 1; // ㅐ
@@ -1280,16 +1280,37 @@ function applyMorphology(text) {
         return newChar + suffix;
     });
 
+    // 8. s_irregular (ㅅ drops before vowels 으 and 아/어; hiatus is preserved without contraction)
+    resolvedKo = resolvedKo.replace(/([가-힣])\[s_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
+        const stemNoS = String.fromCharCode(prevChar.charCodeAt(0) - 19);
+        if (suffix === 'ㄴ') return stemNoS + '은';
+        if (suffix === 'ㄹ') return stemNoS + '을';
+        return stemNoS + '으' + suffix;
+    });
+
+    resolvedKo = resolvedKo.replace(/([가-힣])\[s_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, prevChar, harmonyMarker, suffix) => {
+        const stemNoS = String.fromCharCode(prevChar.charCodeAt(0) - 19);
+        const harmonyVowel = getVowelHarmony(stemNoS);
+        if (harmonyMarker === "았/었") {
+            return stemNoS + '\u200B' + (harmonyVowel === '아' ? '았' : '었') + suffix;
+        }
+        return stemNoS + '\u200B' + harmonyVowel + suffix;
+    });
+
     // Strip leftover conjugation markers that didn't trigger an irregular change (or are unimplemented)
     resolvedKo = resolvedKo.replace(/\[[a-z_]+\]/g, '');
 
     // Resolve particles based on previous character's batchim
-    resolvedKo = resolvedKo.replace(/([가-힣])(이\/가|은\/는|을\/를|\(이\)랑)/g, (match, prevChar, particleStr) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])(이\/가|은\/는|을\/를|\(이\)랑|\(이\)나|이\/나|\(이\)라서|이\/라서|\(이\)라도|이\/라도|\(이\)든지|이\/든지)/g, (match, prevChar, particleStr) => {
         const hasB = hasBatchim(prevChar);
         if (particleStr === "이/가") return prevChar + (hasB ? "이" : "가");
         if (particleStr === "은/는") return prevChar + (hasB ? "은" : "는");
         if (particleStr === "을/를") return prevChar + (hasB ? "을" : "를");
         if (particleStr === "(이)랑") return prevChar + (hasB ? "이랑" : "랑");
+        if (particleStr === "(이)나" || particleStr === "이/나") return prevChar + (hasB ? "이나" : "나");
+        if (particleStr === "(이)라서" || particleStr === "이/라서") return prevChar + (hasB ? "이라서" : "라서");
+        if (particleStr === "(이)라도" || particleStr === "이/라도") return prevChar + (hasB ? "이라도" : "라도");
+        if (particleStr === "(이)든지" || particleStr === "이/든지") return prevChar + (hasB ? "이든지" : "든지");
         return match;
     });
 
@@ -1332,7 +1353,7 @@ function applyMorphology(text) {
     });
 
     // Resolve 아/어/았/었 vowel harmony
-    resolvedKo = resolvedKo.replace(/([가-힣])(아\/어|았\/었)(요|서|어|도|야|라|)/g, (match, prevChar, harmonyMarker, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])(아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, prevChar, harmonyMarker, suffix) => {
         const harmonyVowel = getVowelHarmony(prevChar);
         if (harmonyMarker === "았/었") {
             if (harmonyVowel === '여') return prevChar + '였' + suffix;
@@ -1341,8 +1362,8 @@ function applyMorphology(text) {
         return prevChar + harmonyVowel + suffix;
     });
 
-    // Resolve 으 insertion (e.g., 으/니까, 으/면, 으/세요, 으/로) based on batchim
-    resolvedKo = resolvedKo.replace(/([가-힣])으\/(니까|면|면서|러|려고|세|시|셔|십|로)/g, (match, prevChar, suffix) => {
+    // Resolve 으 insertion (e.g., 으/니까, 으/면, 으/세요, 으/로, 으/려면, 으/라고) based on batchim
+    resolvedKo = resolvedKo.replace(/([가-힣])으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고)/g, (match, prevChar, suffix) => {
         const code = prevChar.charCodeAt(0) - 44032;
         if (hasBatchim(prevChar)) {
             // ㄹ batchim doesn't take 으.
@@ -1392,17 +1413,18 @@ function applyMorphology(text) {
         }
     });
 
-    // Resolve 느/ㄴ다 or (느)ㄴ다 based on batchim (for plain present tense verbs)
-    resolvedKo = resolvedKo.replace(/([가-힣])(?:느\/ㄴ다|\(느\)ㄴ다)/g, (match, prevChar) => {
+    // Resolve 느/ㄴ다, (느)ㄴ다, 느/ㄴ다고, (느)ㄴ다고 based on batchim (for plain present tense verbs and indirect quotations)
+    resolvedKo = resolvedKo.replace(/([가-힣])(?:느\/ㄴ다|\(느\)ㄴ다)(고|)/g, (match, prevChar, quote) => {
+        const quoteSuffix = quote || '';
         const code = prevChar.charCodeAt(0) - 44032;
         if (hasBatchim(prevChar)) {
             if (code % 28 === 8) { // ㄹ batchim drops ㄹ and adds ㄴ
-                return String.fromCharCode(prevChar.charCodeAt(0) - 8 + 4) + '다';
+                return String.fromCharCode(prevChar.charCodeAt(0) - 8 + 4) + '다' + quoteSuffix;
             }
-            return prevChar + '는다';
+            return prevChar + '는다' + quoteSuffix;
         } else {
             // Add ㄴ batchim (4) to prevChar
-            return String.fromCharCode(prevChar.charCodeAt(0) + 4) + '다';
+            return String.fromCharCode(prevChar.charCodeAt(0) + 4) + '다' + quoteSuffix;
         }
     });
 
@@ -1425,7 +1447,7 @@ function applyMorphology(text) {
     });
     
     // Generic 아 + 았 = 았, ㅗ + 았 = 왔
-    resolvedKo = resolvedKo.replace(/([가-힣])았(어요|어|다가)/g, (match, prevChar, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])았(어요|어|다가|던)/g, (match, prevChar, suffix) => {
         const code = prevChar.charCodeAt(0) - 44032;
         if (code >= 0) {
             const medial = Math.floor(code / 28) % 21;
@@ -1445,9 +1467,9 @@ function applyMorphology(text) {
     });
 
     resolvedKo = resolvedKo.replace(/오아(요|서|도|야|라)/g, (m, s) => "와" + s);
-    resolvedKo = resolvedKo.replace(/오았(어요|어|다가)/g, (m, s) => "왔" + s);
+    resolvedKo = resolvedKo.replace(/오았(어요|어|다가|던)/g, (m, s) => "왔" + s);
     resolvedKo = resolvedKo.replace(/하여(요|서|도|야|라|지|져|졌)/g, (m, s) => "해" + s);
-    resolvedKo = resolvedKo.replace(/하였(어요|어|다가)/g, (m, s) => "했" + s);
+    resolvedKo = resolvedKo.replace(/하였(어요|어|다가|던)/g, (m, s) => "했" + s);
     resolvedKo = resolvedKo.replace(/마시(아|어)(요|서|도|야|라)/g, (m, v, s) => "마셔" + s);
     resolvedKo = resolvedKo.replace(/크(아|어)(요|서|도|야|라)/g, (m, v, s) => "커" + s);
     resolvedKo = resolvedKo.replace(/이어요/g, "이에요");
@@ -1476,7 +1498,7 @@ function applyMorphology(text) {
     });
     
     // Generic 이 + 었 = 였 and ㅜ + 었 = 웠 contraction
-    resolvedKo = resolvedKo.replace(/([가-힣])었(어요|어|다가)/g, (match, prevChar, suffix) => {
+    resolvedKo = resolvedKo.replace(/([가-힣])었(어요|어|다가|던)/g, (match, prevChar, suffix) => {
         const code = prevChar.charCodeAt(0) - 44032;
         if (code >= 0) {
             const medial = Math.floor(code / 28) % 21;
@@ -1499,6 +1521,7 @@ function applyMorphology(text) {
         return match;
     });
 
+    resolvedKo = resolvedKo.replace(/\u200B/g, '');
     return resolvedKo;
 }
 
