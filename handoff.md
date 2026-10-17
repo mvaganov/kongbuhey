@@ -25,6 +25,7 @@ Contains the 12-element schema array for Language Units (Vocabulary and Grammar)
   - **Tier 5 (Advanced / Niche)**: 5,000+ words (rare, cultural, or highly situational items).
 * **Semantic Tags:** Array converted in-place to `Set<string>` via `addLearningUnit` for $O(1)$ grammar pairing checks.
 * **Semantic Vectors:** JSON string defining domain, prerequisites, products, and polarity (e.g. `{"domain":"consume", "req":"food", "prod":"satiety", "polarity": 1}`).
+* **File Layout & LLM Tooling**: Functional logic (`DATA_SCHEMA`, in-memory cache engine, `addLearningUnit`, `getWords`, `hasTag`) is positioned at the top of `data.js` (lines 1–150) above `KR_EN_languageUnits`. Agents must use `select.js` to query, count, or modify data rows rather than reading the data array directly.
 
 * **Current Dataset Status:** 
   - **1,023 units (100% complete schema)**: Covers `SUOBI00` through `SUOBI20` from `words0.js`, plus `class2011` through `class2061` from `words1.js`.

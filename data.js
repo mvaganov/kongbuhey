@@ -1,3 +1,23 @@
+/**
+ * ============================================================================
+ * data.js - Language Units Dataset & In-Memory Vocabulary Cache
+ * ============================================================================
+ * 
+ * NOTE FOR AI AGENTS & LLMs:
+ * DO NOT read, grep, or edit the KR_EN_languageUnits array in this file directly!
+ * This dataset is 170+ KB and contains 1,000+ units, which will consume tens of
+ * thousands of tokens.
+ *
+ * Always use `select.js` to inspect, query, insert, or update language units:
+ *   - Query to TSV/JSON : node select.js "SELECT Id, Korean, English WHERE Source = '...'"
+ *   - Count units       : node select.js "COUNT WHERE Source = '...'"
+ *   - Find next Id      : node select.js "SELECT Id ORDER BY Id DESC LIMIT 1"
+ *   - Insert units      : node select.js INSERT FROMFILE new_units.json --source <tag>
+ *   - Update units      : node select.js UPDATE col1, col2 FROMFILE slice.json
+ *
+ * Run `node select.js --help` for full schema, column aliases, and query syntax.
+ */
+
 const DATA_SCHEMA = {
 	Id: 0,
 	Korean: 1,
@@ -26,6 +46,111 @@ const DATA_SCHEMA = {
 };
 Object.freeze(DATA_SCHEMA);
 
+// --- In-Memory Fast Lookup Cache & Helper Functions ---
+// Navigate to language units in the cache with `cache[partsOfSpeech][tag]`, or `cache[source]._all`
+const cache = {};
+
+function addLearningUnit(unit) {
+	let index = unit[DATA_SCHEMA.Id];
+	if (index === undefined || typeof index !== 'number') {
+		index = KR_EN_languageUnits.indexOf(unit);
+		if (index < 0) {
+			index = KR_EN_languageUnits.length;
+			KR_EN_languageUnits.push(unit);
+		}
+		unit[DATA_SCHEMA.Id] = index;
+	}
+	const pos = unit[DATA_SCHEMA.PartofSpeech];
+	const src = unit[DATA_SCHEMA.Source];
+	const rawTags = unit[DATA_SCHEMA.SemanticTags] || [];
+	const tagsSet = (rawTags instanceof Set) ? rawTags : new Set(rawTags);
+	unit[DATA_SCHEMA.SemanticTags] = tagsSet;
+
+	if (!cache[pos]) {
+		cache[pos] = { _all: [] };
+	}
+	if (!cache[src]) {
+		cache[src] = { _all: [] };
+	}
+	cache[pos]._all.push(unit);
+	cache[src]._all.push(unit);
+	tagsSet.forEach(tag => {
+		if (!cache[pos][tag]) {
+			cache[pos][tag] = [];
+		}
+		cache[pos][tag].push(unit);
+	});
+	// Substantives: Pronouns function as nominals (체언) and are included in the Noun cache
+	if (pos === "Pronoun") {
+		if (!cache["Noun"]) {
+			cache["Noun"] = { _all: [] };
+		}
+		cache["Noun"]._all.push(unit);
+		tagsSet.forEach(tag => {
+			if (!cache["Noun"][tag]) {
+				cache["Noun"][tag] = [];
+			}
+			cache["Noun"][tag].push(unit);
+		});
+	}
+	// Exclamations/Interjections: Sentence-level modifiers (감탄사) included in Adverb cache
+	if (pos === "Exclamation") {
+		if (!cache["Adverb"]) {
+			cache["Adverb"] = { _all: [] };
+		}
+		cache["Adverb"]._all.push(unit);
+		tagsSet.forEach(tag => {
+			if (!cache["Adverb"][tag]) {
+				cache["Adverb"][tag] = [];
+			}
+			cache["Adverb"][tag].push(unit);
+		});
+	}
+}
+
+function rebuildCache() {
+	for (let key in cache) delete cache[key];
+	KR_EN_languageUnits.forEach((unit, idx) => {
+		unit[DATA_SCHEMA.Id] = idx;
+		addLearningUnit(unit);
+	});
+}
+
+function getWords(pos, requiredTag = null) {
+	if (!cache[pos]) return [];
+	if (!requiredTag) return cache[pos]._all || [];
+	return cache[pos][requiredTag] || [];
+}
+
+function getPartOfSpeechCached(tagName) {
+	let partsOfSpeech = [];
+	for (const [key, value] of Object.entries(cache)) {
+		if (value[tagName]) { partsOfSpeech.push(key); }
+	}
+	return partsOfSpeech;
+}
+
+function hasTag(unit, ...tags) {
+	if (!unit) return false;
+	const unitTags = unit[DATA_SCHEMA.SemanticTags];
+	if (!unitTags) return false;
+	if (unitTags instanceof Set) {
+		if (tags.length === 1) return unitTags.has(tags[0]);
+		for (let i = 0; i < tags.length; i++) {
+			if (unitTags.has(tags[i])) return true;
+		}
+		return false;
+	}
+	if (Array.isArray(unitTags)) {
+		if (tags.length === 1) return unitTags.includes(tags[0]);
+		return tags.some(t => unitTags.includes(t));
+	}
+	return false;
+}
+
+// ============================================================================
+// Raw Dataset Definition
+// ============================================================================
 const KR_EN_languageUnits = [
 	// Vocabulary from SUOBI01
 	[0, "미국 사람", "American person", "Noun", ["person"], "", "", "SUOBI01", 2, "", "", '{"domain":"person", "traits":["nationality"]}'],
@@ -1147,114 +1272,8 @@ const KR_EN_languageUnits = [
 	[1022, "-(으)ㄹ까요? (opinion)", "do you think? (opinion/guess)", "Grammar", ["interrogative", "conjecture"], "opinion", ["{VP_DVst}으/ㄹ까요?", "{VP_AVst}으/ㄹ까요?"], "class2061", 2, "", "", '{"logic":"conjecture", "domain":"aspect"}']
 ];
 
-// Navigate to language units in the cache with `cache[partsOfSpeech][tag]`, or `cache[source]._all`
-const cache = {};
-
-function addLearningUnit(unit) {
-	let index = unit[DATA_SCHEMA.Id];
-	if (index === undefined || typeof index !== 'number') {
-		index = KR_EN_languageUnits.indexOf(unit);
-		if (index < 0) {
-			index = KR_EN_languageUnits.length;
-			KR_EN_languageUnits.push(unit);
-		}
-		unit[DATA_SCHEMA.Id] = index;
-	}
-
-	const pos = unit[DATA_SCHEMA.PartofSpeech];
-	const src = unit[DATA_SCHEMA.Source];
-	const rawTags = unit[DATA_SCHEMA.SemanticTags] || [];
-	const tagsSet = (rawTags instanceof Set) ? rawTags : new Set(rawTags);
-	unit[DATA_SCHEMA.SemanticTags] = tagsSet;
-
-	if (!cache[pos]) {
-		cache[pos] = { _all: [] };
-	}
-	if (!cache[src]) {
-		cache[src] = { _all: [] };
-	}
-
-	cache[pos]._all.push(unit);
-	cache[src]._all.push(unit);
-
-	tagsSet.forEach(tag => {
-		if (!cache[pos][tag]) {
-			cache[pos][tag] = [];
-		}
-		cache[pos][tag].push(unit);
-	});
-
-	// Substantives: Pronouns function as nominals (체언) and are included in the Noun cache
-	if (pos === "Pronoun") {
-		if (!cache["Noun"]) {
-			cache["Noun"] = { _all: [] };
-		}
-		cache["Noun"]._all.push(unit);
-		tagsSet.forEach(tag => {
-			if (!cache["Noun"][tag]) {
-				cache["Noun"][tag] = [];
-			}
-			cache["Noun"][tag].push(unit);
-		});
-	}
-
-	// Exclamations/Interjections: Sentence-level modifiers (감탄사) included in Adverb cache
-	if (pos === "Exclamation") {
-		if (!cache["Adverb"]) {
-			cache["Adverb"] = { _all: [] };
-		}
-		cache["Adverb"]._all.push(unit);
-		tagsSet.forEach(tag => {
-			if (!cache["Adverb"][tag]) {
-				cache["Adverb"][tag] = [];
-			}
-			cache["Adverb"][tag].push(unit);
-		});
-	}
-}
-
-function rebuildCache() {
-	for (let key in cache) delete cache[key];
-	KR_EN_languageUnits.forEach((unit, idx) => {
-		unit[DATA_SCHEMA.Id] = idx;
-		addLearningUnit(unit);
-	});
-}
-
 // Build the initial cache from the hardcoded array
 rebuildCache();
-
-function getWords(pos, requiredTag = null) {
-	if (!cache[pos]) return [];
-	if (!requiredTag) return cache[pos]._all || [];
-	return cache[pos][requiredTag] || [];
-}
-
-function getPartOfSpeechCached(tagName) {
-	let partsOfSpeech = [];
-	for (const [key, value] of Object.entries(cache)) {
-		if (value[tagName]) { partsOfSpeech.push(key); }
-	}
-	return partsOfSpeech;
-}
-
-function hasTag(unit, ...tags) {
-	if (!unit) return false;
-	const unitTags = unit[DATA_SCHEMA.SemanticTags];
-	if (!unitTags) return false;
-	if (unitTags instanceof Set) {
-		if (tags.length === 1) return unitTags.has(tags[0]);
-		for (let i = 0; i < tags.length; i++) {
-			if (unitTags.has(tags[i])) return true;
-		}
-		return false;
-	}
-	if (Array.isArray(unitTags)) {
-		if (tags.length === 1) return unitTags.includes(tags[0]);
-		return tags.some(t => unitTags.includes(t));
-	}
-	return false;
-}
 
 if (typeof window !== 'undefined') {
 	window.hasTag = hasTag;
