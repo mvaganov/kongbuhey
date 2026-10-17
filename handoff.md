@@ -98,12 +98,48 @@ Maps surface Hangul tokens to:
     *   `node homonyms.js least [10]`: Displays the least confusable tokens.
     *   `node homonyms.js stats`: Summary metrics of total tokens, direct units, LUTs, and phonetic links.
 *   **LLM-Friendly File Structure**: `printHelp()` and all functional logic (`getPhoneticCandidates`, `updateHomonyms`, `lookupToken`, `runCli`) reside at the top of the file with a prominent LLM guidance banner. The monolithic 2,200+ line `HOMONYMS` dictionary is quarantined at the bottom directly before the module exports.
-*   **Dataset Status**: 100% of `data.js` vocabulary ingested (2,890 tokens, 3,458 mapped entries: 1,949 direct units, 1,133 LUT combinations, and 376 mutual phonetic links). 0 orphan links. Exhaustive tests pass with 0 errors across 3,234 generated sentences.
+*   **Dataset Status**: 100% of `data.js` vocabulary ingested (2,922 tokens, 3,490+ mapped entries). 0 orphan links. Exhaustive tests pass with 0 errors across 3,368 generated sentences.
+
+### 6. `text_analyzer.js` (Passage Ingestion, Morphological Decomposition & Disambiguation Engine)
+Automated analysis pipeline that decomposes real Korean passages from `studytexts.js` into constituent language units, resolves homonyms and polysemous morphemes, generates student study checklists, and identifies curriculum gaps:
+*   **Zero Hard-Coded Word Statements**: All homonym disambiguation (e.g. `저` pronoun vs. determiner; `이` determiner vs. numeral vs. noun; `하고` particle vs. verb connective; `-(으)ㄴ 후에` / `-(으)ㄴ 지` bound grammar vs. free nouns) is driven declaratively by `SyntaxFrame` metadata (Column 12 in `data.js`) and surrounding semantic tags.
+*   **`SyntaxFrame` Specification**:
+    *   `_` : Anchor target morpheme/word.
+    *   `\+` : Direct morphological cliticization (no whitespace).
+    *   `\s+` : Whitespace separation between orthographic tokens.
+    *   `^`, `$` : Phrase / token boundaries.
+    *   `{Noun}`, `{Noun:place}`, `{Noun:time}`, `{Noun:tool|vehicle|language}` : POS & semantic category constraints.
+    *   `{Verb}`, `{Verb:movement}`, `{Verb:stative}`, `{Verb:cognition}` : Predicate constraints.
+    *   `{VP}`, `{VP_adnominal}` : Verb stems and adnominal participles.
+    *   `{Particle}`, `{Number}`, `{Counter}` : Case/topic markers, numeric values, and classifiers.
+*   **Semantic Valency Disambiguation**: Polysemous particles like `-에` and `-(으)로` inspect surrounding noun semantic tags and clause predicates:
+    *   `-에` (ID 200, Direction): `{Noun:place}\+에\s+.*{Verb:movement}`
+    *   `-에` (ID 132, Location / Reference): `{Noun:place}\+에\s+.*{Verb:stative}|{Noun:abstract}\+에`
+    *   `-에` (ID 275, Time): `{Noun:time}\+에`
+    *   `-(으)로` (ID 1240, Direction): `{Noun:place}\+으?로\s+.*{Verb:movement}`
+    *   `-(으)로` (ID 1241, Means / Instrument / Language): `{Noun:tool|vehicle|language|material}\+으?로`
+*   **Intentional Pedagogical Ambiguity**: When surrounding linguistic context admits multiple valid interpretations (e.g. `한국의` possessive vs. origin), the engine flags `intentional_ambiguity: true` and generates an instructive explanation for the learner rather than arbitrarily picking one.
+*   **Dual-Report Outputs**:
+    1.  *Learner Study Checklist*: Active vocabulary and grammar units used in the text to master.
+    2.  *Curriculum Gap Inventory*: Missing vocabulary and grammar patterns flagged for ingestion.
+*   **First Passage Ingestion (`studytext12`) COMPLETE**: Ingested 24 new units (IDs 1603–1626, including `독일`, `문화`, `학교`, `한국어`, `되다`, `이해하다`, `소개하다`, `와 / 과`, `-고 싶어하다`, determiners `이`/`그`/`저`). 100% of `studytext12` is now recognized with 0 gaps and 15 homonym occurrences cleanly resolved.
 
 ---
 
 ## Next Steps for the Next Agent
 
-1. **Curriculum Migration (Phase 1) COMPLETE**: All vocabulary and grammar units from `words0.js` (`SUOBI00`–`SUOBI20`) and `words1.js` (`class2011`–`class2202`) are 100% migrated into `data.js` (1,603 units total, IDs 0–1602). Full schema, semantic vectors, priority scores, and homonyms sync are in place with 0 errors across 3,234 generated sentences.
-2. **Pronunciation Rule Exceptions [DEFERRED]**: Consult [pronunciation_exceptions.md](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/pronunciation_exceptions.md) for explicit exceptions (substantive morpheme boundaries like `옷 안 [오단]`, verb stem dissimilations like `맑게 [말께]`, non-lateralizing Sino-Korean words like `생산량 [생산냥]`). Implement these in `korean.js` later when green-lit.
-3. **Phase 2 (UI Development) [READY TO BEGIN]**: Wait for the user to explicitly green-light moving to Phase 2. Once they do, build `index.html` and `index.css` with a premium, highly polished aesthetic (modern typography, smooth micro-animations, rich color system, dark mode, glassmorphism) tailored for the Web UI. Harness the LUT tokens to easily toggle/filter units in the study UI.
+1. **Prioritize Ingestion of Remaining Study Texts (Phase 1.5) [HIGH PRIORITY]**:
+   - Systematically run `node text_analyzer.js <passageName>` across all remaining texts in `studytexts.js` (`studytext11`, `studytext21`, `studytext22`, `studytext31`, `studytext32`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext63`).
+   - Extract the curriculum gap inventory for each passage (vocabulary, grammar patterns, counters, particles).
+   - Batch-insert the missing units into `data.js` via `select.js INSERT FROMFILE` with complete `SyntaxFrame`, `SemanticTags`, and `SemanticVector` metadata.
+   - Sync new units into `homonyms.js` via `node homonyms.js update`.
+   - Run `node exhaustive.js` after each batch to ensure 100% test fidelity (0 errors) across the entire dataset.
+
+2. **Pronunciation Engine Completion & English-Phoneme TTS Engine**:
+   - **Pronunciation Exception Rules**: Complete the substantive morpheme boundary liaison rules (`옷 안 [오단]`), verb stem coda dissimilations (`맑게 [말께]`), and non-lateralizing Sino-Korean compounds (`생산량 [생산냥]`) documented in [pronunciation_exceptions.md](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/pronunciation_exceptions.md).
+   - **English-Text Style Phoneme Pronunciation**: Extend the pronunciation engine in `korean.js` to generate English-text style phonetic phoneme respellings / pseudo-phoneme approximations specifically tailored for standard English text-to-speech engines.
+   - **TTS Voice Diversity Target**: Enable the numerous high-quality English voices available in the browser's `window.speechSynthesis` API to speak Korean phrases naturally and cleanly. This will provide rich voice variety, different accents, and diverse auditory stimuli to dramatically improve learner listening comprehension and phonological discrimination.
+
+3. **Phase 2 (UI Development & Study Mode Integration)**:
+   - Build the interactive web application (`index.html`, `index.css`) with premium aesthetics (modern typography, dark mode, glassmorphism, responsive layout, smooth micro-animations).
+   - Integrate `text_analyzer.js` directly into the UI to provide live passage decomposition, interactive study checklists, toggleable LUT tokens, homonym disambiguation tooltips, and multi-voice English-phoneme TTS audio playback.
