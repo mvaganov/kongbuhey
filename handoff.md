@@ -28,10 +28,10 @@ Contains the 12-element schema array for Language Units (Vocabulary and Grammar)
 * **File Layout & LLM Tooling**: Functional logic (`DATA_SCHEMA`, in-memory cache engine, `addLearningUnit`, `getWords`, `hasTag`) is positioned at the top of `data.js` (lines 1–150) above `KR_EN_languageUnits`. Agents must use `select.js` to query, count, or modify data rows rather than reading the data array directly.
 
 * **Current Dataset Status:** 
-  - **1,455 units (100% complete schema)**: Covers `SUOBI00` through `SUOBI20` from `words0.js`, plus `class2011` through `class2162` from `words1.js`.
+  - **1,603 units (100% complete curriculum from words0.js and words1.js)**: Covers `SUOBI00` through `SUOBI20` from `words0.js`, and all 40 classes (`class2011` through `class2202`) from `words1.js`.
   - All units have complete `Id`, `PriorityScore`, `SemanticTags`, and `SemanticVector` fields.
   - Number support: Full Sino-Korean (0..10,000) and Pure Korean (0..99 cardinal/attributive) generation with counter measure formulas validated via `number_test.js` (30,630 assertions, 100% pass).
-  - Sentence validation: 100% pass rate with 0 errors across Cartesian test suites (`node exhaustive.js`, 2,954 generated sentences).
+  - Sentence validation: 100% pass rate with 0 errors across Cartesian test suites (`node exhaustive.js`, 3,234 generated sentences).
 
 ### 2. `korean.js` (Morphology & Semantic Generation Engine)
 A robust, centralized module that handles complex rules of Korean text manipulation and semantic generation:
@@ -96,12 +96,12 @@ Maps surface Hangul tokens to:
     *   `node homonyms.js least [10]`: Displays the least confusable tokens.
     *   `node homonyms.js stats`: Summary metrics of total tokens, direct units, LUTs, and phonetic links.
 *   **LLM-Friendly File Structure**: `printHelp()` and all functional logic (`getPhoneticCandidates`, `updateHomonyms`, `lookupToken`, `runCli`) reside at the top of the file with a prominent LLM guidance banner. The monolithic 2,200+ line `HOMONYMS` dictionary is quarantined at the bottom directly before the module exports.
-*   **Dataset Status**: 100% of `data.js` vocabulary ingested (2,667 tokens, 3,183 mapped entries: 1,785 direct units, 1,052 LUT combinations, and 346 mutual phonetic links). 0 orphan links. Exhaustive tests pass with 0 errors across 2,954 generated sentences.
+*   **Dataset Status**: 100% of `data.js` vocabulary ingested (2,890 tokens, 3,458 mapped entries: 1,949 direct units, 1,133 LUT combinations, and 376 mutual phonetic links). 0 orphan links. Exhaustive tests pass with 0 errors across 3,234 generated sentences.
 
 ---
 
 ## Next Steps for the Next Agent
 
-1. **Continue Bulk Migration (`words1.js`)**: Units from `words0.js` and `class2011` through `class2162` from `words1.js` are 100% complete (1,455 units total, IDs 0–1454) with full schema and semantic vectors. Proceed to migrating `class2171` onward (`가족 영화`, `공상 과학 영화`, `만큼`, `-어도`, etc.). Migrate in batches of ~100 units using `select.js INSERT FROMFILE` with explicit IDs, and IMMEDIATELY run `node exhaustive.js [SourceTag]` and `node homonyms.js update --source [SourceTag]` to validate morphology and maintain dataset integrity.
+1. **Curriculum Migration (Phase 1) COMPLETE**: All vocabulary and grammar units from `words0.js` (`SUOBI00`–`SUOBI20`) and `words1.js` (`class2011`–`class2202`) are 100% migrated into `data.js` (1,603 units total, IDs 0–1602). Full schema, semantic vectors, priority scores, and homonyms sync are in place with 0 errors across 3,234 generated sentences.
 2. **Pronunciation Rule Exceptions [DEFERRED]**: Consult [pronunciation_exceptions.md](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/pronunciation_exceptions.md) for explicit exceptions (substantive morpheme boundaries like `옷 안 [오단]`, verb stem dissimilations like `맑게 [말께]`, non-lateralizing Sino-Korean words like `생산량 [생산냥]`). Implement these in `korean.js` later when green-lit.
-3. **Phase 2 (UI Development) [ON HOLD]**: Wait for the user to explicitly green-light moving to Phase 2. Once they do, build `index.html` and `index.css` with a premium, highly polished aesthetic (modern fonts, smooth micro-animations, rich colors, glassmorphism) tailored for the Web UI. Harness the LUT tokens to easily toggle/filter units in the study UI.
+3. **Phase 2 (UI Development) [READY TO BEGIN]**: Wait for the user to explicitly green-light moving to Phase 2. Once they do, build `index.html` and `index.css` with a premium, highly polished aesthetic (modern typography, smooth micro-animations, rich color system, dark mode, glassmorphism) tailored for the Web UI. Harness the LUT tokens to easily toggle/filter units in the study UI.
