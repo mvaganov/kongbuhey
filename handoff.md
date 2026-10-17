@@ -27,7 +27,7 @@ Contains the 12-element schema array for Language Units (Vocabulary and Grammar)
 * **Semantic Vectors:** JSON string defining domain, prerequisites, products, and polarity (e.g. `{"domain":"consume", "req":"food", "prod":"satiety", "polarity": 1}`).
 
 * **Current Dataset Status:** 
-  - **913 units (100% complete schema)**: Covers `SUOBI00` through `SUOBI20`, plus `class2011`, `class2012`, `class2021`, `class2022`, `class2031`, `class2032`, and `class2041` from `words1.js`.
+  - **1,023 units (100% complete schema)**: Covers `SUOBI00` through `SUOBI20` from `words0.js`, plus `class2011` through `class2061` from `words1.js`.
   - All units have complete `Id`, `PriorityScore`, `SemanticTags`, and `SemanticVector` fields.
   - Number support: Full Sino-Korean (0..10,000) and Pure Korean (0..99 cardinal/attributive) generation with counter measure formulas validated via `number_test.js` (30,630 assertions, 100% pass).
   - Sentence validation: 100% pass rate with 0 errors across Cartesian test suites (`node exhaustive.js`).
@@ -94,12 +94,12 @@ Maps surface Hangul tokens to:
     *   `node homonyms.js top [10]`: Displays the most confusable tokens.
     *   `node homonyms.js least [10]`: Displays the least confusable tokens.
     *   `node homonyms.js stats`: Summary metrics of total tokens, direct units, LUTs, and phonetic links.
-*   **Dataset Status**: 100% of `data.js` vocabulary ingested (1,711 tokens, 1,936 mapped entries: 1,138 direct units, 648 LUT combinations, and 150 mutual phonetic links). 0 non-Hangul keys, 0 orphan links. Exhaustive tests pass with 0 errors.
+*   **Dataset Status**: 100% of `data.js` vocabulary ingested (1,886 tokens, 2,181 mapped entries: 1,261 direct units, 714 LUT combinations, and 206 mutual phonetic links). 0 orphan links. Exhaustive tests pass with 0 errors.
 
 ---
 
 ## Next Steps for the Next Agent
 
-1. **Continue Bulk Migration (`words1.js`)**: Units from `words0.js` and `class2011` through `class2041` from `words1.js` are 100% complete with full schema and semantic vectors. Proceed to migrating `class2042` onward. Migrate one or two sections at a time using `select.js INSERT FROMFILE` and IMMEDIATELY run `node exhaustive.js [SourceTag]` to validate the morphology.
+1. **Continue Bulk Migration (`words1.js`)**: Units from `words0.js` and `class2011` through `class2061` from `words1.js` are 100% complete with full schema and semantic vectors. Proceed to migrating `class2062` onward. Migrate one or two sections at a time using `select.js INSERT FROMFILE` and IMMEDIATELY run `node exhaustive.js [SourceTag]` to validate the morphology.
 2. **Pronunciation Rule Exceptions [DEFERRED]**: Consult [pronunciation_exceptions.md](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/pronunciation_exceptions.md) for explicit exceptions (substantive morpheme boundaries like `옷 안 [오단]`, verb stem dissimilations like `맑게 [말께]`, non-lateralizing Sino-Korean words like `생산량 [생산냥]`). Implement these in `korean.js` later when green-lit.
 3. **Phase 2 (UI Development) [ON HOLD]**: Wait for the user to explicitly green-light moving to Phase 2. Once they do, build `index.html` and `index.css` with a premium, highly polished aesthetic (modern fonts, smooth micro-animations, rich colors, glassmorphism) tailored for the Web UI. Harness the LUT tokens to easily toggle/filter units in the study UI.

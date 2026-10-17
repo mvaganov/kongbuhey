@@ -1193,10 +1193,10 @@ function applyMorphology(text) {
         return stemNoL + suffix;
     });
 
-    // ㄹ drops before 는
-    resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]는/g, (match, prevChar) => {
+    // ㄹ drops before 는 or 나
+    resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\](는|나)/g, (match, prevChar, suffix) => {
         const stemNoL = String.fromCharCode(prevChar.charCodeAt(0) - 8);
-        return stemNoL + '는';
+        return stemNoL + suffix;
     });
     
     // ㄹ + 습니다 -> ㅂ니다
