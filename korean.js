@@ -1,1934 +1,1282 @@
 let dataModule;
 if (typeof require !== 'undefined') {
-    dataModule = require('./data.js');
+	dataModule = require('./data.js');
 } else {
-    dataModule = window;
+	dataModule = window;
 }
 const { getWords, DATA_SCHEMA } = dataModule;
-const hasTag = dataModule.hasTag || function(unit, ...tags) {
-    if (!unit) return false;
-    const unitTags = unit[DATA_SCHEMA.SemanticTags];
-    if (unitTags) {
-        if (unitTags instanceof Set) {
-            if (tags.length === 1) return unitTags.has(tags[0]);
-            for (let i = 0; i < tags.length; i++) if (unitTags.has(tags[i])) return true;
-            return false;
-        }
-        if (Array.isArray(unitTags)) {
-            if (tags.length === 1) return unitTags.includes(tags[0]);
-            return tags.some(t => unitTags.includes(t));
-        }
-    }
-    return false;
+const hasTag = dataModule.hasTag || function (unit, ...tags) {
+	if (!unit) return false;
+	const unitTags = unit[DATA_SCHEMA.SemanticTags];
+	if (unitTags) {
+		if (unitTags instanceof Set) {
+			if (tags.length === 1) return unitTags.has(tags[0]);
+			for (let i = 0; i < tags.length; i++) if (unitTags.has(tags[i])) return true;
+			return false;
+		}
+		if (Array.isArray(unitTags)) {
+			if (tags.length === 1) return unitTags.includes(tags[0]);
+			return tags.some(t => unitTags.includes(t));
+		}
+	}
+	return false;
 };
 
-// --- Proper Names (User-editable collection of common Korean names) ---
+// =========================================================================
+// 1. Hangul Syllable Primitives & Constants
+// =========================================================================
+const HANGUL_INITIALS = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+const HANGUL_MEDIALS = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
+const HANGUL_FINALS = ['', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+
+function decomposeHangul(char) {
+	const code = char.charCodeAt(0) - 0xAC00;
+	if (code < 0 || code >= 11172) return null;
+	return { initial: Math.floor(code / 588), medial: Math.floor((code % 588) / 28), final: code % 28 };
+}
+
+function composeHangul(initial, medial, final = 0) {
+	return String.fromCharCode(0xAC00 + (initial * 588) + (medial * 28) + final);
+}
+
+function setFinal(char, final = 0) {
+	const d = decomposeHangul(char);
+	return d ? composeHangul(d.initial, d.medial, final) : char;
+}
+
+function hasBatchim(char) {
+	const d = decomposeHangul(char);
+	return !!(d && d.final !== 0);
+}
+
+function getStem(baseForm) {
+	return baseForm.replace(/다$/, '');
+}
+
+function getVowelHarmony(char) {
+	if (char === '하') return '여';
+	const d = decomposeHangul(char);
+	if (!d) return '어';
+	return (d.medial === 0 || d.medial === 2 || d.medial === 8) ? '아' : '어';
+}
+
+// =========================================================================
+// 2. Proper Names, Usage Filtering & Option Tracking
+// =========================================================================
 let properNames = ["민수", "지훈", "수진"];
 
-function getProperNames() {
-    return properNames;
-}
-
-function setProperNames(names) {
-    if (Array.isArray(names)) {
-        properNames = [...names];
-    }
-}
-
+function getProperNames() { return properNames; }
+function setProperNames(names) { if (Array.isArray(names)) properNames = [...names]; }
 function getRandomProperName() {
-    if (!properNames || properNames.length === 0) return "민수";
-    return properNames[Math.floor(Math.random() * properNames.length)];
+	if (!properNames || properNames.length === 0) return "민수";
+	return properNames[Math.floor(Math.random() * properNames.length)];
 }
 
 let currentUsageFilter = null;
 let totalOptionsCutToPreventCombinatorialExplosion = 0;
 
-function setCurrentUsageFilter(filter) {
-    currentUsageFilter = filter;
-}
-
-function getTotalOptionsCut() {
-    return totalOptionsCutToPreventCombinatorialExplosion;
-}
-
-function resetTotalOptionsCut() {
-    totalOptionsCutToPreventCombinatorialExplosion = 0;
-}
+function setCurrentUsageFilter(filter) { currentUsageFilter = filter; }
+function getTotalOptionsCut() { return totalOptionsCutToPreventCombinatorialExplosion; }
+function resetTotalOptionsCut() { totalOptionsCutToPreventCombinatorialExplosion = 0; }
 
 function getFilteredWords(pos, tag) {
-    let words = getWords(pos, tag);
-    if (currentUsageFilter) {
-        let originalWords = words;
-        words = words.filter(w => {
-            const source = w[DATA_SCHEMA.Source];
-            let isAllowed = currentUsageFilter[source] || hasTag(w, "devtest");
-            if (!isAllowed) {
-                const tags = w[DATA_SCHEMA.SemanticTags];
-                if (tags) {
-                    for (let t of tags) {
-                        if (currentUsageFilter[t]) {
-                            isAllowed = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            return isAllowed;
-        });
-        if (words.length == 0 && originalWords.length > 0) {
-            words = originalWords.slice(0, 5);
-        }
-    }
-    return words;
+	let words = getWords(pos, tag);
+	if (currentUsageFilter) {
+		let originalWords = words;
+		words = words.filter(w => {
+			const source = w[DATA_SCHEMA.Source];
+			let isAllowed = currentUsageFilter[source] || hasTag(w, "devtest");
+			if (!isAllowed) {
+				const tags = w[DATA_SCHEMA.SemanticTags];
+				if (tags) {
+					for (let t of tags) {
+						if (currentUsageFilter[t]) { isAllowed = true; break; }
+					}
+				}
+			}
+			return isAllowed;
+		});
+		if (words.length === 0 && originalWords.length > 0) {
+			words = originalWords.slice(0, 5);
+		}
+	}
+	return words;
 }
 
 function getConjugatedStem(koreanWord, conjugation) {
-    let stem = getStem(koreanWord);
-    if (conjugation && conjugation !== "regular" && conjugation !== "") stem += `[${conjugation}]`;
-    return stem;
+	let stem = getStem(koreanWord);
+	if (conjugation && conjugation !== "regular" && conjugation !== "") {
+		stem += `[${conjugation}]`;
+	}
+	return stem;
 }
 
 class TokenOption {
-    constructor(text, units = []) {
-        this.text = text;
-        this.units = Array.isArray(units) ? units : (units ? [units] : []);
-    }
-    toString() {
-        return this.text;
-    }
+	constructor(text, units = []) {
+		this.text = text;
+		this.units = units;
+	}
 }
 
 let usedUnitIds = new Set();
-
 function markUnitUsed(unit) {
-    if (!unit) return;
-    const id = Array.isArray(unit) ? unit[DATA_SCHEMA.Id] : unit.Id;
-    if (typeof id === 'number') {
-        usedUnitIds.add(id);
-    }
+	if (unit && typeof unit[DATA_SCHEMA.Id] === 'number') {
+		usedUnitIds.add(unit[DATA_SCHEMA.Id]);
+	}
 }
-
-function getUsedUnitIds() {
-    return usedUnitIds;
-}
-
-function resetUsedUnits() {
-    usedUnitIds.clear();
-}
+function getUsedUnitIds() { return usedUnitIds; }
+function resetUsedUnits() { usedUnitIds.clear(); }
 
 function deduplicateTokenOptions(options) {
-    const seen = new Map();
-    for (let opt of options) {
-        if (!opt) continue;
-        const text = typeof opt === 'string' ? opt : opt.text;
-        const units = (opt instanceof TokenOption) ? opt.units : [];
-        if (!seen.has(text)) {
-            seen.set(text, new TokenOption(text, [...units]));
-        } else {
-            const existing = seen.get(text);
-            for (let u of units) {
-                if (!existing.units.includes(u)) {
-                    existing.units.push(u);
-                }
-            }
-        }
-    }
-    return Array.from(seen.values());
+	const seen = new Set();
+	const result = [];
+	for (let opt of options) {
+		const key = opt.text;
+		if (!seen.has(key)) {
+			seen.add(key);
+			result.push(opt);
+		}
+	}
+	return result;
 }
 
-// --- Korean Number Generators ---
+// =========================================================================
+// 3. Korean Number Generators (Sino & Pure Korean)
+// =========================================================================
 const SINO_DIGITS = ["", "일", "이", "삼", "사", "오", "육", "칠", "팔", "구"];
 const PURE_KOREAN_TENS = ["", "열", "스물", "서른", "마흔", "쉰", "예순", "일흔", "여든", "아흔"];
 const PURE_KOREAN_ONES_CARDINAL = ["", "하나", "둘", "셋", "넷", "다섯", "여섯", "일곱", "여덟", "아홉"];
 const PURE_KOREAN_ONES_ATTRIBUTIVE = ["", "한", "두", "세", "네", "다섯", "여섯", "일곱", "여덟", "아홉"];
 
 function getSinoNumber(n) {
-    if (n === 0) return "영";
-    if (n === 10000) return "만";
-    if (n < 0 || n > 10000) throw new Error(`Sino-Korean numbers supported for 0..10000, got ${n}`);
-    
-    let result = "";
-    const thousands = Math.floor(n / 1000);
-    if (thousands > 0) {
-        result += (thousands === 1 ? "천" : SINO_DIGITS[thousands] + "천");
-    }
-    const hundreds = Math.floor((n % 1000) / 100);
-    if (hundreds > 0) {
-        result += (hundreds === 1 ? "백" : SINO_DIGITS[hundreds] + "백");
-    }
-    const tens = Math.floor((n % 100) / 10);
-    if (tens > 0) {
-        result += (tens === 1 ? "십" : SINO_DIGITS[tens] + "십");
-    }
-    const ones = n % 10;
-    if (ones > 0) {
-        result += SINO_DIGITS[ones];
-    }
-    return result;
+	if (n === 0) return "영";
+	if (n === 10000) return "만";
+	if (n < 0 || n > 10000) throw new Error(`Sino-Korean numbers supported for 0..10000, got ${n}`);
+	let result = "", rem = n;
+	for (const [val, name] of [[1000, "천"], [100, "백"], [10, "십"]]) {
+		const d = Math.floor(rem / val);
+		if (d > 0) result += (d === 1 ? "" : SINO_DIGITS[d]) + name;
+		rem %= val;
+	}
+	if (rem > 0) result += SINO_DIGITS[rem];
+	return result;
 }
 
 function getKoreanNumber(n, isAttributive = false) {
-    if (n === 0) return "영";
-    if (n < 0 || n > 99) throw new Error(`Pure Korean numbers supported for 0..99, got ${n}`);
-    
-    // Exactly 20 has special attributive form "스무"
-    if (n === 20 && isAttributive) {
-        return "스무";
-    }
-    
-    const tens = Math.floor(n / 10);
-    const ones = n % 10;
-    const onesArr = isAttributive ? PURE_KOREAN_ONES_ATTRIBUTIVE : PURE_KOREAN_ONES_CARDINAL;
-    
-    if (tens === 0) {
-        return onesArr[ones];
-    }
-    if (ones === 0) {
-        return PURE_KOREAN_TENS[tens];
-    }
-    return PURE_KOREAN_TENS[tens] + onesArr[ones];
+	if (n === 0) return "영";
+	if (n < 0 || n > 99) throw new Error(`Pure Korean numbers supported for 0..99, got ${n}`);
+	if (n === 20 && isAttributive) return "스무";
+	const onesArr = isAttributive ? PURE_KOREAN_ONES_ATTRIBUTIVE : PURE_KOREAN_ONES_CARDINAL;
+	const t = Math.floor(n / 10), o = n % 10;
+	return (PURE_KOREAN_TENS[t] || "") + (t === 0 || o !== 0 ? onesArr[o] : "");
 }
 
 const KOREAN_NUMBER_VALUES = {
-    // Pure Korean
-    "영": 0,
-    "하나": 1, "한": 1,
-    "둘": 2, "두": 2,
-    "셋": 3, "세": 3,
-    "넷": 4, "네": 4,
-    "다섯": 5, "여섯": 6, "일곱": 7, "여덟": 8, "아홉": 9,
-    "열": 10,
-    "열하나": 11, "열한": 11,
-    "열둘": 12, "열두": 12,
-    "열셋": 13, "열세": 13,
-    "열넷": 14, "열네": 14,
-    "열다섯": 15, "열여섯": 16, "열일곱": 17, "열여덟": 18, "열아홉": 19,
-    "스물": 20, "스무": 20,
-    "서른": 30, "마흔": 40, "쉰": 50, "예순": 60, "일흔": 70, "여든": 80, "아흔": 90,
-    // Sino-Korean
-    "일": 1, "이": 2, "삼": 3, "사": 4, "오": 5, "육": 6, "칠": 7, "팔": 8, "구": 9,
-    "십": 10, "이십": 20, "삼십": 30, "사십": 40, "오십": 50,
-    "육십": 60, "칠십": 70, "팔십": 80, "구십": 90,
-    "백": 100, "천": 1000, "만": 10000
+	"영": 0, "하나": 1, "한": 1, "둘": 2, "두": 2, "셋": 3, "세": 3, "넷": 4, "네": 4,
+	"다섯": 5, "여섯": 6, "일곱": 7, "여덟": 8, "아홉": 9, "열": 10,
+	"열하나": 11, "열한": 11, "열둘": 12, "열두": 12, "열셋": 13, "열세": 13, "열넷": 14, "열네": 14,
+	"열다섯": 15, "열여섯": 16, "열일곱": 17, "열여덟": 18, "열아홉": 19, "스물": 20, "스무": 20,
+	"서른": 30, "마흔": 40, "쉰": 50, "예순": 60, "일흔": 70, "여든": 80, "아흔": 90,
+	"일": 1, "이": 2, "삼": 3, "사": 4, "오": 5, "육": 6, "칠": 7, "팔": 8, "구": 9,
+	"십": 10, "이십": 20, "삼십": 30, "사십": 40, "오십": 50, "육십": 60, "칠십": 70, "팔십": 80, "구십": 90,
+	"백": 100, "천": 1000, "만": 10000
 };
 
 function getNumberTokenOptions(baseTag, min, max, isAttributive) {
-    const options = [];
-    const KoreanWord = DATA_SCHEMA.Korean;
-    const words = getFilteredWords("Number", baseTag);
+	const options = [];
+	const KoreanWord = DATA_SCHEMA.Korean;
+	const words = getFilteredWords("Number", baseTag);
 
-    // If small range (<= 10), generate all numbers in range
-    if (max - min + 1 <= 10) {
-        for (let i = min; i <= max; i++) {
-            const text = (baseTag === "sinoNumber") ? getSinoNumber(i) : getKoreanNumber(i, isAttributive);
-            const matchingUnit = words.find(w => w[KoreanWord] === text);
-            options.push(new TokenOption(text, matchingUnit ? [matchingUnit] : []));
-        }
-        return deduplicateTokenOptions(options);
-    }
+	if (max - min + 1 <= 10) {
+		for (let i = min; i <= max; i++) {
+			const text = (baseTag === "sinoNumber") ? getSinoNumber(i) : getKoreanNumber(i, isAttributive);
+			const matchingUnit = words.find(w => w[KoreanWord] === text);
+			options.push(new TokenOption(text, matchingUnit ? [matchingUnit] : []));
+		}
+		return deduplicateTokenOptions(options);
+	}
 
-    // For larger ranges, ensure all relevant in-scope units are included to guarantee curriculum coverage
-    words.forEach(w => {
-        // Skip explicitly opposite-mode units
-        if (isAttributive && hasTag(w, "counting") && !hasTag(w, "attributive")) return;
-        if (!isAttributive && hasTag(w, "attributive") && !hasTag(w, "counting")) return;
-        const val = KOREAN_NUMBER_VALUES[w[KoreanWord]];
-        if (val !== undefined && (val < min || val > max)) return;
-        options.push(new TokenOption(w[KoreanWord], [w]));
-    });
+	words.forEach(w => {
+		if (isAttributive && hasTag(w, "counting") && !hasTag(w, "attributive")) return;
+		if (!isAttributive && hasTag(w, "attributive") && !hasTag(w, "counting")) return;
+		const val = KOREAN_NUMBER_VALUES[w[KoreanWord]];
+		if (val !== undefined && (val < min || val > max)) return;
+		options.push(new TokenOption(w[KoreanWord], [w]));
+	});
 
-    // Also include boundary values and sample composites
-    const sampleNumbers = [min, max];
-    if (min + 1 < max) sampleNumbers.push(min + 1);
-    if (max - 1 > min) sampleNumbers.push(max - 1);
-    const mid1 = Math.floor(min + (max - min) * 0.25);
-    const mid2 = Math.floor(min + (max - min) * 0.5);
-    const mid3 = Math.floor(min + (max - min) * 0.75);
-    sampleNumbers.push(mid1, mid2, mid3);
+	const samples = [min, max];
+	if (min + 1 < max) samples.push(min + 1);
+	if (max - 1 > min) samples.push(max - 1);
+	const span = max - min;
+	samples.push(Math.floor(min + span * 0.25), Math.floor(min + span * 0.5), Math.floor(min + span * 0.75));
 
-    sampleNumbers.forEach(n => {
-        if (n >= min && n <= max) {
-            const text = (baseTag === "sinoNumber") ? getSinoNumber(n) : getKoreanNumber(n, isAttributive);
-            const matchingUnit = words.find(w => w[KoreanWord] === text);
-            options.push(new TokenOption(text, matchingUnit ? [matchingUnit] : []));
-        }
-    });
+	samples.forEach(n => {
+		if (n >= min && n <= max) {
+			const text = (baseTag === "sinoNumber") ? getSinoNumber(n) : getKoreanNumber(n, isAttributive);
+			const matchingUnit = words.find(w => w[KoreanWord] === text);
+			options.push(new TokenOption(text, matchingUnit ? [matchingUnit] : []));
+		}
+	});
 
-    return deduplicateTokenOptions(options);
+	return deduplicateTokenOptions(options);
 }
 
-function getTokenOptions(token, depth = 0) {
-    let options = [];
-    const KoreanWord = DATA_SCHEMA.Korean;
-    const Conjugation = DATA_SCHEMA.Conjugation;
-    const SemanticTags = DATA_SCHEMA.SemanticTags;
-    
-    if (token.type === "Name" || token.isProperName || (token.type === "N" && (token.tag === "name" || token.tag === "properName"))) {
-        const name = getRandomProperName();
-        options = [new TokenOption(name, [])];
-    } else if (token.type === "properNoun") {
-        const seeGrammar = getFilteredWords("Grammar").find(g => g[KoreanWord] === "씨") || getWords("Grammar").find(g => g[KoreanWord] === "씨");
-        const name = getRandomProperName();
-        options = [new TokenOption(name + "씨", seeGrammar ? [seeGrammar] : [])];
-    } else if (token.type === "N" || token.type === "Noun" || token.type === "N_Phrase") {
-        options = getFilteredWords("Noun", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
-    } else if (token.type === "AVst") {
-        options = getFilteredWords("Action Verb", token.tag).map(w => new TokenOption(getConjugatedStem(w[KoreanWord], w[Conjugation]), [w]));
-    } else if (token.type === "DVst") {
-        options = getFilteredWords("Descriptive Verb", token.tag).map(w => new TokenOption(getConjugatedStem(w[KoreanWord], w[Conjugation]), [w]));
-    } else if (token.type === "Number") {
-        const rangeMatch = token.tag ? token.tag.match(/^([a-zA-Z_]+)\((\d+)\s*,\s*(\d+)\)$/) : null;
-        if (rangeMatch) {
-            const baseTag = rangeMatch[1];
-            const min = parseInt(rangeMatch[2], 10);
-            const max = parseInt(rangeMatch[3], 10);
-            const isAttributive = !!token.isFollowedByMeasureWord;
-            options = getNumberTokenOptions(baseTag, min, max, isAttributive);
-        } else {
-            let words = getFilteredWords("Number", token.tag);
-            if (token.isFollowedByMeasureWord) {
-                words = words.filter(w => !hasTag(w, "counting") || hasTag(w, "attributive"));
-            } else {
-                words = words.filter(w => !hasTag(w, "attributive") || hasTag(w, "counting"));
-            }
-            options = words.map(w => new TokenOption(w[KoreanWord], [w]));
-        }
-    } else if (token.type === "Adv") {
-        options = getFilteredWords("Adverb", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
-    } else if (token.type === "Exclamation") {
-        options = getFilteredWords("Exclamation", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
-    } else if (token.type === "Clause" || token.type === "VP") {
-        if (depth > 0) {
-            options = [new TokenOption("갑니다"), new TokenOption("좋아요")];
-        } else {
-            const grammars = getFilteredWords("Grammar").filter(g => {
-                return hasTag(g, "declarative", "suggestion");
-            });
-            if (grammars.length > 0) {
-                grammars.forEach(g => {
-                    const formulas = g[Conjugation];
-                    formulas.forEach(formula => {
-                        const subOptions = generateTemplateTokenOptions(formula, depth + 1);
-                        subOptions.forEach(sub => {
-                            options.push(new TokenOption(sub.text, [g, ...sub.units]));
-                        });
-                    });
-                });
-            } else {
-                options = [new TokenOption("갑니다"), new TokenOption("좋아요")];
-            }
-        }
-    } else if (token.type === "VP_AVst") {
-        const avs = getFilteredWords("Action Verb", token.tag);
-        avs.forEach(av => {
-            let stem = getConjugatedStem(av[KoreanWord], av[Conjugation]);
-            if (hasTag(av, "transitive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-            if (hasTag(av, "transitive_drink")) getFilteredWords("Noun", "drink").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-            if (hasTag(av, "transitive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-            if (hasTag(av, "dative_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}에게 ${stem}`, [av, n])));
-            if (hasTag(av, "transitive_general")) {
-                let objs = getFilteredWords("Noun", "object");
-                if (objs.length === 0) objs = getFilteredWords("Noun");
-                objs.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-            }
-            if (hasTag(av, "transitive_sports")) {
-                let sports = getFilteredWords("Noun", "sports");
-                if (sports.length === 0) sports = getFilteredWords("Noun", "activity");
-                sports.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-            }
-            if (hasTag(av, "transitive_transportation")) {
-                let trans = getFilteredWords("Noun", "transportation");
-                trans.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-            }
-            if (hasTag(av, "transitive_place")) {
-                let places = getFilteredWords("Noun", "place");
-                places.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-            }
-            if (hasTag(av, "intransitive_motion")) getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}에 ${stem}`, [av, n])));
-            if (hasTag(av, "intransitive_general")) options.push(new TokenOption(stem, [av]));
-        });
-    } else if (token.type === "VP_DVst") {
-        const dvs = getFilteredWords("Descriptive Verb", token.tag);
-        dvs.forEach(dv => {
-            let stem = getConjugatedStem(dv[KoreanWord], dv[Conjugation]);
-            if (hasTag(dv, "descriptive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
-            if (hasTag(dv, "descriptive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
-            if (hasTag(dv, "descriptive_place")) getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
-            if (hasTag(dv, "descriptive_general")) {
-                let nouns = getFilteredWords("Noun", "object");
-                if (nouns.length === 0) nouns = getFilteredWords("Noun");
-                nouns.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
-            }
-        });
-    }
+// =========================================================================
+// 4. Verb Phrase Building & Argument Specs
+// =========================================================================
+const ACTION_VERB_SPECS = [
+	{ tag: "transitive_food", nounTag: "food", particle: "object", preferDomain: true },
+	{ tag: "transitive_drink", nounTag: "drink", particle: "object", preferDomain: true },
+	{ tag: "transitive_person", nounTag: "person", particle: "object" },
+	{ tag: "dative_person", nounTag: "person", particle: "dative" },
+	{ tag: "transitive_general", nounTag: "object", particle: "object", fallbackTag: null },
+	{ tag: "transitive_sports", nounTag: "sports", particle: "object", fallbackTag: "activity" },
+	{ tag: "transitive_transportation", nounTag: "transportation", particle: "object" },
+	{ tag: "transitive_place", nounTag: "place", particle: "object", preferDomain: true },
+	{ tag: "intransitive_motion", nounTag: "place", particle: "location", preferDomain: true }
+];
 
-    options = deduplicateTokenOptions(options);
+const DESCRIPTIVE_VERB_SPECS = [
+	{ tag: "descriptive_food", nounTag: "food" },
+	{ tag: "descriptive_person", nounTag: "person" },
+	{ tag: "descriptive_place", nounTag: "place" },
+	{ tag: "descriptive_general", nounTag: "object", fallbackTag: null }
+];
 
-    if (!currentUsageFilter && options.length > 5) {
-        totalOptionsCutToPreventCombinatorialExplosion += options.length - 5;
-        options = options.sort(() => 0.5 - Math.random()).slice(0, 5);
-    }
-    return options;
+function findNounForVerbTag(spec) {
+	let words = getFilteredWords("Noun", spec.nounTag);
+	if (spec.preferDomain) {
+		const domainWords = words.filter(w => parseSemanticVector(w).domain);
+		if (domainWords.length > 0) words = domainWords;
+	}
+	if (words.length === 0 && spec.fallbackTag !== undefined) {
+		words = getFilteredWords("Noun", spec.fallbackTag || undefined);
+	}
+	if (words.length === 0) {
+		words = getWords("Noun", spec.nounTag);
+		if (words.length === 0) words = getWords("Noun");
+	}
+	const chosen = getRandom(words);
+	if (chosen) markUnitUsed(chosen);
+	return chosen;
 }
 
-function generateTemplateTokenOptions(template, depth = 0) {
-    if (depth > 2) return [new TokenOption("갑니다"), new TokenOption("좋아요")];
-
-    const tokenRegex = /\{([^}:]+)(?::([^}]+))?\}/g;
-    let tokens = [];
-    let match;
-    let parts = [];
-    let lastIndex = 0;
-
-    while ((match = tokenRegex.exec(template)) !== null) {
-        parts.push(template.substring(lastIndex, match.index));
-        const afterToken = template.substring(tokenRegex.lastIndex);
-        const isBeforeSsi = (match[1] === "N" || match[1] === "Noun") && (afterToken.startsWith("씨") || afterToken.startsWith(" 씨"));
-        const isFollowedByMeasureWord = /^\s*\{(?:Noun|N):.*measureWord/i.test(afterToken) || /^\s*[가-힣]/.test(afterToken);
-        tokens.push({ 
-            type: match[1], 
-            tag: match[2], 
-            full: match[0],
-            isProperName: isBeforeSsi || match[1] === "Name" || match[2] === "properName" || match[2] === "name",
-            isFollowedByMeasureWord: isFollowedByMeasureWord
-        });
-        lastIndex = tokenRegex.lastIndex;
-    }
-    parts.push(template.substring(lastIndex));
-
-    let optionsPerToken = tokens.map(token => getTokenOptions(token, depth));
-
-    const cartesian = (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
-
-    let combinations = [];
-    if (optionsPerToken.length > 0) {
-        combinations = cartesian(...optionsPerToken);
-        if (optionsPerToken.length === 1) {
-            combinations = combinations.map(item => [item]);
-        }
-    } else {
-        return [new TokenOption(template, [])];
-    }
-
-    let results = [];
-    combinations.forEach(combo => {
-        let str = "";
-        let comboUnits = [];
-        for (let i = 0; i < parts.length - 1; i++) {
-            const opt = combo[i];
-            const text = (opt && opt.text !== undefined) ? opt.text : String(opt);
-            str += parts[i] + text;
-            if (opt && opt.units) {
-                comboUnits.push(...opt.units);
-            }
-        }
-        str += parts[parts.length - 1];
-
-        const uniqueUnits = [];
-        for (let u of comboUnits) {
-            if (u && !uniqueUnits.includes(u)) {
-                uniqueUnits.push(u);
-            }
-        }
-        results.push(new TokenOption(str, uniqueUnits));
-    });
-
-    return results;
-}
-
-function generateTemplateOptions(template, depth = 0) {
-    const tokenOptions = generateTemplateTokenOptions(template, depth);
-    tokenOptions.forEach(opt => {
-        if (opt && opt.units) {
-            opt.units.forEach(u => markUnitUsed(u));
-        }
-    });
-    return tokenOptions.map(opt => opt.text);
-}
-
-// --- Semantic Vector & Contextual Sentence Generation ---
-
-const SemanticConfig = {
-    globalStrictness: 0.5,
-    grammarOverrides: {
-        "contrast": 1.0,
-        "condition": 0.3
-    }
-};
-
-function getRandom(arr) {
-    if (!arr || arr.length === 0) return null;
-    return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function parseSemanticVector(unit) {
-    if (!unit) return {};
-    const sv = unit[DATA_SCHEMA.SemanticVector];
-    if (sv) {
-        try {
-            return typeof sv === 'object' ? sv : JSON.parse(sv);
-        } catch (e) {
-            return {};
-        }
-    }
-    return {};
-}
-
-function shouldApplySemanticConstraint(context) {
-    let activeStrictness = SemanticConfig.globalStrictness;
-    if (context && context.logic && SemanticConfig.grammarOverrides[context.logic] !== undefined) {
-        activeStrictness = SemanticConfig.grammarOverrides[context.logic];
-    }
-    return Math.random() < activeStrictness;
-}
-
-let templateToGrammarMap = null;
-
-function initTemplateToGrammarMap() {
-    if (templateToGrammarMap) return templateToGrammarMap;
-    templateToGrammarMap = new Map();
-    const allGrammars = getWords("Grammar");
-    allGrammars.forEach(gu => {
-        if (!gu) return;
-        const formulas = gu[DATA_SCHEMA.Conjugation];
-        if (Array.isArray(formulas)) {
-            formulas.forEach((formula, idx) => {
-                if (!templateToGrammarMap.has(formula)) {
-                    templateToGrammarMap.set(formula, { grammarUnit: gu, formulaIndex: idx });
-                }
-            });
-        }
-    });
-    return templateToGrammarMap;
-}
-
-function findGrammarUnitForTemplate(template) {
-    if (!template || typeof template !== 'string') return null;
-    const map = initTemplateToGrammarMap();
-    if (map.has(template)) return map.get(template);
-    // Attempt fuzzy match by trimming whitespace
-    const trimmed = template.trim();
-    if (map.has(trimmed)) return map.get(trimmed);
-    if ((trimmed === "{Name}씨" || trimmed === "{Name} 씨" || trimmed === "{N} 씨") && map.has("{N}씨")) return map.get("{N}씨");
-    if ((trimmed === "{N}씨" || trimmed === "{Name} 씨" || trimmed === "{N} 씨") && map.has("{Name}씨")) return map.get("{Name}씨");
-    return null;
+function attachParticle(nounKo, particleType) {
+	if (particleType === "object") return nounKo + (hasBatchim(nounKo.slice(-1)) ? "을" : "를");
+	if (particleType === "dative") return nounKo + "에게";
+	if (particleType === "location") return nounKo + "에";
+	if (particleType === "subject") return nounKo + (hasBatchim(nounKo.slice(-1)) ? "이" : "가");
+	return nounKo;
 }
 
 function buildActionVerbPhrase(word, stem, chosenNoun = null) {
-    const KoreanWord = DATA_SCHEMA.Korean;
-    let noun = chosenNoun;
-    let particleType = "object"; // "object" (을/를), "dative" (에게), "location" (에), "none"
-    let tagMatched = null;
+	let spec = null;
+	if (hasTag(word, "transitive_food") || hasTag(word, "transitive_drink")) {
+		spec = hasTag(word, "transitive_food") ? ACTION_VERB_SPECS[0] : ACTION_VERB_SPECS[1];
+	} else {
+		spec = ACTION_VERB_SPECS.find(s => hasTag(word, s.tag));
+	}
+	if (!spec) return { text: stem, noun: null };
 
-    if (hasTag(word, "transitive_food") || hasTag(word, "transitive_drink")) {
-        tagMatched = hasTag(word, "transitive_food") ? "food" : "drink";
-        particleType = "object";
-    } else if (hasTag(word, "transitive_person")) {
-        tagMatched = "person";
-        particleType = "object";
-    } else if (hasTag(word, "dative_person")) {
-        tagMatched = "person";
-        particleType = "dative";
-    } else if (hasTag(word, "transitive_general")) {
-        tagMatched = "object";
-        particleType = "object";
-    } else if (hasTag(word, "transitive_sports")) {
-        tagMatched = "sports";
-        particleType = "object";
-    } else if (hasTag(word, "transitive_transportation")) {
-        tagMatched = "transportation";
-        particleType = "object";
-    } else if (hasTag(word, "transitive_place")) {
-        tagMatched = "place";
-        particleType = "object";
-    } else if (hasTag(word, "intransitive_motion")) {
-        tagMatched = "place";
-        particleType = "location";
-    } else {
-        particleType = "none";
-    }
+	const noun = chosenNoun || findNounForVerbTag(spec);
+	if (!noun) return { text: stem, noun: null };
 
-    if (particleType === "none") {
-        return { text: stem, noun: null };
-    }
-
-    if (!noun) {
-        let nounWords = getFilteredWords("Noun", tagMatched);
-        if (tagMatched === "food" || tagMatched === "drink" || tagMatched === "place") {
-            const domainWords = nounWords.filter(w => parseSemanticVector(w).domain);
-            if (domainWords.length > 0) nounWords = domainWords;
-        }
-        if (nounWords.length === 0 && tagMatched === "sports") {
-            nounWords = getFilteredWords("Noun", "activity");
-        }
-        if (nounWords.length === 0 && tagMatched === "object") {
-            nounWords = getFilteredWords("Noun");
-        }
-        if (nounWords.length === 0) {
-            nounWords = getWords("Noun", tagMatched);
-            if (nounWords.length === 0) nounWords = getWords("Noun");
-        }
-        noun = getRandom(nounWords);
-        if (noun) markUnitUsed(noun);
-    }
-
-    if (!noun) {
-        return { text: stem, noun: null };
-    }
-
-    const nounKo = typeof noun === 'string' ? noun : noun[KoreanWord];
-    let phrase = "";
-    if (particleType === "object") {
-        const p = hasBatchim(nounKo.slice(-1)) ? "을" : "를";
-        phrase = `${nounKo}${p} ${stem}`;
-    } else if (particleType === "dative") {
-        phrase = `${nounKo}에게 ${stem}`;
-    } else if (particleType === "location") {
-        phrase = `${nounKo}에 ${stem}`;
-    } else {
-        phrase = stem;
-    }
-
-    return { text: phrase, noun };
+	const nounKo = typeof noun === 'string' ? noun : noun[DATA_SCHEMA.Korean];
+	return { text: `${attachParticle(nounKo, spec.particle)} ${stem}`, noun };
 }
 
 function buildDescriptiveVerbPhrase(word, stem, chosenNoun = null) {
-    const KoreanWord = DATA_SCHEMA.Korean;
-    let noun = chosenNoun;
-    let tagMatched = null;
+	const spec = DESCRIPTIVE_VERB_SPECS.find(s => hasTag(word, s.tag));
+	if (!spec) return { text: stem, noun: null };
 
-    if (hasTag(word, "descriptive_food")) {
-        tagMatched = "food";
-    } else if (hasTag(word, "descriptive_person")) {
-        tagMatched = "person";
-    } else if (hasTag(word, "descriptive_place")) {
-        tagMatched = "place";
-    } else if (hasTag(word, "descriptive_general")) {
-        tagMatched = "object";
-    }
+	const noun = chosenNoun || findNounForVerbTag(spec);
+	if (!noun) return { text: stem, noun: null };
 
-    if (!tagMatched) {
-        return { text: stem, noun: null };
-    }
+	const nounKo = typeof noun === 'string' ? noun : noun[DATA_SCHEMA.Korean];
+	return { text: `${attachParticle(nounKo, "subject")} ${stem}`, noun };
+}
 
-    if (!noun) {
-        let nouns = getFilteredWords("Noun", tagMatched);
-        if (nouns.length === 0 && tagMatched === "object") {
-            nouns = getFilteredWords("Noun");
-        }
-        if (nouns.length === 0) {
-            nouns = getWords("Noun", tagMatched);
-            if (nouns.length === 0) nouns = getWords("Noun");
-        }
-        noun = getRandom(nouns);
-        if (noun) markUnitUsed(noun);
-    }
+function expandSemanticVerb(pos, isAction, tokenType, currentContext, applyConstraint) {
+	let words = getFilteredWords(pos);
+	if (applyConstraint) {
+		if (isAction && currentContext.req_domain) {
+			const domainWords = words.filter(w => parseSemanticVector(w).domain === currentContext.req_domain);
+			if (domainWords.length > 0) words = domainWords;
+		} else if (!isAction && currentContext.logic === "cause_effect") {
+			const matchingWords = words.filter(w => {
+				const sv = parseSemanticVector(w);
+				return (sv.polarity === currentContext.polarity) &&
+					(sv.req === currentContext.produced_state || sv.req === "any" || sv.domain === "state");
+			});
+			if (matchingWords.length > 0) words = matchingWords;
+		} else if (!isAction && currentContext.logic === "contrast") {
+			const matchingWords = words.filter(w => {
+				const sv = parseSemanticVector(w);
+				return sv.polarity !== currentContext.polarity && sv.polarity !== 0;
+			});
+			if (matchingWords.length > 0) words = matchingWords;
+		}
+	}
 
-    if (!noun) {
-        return { text: stem, noun: null };
-    }
+	const svWords = words.filter(w => parseSemanticVector(w).domain);
+	if (svWords.length > 0) words = svWords;
 
-    const nounKo = typeof noun === 'string' ? noun : noun[KoreanWord];
-    const particle = hasBatchim(nounKo.slice(-1)) ? "이" : "가";
-    return { text: `${nounKo}${particle} ${stem}`, noun };
+	const word = getRandom(words);
+	if (!word) return { text: "N/A", verb: null, noun: null };
+
+	markUnitUsed(word);
+	const sv = parseSemanticVector(word);
+	if (isAction) {
+		if (sv.prod) currentContext.produced_state = sv.prod;
+		if (sv.polarity !== undefined) currentContext.polarity = sv.polarity;
+	}
+
+	const stem = getConjugatedStem(word[DATA_SCHEMA.Korean], word[DATA_SCHEMA.Conjugation]);
+	if (tokenType === "AVst" || tokenType === "DVst") {
+		return { text: stem, verb: word, noun: null };
+	}
+	const phrase = isAction ? buildActionVerbPhrase(word, stem) : buildDescriptiveVerbPhrase(word, stem);
+	return { text: phrase.text, verb: word, noun: phrase.noun };
 }
 
 function expandSemanticActionVerb(tokenType, currentContext, applyConstraint) {
-    let words = getFilteredWords("Action Verb");
-
-    if (applyConstraint && currentContext.req_domain) {
-        const domainWords = words.filter(w => parseSemanticVector(w).domain === currentContext.req_domain);
-        if (domainWords.length > 0) words = domainWords;
-    }
-
-    const svWords = words.filter(w => parseSemanticVector(w).domain);
-    if (svWords.length > 0) words = svWords;
-
-    const word = getRandom(words);
-    if (!word) return { text: "N/A", verb: null, noun: null };
-
-    markUnitUsed(word);
-    const sv = parseSemanticVector(word);
-    if (sv.prod) currentContext.produced_state = sv.prod;
-    if (sv.polarity !== undefined) currentContext.polarity = sv.polarity;
-
-    let stem = getConjugatedStem(word[DATA_SCHEMA.Korean], word[DATA_SCHEMA.Conjugation]);
-
-    if (tokenType === "AVst") {
-        return { text: stem, verb: word, noun: null };
-    }
-    const phrase = buildActionVerbPhrase(word, stem);
-    return { text: phrase.text, verb: word, noun: phrase.noun };
+	return expandSemanticVerb("Action Verb", true, tokenType, currentContext, applyConstraint);
 }
 
 function expandSemanticDescriptiveVerb(tokenType, currentContext, applyConstraint) {
-    let words = getFilteredWords("Descriptive Verb");
+	return expandSemanticVerb("Descriptive Verb", false, tokenType, currentContext, applyConstraint);
+}
 
-    if (applyConstraint && currentContext.logic === "cause_effect") {
-        const matchingWords = words.filter(w => {
-            let sv = parseSemanticVector(w);
-            let matchesPolarity = (sv.polarity === currentContext.polarity);
-            let matchesProduced = (sv.req === currentContext.produced_state || sv.req === "any" || sv.domain === "state");
-            return matchesPolarity && matchesProduced;
-        });
-        if (matchingWords.length > 0) words = matchingWords;
-    } else if (applyConstraint && currentContext.logic === "contrast") {
-        const matchingWords = words.filter(w => {
-            let sv = parseSemanticVector(w);
-            let matchesPolarity = (sv.polarity !== currentContext.polarity && sv.polarity !== 0);
-            return matchesPolarity;
-        });
-        if (matchingWords.length > 0) words = matchingWords;
-    }
+// =========================================================================
+// 5. Template & Token Expansion
+// =========================================================================
+function getTokenOptions(token, depth = 0) {
+	let options = [];
+	const KoreanWord = DATA_SCHEMA.Korean;
+	const Conjugation = DATA_SCHEMA.Conjugation;
 
-    const svWords = words.filter(w => parseSemanticVector(w).domain);
-    if (svWords.length > 0) words = svWords;
+	if (token.type === "Name" || token.isProperName || (token.type === "N" && (token.tag === "name" || token.tag === "properName"))) {
+		options = [new TokenOption(getRandomProperName(), [])];
+	} else if (token.type === "properNoun") {
+		const seeGrammar = getFilteredWords("Grammar").find(g => g[KoreanWord] === "씨") || getWords("Grammar").find(g => g[KoreanWord] === "씨");
+		options = [new TokenOption(getRandomProperName() + "씨", seeGrammar ? [seeGrammar] : [])];
+	} else if (token.type === "N" || token.type === "Noun" || token.type === "N_Phrase") {
+		options = getFilteredWords("Noun", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
+	} else if (token.type === "AVst") {
+		options = getFilteredWords("Action Verb", token.tag).map(w => new TokenOption(getConjugatedStem(w[KoreanWord], w[Conjugation]), [w]));
+	} else if (token.type === "DVst") {
+		options = getFilteredWords("Descriptive Verb", token.tag).map(w => new TokenOption(getConjugatedStem(w[KoreanWord], w[Conjugation]), [w]));
+	} else if (token.type === "Number") {
+		const rangeMatch = token.tag ? token.tag.match(/^([a-zA-Z_]+)\((\d+)\s*,\s*(\d+)\)$/) : null;
+		if (rangeMatch) {
+			options = getNumberTokenOptions(rangeMatch[1], parseInt(rangeMatch[2], 10), parseInt(rangeMatch[3], 10), !!token.isFollowedByMeasureWord);
+		} else {
+			let words = getFilteredWords("Number", token.tag);
+			words = words.filter(w => token.isFollowedByMeasureWord
+				? (!hasTag(w, "counting") || hasTag(w, "attributive"))
+				: (!hasTag(w, "attributive") || hasTag(w, "counting")));
+			options = words.map(w => new TokenOption(w[KoreanWord], [w]));
+		}
+	} else if (token.type === "Adv") {
+		options = getFilteredWords("Adverb", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
+	} else if (token.type === "Exclamation") {
+		options = getFilteredWords("Exclamation", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
+	} else if (token.type === "Clause" || token.type === "VP") {
+		if (depth > 0) {
+			options = [new TokenOption("갑니다"), new TokenOption("좋아요")];
+		} else {
+			const grammars = getFilteredWords("Grammar").filter(g => hasTag(g, "declarative", "suggestion"));
+			if (grammars.length > 0) {
+				grammars.forEach(g => {
+					g[Conjugation].forEach(formula => {
+						generateTemplateTokenOptions(formula, depth + 1).forEach(sub => {
+							options.push(new TokenOption(sub.text, [g, ...sub.units]));
+						});
+					});
+				});
+			} else {
+				options = [new TokenOption("갑니다"), new TokenOption("좋아요")];
+			}
+		}
+	} else if (token.type === "VP_AVst") {
+		getFilteredWords("Action Verb", token.tag).forEach(av => {
+			const stem = getConjugatedStem(av[KoreanWord], av[Conjugation]);
+			if (hasTag(av, "transitive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+			if (hasTag(av, "transitive_drink")) getFilteredWords("Noun", "drink").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+			if (hasTag(av, "transitive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+			if (hasTag(av, "dative_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}에게 ${stem}`, [av, n])));
+			if (hasTag(av, "transitive_general")) {
+				let objs = getFilteredWords("Noun", "object");
+				if (objs.length === 0) objs = getFilteredWords("Noun");
+				objs.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+			}
+			if (hasTag(av, "transitive_sports")) {
+				let sports = getFilteredWords("Noun", "sports");
+				if (sports.length === 0) sports = getFilteredWords("Noun", "activity");
+				sports.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+			}
+			if (hasTag(av, "transitive_transportation")) {
+				getFilteredWords("Noun", "transportation").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+			}
+			if (hasTag(av, "transitive_place")) {
+				getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+			}
+			if (hasTag(av, "intransitive_motion")) {
+				getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}에 ${stem}`, [av, n])));
+			}
+			if (hasTag(av, "intransitive_general")) options.push(new TokenOption(stem, [av]));
+		});
+	} else if (token.type === "VP_DVst") {
+		getFilteredWords("Descriptive Verb", token.tag).forEach(dv => {
+			const stem = getConjugatedStem(dv[KoreanWord], dv[Conjugation]);
+			if (hasTag(dv, "descriptive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
+			if (hasTag(dv, "descriptive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
+			if (hasTag(dv, "descriptive_place")) getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
+			if (hasTag(dv, "descriptive_general")) {
+				let nouns = getFilteredWords("Noun", "object");
+				if (nouns.length === 0) nouns = getFilteredWords("Noun");
+				nouns.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
+			}
+		});
+	}
 
-    const word = getRandom(words);
-    if (!word) return { text: "N/A", verb: null, noun: null };
+	options = deduplicateTokenOptions(options);
+	if (!currentUsageFilter && options.length > 5) {
+		totalOptionsCutToPreventCombinatorialExplosion += options.length - 5;
+		options = options.sort(() => 0.5 - Math.random()).slice(0, 5);
+	}
+	return options;
+}
 
-    markUnitUsed(word);
-    let stem = getConjugatedStem(word[DATA_SCHEMA.Korean], word[DATA_SCHEMA.Conjugation]);
+function generateTemplateTokenOptions(template, depth = 0) {
+	if (depth > 2) return [new TokenOption("갑니다"), new TokenOption("좋아요")];
+	const tokenRegex = /\{([^}:]+)(?::([^}]+))?\}/;
+	const match = template.match(tokenRegex);
+	if (!match) return [new TokenOption(template, [])];
 
-    if (tokenType === "DVst") {
-        return { text: stem, verb: word, noun: null };
-    }
-    const phrase = buildDescriptiveVerbPhrase(word, stem);
-    return { text: phrase.text, verb: word, noun: phrase.noun };
+	const fullMatch = match[0];
+	const tokenType = match[1];
+	const tag = match[2];
+	const afterToken = template.substring(match.index + fullMatch.length);
+	const isFollowedByMeasureWord = /^\s*\{(?:Noun|N):.*measureWord/i.test(afterToken) || /^\s*[가-힣]/.test(afterToken);
+	const isProperName = tokenType === "Name" || tag === "properName" || tag === "name" || (tokenType === "N" && (afterToken.startsWith("씨") || afterToken.startsWith(" 씨")));
+
+	const options = getTokenOptions({ type: tokenType, tag, isFollowedByMeasureWord, isProperName }, depth);
+	const combinations = [];
+
+	for (let opt of options) {
+		let remainder = template.substring(match.index + fullMatch.length);
+		if (opt.text.endsWith("씨") && remainder.startsWith("씨")) remainder = remainder.substring(1).trimStart();
+		const prefix = template.substring(0, match.index) + opt.text;
+		const subOptions = generateTemplateTokenOptions(remainder, depth);
+
+		for (let sub of subOptions) {
+			combinations.push(new TokenOption(prefix + sub.text, [...opt.units, ...sub.units]));
+		}
+	}
+	return combinations;
+}
+
+function generateTemplateOptions(template, depth = 0) {
+	return generateTemplateTokenOptions(template, depth).map(opt => opt.text);
+}
+
+// =========================================================================
+// 6. Semantic Context & Sentence Generation
+// =========================================================================
+const SemanticConfig = {
+	strictness: { default: 0.8, contrast: 1.0, cause_effect: 0.9, sequence: 0.7, selection: 0.8 },
+	getWeight(domainOrLogic) {
+		if (domainOrLogic && this.strictness[domainOrLogic] !== undefined) return this.strictness[domainOrLogic];
+		return this.strictness.default;
+	}
+};
+
+function getRandom(arr) {
+	if (!arr || arr.length === 0) return null;
+	return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function parseSemanticVector(unit) {
+	if (!unit) return {};
+	const raw = unit[DATA_SCHEMA.SemanticVector];
+	if (!raw || raw === "") return {};
+	if (typeof raw === 'object') return raw;
+	try { return JSON.parse(raw); } catch (e) { return {}; }
+}
+
+function shouldApplySemanticConstraint(context) {
+	if (!context || !context.logic) return false;
+	const weight = SemanticConfig.getWeight(context.logic);
+	if (weight >= 1.0) return true;
+	if (weight <= 0.0) return false;
+	return Math.random() < weight;
+}
+
+let templateToGrammarMap = null;
+function initTemplateToGrammarMap() {
+	if (templateToGrammarMap) return;
+	templateToGrammarMap = new Map();
+	const units = typeof KR_EN_languageUnits !== 'undefined' ? KR_EN_languageUnits : dataModule.KR_EN_languageUnits;
+	if (!units) return;
+	units.filter(u => u[DATA_SCHEMA.PartofSpeech] === "Grammar").forEach(u => {
+		const formulas = u[DATA_SCHEMA.Conjugation];
+		if (Array.isArray(formulas)) {
+			formulas.forEach((f, idx) => {
+				if (!templateToGrammarMap.has(f)) {
+					templateToGrammarMap.set(f, { grammarUnit: u, formulaIndex: idx });
+				}
+			});
+		}
+	});
+}
+
+function findGrammarUnitForTemplate(template) {
+	initTemplateToGrammarMap();
+	return templateToGrammarMap ? templateToGrammarMap.get(template) : null;
 }
 
 function expandSemanticClause(depth, currentContext) {
-    const KoreanWord = DATA_SCHEMA.Korean;
-    const Conjugation = DATA_SCHEMA.Conjugation;
+	const KoreanWord = DATA_SCHEMA.Korean;
+	const Conjugation = DATA_SCHEMA.Conjugation;
 
-    let grammars = getFilteredWords("Grammar").filter(g => {
-        const sv = parseSemanticVector(g);
-        return hasTag(g, "declarative") && (sv.logic === "declarative" || g[KoreanWord].includes("아요") || g[KoreanWord].includes("습니다"));
-    });
-    if (grammars.length === 0) {
-        grammars = getFilteredWords("Grammar").filter(g => hasTag(g, "declarative"));
-    }
-    if (grammars.length === 0) {
-        grammars = getFilteredWords("Grammar");
-    }
-    const grammar = getRandom(grammars);
+	let grammars = getFilteredWords("Grammar").filter(g => {
+		const sv = parseSemanticVector(g);
+		return hasTag(g, "declarative") && (sv.logic === "declarative" || g[KoreanWord].includes("아요") || g[KoreanWord].includes("습니다"));
+	});
+	if (grammars.length === 0) grammars = getFilteredWords("Grammar").filter(g => hasTag(g, "declarative"));
+	if (grammars.length === 0) grammars = getFilteredWords("Grammar");
 
-    if (grammar) {
-        markUnitUsed(grammar);
-        const formula = getRandom(grammar[Conjugation]);
-        const sub = generateSemanticSentence(formula, depth + 1, currentContext);
-        return { text: sub.ko, tree: sub.tree };
-    }
-    return { text: "좋아요", tree: "좋아요" };
+	const grammar = getRandom(grammars);
+	if (grammar) {
+		markUnitUsed(grammar);
+		const sub = generateSemanticSentence(getRandom(grammar[Conjugation]), depth + 1, currentContext);
+		return { text: sub.ko, tree: sub.tree };
+	}
+	return { text: "좋아요", tree: "좋아요" };
 }
 
 function expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint) {
-    if (tokenType === "Name" || tag === "name" || tag === "properName") {
-        return { text: getRandomProperName(), unit: null };
-    }
-    if (tokenType === "properNoun") {
-        const seeGrammar = getFilteredWords("Grammar").find(g => g[DATA_SCHEMA.Korean] === "씨") || getWords("Grammar").find(g => g[DATA_SCHEMA.Korean] === "씨");
-        return { text: getRandomProperName() + "씨", unit: seeGrammar || null };
-    }
-    let posToFetch = "Noun";
-    if (tokenType === "Number") posToFetch = "Number";
-    else if (tokenType === "Adv") posToFetch = "Adverb";
-    else if (tokenType === "Exclamation") posToFetch = "Exclamation";
+	if (tokenType === "Name" || tag === "name" || tag === "properName") {
+		return { text: getRandomProperName(), unit: null };
+	}
+	if (tokenType === "properNoun") {
+		const seeGrammar = getFilteredWords("Grammar").find(g => g[DATA_SCHEMA.Korean] === "씨") || getWords("Grammar").find(g => g[DATA_SCHEMA.Korean] === "씨");
+		return { text: getRandomProperName() + "씨", unit: seeGrammar || null };
+	}
 
-    let words = getFilteredWords(posToFetch, tag);
+	let posToFetch = "Noun";
+	if (tokenType === "Number") posToFetch = "Number";
+	else if (tokenType === "Adv") posToFetch = "Adverb";
+	else if (tokenType === "Exclamation") posToFetch = "Exclamation";
 
-    if (applyConstraint && currentContext.logic === "cause_effect" && currentContext.produced_state) {
-        const domainWords = words.filter(w => parseSemanticVector(w).domain);
-        if (domainWords.length > 0) words = domainWords;
-    }
+	let words = getFilteredWords(posToFetch, tag);
+	if (applyConstraint && currentContext.logic === "cause_effect" && currentContext.produced_state) {
+		const domainWords = words.filter(w => parseSemanticVector(w).domain);
+		if (domainWords.length > 0) words = domainWords;
+	}
 
-    if (words.length > 0) {
-        const chosen = getRandom(words);
-        if (chosen) {
-            markUnitUsed(chosen);
-            return { text: chosen[DATA_SCHEMA.Korean], unit: chosen };
-        }
-    }
-    return { text: "N/A", unit: null };
+	const chosen = getRandom(words);
+	if (chosen) {
+		markUnitUsed(chosen);
+		return { text: chosen[DATA_SCHEMA.Korean], unit: chosen };
+	}
+	return { text: "N/A", unit: null };
 }
 
 function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {}) {
-    if (depth > 2) return { ko: "좋아요", context: {}, tree: "좋아요" };
+	if (depth > 2) return { ko: "좋아요", context: {}, tree: "좋아요" };
 
-    let template = "";
-    let grammarId = null;
+	let template = "", grammarId = null;
+	const units = typeof KR_EN_languageUnits !== 'undefined' ? KR_EN_languageUnits : dataModule.KR_EN_languageUnits;
 
-    if (typeof templateOrUnit === 'number') {
-        const units = typeof KR_EN_languageUnits !== 'undefined' ? KR_EN_languageUnits : dataModule.KR_EN_languageUnits;
-        const gu = units ? units[templateOrUnit] : null;
-        if (gu) {
-            grammarId = gu[DATA_SCHEMA.Id];
-            template = getRandom(gu[DATA_SCHEMA.Conjugation]) || "";
-        } else {
-            template = String(templateOrUnit);
-            grammarId = template;
-        }
-    } else if (Array.isArray(templateOrUnit) && typeof templateOrUnit[DATA_SCHEMA.Id] === 'number') {
-        grammarId = templateOrUnit[DATA_SCHEMA.Id];
-        template = getRandom(templateOrUnit[DATA_SCHEMA.Conjugation]) || "";
-    } else if (typeof templateOrUnit === 'string') {
-        template = templateOrUnit;
-        const match = findGrammarUnitForTemplate(template);
-        if (match && match.grammarUnit) {
-            const gu = match.grammarUnit;
-            const formulas = gu[DATA_SCHEMA.Conjugation] || [];
-            if (formulas.length > 1 && match.formulaIndex > 0) {
-                const sigs = formulas.map(f => (f.match(/\{[^}]+\}/g) || []).join(','));
-                if (sigs[match.formulaIndex] === sigs[0]) {
-                    grammarId = template;
-                } else {
-                    grammarId = gu[DATA_SCHEMA.Id];
-                }
-            } else {
-                grammarId = gu[DATA_SCHEMA.Id];
-            }
-        } else {
-            grammarId = template;
-        }
-    } else {
-        template = String(templateOrUnit);
-        grammarId = template;
-    }
+	if (typeof templateOrUnit === 'number') {
+		const gu = units ? units[templateOrUnit] : null;
+		if (gu) {
+			grammarId = gu[DATA_SCHEMA.Id];
+			template = getRandom(gu[DATA_SCHEMA.Conjugation]) || "";
+		} else {
+			template = String(templateOrUnit);
+			grammarId = template;
+		}
+	} else if (Array.isArray(templateOrUnit) && typeof templateOrUnit[DATA_SCHEMA.Id] === 'number') {
+		grammarId = templateOrUnit[DATA_SCHEMA.Id];
+		template = getRandom(templateOrUnit[DATA_SCHEMA.Conjugation]) || "";
+	} else if (typeof templateOrUnit === 'string') {
+		template = templateOrUnit;
+		const match = findGrammarUnitForTemplate(template);
+		if (match && match.grammarUnit) {
+			const gu = match.grammarUnit;
+			const formulas = gu[DATA_SCHEMA.Conjugation] || [];
+			if (formulas.length > 1 && match.formulaIndex > 0) {
+				const sigs = formulas.map(f => (f.match(/\{[^}]+\}/g) || []).join(','));
+				grammarId = sigs[match.formulaIndex] === sigs[0] ? template : gu[DATA_SCHEMA.Id];
+			} else {
+				grammarId = gu[DATA_SCHEMA.Id];
+			}
+		} else {
+			grammarId = template;
+		}
+	} else {
+		template = String(templateOrUnit);
+		grammarId = template;
+	}
 
-    let koResult = template;
-    let currentContext = { ...incomingContext };
-    const childrenTree = [];
+	let koResult = template;
+	let currentContext = { ...incomingContext };
+	const childrenTree = [];
+	const tokenRegex = /\{([^}:]+)(?::([^}]+))?\}/g;
+	let match;
 
-    const tokenRegex = /\{([^}:]+)(?::([^}]+))?\}/g;
-    let match;
+	while ((match = tokenRegex.exec(koResult)) !== null) {
+		const token = match[0], tokenType = match[1], tag = match[2];
+		const applyConstraint = shouldApplySemanticConstraint(currentContext);
+		let replacementKo = "", childNode = null;
+		const afterToken = koResult.substring(match.index + token.length);
+		const isProperName = tokenType === "Name" || tag === "properName" || tag === "name" || (tokenType === "N" && (afterToken.startsWith("씨") || afterToken.startsWith(" 씨")));
 
-    while ((match = tokenRegex.exec(koResult)) !== null) {
-        const token = match[0];
-        const tokenType = match[1];
-        const tag = match[2];
+		if (isProperName) {
+			replacementKo = getRandomProperName();
+			childNode = replacementKo;
+		} else if (tokenType === "properNoun") {
+			const seeGrammar = getFilteredWords("Grammar").find(g => g[DATA_SCHEMA.Korean] === "씨") || getWords("Grammar").find(g => g[DATA_SCHEMA.Korean] === "씨");
+			const name = getRandomProperName();
+			replacementKo = name + "씨";
+			childNode = seeGrammar ? [seeGrammar[DATA_SCHEMA.Id], name] : replacementKo;
+		} else if (tokenType === "VP_AVst" || tokenType === "AVst" || tokenType === "VP_DVst" || tokenType === "DVst") {
+			const isAction = tokenType.includes("AVst");
+			const exp = isAction
+				? expandSemanticActionVerb(tokenType, currentContext, applyConstraint)
+				: expandSemanticDescriptiveVerb(tokenType, currentContext, applyConstraint);
+			replacementKo = exp.text;
+			if (exp.verb) {
+				childNode = exp.noun
+					? [exp.verb[DATA_SCHEMA.Id], typeof exp.noun[DATA_SCHEMA.Id] === 'number' ? exp.noun[DATA_SCHEMA.Id] : exp.noun[DATA_SCHEMA.Korean]]
+					: exp.verb[DATA_SCHEMA.Id];
+			} else {
+				childNode = replacementKo;
+			}
+		} else if (tokenType === "Clause" || tokenType === "VP") {
+			const exp = expandSemanticClause(depth, currentContext);
+			replacementKo = exp.text;
+			childNode = exp.tree;
+		} else if (tokenType === "Number" && tag && tag.includes("(")) {
+			const rangeMatch = tag.match(/^([a-zA-Z_]+)\((\d+)\s*,\s*(\d+)\)$/);
+			if (rangeMatch) {
+				const baseTag = rangeMatch[1];
+				const min = parseInt(rangeMatch[2], 10), max = parseInt(rangeMatch[3], 10);
+				const val = Math.floor(Math.random() * (max - min + 1)) + min;
+				const isFollowedByMeasureWord = /^\s*\{(?:Noun|N):.*measureWord/i.test(afterToken) || /^\s*[가-힣]/.test(afterToken);
+				replacementKo = (baseTag === "sinoNumber") ? getSinoNumber(val) : getKoreanNumber(val, isFollowedByMeasureWord);
+				const words = getFilteredWords("Number", baseTag);
+				const matchedUnit = words.find(w => w[DATA_SCHEMA.Korean] === replacementKo);
+				if (matchedUnit) {
+					markUnitUsed(matchedUnit);
+					childNode = matchedUnit[DATA_SCHEMA.Id];
+				} else {
+					childNode = replacementKo;
+				}
+			} else {
+				const exp = expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint);
+				replacementKo = exp.text;
+				childNode = exp.unit ? exp.unit[DATA_SCHEMA.Id] : replacementKo;
+			}
+		} else {
+			const exp = expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint);
+			replacementKo = exp.text;
+			childNode = exp.unit ? exp.unit[DATA_SCHEMA.Id] : replacementKo;
+		}
 
-        const applyConstraint = shouldApplySemanticConstraint(currentContext);
+		childrenTree.push(childNode);
+		koResult = koResult.replace(token, replacementKo || "N/A");
+		tokenRegex.lastIndex = 0;
+	}
 
-        let replacementKo = "";
-        let childNode = null;
-
-        const afterToken = koResult.substring(match.index + token.length);
-        const isProperName = tokenType === "Name" || tag === "properName" || tag === "name" || (tokenType === "N" && (afterToken.startsWith("씨") || afterToken.startsWith(" 씨")));
-
-        if (isProperName) {
-            replacementKo = getRandomProperName();
-            childNode = replacementKo;
-        } else if (tokenType === "properNoun") {
-            const seeGrammar = getFilteredWords("Grammar").find(g => g[DATA_SCHEMA.Korean] === "씨") || getWords("Grammar").find(g => g[DATA_SCHEMA.Korean] === "씨");
-            const name = getRandomProperName();
-            replacementKo = name + "씨";
-            childNode = seeGrammar ? [seeGrammar[DATA_SCHEMA.Id], name] : replacementKo;
-        } else if (tokenType === "VP_AVst" || tokenType === "AVst") {
-            const exp = expandSemanticActionVerb(tokenType, currentContext, applyConstraint);
-            replacementKo = exp.text;
-            if (exp.verb) {
-                if (exp.noun) {
-                    const nounId = typeof exp.noun[DATA_SCHEMA.Id] === 'number' ? exp.noun[DATA_SCHEMA.Id] : exp.noun[DATA_SCHEMA.Korean];
-                    childNode = [exp.verb[DATA_SCHEMA.Id], nounId];
-                } else {
-                    childNode = exp.verb[DATA_SCHEMA.Id];
-                }
-            } else {
-                childNode = replacementKo;
-            }
-        } else if (tokenType === "VP_DVst" || tokenType === "DVst") {
-            const exp = expandSemanticDescriptiveVerb(tokenType, currentContext, applyConstraint);
-            replacementKo = exp.text;
-            if (exp.verb) {
-                if (exp.noun) {
-                    const nounId = typeof exp.noun[DATA_SCHEMA.Id] === 'number' ? exp.noun[DATA_SCHEMA.Id] : exp.noun[DATA_SCHEMA.Korean];
-                    childNode = [exp.verb[DATA_SCHEMA.Id], nounId];
-                } else {
-                    childNode = exp.verb[DATA_SCHEMA.Id];
-                }
-            } else {
-                childNode = replacementKo;
-            }
-        } else if (tokenType === "Clause" || tokenType === "VP") {
-            const exp = expandSemanticClause(depth, currentContext);
-            replacementKo = exp.text;
-            childNode = exp.tree;
-        } else if (tokenType === "Number" && tag && tag.includes("(")) {
-            const rangeMatch = tag.match(/^([a-zA-Z_]+)\((\d+)\s*,\s*(\d+)\)$/);
-            if (rangeMatch) {
-                const baseTag = rangeMatch[1];
-                const min = parseInt(rangeMatch[2], 10);
-                const max = parseInt(rangeMatch[3], 10);
-                const val = Math.floor(Math.random() * (max - min + 1)) + min;
-                const isFollowedByMeasureWord = /^\s*\{(?:Noun|N):.*measureWord/i.test(afterToken) || /^\s*[가-힣]/.test(afterToken);
-                replacementKo = (baseTag === "sinoNumber") ? getSinoNumber(val) : getKoreanNumber(val, isFollowedByMeasureWord);
-                const words = getFilteredWords("Number", baseTag);
-                const matchedUnit = words.find(w => w[DATA_SCHEMA.Korean] === replacementKo);
-                if (matchedUnit) {
-                    markUnitUsed(matchedUnit);
-                    childNode = matchedUnit[DATA_SCHEMA.Id];
-                } else {
-                    childNode = replacementKo;
-                }
-            } else {
-                const exp = expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint);
-                replacementKo = exp.text;
-                childNode = exp.unit ? exp.unit[DATA_SCHEMA.Id] : replacementKo;
-            }
-        } else {
-            const exp = expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint);
-            replacementKo = exp.text;
-            childNode = exp.unit ? exp.unit[DATA_SCHEMA.Id] : replacementKo;
-        }
-
-        childrenTree.push(childNode);
-        koResult = koResult.replace(token, replacementKo || "N/A");
-        tokenRegex.lastIndex = 0;
-    }
-
-    const tree = [grammarId, ...childrenTree];
-    return { ko: koResult, context: currentContext, tree };
+	return { ko: koResult, context: currentContext, tree: [grammarId, ...childrenTree] };
 }
 
+// =========================================================================
+// 7. Language Unit Tree (LUT) Reconstruction & Serialization
+// =========================================================================
 function reconstructFromLanguageUnitTree(tree) {
-    if (tree === null || tree === undefined) return "";
-    if (typeof tree === 'string') return tree;
-    if (typeof tree === 'number') {
-        const units = typeof KR_EN_languageUnits !== 'undefined' ? KR_EN_languageUnits : dataModule.KR_EN_languageUnits;
-        const u = units ? units[tree] : null;
-        return u ? u[DATA_SCHEMA.Korean] : String(tree);
-    }
-    if (!Array.isArray(tree) || tree.length === 0) return "";
+	if (tree === null || tree === undefined) return "";
+	if (typeof tree === 'string') return tree;
+	const units = typeof KR_EN_languageUnits !== 'undefined' ? KR_EN_languageUnits : dataModule.KR_EN_languageUnits;
+	if (typeof tree === 'number') {
+		const u = units ? units[tree] : null;
+		return u ? u[DATA_SCHEMA.Korean] : String(tree);
+	}
+	if (!Array.isArray(tree) || tree.length === 0) return "";
 
-    const units = typeof KR_EN_languageUnits !== 'undefined' ? KR_EN_languageUnits : dataModule.KR_EN_languageUnits;
-    const grammarRef = tree[0];
-    const children = tree.slice(1);
+	const grammarRef = tree[0];
+	const children = tree.slice(1);
+	let template = "";
 
-    let template = "";
-    let grammarUnit = null;
+	if (typeof grammarRef === 'number') {
+		const grammarUnit = units ? units[grammarRef] : null;
+		if (grammarUnit && Array.isArray(grammarUnit[DATA_SCHEMA.Conjugation])) {
+			const formulas = grammarUnit[DATA_SCHEMA.Conjugation];
+			if (formulas.length === 1) {
+				template = formulas[0];
+			} else {
+				const candidate = formulas.find(f => {
+					const tokens = f.match(/\{[^}:]+(?::[^}]+)?\}/g) || [];
+					if (tokens.length !== children.length) return false;
+					for (let i = 0; i < tokens.length; i++) {
+						const m = tokens[i].match(/^\{([^}:]+)/);
+						if (!m) continue;
+						const type = m[1], child = children[i];
+						if (type === 'Clause' && !Array.isArray(child)) return false;
+						const unitId = typeof child === 'number' ? child : (Array.isArray(child) && typeof child[0] === 'number' ? child[0] : null);
+						const u = (unitId !== null && units) ? units[unitId] : null;
+						if (type === 'Adv' && u && u[DATA_SCHEMA.PartofSpeech] !== 'Adverb') return false;
+						if (type === 'VP_AVst' && u && u[DATA_SCHEMA.PartofSpeech] === 'Adverb') return false;
+					}
+					return true;
+				});
 
-    if (typeof grammarRef === 'number') {
-        grammarUnit = units ? units[grammarRef] : null;
-        if (grammarUnit && Array.isArray(grammarUnit[DATA_SCHEMA.Conjugation])) {
-            const formulas = grammarUnit[DATA_SCHEMA.Conjugation];
-            if (formulas.length === 1) {
-                template = formulas[0];
-            } else {
-                // Determine which formula matches the children based on token count and token types
-                const candidate = formulas.find(f => {
-                    const tokens = f.match(/\{[^}:]+(?::[^}]+)?\}/g) || [];
-                    if (tokens.length !== children.length) return false;
-                    for (let i = 0; i < tokens.length; i++) {
-                        const m = tokens[i].match(/^\{([^}:]+)/);
-                        if (!m) continue;
-                        const type = m[1];
-                        const child = children[i];
-                        if (type === 'Clause' && !Array.isArray(child)) return false;
-                        const unitId = typeof child === 'number' ? child : (Array.isArray(child) && typeof child[0] === 'number' ? child[0] : null);
-                        const u = (unitId !== null && units) ? units[unitId] : null;
-                        if (type === 'Adv' && u && u[DATA_SCHEMA.PartofSpeech] !== 'Adverb') return false;
-                        if (type === 'VP_AVst' && u && u[DATA_SCHEMA.PartofSpeech] === 'Adverb') return false;
-                    }
-                    return true;
-                });
+				if (candidate) {
+					template = candidate;
+				} else {
+					const firstChild = children[0];
+					const firstId = typeof firstChild === 'number' ? firstChild : (Array.isArray(firstChild) && typeof firstChild[0] === 'number' ? firstChild[0] : null);
+					const u = (firstId !== null && units) ? units[firstId] : null;
+					const isAV = u && u[DATA_SCHEMA.PartofSpeech] === 'Action Verb';
+					const isDV = u && u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb';
+					template = isAV ? (formulas.find(f => f.includes('AVst')) || formulas[0])
+						: isDV ? (formulas.find(f => f.includes('DVst')) || formulas[0])
+							: formulas[0];
+				}
+			}
+		} else {
+			template = String(grammarRef);
+		}
+	} else {
+		template = String(grammarRef);
+	}
 
-                if (candidate) {
-                    template = candidate;
-                } else {
-                    const firstChild = children[0];
-                    let isActionVerb = false;
-                    let isDescriptiveVerb = false;
+	let koResult = template;
+	const tokenRegex = /\{([^}:]+)(?::([^}]+))?\}/g;
+	let match, childIndex = 0;
 
-                    if (typeof firstChild === 'number') {
-                        const u = units ? units[firstChild] : null;
-                        if (u) {
-                            isActionVerb = u[DATA_SCHEMA.PartofSpeech] === 'Action Verb';
-                            isDescriptiveVerb = u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb';
-                        }
-                    } else if (Array.isArray(firstChild) && typeof firstChild[0] === 'number') {
-                        const u = units ? units[firstChild[0]] : null;
-                        if (u) {
-                            isActionVerb = u[DATA_SCHEMA.PartofSpeech] === 'Action Verb';
-                            isDescriptiveVerb = u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb';
-                        }
-                    }
+	while ((match = tokenRegex.exec(koResult)) !== null) {
+		const token = match[0], tokenType = match[1];
+		const child = children[childIndex++];
+		let replacement = "";
 
-                    if (isActionVerb) {
-                        template = formulas.find(f => f.includes('AVst')) || formulas[0];
-                    } else if (isDescriptiveVerb) {
-                        template = formulas.find(f => f.includes('DVst')) || formulas[0];
-                    } else {
-                        template = formulas[0];
-                    }
-                }
-            }
-        } else {
-            template = String(grammarRef);
-        }
-    } else if (typeof grammarRef === 'string') {
-        template = grammarRef;
-    } else {
-        template = String(grammarRef);
-    }
+		if (tokenType === "VP_AVst" || tokenType === "AVst" || tokenType === "VP_DVst" || tokenType === "DVst") {
+			const isAction = tokenType.includes("AVst");
+			const verbId = Array.isArray(child) ? child[0] : (typeof child === 'number' ? child : null);
+			const nounId = (Array.isArray(child) && child.length > 1) ? child[1] : null;
+			const verb = (verbId !== null && units) ? units[verbId] : null;
+			const noun = (nounId !== null && units && typeof nounId === 'number') ? units[nounId] : (typeof nounId === 'string' ? nounId : null);
 
-    let koResult = template;
-    const tokenRegex = /\{([^}:]+)(?::([^}]+))?\}/g;
-    let match;
-    let childIndex = 0;
+			if (verb) {
+				let stem = getStem(verb[DATA_SCHEMA.Korean]);
+				const conj = verb[DATA_SCHEMA.Conjugation];
+				if (conj && conj !== "regular" && conj !== "") stem += `[${conj}]`;
+				if (tokenType === "AVst" || tokenType === "DVst") {
+					replacement = stem;
+				} else {
+					const phrase = isAction ? buildActionVerbPhrase(verb, stem, noun) : buildDescriptiveVerbPhrase(verb, stem, noun);
+					replacement = phrase.text;
+				}
+			} else {
+				replacement = typeof child === 'string' ? child : "N/A";
+			}
+		} else if (tokenType === "Clause" || tokenType === "VP") {
+			replacement = reconstructFromLanguageUnitTree(child);
+		} else {
+			if (typeof child === 'number' && units && units[child]) {
+				replacement = units[child][DATA_SCHEMA.Korean];
+			} else if (Array.isArray(child) && child.length === 1 && typeof child[0] === 'number' && units && units[child[0]]) {
+				replacement = units[child[0]][DATA_SCHEMA.Korean];
+			} else {
+				replacement = String(child || "N/A");
+			}
+		}
 
-    while ((match = tokenRegex.exec(koResult)) !== null) {
-        const token = match[0];
-        const tokenType = match[1];
-        const child = children[childIndex++];
-
-        let replacement = "";
-        if (tokenType === "VP_AVst" || tokenType === "AVst") {
-            let verbId = null;
-            let nounId = null;
-            if (Array.isArray(child)) {
-                verbId = child[0];
-                nounId = child.length > 1 ? child[1] : null;
-            } else if (typeof child === 'number') {
-                verbId = child;
-            }
-
-            const verb = (verbId !== null && units) ? units[verbId] : null;
-            const noun = (nounId !== null && units && typeof nounId === 'number') ? units[nounId] : (typeof nounId === 'string' ? nounId : null);
-
-            if (verb) {
-                let stem = getStem(verb[DATA_SCHEMA.Korean]);
-                if (verb[DATA_SCHEMA.Conjugation] && verb[DATA_SCHEMA.Conjugation] !== "regular" && verb[DATA_SCHEMA.Conjugation] !== "") {
-                    stem += `[${verb[DATA_SCHEMA.Conjugation]}]`;
-                }
-                if (tokenType === "AVst") {
-                    replacement = stem;
-                } else {
-                    const phrase = buildActionVerbPhrase(verb, stem, noun);
-                    replacement = phrase.text;
-                }
-            } else {
-                replacement = typeof child === 'string' ? child : "N/A";
-            }
-        } else if (tokenType === "VP_DVst" || tokenType === "DVst") {
-            let verbId = null;
-            let nounId = null;
-            if (Array.isArray(child)) {
-                verbId = child[0];
-                nounId = child.length > 1 ? child[1] : null;
-            } else if (typeof child === 'number') {
-                verbId = child;
-            }
-
-            const verb = (verbId !== null && units) ? units[verbId] : null;
-            const noun = (nounId !== null && units && typeof nounId === 'number') ? units[nounId] : (typeof nounId === 'string' ? nounId : null);
-
-            if (verb) {
-                let stem = getStem(verb[DATA_SCHEMA.Korean]);
-                if (verb[DATA_SCHEMA.Conjugation] && verb[DATA_SCHEMA.Conjugation] !== "regular" && verb[DATA_SCHEMA.Conjugation] !== "") {
-                    stem += `[${verb[DATA_SCHEMA.Conjugation]}]`;
-                }
-                if (tokenType === "DVst") {
-                    replacement = stem;
-                } else {
-                    const phrase = buildDescriptiveVerbPhrase(verb, stem, noun);
-                    replacement = phrase.text;
-                }
-            } else {
-                replacement = typeof child === 'string' ? child : "N/A";
-            }
-        } else if (tokenType === "Clause" || tokenType === "VP") {
-            replacement = reconstructFromLanguageUnitTree(child);
-        } else {
-            // Terminal (Noun, Number, Adv, Exclamation)
-            if (typeof child === 'number' && units && units[child]) {
-                replacement = units[child][DATA_SCHEMA.Korean];
-            } else if (Array.isArray(child) && child.length === 1 && typeof child[0] === 'number' && units && units[child[0]]) {
-                replacement = units[child[0]][DATA_SCHEMA.Korean];
-            } else {
-                replacement = String(child || "N/A");
-            }
-        }
-
-        koResult = koResult.replace(token, replacement || "N/A");
-        tokenRegex.lastIndex = 0;
-    }
-
-    return koResult;
+		koResult = koResult.replace(token, replacement || "N/A");
+		tokenRegex.lastIndex = 0;
+	}
+	return koResult;
 }
 
 function flattenLanguageUnitTree(tree) {
-    const ids = new Set();
-
-    function traverse(node) {
-        if (node === null || node === undefined) return;
-        if (typeof node === 'number') {
-            ids.add(node);
-            return;
-        }
-        if (typeof node === 'string') {
-            const match = findGrammarUnitForTemplate(node);
-            if (match && match.grammarUnit && typeof match.grammarUnit[DATA_SCHEMA.Id] === 'number') {
-                ids.add(match.grammarUnit[DATA_SCHEMA.Id]);
-            }
-            return;
-        }
-        if (Array.isArray(node)) {
-            // If it's a Language Unit itself (has DATA_SCHEMA fields)
-            if (typeof node[DATA_SCHEMA.Id] === 'number') {
-                ids.add(node[DATA_SCHEMA.Id]);
-                return;
-            }
-            for (let item of node) {
-                traverse(item);
-            }
-            return;
-        }
-        if (typeof node === 'object' && typeof node.Id === 'number') {
-            ids.add(node.Id);
-            return;
-        }
-    }
-
-    traverse(tree);
-    return Array.from(ids).sort((a, b) => a - b);
+	const ids = new Set();
+	function traverse(node) {
+		if (node === null || node === undefined) return;
+		if (typeof node === 'number') { ids.add(node); return; }
+		if (Array.isArray(node)) {
+			for (let item of node) {
+				if (typeof item === 'number') ids.add(item);
+				else if (Array.isArray(item)) traverse(item);
+			}
+		}
+	}
+	traverse(tree);
+	return Array.from(ids).sort((a, b) => a - b);
 }
 
 function encodeLanguageUnitIds(idsOrTree) {
-    let ids = [];
-    if (Array.isArray(idsOrTree) && idsOrTree.some(x => Array.isArray(x) || typeof x === 'string')) {
-        ids = flattenLanguageUnitTree(idsOrTree);
-    } else if (Array.isArray(idsOrTree)) {
-        ids = Array.from(new Set(idsOrTree)).filter(x => typeof x === 'number').sort((a, b) => a - b);
-    } else if (typeof idsOrTree === 'number') {
-        ids = [idsOrTree];
-    }
+	let ids = [];
+	if (Array.isArray(idsOrTree) && idsOrTree.some(x => Array.isArray(x) || typeof x === 'string')) {
+		ids = flattenLanguageUnitTree(idsOrTree);
+	} else if (Array.isArray(idsOrTree)) {
+		ids = Array.from(new Set(idsOrTree)).filter(x => typeof x === 'number').sort((a, b) => a - b);
+	} else if (typeof idsOrTree === 'number') {
+		ids = [idsOrTree];
+	}
 
-    const u16 = new Uint16Array(ids);
-    const bytes = new Uint8Array(u16.buffer, u16.byteOffset, u16.byteLength);
+	const u16 = new Uint16Array(ids);
+	const bytes = new Uint8Array(u16.buffer, u16.byteOffset, u16.byteLength);
 
-    if (typeof Buffer !== 'undefined') {
-        return Buffer.from(bytes).toString('base64url');
-    }
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) {
-        binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+	if (typeof Buffer !== 'undefined') {
+		return Buffer.from(bytes).toString('base64url');
+	}
+	let binary = '';
+	for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+	return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function decodeLanguageUnitIds(token) {
-    if (!token || typeof token !== 'string') return [];
-    let b64 = token.replace(/-/g, '+').replace(/_/g, '/');
-    while (b64.length % 4) b64 += '=';
+	if (!token || typeof token !== 'string') return [];
+	let b64 = token.replace(/-/g, '+').replace(/_/g, '/');
+	while (b64.length % 4) b64 += '=';
 
-    let bytes;
-    if (typeof Buffer !== 'undefined') {
-        bytes = new Uint8Array(Buffer.from(b64, 'base64'));
-    } else {
-        const binary = atob(b64);
-        bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    }
+	let bytes;
+	if (typeof Buffer !== 'undefined') {
+		bytes = new Uint8Array(Buffer.from(b64, 'base64'));
+	} else {
+		const binary = atob(b64);
+		bytes = new Uint8Array(binary.length);
+		for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+	}
 
-    const count = Math.floor(bytes.byteLength / 2);
-    const u16 = new Uint16Array(bytes.buffer, bytes.byteOffset, count);
-    return Array.from(u16);
+	const count = Math.floor(bytes.byteLength / 2);
+	const u16 = new Uint16Array(bytes.buffer, bytes.byteOffset, count);
+	return Array.from(u16);
 }
 
-function hasBatchim(char) {
-  const code = char.charCodeAt(0) - 44032;
-  if (code < 0 || code > 11171) return false;
-  return code % 28 !== 0;
-}
+// =========================================================================
+// 8. Korean Morphology Engine
+// =========================================================================
+const PARTICLE_PAIRS = {
+	"이/가": ["이", "가"], "은/는": ["은", "는"], "을/를": ["을", "를"], "(이)랑": ["이랑", "랑"],
+	"(이)나": ["이나", "나"], "이/나": ["이나", "나"], "(이)라서": ["이라서", "라서"], "이/라서": ["이라서", "라서"],
+	"(이)라도": ["이라도", "라도"], "이/라도": ["이라도", "라도"], "(이)든지": ["이든지", "든지"], "이/든지": ["이든지", "든지"]
+};
 
-function getStem(baseForm) {
-  return baseForm.replace(/다$/, '');
-}
-
-function getVowelHarmony(char) {
-    if (char === '하') return '여'; // Special case for 하 -> 하여 -> 해
-    const code = char.charCodeAt(0) - 44032;
-    if (code < 0 || code > 11171) return '어'; // Fallback
-    const medial = Math.floor(code / 28) % 21;
-    // 0: ㅏ, 2: ㅑ, 8: ㅗ
-    if (medial === 0 || medial === 2 || medial === 8) {
-        return '아';
-    }
-    return '어';
-}
+const PRONOUN_REPLACEMENTS = [
+	[/누가가/g, '누가'], [/누가를/g, '누구를'], [/누가에게/g, '누구에게'],
+	[/누가는/g, '누구는'], [/누가도/g, '누구도'], [/뭘을/g, '뭘'],
+	[/(^|[^가-힣])저가([^가-힣]|$)/g, '$1제가$2'],
+	[/(^|[^가-힣])누구가([^가-힣]|$)/g, '$1누가$2']
+];
 
 function applyMorphology(text) {
-    let resolvedKo = text;
-    
-    // Irregular Verbs Handling
-    // 1. b_irregular + 으 -> 우
-    resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
-        // Drop ㅂ (jongseong 17) -> add 우
-        const stemNoB = String.fromCharCode(prevChar.charCodeAt(0) - 17);
-        if (suffix === 'ㄴ') return stemNoB + '운';
-        if (suffix === 'ㄹ') return stemNoB + '울';
-        return stemNoB + '우' + suffix;
-    });
+	let resolvedKo = text;
 
-    // 2. b_irregular + 아/어 -> 워
-    resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, prevChar, harmonyMarker, suffix) => {
-        const stemNoB = String.fromCharCode(prevChar.charCodeAt(0) - 17);
-        let added = harmonyMarker === "았/었" ? "웠" : "워";
-        if (prevChar === '돕' || prevChar === '곱') {
-            added = harmonyMarker === "았/었" ? "왔" : "와";
-        }
-        return stemNoB + added + suffix;
-    });
+	// Irregular Verbs
+	// 1. b_irregular
+	resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
+		const base = setFinal(ch, 0);
+		return s === 'ㄴ' ? base + '운' : s === 'ㄹ' ? base + '울' : base + '우' + s;
+	});
+	resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => {
+		const base = setFinal(ch, 0);
+		const isW = (ch === '돕' || ch === '곱');
+		const added = (h === "았/었") ? (isW ? "왔" : "웠") : (isW ? "와" : "워");
+		return base + added + s;
+	});
 
-    // 3. l_irregular (ㄹ drops before ㄴ, ㅂ, ㅅ; doesn't drop before ㅁ, ㄹ, but 으 drops)
-    // e.g., 살다 + 으/니까 -> 사니까, 살다 + 으/면 -> 살면, 열다 + 으/면서 -> 열면서
-    resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
-        if (suffix === 'ㄴ') return String.fromCharCode(prevChar.charCodeAt(0) - 8 + 4); // drop ㄹ, add ㄴ
-        if (suffix === 'ㄹ') return prevChar; // ㄹ stays ㄹ
-        if (suffix === '면' || suffix === '면서' || suffix === '러' || suffix === '려고' || suffix === '려면' || suffix === '로' || suffix === '라고') {
-            // ㄹ does NOT drop, but 으 drops
-            return prevChar + suffix;
-        }
-        const stemNoL = String.fromCharCode(prevChar.charCodeAt(0) - 8);
-        return stemNoL + suffix;
-    });
+	// 2. l_irregular
+	resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
+		if (s === 'ㄴ') return setFinal(ch, 4);
+		if (s === 'ㄹ') return ch;
+		if (/^(면|면서|러|려고|려면|로|라고)$/.test(s)) return ch + s;
+		return setFinal(ch, 0) + s;
+	});
+	resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\](는|나|니|냐)/g, (_, ch, s) => setFinal(ch, 0) + s);
+	resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]습니다\/ㅂ니다/g, (_, ch) => setFinal(ch, 17) + "니다");
 
-    // ㄹ drops before 는, 나, or casual question ending 니, 냐
-    resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\](는|나|니|냐)/g, (match, prevChar, suffix) => {
-        const stemNoL = String.fromCharCode(prevChar.charCodeAt(0) - 8);
-        return stemNoL + suffix;
-    });
-    
-    // ㄹ + 습니다 -> ㅂ니다
-    resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]습니다\/ㅂ니다/g, (match, prevChar) => {
-        const stemNoL = String.fromCharCode(prevChar.charCodeAt(0) - 8);
-        const stemWithB = String.fromCharCode(stemNoL.charCodeAt(0) + 17); // Add ㅂ batchim
-        return stemWithB + "니다";
-    });
+	// 3. d_irregular
+	resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
+		const withL = setFinal(ch, 8);
+		return s === 'ㄴ' ? withL + '은' : s === 'ㄹ' ? withL + '을' : withL + '으' + s;
+	});
+	resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => setFinal(ch, 8) + h + s);
 
-    // 4. d_irregular (ㄷ -> ㄹ before vowels 으 and 아/어)
-    resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
-        // Change ㄷ (jongseong 7) to ㄹ (jongseong 8)
-        const stemWithL = String.fromCharCode(prevChar.charCodeAt(0) + 1);
-        if (suffix === 'ㄴ') return stemWithL + '은';
-        if (suffix === 'ㄹ') return stemWithL + '을';
-        return stemWithL + '으' + suffix;
-    });
+	// 4. eu_irregular
+	resolvedKo = resolvedKo.replace(/([가-힣])\[eu_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, ch, h, s) => {
+		const idx = resolvedKo.indexOf(match);
+		const prevVowel = idx > 0 ? getVowelHarmony(resolvedKo[idx - 1]) : '어';
+		const d = decomposeHangul(ch);
+		return composeHangul(d.initial, prevVowel === '아' ? 0 : 4, h === "았/었" ? 20 : 0) + s;
+	});
 
-    resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, prevChar, harmonyMarker, suffix) => {
-        // Change ㄷ (jongseong 7) to ㄹ (jongseong 8)
-        const stemWithL = String.fromCharCode(prevChar.charCodeAt(0) + 1);
-        return stemWithL + harmonyMarker + suffix; // harmony is resolved later
-    });
+	// 5. reu_irregular & reo_irregular
+	resolvedKo = resolvedKo.replace(/([가-힣])르\[reu_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, pre, h, s) => {
+		const prevVowel = getVowelHarmony(pre);
+		return setFinal(pre, 8) + composeHangul(5, prevVowel === '아' ? 0 : 4, h === "았/었" ? 20 : 0) + s;
+	});
+	resolvedKo = resolvedKo.replace(/([가-힣])르\[reo_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, pre, h, s) => {
+		return pre + "르" + (h === "았/었" ? "렀" : "러") + s;
+	});
 
-    // 5. eu_irregular (drop 으, use previous vowel for harmony)
-    resolvedKo = resolvedKo.replace(/([가-힣])\[eu_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, prevChar, harmonyMarker, suffix) => {
-        const idx = resolvedKo.indexOf(match);
-        let harmonyVowel = '어';
-        if (idx > 0) {
-            harmonyVowel = getVowelHarmony(resolvedKo[idx - 1]);
-        }
-        
-        const code = prevChar.charCodeAt(0) - 44032;
-        const initial = Math.floor(code / 588);
-        
-        let newMedial = harmonyVowel === '아' ? 0 : 4;
-        let newJongseong = harmonyMarker === "았/었" ? 20 : 0;
-        
-        const newChar = String.fromCharCode(44032 + (initial * 588) + (newMedial * 28) + newJongseong);
-        return newChar + suffix;
-    });
+	// 6. h_irregular
+	resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
+		const base = setFinal(ch, 0);
+		return s === 'ㄴ' ? setFinal(base, 4) : s === 'ㄹ' ? setFinal(base, 8) : base + s;
+	});
+	resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => {
+		return composeHangul(decomposeHangul(ch).initial, 1, h === "았/었" ? 20 : 0) + s;
+	});
 
-    // 6. reu_irregular (르 drops, previous gets ㄹ batchim, 르 becomes 라/러)
-    resolvedKo = resolvedKo.replace(/([가-힣])르\[reu_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, preReu, harmonyMarker, suffix) => {
-        // Add ㄹ batchim (8) to preReu
-        const stemWithL = String.fromCharCode(preReu.charCodeAt(0) + 8);
-        
-        const harmonyVowel = getVowelHarmony(preReu);
-        let newReuMedial = harmonyVowel === '아' ? 0 : 4; // ㅏ(0) or ㅓ(4)
-        let newReuJongseong = harmonyMarker === "았/었" ? 20 : 0; // ㅆ(20)
-        
-        // 5 is initial ㄹ. 5 * 588 = 2940.
-        const newReuBlock = String.fromCharCode(44032 + 2940 + (newReuMedial * 28) + newReuJongseong);
-        
-        return stemWithL + newReuBlock + suffix;
-    });
+	// 7. s_irregular
+	resolvedKo = resolvedKo.replace(/([가-힣])\[s_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
+		const base = setFinal(ch, 0);
+		return s === 'ㄴ' ? base + '은' : s === 'ㄹ' ? base + '을' : base + '으' + s;
+	});
+	resolvedKo = resolvedKo.replace(/([가-힣])\[s_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => {
+		const base = setFinal(ch, 0);
+		const hv = getVowelHarmony(base);
+		return base + '\u200B' + (h === "았/었" ? (hv === '아' ? '았' : '었') : hv) + s;
+	});
 
-    // 6b. reo_irregular (러 불규칙: 푸르다 -> 푸르러, 푸르렀다)
-    resolvedKo = resolvedKo.replace(/([가-힣])르\[reo_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, preChar, harmonyMarker, suffix) => {
-        const isPast = harmonyMarker === "았/었";
-        return preChar + "르" + (isPast ? "렀" : "러") + suffix;
-    });
+	// Strip leftover conjugation markers
+	resolvedKo = resolvedKo.replace(/\[[a-z_]+\]/g, '');
 
-    // 7. h_irregular (ㅎ drops before vowels; 으 drops; 아/어 blends into ㅐ/였)
-    // h_irregular + 으/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)
-    resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
-        // Drop ㅎ (jongseong 27)
-        const stemNoH = String.fromCharCode(prevChar.charCodeAt(0) - 27);
-        if (suffix === 'ㄴ') return String.fromCharCode(stemNoH.charCodeAt(0) + 4); // add ㄴ
-        if (suffix === 'ㄹ') return String.fromCharCode(stemNoH.charCodeAt(0) + 8); // add ㄹ
-        return stemNoH + suffix;
-    });
+	// Resolve particles based on previous character's batchim
+	resolvedKo = resolvedKo.replace(/([가-힣])(이\/가|은\/는|을\/를|\(이\)랑|\(이\)나|이\/나|\(이\)라서|이\/라서|\(이\)라도|이\/라도|\(이\)든지|이\/든지)/g, (_, ch, p) => {
+		const pair = PARTICLE_PAIRS[p];
+		return ch + (pair ? (hasBatchim(ch) ? pair[0] : pair[1]) : p);
+	});
 
-    // h_irregular + (아/어|았/었) -> vowel changes to ㅐ (medial 1), plus ㅆ if past
-    resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, prevChar, harmonyMarker, suffix) => {
-        const code = prevChar.charCodeAt(0) - 44032;
-        const initial = Math.floor(code / 588);
-        const newMedial = 1; // ㅐ
-        const newJongseong = harmonyMarker === "았/었" ? 20 : 0; // ㅆ
-        const newChar = String.fromCharCode(44032 + (initial * 588) + (newMedial * 28) + newJongseong);
-        return newChar + suffix;
-    });
+	// Resolve contracted pronouns
+	PRONOUN_REPLACEMENTS.forEach(([pat, rep]) => { resolvedKo = resolvedKo.replace(pat, rep); });
 
-    // 8. s_irregular (ㅅ drops before vowels 으 and 아/어; hiatus is preserved without contraction)
-    resolvedKo = resolvedKo.replace(/([가-힣])\[s_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (match, prevChar, suffix) => {
-        const stemNoS = String.fromCharCode(prevChar.charCodeAt(0) - 19);
-        if (suffix === 'ㄴ') return stemNoS + '은';
-        if (suffix === 'ㄹ') return stemNoS + '을';
-        return stemNoS + '으' + suffix;
-    });
+	// Resolve 이/예요 based on batchim
+	resolvedKo = resolvedKo.replace(/([가-힣])이\/예요/g, (_, ch) => ch + (hasBatchim(ch) ? '이에요' : '예요'));
 
-    resolvedKo = resolvedKo.replace(/([가-힣])\[s_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, prevChar, harmonyMarker, suffix) => {
-        const stemNoS = String.fromCharCode(prevChar.charCodeAt(0) - 19);
-        const harmonyVowel = getVowelHarmony(stemNoS);
-        if (harmonyMarker === "았/었") {
-            return stemNoS + '\u200B' + (harmonyVowel === '아' ? '았' : '었') + suffix;
-        }
-        return stemNoS + '\u200B' + harmonyVowel + suffix;
-    });
+	// Resolve 습니다/ㅂ니다 based on batchim
+	resolvedKo = resolvedKo.replace(/([가-힣])(습니다\/ㅂ니다|습니다|ㅂ니다)/g, (_, ch, ending) => {
+		if (ending === "습니다/ㅂ니다") {
+			const d = decomposeHangul(ch);
+			if (d && d.final !== 0) {
+				return d.final === 8 ? setFinal(ch, 17) + "니다" : ch + "습니다";
+			}
+			return setFinal(ch, 17) + "니다";
+		}
+		return ch + ending;
+	});
 
-    // Strip leftover conjugation markers that didn't trigger an irregular change (or are unimplemented)
-    resolvedKo = resolvedKo.replace(/\[[a-z_]+\]/g, '');
+	// Resolve 아/어/았/었 vowel harmony
+	resolvedKo = resolvedKo.replace(/([가-힣])(아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => {
+		const hv = getVowelHarmony(ch);
+		if (h === "았/었") {
+			return ch + (hv === '여' ? '였' : hv === '아' ? '았' : '었') + s;
+		}
+		return ch + hv + s;
+	});
 
-    // Resolve particles based on previous character's batchim
-    resolvedKo = resolvedKo.replace(/([가-힣])(이\/가|은\/는|을\/를|\(이\)랑|\(이\)나|이\/나|\(이\)라서|이\/라서|\(이\)라도|이\/라도|\(이\)든지|이\/든지)/g, (match, prevChar, particleStr) => {
-        const hasB = hasBatchim(prevChar);
-        if (particleStr === "이/가") return prevChar + (hasB ? "이" : "가");
-        if (particleStr === "은/는") return prevChar + (hasB ? "은" : "는");
-        if (particleStr === "을/를") return prevChar + (hasB ? "을" : "를");
-        if (particleStr === "(이)랑") return prevChar + (hasB ? "이랑" : "랑");
-        if (particleStr === "(이)나" || particleStr === "이/나") return prevChar + (hasB ? "이나" : "나");
-        if (particleStr === "(이)라서" || particleStr === "이/라서") return prevChar + (hasB ? "이라서" : "라서");
-        if (particleStr === "(이)라도" || particleStr === "이/라도") return prevChar + (hasB ? "이라도" : "라도");
-        if (particleStr === "(이)든지" || particleStr === "이/든지") return prevChar + (hasB ? "이든지" : "든지");
-        return match;
-    });
+	// Resolve 으 insertion
+	resolvedKo = resolvedKo.replace(/([가-힣])으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고)/g, (_, ch, s) => {
+		const d = decomposeHangul(ch);
+		return ch + (d && d.final !== 0 && d.final !== 8 ? '으' : '') + s;
+	});
 
-    // Resolve contracted pronouns and irregular pronoun-particle combinations
-    resolvedKo = resolvedKo.replace(/누가가/g, '누가');
-    resolvedKo = resolvedKo.replace(/누가를/g, '누구를');
-    resolvedKo = resolvedKo.replace(/누가에게/g, '누구에게');
-    resolvedKo = resolvedKo.replace(/누가는/g, '누구는');
-    resolvedKo = resolvedKo.replace(/누가도/g, '누구도');
-    resolvedKo = resolvedKo.replace(/뭘을/g, '뭘');
-    resolvedKo = resolvedKo.replace(/(^|[^가-힣])저가([^가-힣]|$)/g, (m, p1, p2) => p1 + '제가' + p2);
-    resolvedKo = resolvedKo.replace(/(^|[^가-힣])누구가([^가-힣]|$)/g, (m, p1, p2) => p1 + '누가' + p2);
-    
-    // Resolve 이/예요 based on batchim
-    resolvedKo = resolvedKo.replace(/([가-힣])이\/예요/g, (match, prevChar) => {
-        if (hasBatchim(prevChar)) {
-            return prevChar + '이에요';
-        } else {
-            return prevChar + '예요';
-        }
-    });
+	// Resolve (으)로 based on batchim
+	resolvedKo = resolvedKo.replace(/([가-힣])\(으\)로/g, (_, ch) => {
+		const d = decomposeHangul(ch);
+		return ch + (d && d.final !== 0 && d.final !== 8 ? '으로' : '로');
+	});
 
-    // Resolve 습니다/ㅂ니다 based on previous character's batchim
-    resolvedKo = resolvedKo.replace(/([가-힣])(습니다\/ㅂ니다|습니다|ㅂ니다)/g, (match, prevChar, ending) => {
-        if (ending === "습니다/ㅂ니다") {
-            const code = prevChar.charCodeAt(0) - 44032;
-            if (hasBatchim(prevChar)) {
-                // If ㄹ batchim, drop ㄹ and add ㅂ니다
-                if (code % 28 === 8) {
-                    const stemNoL = String.fromCharCode(prevChar.charCodeAt(0) - 8);
-                    const stemWithB = String.fromCharCode(stemNoL.charCodeAt(0) + 17);
-                    return stemWithB + "니다";
-                }
-                return prevChar + "습니다";
-            }
-            // Merge ㅂ batchim (offset 17 in jongseong)
-            return String.fromCharCode(prevChar.charCodeAt(0) + 17) + "니다"; 
-        }
-        return match;
-    });
+	// Resolve 으/ㄹ
+	resolvedKo = resolvedKo.replace(/([가-힣])으\/ㄹ/g, (_, ch) => {
+		const d = decomposeHangul(ch);
+		if (d && d.final !== 0) return d.final === 8 ? ch : ch + '을';
+		return setFinal(ch, 8);
+	});
 
-    // Resolve 아/어/았/었 vowel harmony
-    resolvedKo = resolvedKo.replace(/([가-힣])(아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, prevChar, harmonyMarker, suffix) => {
-        const harmonyVowel = getVowelHarmony(prevChar);
-        if (harmonyMarker === "았/었") {
-            if (harmonyVowel === '여') return prevChar + '였' + suffix;
-            return prevChar + (harmonyVowel === '아' ? '았' : '었') + suffix;
-        }
-        return prevChar + harmonyVowel + suffix;
-    });
+	// Resolve 으/ㄴ
+	resolvedKo = resolvedKo.replace(/([가-힣])으\/ㄴ/g, (_, ch) => {
+		const d = decomposeHangul(ch);
+		if (d && d.final !== 0) return d.final === 8 ? setFinal(ch, 4) : ch + '은';
+		return setFinal(ch, 4);
+	});
 
-    // Resolve 으 insertion (e.g., 으/니까, 으/면, 으/세요, 으/로, 으/려면, 으/라고) based on batchim
-    resolvedKo = resolvedKo.replace(/([가-힣])으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고)/g, (match, prevChar, suffix) => {
-        const code = prevChar.charCodeAt(0) - 44032;
-        if (hasBatchim(prevChar)) {
-            // ㄹ batchim doesn't take 으.
-            if (code % 28 === 8) {
-                return prevChar + suffix;
-            }
-            return prevChar + '으' + suffix;
-        } else {
-            return prevChar + suffix;
-        }
-    });
+	// Resolve (느)ㄴ다(고)
+	resolvedKo = resolvedKo.replace(/([가-힣])(?:느\/ㄴ다|\(느\)ㄴ다)(고|)/g, (_, ch, quote) => {
+		const q = quote || '';
+		const d = decomposeHangul(ch);
+		if (d && d.final !== 0) return (d.final === 8 ? setFinal(ch, 4) : ch + '는') + '다' + q;
+		return setFinal(ch, 4) + '다' + q;
+	});
 
-    // Resolve (으)로 based on batchim (vowel and ㄹ take 로, other consonants take 으로)
-    resolvedKo = resolvedKo.replace(/([가-힣])\(으\)로/g, (match, prevChar) => {
-        const code = prevChar.charCodeAt(0) - 44032;
-        if (hasBatchim(prevChar) && code % 28 !== 8) {
-            return prevChar + '으로';
-        }
-        return prevChar + '로';
-    });
+	// Basic Vowel Contractions
+	resolvedKo = resolvedKo.replace(/([가-힣])아(요|서|도|야|라|)/g, (m, ch, s) => {
+		const d = decomposeHangul(ch);
+		if (!d || d.final !== 0) return m;
+		if (d.medial === 0) return ch + s; // ㅏ
+		if (d.medial === 8) return composeHangul(d.initial, 9, 0) + s; // ㅗ -> ㅘ
+		return m;
+	});
 
-    // Resolve 으/ㄹ (e.g., 으/ㄹ 거예요)
-    resolvedKo = resolvedKo.replace(/([가-힣])으\/ㄹ/g, (match, prevChar) => {
-        const code = prevChar.charCodeAt(0) - 44032;
-        if (hasBatchim(prevChar)) {
-            if (code % 28 === 8) { // ㄹ batchim
-                return prevChar;
-            }
-            return prevChar + '을';
-        } else {
-            // Add ㄹ (jongseong 8) to prevChar
-            return String.fromCharCode(prevChar.charCodeAt(0) + 8);
-        }
-    });
-    
-    // Resolve 으/ㄴ (e.g., 으/ㄴ데)
-    resolvedKo = resolvedKo.replace(/([가-힣])으\/ㄴ/g, (match, prevChar) => {
-        const code = prevChar.charCodeAt(0) - 44032;
-        if (hasBatchim(prevChar)) {
-            if (code % 28 === 8) { // ㄹ batchim drops ㄹ and adds ㄴ
-                return String.fromCharCode(prevChar.charCodeAt(0) - 8 + 4);
-            }
-            return prevChar + '은';
-        } else {
-            // Add ㄴ (jongseong 4) to prevChar
-            return String.fromCharCode(prevChar.charCodeAt(0) + 4);
-        }
-    });
+	resolvedKo = resolvedKo.replace(/([가-힣])았(어요|어|다가|던)/g, (m, ch, s) => {
+		const d = decomposeHangul(ch);
+		if (!d || d.final !== 0) return m;
+		if (d.medial === 0) return composeHangul(d.initial, 0, 20) + s; // ㅏ -> 았
+		if (d.medial === 8) return composeHangul(d.initial, 9, 20) + s; // ㅗ -> 왔
+		return m;
+	});
 
-    // Resolve 느/ㄴ다, (느)ㄴ다, 느/ㄴ다고, (느)ㄴ다고 based on batchim (for plain present tense verbs and indirect quotations)
-    resolvedKo = resolvedKo.replace(/([가-힣])(?:느\/ㄴ다|\(느\)ㄴ다)(고|)/g, (match, prevChar, quote) => {
-        const quoteSuffix = quote || '';
-        const code = prevChar.charCodeAt(0) - 44032;
-        if (hasBatchim(prevChar)) {
-            if (code % 28 === 8) { // ㄹ batchim drops ㄹ and adds ㄴ
-                return String.fromCharCode(prevChar.charCodeAt(0) - 8 + 4) + '다' + quoteSuffix;
-            }
-            return prevChar + '는다' + quoteSuffix;
-        } else {
-            // Add ㄴ batchim (4) to prevChar
-            return String.fromCharCode(prevChar.charCodeAt(0) + 4) + '다' + quoteSuffix;
-        }
-    });
+	resolvedKo = resolvedKo.replace(/오아(요|서|도|야|라)/g, (m, s) => "와" + s);
+	resolvedKo = resolvedKo.replace(/오았(어요|어|다가|던)/g, (m, s) => "왔" + s);
+	resolvedKo = resolvedKo.replace(/하여(요|서|도|야|라|지|져|졌)/g, (m, s) => "해" + s);
+	resolvedKo = resolvedKo.replace(/하였(어요|어|다가|던)/g, (m, s) => "했" + s);
+	resolvedKo = resolvedKo.replace(/마시(아|어)(요|서|도|야|라)/g, (m, v, s) => "마셔" + s);
+	resolvedKo = resolvedKo.replace(/크(아|어)(요|서|도|야|라)/g, (m, v, s) => "커" + s);
+	resolvedKo = resolvedKo.replace(/이어요/g, "이에요");
 
-    // Basic Vowel Contractions
-    // Generic 아 + 아 = 아, ㅗ + 아 = ㅘ
-    resolvedKo = resolvedKo.replace(/([가-힣])아(요|서|도|야|라|)/g, (match, prevChar, suffix) => {
-        const code = prevChar.charCodeAt(0) - 44032;
-        if (code >= 0) {
-            const medial = Math.floor(code / 28) % 21;
-            const jongseong = code % 28;
-            if (medial === 0 && jongseong === 0) { // 'ㅏ' vowel, no batchim (가 + 아요 -> 가요, 가 + 아도 -> 가도)
-                return prevChar + suffix;
-            }
-            if (medial === 8 && jongseong === 0) { // 'ㅗ' vowel, no batchim (보 + 아요 -> 봐요, 보 + 아도 -> 봐도)
-                const initial = Math.floor(code / 588);
-                return String.fromCharCode(44032 + (initial * 588) + (9 * 28) + 0) + suffix;
-            }
-        }
-        return match;
-    });
-    
-    // Generic 아 + 았 = 았, ㅗ + 았 = 왔
-    resolvedKo = resolvedKo.replace(/([가-힣])았(어요|어|다가|던)/g, (match, prevChar, suffix) => {
-        const code = prevChar.charCodeAt(0) - 44032;
-        if (code >= 0) {
-            const medial = Math.floor(code / 28) % 21;
-            const jongseong = code % 28;
-            if (medial === 0 && jongseong === 0) { // 'ㅏ' vowel, no batchim (가 + 았어요 -> 갔어요)
-                const initial = Math.floor(code / 588);
-                const newChar = String.fromCharCode(44032 + (initial * 588) + (0 * 28) + 20); // 0 is 'ㅏ', 20 is 'ㅆ'
-                return newChar + suffix;
-            }
-            if (medial === 8 && jongseong === 0) { // 'ㅗ' vowel, no batchim (보 + 았어요 -> 봤어요)
-                const initial = Math.floor(code / 588);
-                const newChar = String.fromCharCode(44032 + (initial * 588) + (9 * 28) + 20); // 9 is 'ㅘ', 20 is 'ㅆ'
-                return newChar + suffix;
-            }
-        }
-        return match;
-    });
+	resolvedKo = resolvedKo.replace(/([가-힣])어(요|서|도|야|라|지|져|졌)/g, (m, ch, s) => {
+		const d = decomposeHangul(ch);
+		if (!d || d.final !== 0) return m;
+		if (d.medial === 20) return composeHangul(d.initial, 6, 0) + s; // ㅣ -> ㅕ
+		if (d.medial === 13) return composeHangul(d.initial, 14, 0) + s; // ㅜ -> ㅝ
+		if ([1, 4, 5, 6].includes(d.medial)) return ch + s; // ㅐ, ㅓ, ㅔ, ㅕ
+		return m;
+	});
 
-    resolvedKo = resolvedKo.replace(/오아(요|서|도|야|라)/g, (m, s) => "와" + s);
-    resolvedKo = resolvedKo.replace(/오았(어요|어|다가|던)/g, (m, s) => "왔" + s);
-    resolvedKo = resolvedKo.replace(/하여(요|서|도|야|라|지|져|졌)/g, (m, s) => "해" + s);
-    resolvedKo = resolvedKo.replace(/하였(어요|어|다가|던)/g, (m, s) => "했" + s);
-    resolvedKo = resolvedKo.replace(/마시(아|어)(요|서|도|야|라)/g, (m, v, s) => "마셔" + s);
-    resolvedKo = resolvedKo.replace(/크(아|어)(요|서|도|야|라)/g, (m, v, s) => "커" + s);
-    resolvedKo = resolvedKo.replace(/이어요/g, "이에요");
+	resolvedKo = resolvedKo.replace(/([가-힣])었(어요|어|다가|던)/g, (m, ch, s) => {
+		const d = decomposeHangul(ch);
+		if (!d || d.final !== 0) return m;
+		if (d.medial === 20) return composeHangul(d.initial, 6, 20) + s; // ㅣ -> 였
+		if (d.medial === 13) return composeHangul(d.initial, 14, 20) + s; // ㅜ -> 웠
+		if ([1, 4, 5, 6].includes(d.medial)) return composeHangul(d.initial, d.medial, 20) + s;
+		return m;
+	});
 
-    // Generic 이 + 어 = 여 and ㅜ + 어 = 워 contraction
-    resolvedKo = resolvedKo.replace(/([가-힣])어(요|서|도|야|라|지|져|졌)/g, (match, prevChar, suffix) => {
-        const code = prevChar.charCodeAt(0) - 44032;
-        if (code >= 0) {
-            const medial = Math.floor(code / 28) % 21;
-            const jongseong = code % 28;
-            if (medial === 20 && jongseong === 0) { // 'ㅣ' vowel, no batchim (기다리 + 어요 -> 기다려요, 마시 + 어도 -> 마셔도)
-                const initial = Math.floor(code / 588);
-                const newChar = String.fromCharCode(44032 + (initial * 588) + (6 * 28) + 0); // 6 is 'ㅕ'
-                return newChar + suffix;
-            }
-            if (medial === 13 && jongseong === 0) { // 'ㅜ' vowel, no batchim (배우 + 어요 -> 배워요, 배우 + 어도 -> 배워도)
-                const initial = Math.floor(code / 588);
-                const newChar = String.fromCharCode(44032 + (initial * 588) + (14 * 28) + 0); // 14 is 'ㅝ'
-                return newChar + suffix;
-            }
-            if ((medial === 1 || medial === 4 || medial === 5 || medial === 6) && jongseong === 0) { // 'ㅐ', 'ㅓ', 'ㅔ', 'ㅕ' vowel (보내 + 어요 -> 보내요, 서 + 어요 -> 서요, 펴 + 어요 -> 펴요)
-                return prevChar + suffix;
-            }
-        }
-        return match;
-    });
-    
-    // Generic 이 + 었 = 였 and ㅜ + 었 = 웠 contraction
-    resolvedKo = resolvedKo.replace(/([가-힣])었(어요|어|다가|던)/g, (match, prevChar, suffix) => {
-        const code = prevChar.charCodeAt(0) - 44032;
-        if (code >= 0) {
-            const medial = Math.floor(code / 28) % 21;
-            const jongseong = code % 28;
-            if (medial === 20 && jongseong === 0) { // 'ㅣ' vowel, no batchim (기다리 + 었어요 -> 기다렸어요)
-                const initial = Math.floor(code / 588);
-                const newChar = String.fromCharCode(44032 + (initial * 588) + (6 * 28) + 20); // 6 is 'ㅕ', 20 is 'ㅆ'
-                return newChar + suffix;
-            }
-            if (medial === 13 && jongseong === 0) { // 'ㅜ' vowel, no batchim (배우 + 었어요 -> 배웠어요)
-                const initial = Math.floor(code / 588);
-                const newChar = String.fromCharCode(44032 + (initial * 588) + (14 * 28) + 20); // 14 is 'ㅝ', 20 is 'ㅆ'
-                return newChar + suffix;
-            }
-            if ((medial === 1 || medial === 4 || medial === 5 || medial === 6) && jongseong === 0) { // 'ㅐ', 'ㅓ', 'ㅔ', 'ㅕ' vowel (보내 + 었어요 -> 보냈어요, 펴 + 었어요 -> 폈어요)
-                const newChar = String.fromCharCode(prevChar.charCodeAt(0) + 20); // 20 is 'ㅆ'
-                return newChar + suffix;
-            }
-        }
-        return match;
-    });
-
-    resolvedKo = resolvedKo.replace(/\u200B/g, '');
-    return resolvedKo;
+	resolvedKo = resolvedKo.replace(/\u200B/g, '');
+	return resolvedKo;
 }
 
 // =========================================================================
-// Standard Korean Pronunciation (표준 발음법) Engine
-// Implements the official phonetic rules published by the
-// National Institute of Korean Language (국립국어원 표준 발음법)
+// 9. Standard Korean Pronunciation (표준 발음법) Engine
 // =========================================================================
-
-const HANGUL_INITIALS = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
-const HANGUL_MEDIALS = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
-const HANGUL_FINALS = ['', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
-
-function decomposeHangul(char) {
-    const code = char.charCodeAt(0) - 0xAC00;
-    if (code < 0 || code >= 11172) return null;
-    const initial = Math.floor(code / 588);
-    const medial = Math.floor((code % 588) / 28);
-    const final = code % 28;
-    return { initial, medial, final };
-}
-
-function composeHangul(initial, medial, final = 0) {
-    return String.fromCharCode(0xAC00 + (initial * 588) + (medial * 28) + final);
-}
-
-// Map single final to initial consonant counterpart (for liaison before vowel)
-const FINAL_TO_INITIAL = {
-    1: 0,   // ㄱ -> ㄱ
-    2: 1,   // ㄲ -> ㄲ
-    4: 2,   // ㄴ -> ㄴ
-    7: 3,   // ㄷ -> ㄷ
-    8: 5,   // ㄹ -> ㄹ
-    16: 6,  // ㅁ -> ㅁ
-    17: 7,  // ㅂ -> ㅂ
-    19: 9,  // ㅅ -> ㅅ
-    20: 10, // ㅆ -> ㅆ
-    22: 12, // ㅈ -> ㅈ
-    23: 14, // ㅊ -> ㅊ
-    24: 15, // ㅋ -> ㅋ
-    25: 16, // ㅌ -> ㅌ
-    26: 17  // ㅍ -> ㅍ
-};
-
-// Tensification of initial consonants: ㄱ->ㄲ, ㄷ->ㄸ, ㅂ->ㅃ, ㅅ->ㅆ, ㅈ->ㅉ
-const TENSIFY_INITIAL = {
-    0: 1,   // ㄱ -> ㄲ
-    3: 4,   // ㄷ -> ㄸ
-    7: 8,   // ㅂ -> ㅃ
-    9: 10,  // ㅅ -> ㅆ
-    12: 13  // ㅈ -> ㅉ
-};
-
-// Known monosyllabic verb/adjective roots ending in nasal ㄴ/ㅁ that trigger tensification on consonant endings
+const FINAL_TO_INITIAL = { 1: 0, 2: 1, 4: 2, 7: 3, 8: 5, 16: 6, 17: 7, 19: 9, 20: 10, 22: 12, 23: 14, 24: 15, 25: 16, 26: 17 };
+const TENSIFY_INITIAL = { 0: 1, 3: 4, 7: 8, 9: 10, 12: 13 };
 const NASAL_VERB_ROOTS = new Set(['신', '안', '앉', '삼', '젊', '닮', '감', '품', '숨', '넘']);
+const DOUBLE_CODA_LIAISON = {
+	3: [1, 10], 5: [4, 12], 6: [0, 2], 9: [8, 0], 10: [8, 6],
+	11: [8, 7], 12: [8, 10], 13: [8, 16], 14: [8, 17], 15: [0, 5], 18: [17, 10]
+};
+const DOUBLE_CODA_SIMPLIFY = { 3: 1, 5: 4, 6: 4, 10: 16, 12: 8, 13: 8, 14: 17, 15: 8, 18: 17 };
+const H_ONSET_MAP = {
+	1: [0, 15], 2: [0, 15], 3: [0, 15], 24: [0, 15], 9: [8, 15],
+	7: [0, 16], 19: [0, 16], 20: [0, 16], 25: [0, 16],
+	22: [0, 14], 23: [0, 14], 5: [4, 14],
+	17: [0, 17], 14: [0, 17], 18: [0, 17], 26: [0, 17], 11: [8, 17]
+};
+const NASAL_CODA = { 1: 21, 7: 4, 17: 16 };
 
 function getPronunciationWord(word) {
-    const chars = [];
-    const hangulIndices = [];
+	const chars = [];
+	const hangulIndices = [];
+	for (let i = 0; i < word.length; i++) {
+		const d = decomposeHangul(word[i]);
+		if (d) { chars.push(d); hangulIndices.push(chars.length - 1); }
+		else { chars.push(word[i]); }
+	}
+	if (hangulIndices.length === 0) return word;
 
-    for (let i = 0; i < word.length; i++) {
-        const d = decomposeHangul(word[i]);
-        if (d) {
-            chars.push(d);
-            hangulIndices.push(chars.length - 1);
-        } else {
-            chars.push(word[i]);
-        }
-    }
+	const H = hangulIndices.map(idx => chars[idx]);
+	const originalSyllables = hangulIndices.map(idx => word[idx]);
 
-    if (hangulIndices.length === 0) return word;
+	// Pass 1: Consonant + ㅢ -> ㅣ
+	for (let i = 0; i < H.length; i++) {
+		if (H[i].initial !== 11 && H[i].medial === 19) H[i].medial = 20;
+	}
 
-    const H = hangulIndices.map(idx => chars[idx]);
-    const originalSyllables = hangulIndices.map(idx => word[idx]);
+	// Pass 2: Palatalization
+	for (let i = 0; i < H.length - 1; i++) {
+		const cur = H[i], next = H[i + 1];
+		if (next.initial === 11 && (next.medial === 20 || next.medial === 6)) {
+			if (cur.final === 7) { cur.final = 0; next.initial = 12; }
+			else if (cur.final === 25) { cur.final = 0; next.initial = 14; }
+			else if (cur.final === 13) { cur.final = 8; next.initial = 14; }
+		} else if (next.initial === 18 && (next.medial === 20 || next.medial === 6) && cur.final === 7) {
+			cur.final = 0; next.initial = 14;
+		}
+	}
 
-    // Pass 1: Consonant + ㅢ -> ㅣ (제5항 다만 1)
-    for (let i = 0; i < H.length; i++) {
-        if (H[i].initial !== 11 && H[i].medial === 19) { // not ㅇ, vowel is ㅢ
-            H[i].medial = 20; // ㅣ
-        }
-    }
+	// Pass 3: ㅎ assimilation & merging
+	for (let i = 0; i < H.length - 1; i++) {
+		const cur = H[i], next = H[i + 1];
+		if (cur.final === 27 || cur.final === 6 || cur.final === 15) {
+			const isH = cur.final === 27, isNh = cur.final === 6;
+			const baseFinal = isH ? 0 : (isNh ? 4 : 8);
+			if (next.initial === 11) {
+				cur.final = 0;
+				if (!isH) next.initial = isNh ? 2 : 5;
+			} else if (next.initial === 0) { cur.final = baseFinal; next.initial = 15; }
+			else if (next.initial === 3) { cur.final = baseFinal; next.initial = 16; }
+			else if (next.initial === 12) { cur.final = baseFinal; next.initial = 14; }
+			else if (next.initial === 9) { cur.final = baseFinal; next.initial = 10; }
+			else if (next.initial === 2) {
+				cur.final = isH ? 4 : baseFinal;
+				if (!isH && !isNh) next.initial = 5;
+			}
+		} else if (next.initial === 18 && H_ONSET_MAP[cur.final]) {
+			[cur.final, next.initial] = H_ONSET_MAP[cur.final];
+		}
+	}
 
-    // Pass 2: Palatalization (구개음화 - 제17항: ㄷ, ㅌ + 이/여 -> ㅈ, ㅊ)
-    for (let i = 0; i < H.length - 1; i++) {
-        const cur = H[i];
-        const next = H[i + 1];
+	// Pass 4: ㅅ/ㅆ coda before ㅅ onset
+	for (let i = 0; i < H.length - 1; i++) {
+		const cur = H[i], next = H[i + 1];
+		if ((cur.final === 19 || cur.final === 20) && next.initial === 9) {
+			cur.final = 0; next.initial = 10;
+		} else if (cur.final === 18 && next.initial === 9) {
+			cur.final = 17; next.initial = 10;
+		}
+	}
 
-        if (next.initial === 11 && (next.medial === 20 || next.medial === 6)) { // ㅇ + ㅣ / ㅕ
-            if (cur.final === 7) { // ㄷ + 이 -> [지]
-                cur.final = 0;
-                next.initial = 12; // ㅈ
-            } else if (cur.final === 25) { // ㅌ + 이 -> [치]
-                cur.final = 0;
-                next.initial = 14; // ㅊ
-            } else if (cur.final === 13) { // ㄾ + 이 -> [ㄹ치]
-                cur.final = 8; // ㄹ
-                next.initial = 14; // ㅊ
-            }
-        } else if (next.initial === 18 && (next.medial === 20 || next.medial === 6)) { // ㄷ + 히 -> [치]
-            if (cur.final === 7) {
-                cur.final = 0;
-                next.initial = 14; // ㅊ
-            }
-        }
-    }
+	// Pass 5: Liaison
+	for (let i = 0; i < H.length - 1; i++) {
+		const cur = H[i], next = H[i + 1];
+		if (cur.final > 0 && cur.final !== 21 && next.initial === 11) {
+			if (FINAL_TO_INITIAL[cur.final] !== undefined) {
+				next.initial = FINAL_TO_INITIAL[cur.final];
+				cur.final = 0;
+			} else if (DOUBLE_CODA_LIAISON[cur.final]) {
+				[cur.final, next.initial] = DOUBLE_CODA_LIAISON[cur.final];
+			}
+		}
+	}
 
-    // Pass 3: ㅎ assimilation & merging (격음화 및 ㅎ 탈락 - 제12항)
-    for (let i = 0; i < H.length - 1; i++) {
-        const cur = H[i];
-        const next = H[i + 1];
+	// Pass 6: Coda Simplification / Neutralization
+	for (let i = 0; i < H.length; i++) {
+		const cur = H[i], next = (i < H.length - 1) ? H[i + 1] : null;
+		if (cur.final > 0) {
+			if (DOUBLE_CODA_SIMPLIFY[cur.final]) {
+				cur.final = DOUBLE_CODA_SIMPLIFY[cur.final];
+			} else if (cur.final === 11) {
+				cur.final = originalSyllables[i] === '밟' ? 17 : 8;
+			} else if (cur.final === 9) {
+				cur.final = (next && next.initial === 0) ? 8 : 1;
+			}
 
-        // Case A: cur.final contains ㅎ
-        if (cur.final === 27) { // ㅎ
-            if (next.initial === 11) { // followed by vowel
-                cur.final = 0; // drops
-            } else if (next.initial === 0) { // + ㄱ -> ㅋ
-                cur.final = 0; next.initial = 15;
-            } else if (next.initial === 3) { // + ㄷ -> ㅌ
-                cur.final = 0; next.initial = 16;
-            } else if (next.initial === 12) { // + ㅈ -> ㅊ
-                cur.final = 0; next.initial = 14;
-            } else if (next.initial === 9) { // + ㅅ -> ㅆ
-                cur.final = 0; next.initial = 10;
-            } else if (next.initial === 2) { // + ㄴ -> ㄴ
-                cur.final = 4; // [ㄴ]
-            }
-        } else if (cur.final === 6) { // ㄶ (ㄴㅎ)
-            if (next.initial === 11) { // followed by vowel -> [ㄴ] transfers
-                cur.final = 0; next.initial = 2; // ㄴ
-            } else if (next.initial === 0) { // + ㄱ -> ㅋ
-                cur.final = 4; next.initial = 15;
-            } else if (next.initial === 3) { // + ㄷ -> ㅌ
-                cur.final = 4; next.initial = 16;
-            } else if (next.initial === 12) { // + ㅈ -> ㅊ
-                cur.final = 4; next.initial = 14;
-            } else if (next.initial === 9) { // + ㅅ -> ㅆ
-                cur.final = 4; next.initial = 10;
-            } else if (next.initial === 2) { // + ㄴ -> ㄴ
-                cur.final = 4;
-            }
-        } else if (cur.final === 15) { // ㅀ (ㄹㅎ)
-            if (next.initial === 11) { // followed by vowel -> [ㄹ] transfers
-                cur.final = 0; next.initial = 5; // ㄹ
-            } else if (next.initial === 0) { // + ㄱ -> ㅋ
-                cur.final = 8; next.initial = 15;
-            } else if (next.initial === 3) { // + ㄷ -> ㅌ
-                cur.final = 8; next.initial = 16;
-            } else if (next.initial === 12) { // + ㅈ -> ㅊ
-                cur.final = 8; next.initial = 14;
-            } else if (next.initial === 9) { // + ㅅ -> ㅆ
-                cur.final = 8; next.initial = 10;
-            } else if (next.initial === 2) { // + ㄴ -> ㄹㄹ
-                cur.final = 8; next.initial = 5;
-            }
-        }
-        // Case B: next.initial is ㅎ (18) preceded by stop codas
-        else if (next.initial === 18) {
-            // ㄱ-family
-            if ([1, 2, 3, 24].includes(cur.final)) { // ㄱ, ㄲ, ㄳ, ㅋ
-                cur.final = 0; next.initial = 15; // ㅋ
-            } else if (cur.final === 9) { // ㄺ
-                cur.final = 8; next.initial = 15; // ㅋ
-            }
-            // ㄷ-family
-            else if ([7, 19, 20, 25].includes(cur.final)) { // ㄷ, ㅅ, ㅆ, ㅌ
-                cur.final = 0; next.initial = 16; // ㅌ
-            } else if ([22, 23].includes(cur.final)) { // ㅈ, ㅊ
-                cur.final = 0; next.initial = 14; // ㅊ
-            } else if (cur.final === 5) { // ㄵ
-                cur.final = 4; next.initial = 14; // ㅊ
-            }
-            // ㅂ-family
-            else if ([17, 14, 18, 26].includes(cur.final)) { // ㅂ, ㄿ, ㅄ, ㅍ
-                cur.final = 0; next.initial = 17; // ㅍ
-            } else if (cur.final === 11) { // ㄼ
-                cur.final = 8; next.initial = 17; // ㅍ
-            }
-        }
-    }
+			if (cur.final === 2 || cur.final === 24) cur.final = 1;
+			else if ([19, 20, 22, 23, 25, 27].includes(cur.final)) cur.final = 7;
+			else if (cur.final === 26) cur.final = 17;
+		}
+	}
 
-    // Pass 4: Special merger: ㅅ/ㅆ coda before ㅅ onset (e.g. 있습니다 -> 이씀니다)
-    for (let i = 0; i < H.length - 1; i++) {
-        const cur = H[i];
-        const next = H[i + 1];
-        if ((cur.final === 19 || cur.final === 20) && next.initial === 9) { // ㅅ or ㅆ + ㅅ
-            cur.final = 0;
-            next.initial = 10; // ㅆ
-        } else if (cur.final === 18 && next.initial === 9) { // ㅄ + ㅅ -> ㅂ + ㅆ
-            cur.final = 17; // ㅂ
-            next.initial = 10; // ㅆ
-        }
-    }
+	// Pass 7: Tensification
+	for (let i = 0; i < H.length - 1; i++) {
+		const cur = H[i], next = H[i + 1];
+		if (cur.final === 1 || cur.final === 7 || cur.final === 17) {
+			if (TENSIFY_INITIAL[next.initial] !== undefined) next.initial = TENSIFY_INITIAL[next.initial];
+		} else if ((cur.final === 4 || cur.final === 16) && NASAL_VERB_ROOTS.has(originalSyllables[i])) {
+			const nextOrig = decomposeHangul(originalSyllables[i + 1]);
+			if (nextOrig && nextOrig.initial !== 11 && TENSIFY_INITIAL[next.initial] !== undefined) {
+				next.initial = TENSIFY_INITIAL[next.initial];
+			}
+		} else if (cur.final === 8) {
+			if (next.initial === 0 && next.medial === 4) next.initial = 1;
+			else if (next.initial === 9 && next.medial === 13) next.initial = 10;
+			else if (next.initial === 12 && next.medial === 13) next.initial = 13;
+		}
+	}
 
-    // Pass 5: Liaison (연음 법칙 - 제13항, 제14항)
-    for (let i = 0; i < H.length - 1; i++) {
-        const cur = H[i];
-        const next = H[i + 1];
+	// Pass 8: Nasalization
+	for (let i = 0; i < H.length - 1; i++) {
+		const cur = H[i], next = H[i + 1];
+		if (next.initial === 5) {
+			if (cur.final === 16 || cur.final === 21) next.initial = 2;
+			else if (NASAL_CODA[cur.final]) { cur.final = NASAL_CODA[cur.final]; next.initial = 2; }
+		}
+		if ((next.initial === 2 || next.initial === 6) && NASAL_CODA[cur.final]) {
+			cur.final = NASAL_CODA[cur.final];
+		}
+	}
 
-        if (cur.final > 0 && cur.final !== 21 && next.initial === 11) { // coda > 0, not ㅇ (21), next onset is ㅇ (11)
-            if (FINAL_TO_INITIAL[cur.final] !== undefined) {
-                // Single coda (or ㄲ, ㅆ)
-                next.initial = FINAL_TO_INITIAL[cur.final];
-                cur.final = 0;
-            } else {
-                // Double codas (겹받침)
-                switch (cur.final) {
-                    case 3: // ㄳ -> ㄱ, ㅆ
-                        cur.final = 1; next.initial = 10; break;
-                    case 5: // ㄵ -> ㄴ, ㅈ
-                        cur.final = 4; next.initial = 12; break;
-                    case 6: // ㄶ -> ㄴ
-                        cur.final = 0; next.initial = 2; break;
-                    case 9: // ㄺ -> ㄹ, ㄱ
-                        cur.final = 8; next.initial = 0; break;
-                    case 10: // ㄻ -> ㄹ, ㅁ
-                        cur.final = 8; next.initial = 6; break;
-                    case 11: // ㄼ -> ㄹ, ㅂ
-                        cur.final = 8; next.initial = 7; break;
-                    case 12: // ㄽ -> ㄹ, ㅆ
-                        cur.final = 8; next.initial = 10; break;
-                    case 13: // ㄾ -> ㄹ, ㅌ
-                        cur.final = 8; next.initial = 16; break;
-                    case 14: // ㄿ -> ㄹ, ㅍ
-                        cur.final = 8; next.initial = 17; break;
-                    case 15: // ㅀ -> ㄹ
-                        cur.final = 0; next.initial = 5; break;
-                    case 18: // ㅄ -> ㅂ, ㅆ
-                        cur.final = 17; next.initial = 10; break;
-                }
-            }
-        }
-    }
+	// Pass 9: Lateralization
+	for (let i = 0; i < H.length - 1; i++) {
+		const cur = H[i], next = H[i + 1];
+		if (cur.final === 4 && next.initial === 5) cur.final = 8;
+		else if (cur.final === 8 && next.initial === 2) next.initial = 5;
+	}
 
-    // Pass 6: Coda Simplification / Neutralization (자음군 단순화 & 음절 끝소리 규칙 - 제8~11항)
-    for (let i = 0; i < H.length; i++) {
-        const cur = H[i];
-        const next = (i < H.length - 1) ? H[i + 1] : null;
-
-        if (cur.final > 0) {
-            // Double codas
-            if (cur.final === 3) cur.final = 1; // ㄳ -> ㄱ
-            else if (cur.final === 5) cur.final = 4; // ㄵ -> ㄴ
-            else if (cur.final === 6) cur.final = 4; // ㄶ -> ㄴ
-            else if (cur.final === 12) cur.final = 8; // ㄽ -> ㄹ
-            else if (cur.final === 13) cur.final = 8; // ㄾ -> ㄹ
-            else if (cur.final === 14) cur.final = 17; // ㄿ -> ㅂ
-            else if (cur.final === 15) cur.final = 8; // ㅀ -> ㄹ
-            else if (cur.final === 18) cur.final = 17; // ㅄ -> ㅂ
-            else if (cur.final === 10) cur.final = 16; // ㄻ -> ㅁ
-            else if (cur.final === 11) { // ㄼ -> ㅂ if '밟' before consonant, else ㄹ
-                if (originalSyllables[i] === '밟') {
-                    cur.final = 17; // ㅂ
-                } else {
-                    cur.final = 8; // ㄹ
-                }
-            } else if (cur.final === 9) { // ㄺ -> ㄹ before ㄱ onset, else ㄱ
-                if (next && next.initial === 0) {
-                    cur.final = 8; // ㄹ
-                } else {
-                    cur.final = 1; // ㄱ
-                }
-            }
-
-            // Single coda neutralization (7 representative codas: 1:ㄱ, 4:ㄴ, 7:ㄷ, 8:ㄹ, 16:ㅁ, 17:ㅂ, 21:ㅇ)
-            if (cur.final === 2 || cur.final === 24) cur.final = 1; // ㄲ, ㅋ -> ㄱ
-            else if ([19, 20, 22, 23, 25, 27].includes(cur.final)) cur.final = 7; // ㅅ, ㅆ, ㅈ, ㅊ, ㅌ, ㅎ -> ㄷ
-            else if (cur.final === 26) cur.final = 17; // ㅍ -> ㅂ
-        }
-    }
-
-    // Pass 7: Tensification (경음화 - 제23항, 제24항, 제27항)
-    for (let i = 0; i < H.length - 1; i++) {
-        const cur = H[i];
-        const next = H[i + 1];
-
-        // 7A: After stop codas [ㄱ (1), ㄷ (7), ㅂ (17)]
-        if (cur.final === 1 || cur.final === 7 || cur.final === 17) {
-            if (TENSIFY_INITIAL[next.initial] !== undefined) {
-                next.initial = TENSIFY_INITIAL[next.initial];
-            }
-        }
-        // 7B: Verb stems ending in nasal (ㄴ, ㅁ) before consonant endings (-다, -고, -지, -자)
-        else if ((cur.final === 4 || cur.final === 16) && NASAL_VERB_ROOTS.has(originalSyllables[i])) {
-            const nextOriginalDecomposed = decomposeHangul(originalSyllables[i + 1]);
-            if (nextOriginalDecomposed && nextOriginalDecomposed.initial !== 11) { // originally NOT vowel
-                if (TENSIFY_INITIAL[next.initial] !== undefined) {
-                    next.initial = TENSIFY_INITIAL[next.initial];
-                }
-            }
-        }
-        // 7C: Modifier -(으)ㄹ before 거예요, 것, 수, 줄
-        else if (cur.final === 8) {
-            if (next.initial === 0 && next.medial === 4) { // 거 (in 거예요 / 것)
-                next.initial = 1; // ㄲ
-            } else if (next.initial === 9 && next.medial === 13) { // 수
-                next.initial = 10; // ㅆ
-            } else if (next.initial === 12 && next.medial === 13) { // 줄
-                next.initial = 13; // ㅉ
-            }
-        }
-    }
-
-    // Pass 8: Nasalization (비음화 - 제18항, 제19항)
-    for (let i = 0; i < H.length - 1; i++) {
-        const cur = H[i];
-        const next = H[i + 1];
-
-        // 8A: ㄹ nasalization after ㅁ (16), ㅇ (21), ㄱ (1), ㅂ (17), ㄷ (7)
-        if (next.initial === 5) { // next onset is ㄹ
-            if (cur.final === 16 || cur.final === 21) { // ㅁ, ㅇ + ㄹ -> ㅁ/ㅇ + ㄴ
-                next.initial = 2; // ㄴ
-            } else if (cur.final === 1) { // ㄱ + ㄹ -> ㅇ + ㄴ
-                cur.final = 21; next.initial = 2;
-            } else if (cur.final === 17) { // ㅂ + ㄹ -> ㅁ + ㄴ
-                cur.final = 16; next.initial = 2;
-            } else if (cur.final === 7) { // ㄷ + ㄹ -> ㄴ + ㄴ
-                cur.final = 4; next.initial = 2;
-            }
-        }
-
-        // 8B: Stop codas before ㄴ (2) or ㅁ (6)
-        if (next.initial === 2 || next.initial === 6) {
-            if (cur.final === 1) cur.final = 21; // ㄱ -> ㅇ
-            else if (cur.final === 7) cur.final = 4; // ㄷ -> ㄴ
-            else if (cur.final === 17) cur.final = 16; // ㅂ -> ㅁ
-        }
-    }
-
-    // Pass 9: Lateralization (유음화 - 제20항: ㄴ+ㄹ -> ㄹ+ㄹ, ㄹ+ㄴ -> ㄹ+ㄹ)
-    for (let i = 0; i < H.length - 1; i++) {
-        const cur = H[i];
-        const next = H[i + 1];
-
-        if (cur.final === 4 && next.initial === 5) { // ㄴ + ㄹ -> ㄹ + ㄹ
-            cur.final = 8; // ㄹ
-        } else if (cur.final === 8 && next.initial === 2) { // ㄹ + ㄴ -> ㄹ + ㄹ
-            next.initial = 5; // ㄹ
-        }
-    }
-
-    // Reassemble syllables
-    for (let i = 0; i < hangulIndices.length; i++) {
-        const idx = hangulIndices[i];
-        chars[idx] = composeHangul(H[i].initial, H[i].medial, H[i].final);
-    }
-
-    return chars.join('');
+	for (let i = 0; i < hangulIndices.length; i++) {
+		chars[hangulIndices[i]] = composeHangul(H[i].initial, H[i].medial, H[i].final);
+	}
+	return chars.join('');
 }
 
 function getPronunciation(text) {
-    if (!text || typeof text !== 'string') return text;
-
-    // Process contiguous Hangul sequences, preserving whitespace and punctuation
-    return text.replace(/([가-힣]+)/g, (match) => {
-        return getPronunciationWord(match);
-    });
+	if (!text || typeof text !== 'string') return text;
+	return text.replace(/([가-힣]+)/g, m => getPronunciationWord(m));
 }
 
-// Support both Node.js (for scripts) and Browser (for the app)
-const exportedMembers = { 
-    hasBatchim, 
-    getStem, 
-    applyMorphology, 
-    decomposeHangul,
-    composeHangul,
-    getPronunciation,
-    getFilteredWords, 
-    setCurrentUsageFilter, 
-    getTokenOptions, 
-    generateTemplateOptions, 
-    generateTemplateTokenOptions,
-    getTotalOptionsCut,
-    resetTotalOptionsCut,
-    markUnitUsed,
-    getUsedUnitIds,
-    resetUsedUnits,
-    hasTag,
-    getRandom,
-    parseSemanticVector,
-    SemanticConfig,
-    shouldApplySemanticConstraint,
-    findGrammarUnitForTemplate,
-    buildActionVerbPhrase,
-    buildDescriptiveVerbPhrase,
-    expandSemanticActionVerb,
-    expandSemanticDescriptiveVerb,
-    expandSemanticClause,
-    expandSemanticTerminal,
-    generateSemanticSentence,
-    reconstructFromLanguageUnitTree,
-    flattenLanguageUnitTree,
-    encodeLanguageUnitIds,
-    decodeLanguageUnitIds,
-    properNames,
-    getProperNames,
-    setProperNames,
-    getRandomProperName,
-    getSinoNumber,
-    getKoreanNumber,
-    getNumberTokenOptions,
-    KOREAN_NUMBER_VALUES
+// =========================================================================
+// 10. Module Exports
+// =========================================================================
+const exportedMembers = {
+	hasBatchim,
+	getStem,
+	getVowelHarmony,
+	applyMorphology,
+	decomposeHangul,
+	composeHangul,
+	getPronunciationWord,
+	getPronunciation,
+	getFilteredWords,
+	setCurrentUsageFilter,
+	getTokenOptions,
+	generateTemplateOptions,
+	generateTemplateTokenOptions,
+	getTotalOptionsCut,
+	resetTotalOptionsCut,
+	markUnitUsed,
+	getUsedUnitIds,
+	resetUsedUnits,
+	hasTag,
+	getRandom,
+	parseSemanticVector,
+	SemanticConfig,
+	shouldApplySemanticConstraint,
+	findGrammarUnitForTemplate,
+	initTemplateToGrammarMap,
+	buildActionVerbPhrase,
+	buildDescriptiveVerbPhrase,
+	expandSemanticActionVerb,
+	expandSemanticDescriptiveVerb,
+	expandSemanticClause,
+	expandSemanticTerminal,
+	generateSemanticSentence,
+	reconstructFromLanguageUnitTree,
+	flattenLanguageUnitTree,
+	encodeLanguageUnitIds,
+	decodeLanguageUnitIds,
+	properNames,
+	getProperNames,
+	setProperNames,
+	getRandomProperName,
+	getSinoNumber,
+	getKoreanNumber,
+	getNumberTokenOptions,
+	KOREAN_NUMBER_VALUES,
+	TokenOption,
+	deduplicateTokenOptions,
+	getConjugatedStem
 };
 
 if (typeof window !== 'undefined') {
-    Object.assign(window, exportedMembers);
+	Object.assign(window, exportedMembers);
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = exportedMembers;
+	module.exports = exportedMembers;
 }
