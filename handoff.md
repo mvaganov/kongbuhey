@@ -49,10 +49,12 @@ A robust, centralized module that handles complex rules of Korean text manipulat
 `generator.js` takes templates and randomly injects vocabulary. `exhaustive.js` runs Cartesian tests.
 *   `exhaustive.js` supports `--tokens` (`--token`, `--lut`) CLI argument to print URL-safe Base64 LUT tokens inline next to generated sentences (e.g. `미국은 [CAAkAA]`).
 *   `exhaustive.js` supports `--pronunciation` (`--pronounce`, `--pr`, `--pron`) CLI argument to optionally append standard Hangul pronunciation after every generated phrase (e.g. `미국은 "미구근"`, `먹습니다 "먹씀니다"`). Both flags can be used together (e.g. `미국은 "미구근" [CAAkAA]`).
+*   `exhaustive.js` supports `--id <id|id1,id2>` and `--range <start>-<end>` (or `<start>..<end>`) to isolate grammar templates and vocabulary testing to specific language units or ID ranges (e.g. `node exhaustive.js --range 0-200`).
 
 ### 4. `select.js` (SQL-like Data Subsetting & Batch Modification Tool)
 Pure JavaScript CLI and programmatic module for querying, exporting, and updating subsets of `KR_EN_languageUnits` in `data.js` without loading all 750+ units into LLM context:
 *   **Querying (`SELECT`)**: Filter by columns (`Korean`, `English`, `Id`, `SemanticVector`, `SemanticTags`, `Source`, etc.), condition (`WHERE Source = 'SUOBI01' AND SemanticTags CONTAINS 'food'`), order, and limit (`LIMIT 10`). Output formats include `jsonl` (default for complex queries), `json` (only if explicitly specified), `tsv`, `table` (ASCII), and `raw` (JS array literal).
+*   **Nested JSON Path Queries (`sv.<field>`)**: Directly query and project JSON properties within `SemanticVector` using dot notation (e.g. `WHERE sv.domain = 'age'`, `WHERE sv.traits CONTAINS 'inanimate'`, `WHERE sv.TODO != ''`). Projected scalar properties are weighted lightly, automatically defaulting to clean TSV format.
 *   **`--summary [n]` Output Truncation**: Truncates large query result sets to the top $n$ rows (default: 5) and prints an informative suffix `... [{n} more rows truncated]`.
 *   **Quiet by Default with `-v` / `--verbose`**: Mutating operations (`INSERT`, `UPDATE`, `DELETE`, `ADD`) execute quietly by default, outputting only on error unless `-v` or `--verbose` is provided.
 *   **Automatic Schema Sync**: Mutating operations automatically trigger `schema_analysis.updateSchemaSummary()` to keep schema taxonomies synchronized.
@@ -136,7 +138,35 @@ Single command that executes all repository test suites with fail-fast behavior:
 
 ## Next Steps for the Next Agent
 
-1. **Prioritize Ingestion of Remaining Study Texts (Phase 1.5) [HIGH PRIORITY]**:
+1. **Semantic Vector Cleanup & Linguistic `TODO` Flagging (Units 201..1656) [TOP PRIORITY]**:
+   - **Context & Motivation**:
+     Previously, the `SemanticVector` column (Column 11) accumulated dozens of unconstrained, one-off JSON keys (`traits`, `type`, `action`, `symptom`, `method`, `art`, etc.) across 1,600+ units that were never consumed by generation code, inflating `schema_summary.json` to 4,300+ lines. Meanwhile, real linguistic constraints (selectional restrictions, register concord, spatial proximity, temporal concord, bound relational structures, morphophonemics) went uncaptured.
+   - **The Small-Batch Audit Workflow (30–50 units per batch)**:
+     - Work through the remaining units systematically (e.g. Batch 6: IDs 201–240, Batch 7: IDs 241–280, etc.).
+     - Inspect batch using `select.js`:
+       ```bash
+       node select.js "SELECT Id, Korean, English, PartofSpeech, SemanticTags, SemanticVector WHERE Id >= 201 AND Id < 241"
+       ```
+     - For each unit:
+       1. **Promote genuine lexical traits to `SemanticTags`**: Move meaningful categorizations (e.g. `country`, `facility`, `sports`, `room`, `nature`, `water`) into `SemanticTags` (Column 4) where `findNounForVerbTag` in `korean.js` can directly consume them.
+       2. **Cull redundant, dead metadata from `SemanticVector`**: Keep only the active schema fields (`domain`, `polarity`, `req`, `prod`, `logic`).
+       3. **Flag valuable linguistic constraints with `"TODO"`**: If a unit exhibits real linguistic rules (e.g., verb argument restrictions, noun-adjective collocations, tense harmony, honorific/register concord), write a concise note in `"TODO": "..."` inside `SemanticVector`.
+     - Apply updates back to `data.js` via `select.js`:
+       ```bash
+       node select.js UPDATE SemanticTags, SemanticVector FROMFILE scratch/update_batchN.json
+       ```
+     - Validate the batch using scoped exhaustive testing:
+       ```bash
+       node exhaustive.js --range 201-240
+       ```
+     - Run the full fast test suite: `node test.js` (fails fast in < 4s if any issue occurs).
+   - **Post-Audit Pattern Mining (`sv.TODO` Integration)**:
+     Once all units (0..1656) have been audited and all `TODO`s recorded, query the full set via `node select.js "SELECT Id, Korean, English, sv.TODO WHERE sv.TODO != ''"`. From these aggregated linguistic patterns, we will:
+     1. **Enhance Forward Phrase Generation (`korean.js`)**: Implement real selectional restrictions (e.g. clothing collocations for `입다/신다/쓰다/끼다`, temporal tense concord for `내일/어제/지금`, honorific concord for humble/respectful pronouns, spatial relational collocations `[Noun + 의] + position + 에/에서`).
+     2. **Enhance Reverse Parsing & Text Disambiguation (`text_analyzer.js` & `homonyms.js`)**: Convert determiner rules, bound morpheme constructions, and particle contractions (e.g. `누구 + 가 -> 누가`, `어느 + Noun`) into declarative `SyntaxFrame` and morphological decomposition rules for arbitrary Korean text.
+   - **Current Status**: IDs 0–200 are **100% completed and verified** (46,057 generated sentences passing morphology checks with 0 errors).
+
+2. **Prioritize Ingestion of Remaining Study Texts (Phase 1.5)**:
    - Ingest next passage: **`studytext31`**, followed by `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext63`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`.
    - **Accelerated Ingestion Workflow**:
      1. Run `node text_analyzer.js studytext31` -> review analysis and auto-generated `scratch/new_units_studytext31.json`.
@@ -146,11 +176,11 @@ Single command that executes all repository test suites with fail-fast behavior:
      5. Run single verification command: `node test.js studytext31` (fails fast in < 4s if any issue arises).
    - **Constraint**: Work strictly in small batches per passage; DO NOT run curriculum-wide pre-scanners.
 
-2. **Pronunciation Engine Completion & English-Phoneme TTS Engine**:
+3. **Pronunciation Engine Completion & English-Phoneme TTS Engine**:
    - **Pronunciation Exception Rules**: Complete the substantive morpheme boundary liaison rules (`옷 안 [오단]`), verb stem coda dissimilations (`맑게 [말께]`), and non-lateralizing Sino-Korean compounds (`생산량 [생산냥]`) documented in [pronunciation_exceptions.md](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/pronunciation_exceptions.md).
    - **English-Text Style Phoneme Pronunciation**: Extend the pronunciation engine in `korean.js` to generate English-text style phonetic phoneme respellings / pseudo-phoneme approximations specifically tailored for standard English text-to-speech engines.
    - **TTS Voice Diversity Target**: Enable the numerous high-quality English voices available in the browser's `window.speechSynthesis` API to speak Korean phrases naturally and cleanly. This will provide rich voice variety, different accents, and diverse auditory stimuli to dramatically improve learner listening comprehension and phonological discrimination.
 
-3. **Phase 2 (UI Development & Study Mode Integration)**:
+4. **Phase 2 (UI Development & Study Mode Integration)**:
    - Build the interactive web application (`index.html`, `index.css`) with premium aesthetics (modern typography, dark mode, glassmorphism, responsive layout, smooth micro-animations).
    - Integrate `text_analyzer.js` directly into the UI to provide live passage decomposition, interactive study checklists, toggleable LUT tokens, homonym disambiguation tooltips, and multi-voice English-phoneme TTS audio playback.

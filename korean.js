@@ -84,6 +84,8 @@ function getFilteredWords(pos, tag) {
 	if (currentUsageFilter) {
 		let originalWords = words;
 		words = words.filter(w => {
+			const id = w[DATA_SCHEMA.Id];
+			if (currentUsageFilter._ids && currentUsageFilter._ids.has(id)) return true;
 			const source = w[DATA_SCHEMA.Source];
 			let isAllowed = currentUsageFilter[source] || hasTag(w, "devtest");
 			if (!isAllowed) {

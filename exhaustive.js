@@ -25,18 +25,72 @@ const {
 } = require('./korean.js');
 const fs = require('fs');
 
+function printHelp() {
+	console.log(`exhaustive.js - Exhaustive grammar template generator & coverage tester
+
+USAGE:
+  node exhaustive.js [OPTIONS] [TAGS/SOURCES...]
+
+OPTIONS:
+  --id <id|id1,id2,...>  Filter testing to specific language unit ID(s)
+  --range <start>-<end>  Filter testing to a range of IDs (e.g. 0-40 or 0..40)
+  --tokens, --lut        Show encoded Language Unit Tree tokens for generated sentences
+  --pronunciation, --pr  Show phonetic pronunciation in brackets
+  -h, --help             Show this help message
+
+EXAMPLES:
+  node exhaustive.js                     # Test full curriculum
+  node exhaustive.js SUOBI01             # Scope to source SUOBI01
+  node exhaustive.js --id 12             # Test unit ID 12
+  node exhaustive.js --range 0-40        # Test units in ID range 0..40
+  node exhaustive.js --range 0-40 --pr   # Test range with pronunciation
+`);
+}
+
 let showTokens = false;
 let showPronunciation = false;
 var requestedTags = undefined;
 if (process.argv.length > 2) {
 	for (let i = 2; i < process.argv.length; ++i) {
 		let arg = process.argv[i];
+		if (arg === '-h' || arg === '--help' || arg === 'help') {
+			printHelp();
+			process.exit(0);
+		}
 		if (arg === '--tokens' || arg === '--token' || arg === '--lut' || arg === 'tokens') {
 			showTokens = true;
 			continue;
 		}
 		if (arg === '--pronunciation' || arg === '--pronounce' || arg === '--pr' || arg === '--pron' || arg === 'pronunciation') {
 			showPronunciation = true;
+			continue;
+		}
+		if (arg === '--id' || arg === '-id') {
+			const val = process.argv[++i];
+			if (val) {
+				if (!requestedTags) requestedTags = {};
+				if (!requestedTags._ids) requestedTags._ids = new Set();
+				val.split(',').forEach(idStr => {
+					const num = parseInt(idStr.trim(), 10);
+					if (!isNaN(num)) requestedTags._ids.add(num);
+				});
+			}
+			continue;
+		}
+		if (arg === '--range' || arg === '-range') {
+			const val = process.argv[++i];
+			if (val) {
+				const match = val.match(/^(\d+)(?:\.\.|-)(\d+)$/);
+				if (match) {
+					if (!requestedTags) requestedTags = {};
+					if (!requestedTags._ids) requestedTags._ids = new Set();
+					const start = parseInt(match[1], 10);
+					const end = parseInt(match[2], 10);
+					for (let n = Math.min(start, end); n <= Math.max(start, end); n++) {
+						requestedTags._ids.add(n);
+					}
+				}
+			}
 			continue;
 		}
 		let posTags = getPartOfSpeechCached(arg);
@@ -215,8 +269,15 @@ resetUsedUnits();
 validateSemanticVectors();
 
 const grammarUnits = getFilteredWords("Grammar");
+let activeGrammarUnits = grammarUnits;
+if (requestedTags && requestedTags._ids && requestedTags._ids.size > 0) {
+	const requestedGrammars = grammarUnits.filter(g => requestedTags._ids.has(g[DATA_SCHEMA.Id]));
+	if (requestedGrammars.length > 0) {
+		activeGrammarUnits = requestedGrammars;
+	}
+}
 const templates = [];
-grammarUnits.forEach(entry => {
+activeGrammarUnits.forEach(entry => {
 	entry[DATA_SCHEMA.Conjugation].forEach(formula => {
 		templates.push({ formula, grammarUnit: entry });
 	});
@@ -243,7 +304,7 @@ templates.forEach(({ formula, grammarUnit }, index) => {
 process.stdout.write("\n");
 
 // Append semantic tests to exhaustive output
-const semanticResults = runSemanticTests(grammarUnits);
+const semanticResults = runSemanticTests(activeGrammarUnits);
 outputStr += semanticResults;
 
 function generateCoverageReport(filter) {
@@ -252,18 +313,26 @@ function generateCoverageReport(filter) {
 	let scopeName = "";
 
 	if (filter) {
-		scopeName = Object.keys(filter).join(", ");
-		inScopeUnits = KR_EN_languageUnits.filter(u => {
-			const src = u[DATA_SCHEMA.Source];
-			if (filter[src]) return true;
-			const tags = u[DATA_SCHEMA.SemanticTags];
-			if (tags) {
-				for (let t of tags) {
-					if (filter[t]) return true;
+		if (filter._ids && filter._ids.size > 0) {
+			const sortedIds = Array.from(filter._ids).sort((a, b) => a - b);
+			scopeName = sortedIds.length <= 10
+				? `IDs: ${sortedIds.join(', ')}`
+				: `IDs: ${sortedIds[0]}..${sortedIds[sortedIds.length - 1]} (${sortedIds.length} units)`;
+			inScopeUnits = KR_EN_languageUnits.filter(u => filter._ids.has(u[DATA_SCHEMA.Id]));
+		} else {
+			scopeName = Object.keys(filter).filter(k => !k.startsWith('_')).join(", ");
+			inScopeUnits = KR_EN_languageUnits.filter(u => {
+				const src = u[DATA_SCHEMA.Source];
+				if (filter[src]) return true;
+				const tags = u[DATA_SCHEMA.SemanticTags];
+				if (tags) {
+					for (let t of tags) {
+						if (filter[t]) return true;
+					}
 				}
-			}
-			return false;
-		});
+				return false;
+			});
+		}
 	} else {
 		scopeName = "All Units (Entire Curriculum)";
 		inScopeUnits = KR_EN_languageUnits;
@@ -317,7 +386,16 @@ console.log("\n" + coverageReport.join("\n"));
 // Append coverage report to exhaustive_output.txt with '--- ' prefix on every line so validator skips it
 outputStr += "\n" + coverageReport.map(line => `--- ${line}`).join("\n") + "\n";
 
-const outputFilename = requestedTags ? `exhaustive_output_${Object.keys(requestedTags).join('_')}.txt` : 'exhaustive_output.txt';
+let tagLabel = "";
+if (requestedTags) {
+	if (requestedTags._ids) {
+		const sorted = Array.from(requestedTags._ids).sort((a, b) => a - b);
+		tagLabel = `ids_${sorted[0]}_${sorted[sorted.length - 1]}`;
+	} else {
+		tagLabel = Object.keys(requestedTags).filter(k => !k.startsWith('_')).join('_');
+	}
+}
+const outputFilename = tagLabel ? `exhaustive_output_${tagLabel}.txt` : 'exhaustive_output.txt';
 fs.writeFileSync('exhaustive_output.txt', outputStr, 'utf8');
 if (outputFilename !== 'exhaustive_output.txt') {
 	fs.writeFileSync(outputFilename, outputStr, 'utf8');

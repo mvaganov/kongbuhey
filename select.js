@@ -56,6 +56,7 @@ KEY LLM WORKFLOW PATTERNS:
   Update back:   node select.js UPDATE Korean, SemanticVector FROMFILE output.txt
   Insert batch:  node select.js INSERT FROMFILE new_units.json --source class2012 --dry-run
   Inspect tag:   node select.js "SELECT Id, Korean WHERE SemanticTags CONTAINS 'food' LIMIT 10"
+  Query JSON:    node select.js "SELECT Id, Korean, sv.domain, sv.polarity WHERE sv.domain = 'age'"
 `);
 }
 
@@ -168,6 +169,25 @@ function unitToRecord(unit, selectedCols = null, DATA_SCHEMA) {
 
 	const record = {};
 	for (const col of cols) {
+		if (col.includes('.')) {
+			const parts = col.split('.');
+			const rootCol = normalizeColumnName(parts[0]);
+			if (rootCol === 'SemanticVector') {
+				const raw = unit[DATA_SCHEMA.SemanticVector];
+				let parsed = null;
+				if (typeof raw === 'object' && raw !== null) parsed = raw;
+				else if (typeof raw === 'string' && raw.trim()) {
+					try { parsed = JSON.parse(raw); } catch (_) { parsed = null; }
+				}
+				let cur = parsed;
+				for (const p of parts.slice(1)) {
+					cur = (cur && typeof cur === 'object') ? cur[p] : undefined;
+				}
+				record[col] = cur !== undefined ? cur : null;
+				continue;
+			}
+		}
+
 		const canonical = normalizeColumnName(col);
 		if (!canonical) continue;
 		if (canonical === 'Id') {
@@ -277,17 +297,42 @@ function matchLike(str, pattern) {
 }
 
 function evaluatePredicate(unit, colName, op, valStr, DATA_SCHEMA) {
-	const canonical = normalizeColumnName(colName);
-	if (!canonical) return false;
-
 	let unitVal;
-	if (canonical === 'Id') {
-		unitVal = unit[DATA_SCHEMA.Id];
-	} else if (canonical === 'SemanticTags') {
-		unitVal = unit[DATA_SCHEMA.SemanticTags];
+	let isArrayVal = false;
+	const isJsonPath = colName.includes('.');
+
+	if (isJsonPath) {
+		const parts = colName.split('.');
+		const rootCol = normalizeColumnName(parts[0]);
+		if (rootCol === 'SemanticVector') {
+			const raw = unit[DATA_SCHEMA.SemanticVector];
+			let parsed = null;
+			if (typeof raw === 'object' && raw !== null) parsed = raw;
+			else if (typeof raw === 'string' && raw.trim()) {
+				try { parsed = JSON.parse(raw); } catch (_) { parsed = null; }
+			}
+			let cur = parsed;
+			for (const p of parts.slice(1)) {
+				cur = (cur && typeof cur === 'object') ? cur[p] : undefined;
+			}
+			unitVal = cur;
+			if (Array.isArray(unitVal)) isArrayVal = true;
+		} else {
+			return false;
+		}
 	} else {
-		const idx = DATA_SCHEMA[canonical];
-		unitVal = idx !== undefined ? unit[idx] : undefined;
+		const canonical = normalizeColumnName(colName);
+		if (!canonical) return false;
+
+		if (canonical === 'Id') {
+			unitVal = unit[DATA_SCHEMA.Id];
+		} else if (canonical === 'SemanticTags') {
+			unitVal = unit[DATA_SCHEMA.SemanticTags];
+			isArrayVal = true;
+		} else {
+			const idx = DATA_SCHEMA[canonical];
+			unitVal = idx !== undefined ? unit[idx] : undefined;
+		}
 	}
 
 	// Clean value
@@ -298,25 +343,36 @@ function evaluatePredicate(unit, colName, op, valStr, DATA_SCHEMA) {
 
 	const upperOp = op.toUpperCase().replace(/\s+/g, ' ');
 
-	// Tags evaluation
-	if (canonical === 'SemanticTags') {
-		const tagsArr = unitVal instanceof Set ? Array.from(unitVal) : (Array.isArray(unitVal) ? unitVal : []);
+	// Array / Tags evaluation
+	if (isArrayVal) {
+		const arr = unitVal instanceof Set ? Array.from(unitVal) : (Array.isArray(unitVal) ? unitVal : []);
+		const cleanArr = arr.map(t => String(t).toLowerCase());
+		const lowerVal = val.toLowerCase();
 		if (upperOp === 'CONTAINS' || upperOp === '=') {
-			return tagsArr.map(t => t.toLowerCase()).includes(val.toLowerCase());
+			return cleanArr.includes(lowerVal);
 		}
 		if (upperOp === '!=') {
-			return !tagsArr.map(t => t.toLowerCase()).includes(val.toLowerCase());
+			return !cleanArr.includes(lowerVal);
 		}
 		if (upperOp === 'LIKE') {
-			return tagsArr.some(t => matchLike(t, val));
+			return cleanArr.some(t => matchLike(t, val));
 		}
 		if (upperOp === 'NOT LIKE') {
-			return !tagsArr.some(t => matchLike(t, val));
+			return !cleanArr.some(t => matchLike(t, val));
 		}
+		return false;
 	}
 
-	// Numeric comparison for Id
-	if (canonical === 'Id' || (!isNaN(unitVal) && !isNaN(val) && typeof unitVal === 'number')) {
+	// Boolean comparison (e.g. sv.honorific = true)
+	if (typeof unitVal === 'boolean') {
+		const boolVal = val.toLowerCase() === 'true' || val === '1';
+		if (upperOp === '=') return unitVal === boolVal;
+		if (upperOp === '!=' || upperOp === '<>') return unitVal !== boolVal;
+		return false;
+	}
+
+	// Numeric comparison for Id or numeric properties
+	if (unitVal !== null && unitVal !== undefined && unitVal !== "" && !isNaN(unitVal) && !isNaN(val)) {
 		const numUnit = Number(unitVal);
 		const numVal = Number(val);
 		switch (upperOp) {
@@ -414,6 +470,10 @@ function getColumnComplexity(selectedCols, DATA_SCHEMA) {
 	}
 	let total = 0;
 	for (const col of selectedCols) {
+		if (col.includes('.')) {
+			total += 1;
+			continue;
+		}
 		const canonical = normalizeColumnName(col);
 		if (canonical === '*') {
 			return SCHEMA_COLUMNS.reduce((sum, c) => sum + (COLUMN_COMPLEXITY_WEIGHTS[c.name] || 1), 0);
