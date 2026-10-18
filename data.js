@@ -608,12 +608,8 @@ const KR_EN_languageUnits = [
 	[413, "쉽다", "to be easy", "Descriptive Verb", ["descriptive_general", "devtest"], "", "b_irregular", "SUOBI09", 2, "", "", '{"domain":"state","req":"any","polarity":1}', ""],
 	[414, "어렵다", "to be difficult", "Descriptive Verb", ["descriptive_general"], "", "b_irregular", "SUOBI09", 2, "", "", '{"domain":"state", "req":"any", "polarity":-1}', ""],
 	[415, "좁다", "to be narrow", "Descriptive Verb", ["descriptive_place", "devtest"], "", "regular", "SUOBI09", 3, "", "", '{"domain":"state","req":"place","polarity":-1}', ""],
-
-	// Grammar from SUOBI09
 	[416, "~(으)세요", "polite imperative", "Grammar", ["imperative"], "", ["{AVst}으/세요"], "SUOBI09", 3, "Polite Formal", "", '{"logic":"imperative", "formality":"polite"}', ""],
 	[417, "~고 싶다", "to want to", "Grammar", ["desire"], "", ["{VP_AVst}고 싶어요"], "SUOBI09", 3, "", "", '{"logic":"desire", "polarity":1}', ""],
-
-	// Vocabulary from SUOBI10
 	[418, "공원", "park", "Noun", ["place"], "", "", "SUOBI10", 3, "", "", '{"domain":"place", "traits":["outdoor", "park"], "polarity":0}', ""],
 	[419, "어제", "yesterday", "Noun", ["time"], "", "", "SUOBI10", 2, "", "", '{"domain":"time", "traits":["past"]}', ""],
 	[420, "쉬다", "to rest", "Action Verb", ["intransitive_general"], "", "regular", "SUOBI10", 2, "", "", '{"domain":"action", "traits":["rest"], "prod":"rested", "polarity":1}', ""],
@@ -655,13 +651,9 @@ const KR_EN_languageUnits = [
 	[456, "빨리", "quickly", "Adverb", ["time", "manner"], "", "", "SUOBI10", 3, "", "", '{"domain":"manner", "traits":["speed_fast"]}', ""],
 	[457, "천천히", "slowly", "Adverb", ["time", "manner"], "", "", "SUOBI10", 3, "", "", '{"domain":"manner", "traits":["speed_slow"]}', ""],
 	[458, "오래", "long", "Adverb", ["time"], "", "", "SUOBI10", 3, "", "", '{"domain":"time", "traits":["duration_long"]}', ""],
-
-	// Grammar from SUOBI10
 	[459, "~아/어서", "because/and then", "Grammar", ["conjunction"], "", ["{VP_AVst}아/어서 {Clause}", "{VP_DVst}아/어서 {Clause}"], "SUOBI10", 3, "", "", '{"logic":"cause_effect", "polarity_match":true}', ""],
 	[460, "~(으)ㄹ 거예요", "future tense", "Grammar", ["declarative", "future"], "", ["{AVst}으/ㄹ 거예요"], "SUOBI10", 3, "Polite Informal", "", '{"logic":"declarative", "tense":"future"}', ""],
 	[461, "~지만", "but/although", "Grammar", ["conjunction"], "", ["{VP_AVst}지만 {Clause}", "{VP_DVst}지만 {Clause}"], "SUOBI10", 3, "", "", '{"logic":"contrast", "polarity_match":false}', ""],
-
-	// Vocabulary from SUOBI11
 	[462, "약속", "appointment", "Noun", ["event"], "", "", "SUOBI11", 3, "", "", '{"domain":"event", "traits":["social", "appointment"], "polarity":0}', ""],
 	[463, "한강공원", "Hangang park", "Noun", ["place"], "", "", "SUOBI11", 3, "", "", '{"domain":"place", "traits":["outdoor", "park"], "polarity":0}', ""],
 	[464, "가끔", "sometimes", "Adverb", ["frequency"], "", "", "SUOBI11", 2, "", "", '{"logic":"frequency", "traits":["low"]}', ""],
@@ -684,12 +676,8 @@ const KR_EN_languageUnits = [
 	[481, "박물관", "museum", "Noun", ["place"], "", "", "SUOBI11", 3, "", "", '{"domain":"place", "traits":["history", "facility"], "polarity":0}', ""],
 	[482, "영화관", "movie theater", "Noun", ["place"], "", "", "SUOBI11", 3, "", "", '{"domain":"place", "traits":["movie", "facility"], "polarity":0}', ""],
 	[483, "카페", "cafe", "Noun", ["place"], "", "", "SUOBI11", 3, "", "", '{"domain":"place", "traits":["coffee", "beverage", "facility"], "polarity":0}', ""],
-
-	// Grammar from SUOBI11
 	[484, "~(으)ㄹ게요", "I will", "Grammar", ["declarative", "promise"], "", ["{AVst}으/ㄹ게요"], "SUOBI11", 3, "Polite Informal", "", '{"logic":"promise", "tense":"future", "polarity":1}', ""],
 	[485, "~(으)러 가다/오다", "go/come to do", "Grammar", ["purpose"], "", ["{AVst}으/러 가요", "{AVst}으/러 와요"], "SUOBI11", 3, "", "", '{"logic":"purpose", "polarity":1}', ""],
-
-	// Vocabulary from SUOBI12
 	[486, "교수", "professor", "Noun", ["person", "job"], "", "", "SUOBI12", 3, "", "", '{"domain":"person", "traits":["profession", "academic"], "polarity":1}', ""],
 	[487, "대학교", "college", "Noun", ["place"], "", "", "SUOBI12", 3, "", "", '{"domain":"place", "traits":["academic", "facility"], "polarity":0}', ""],
 	[488, "아버지", "father", "Noun", ["person", "family"], "", "", "SUOBI12", 2, "", "", '{"domain":"person", "traits":["family", "parent", "male"], "polarity":1}', ""],
@@ -726,13 +714,9 @@ const KR_EN_languageUnits = [
 	[519, "사진을 찍다", "to take a photo", "Action Verb", ["intransitive_general"], "", "regular", "SUOBI12", 3, "", "", '{"domain":"action", "traits":["photo", "memory"], "prod":"photograph", "polarity":1}', ""],
 	[520, "요리를 하다", "to cook", "Action Verb", ["intransitive_general"], "", "hada", "SUOBI12", 3, "", "", '{"domain":"action", "traits":["cooking", "food"], "prod":"meal", "polarity":1}', ""],
 	[521, "춤을 추다", "to dance", "Action Verb", ["intransitive_general"], "", "regular", "SUOBI12", 3, "", "", '{"domain":"action", "traits":["dance", "art", "music"], "prod":"performance", "polarity":1}', ""],
-
-	// Grammar from SUOBI12
 	[522, "~(으)ㄹ 수 있다", "can do", "Grammar", ["ability"], "", ["{AVst}으/ㄹ 수 있어요"], "SUOBI12", 3, "", "", '{"logic":"ability", "polarity":1}', ""],
 	[523, "~(으)ㄹ 수 없다", "cannot do", "Grammar", ["inability"], "", ["{AVst}으/ㄹ 수 없어요"], "SUOBI12", 3, "", "", '{"logic":"inability", "polarity":-1}', ""],
 	[524, "못 ~ / ~지 못하다", "cannot do (external)", "Grammar", ["inability"], "", ["못 {AVst}아/어요", "{AVst}지 못해요"], "SUOBI12", 3, "", "", '{"logic":"inability", "polarity":-1}', ""],
-
-	// Vocabulary from SUOBI13
 	[525, "얼마", "how much/many", "Pronoun", ["questionWord", "quantity"], "", "", "SUOBI13", 2, "", "", '{"domain":"quantity", "traits":["question", "price"]}', ""],
 	[526, "원", "won", "Noun", ["measureWord"], "", "", "SUOBI13", 3, "", "", '{"domain":"measure", "traits":["currency"]}', ""],
 	[527, "치마", "skirt", "Noun", ["object", "clothes"], "", "", "SUOBI13", 3, "", "", '{"domain":"object", "traits":["clothing"], "polarity":0}', ""],
@@ -780,13 +764,9 @@ const KR_EN_languageUnits = [
 	[569, "자루", "counting word for pen/pencil", "Noun", ["measureWord"], "", "", "SUOBI13", 3, "", "", '{"domain":"measure", "traits":["writing_tool"]}', ""],
 	[570, "장", "counting word for paper", "Noun", ["measureWord"], "", "", "SUOBI13", 3, "", "", '{"domain":"measure", "traits":["sheet", "paper"]}', ""],
 	[571, "켤레", "counting word for shoes/socks", "Noun", ["measureWord"], "", "", "SUOBI13", 3, "", "", '{"domain":"measure", "traits":["pair", "shoes"]}', ""],
-
-	// Grammar from SUOBI13
 	[572, "~아/어도 되다", "may I / it is okay to", "Grammar", ["permission"], "", ["{AVst}아/어도 돼요"], "SUOBI13", 3, "", "", '{"logic":"permission", "polarity":1}', ""],
 	[573, "~(으)면 안 되다", "must not", "Grammar", ["prohibition"], "", ["{AVst}으/면 안 돼요"], "SUOBI13", 3, "", "", '{"logic":"prohibition", "polarity":-1}', ""],
 	[574, "~아/어야 하다/되다", "must / have to do", "Grammar", ["obligation"], "", ["{AVst}아/어야 해요", "{AVst}아/어야 돼요"], "SUOBI13", 3, "", "", '{"logic":"obligation", "polarity":0}', ""],
-
-	// Vocabulary from SUOBI14
 	[575, "모두", "all", "Adverb", ["quantity"], "", "", "SUOBI14", 3, "", "", '{"logic":"quantity", "traits":["all", "complete"]}', ""],
 	[576, "선물", "gift", "Noun", ["object"], "", "", "SUOBI14", 3, "", "", '{"domain":"object", "traits":["gift", "valuable"], "polarity":1}', ""],
 	[577, "케이크", "cake", "Noun", ["food"], "", "", "SUOBI14", 3, "", "", '{"domain":"food", "traits":["bakery", "dessert", "sweet"], "polarity":1}', ""],
@@ -831,13 +811,9 @@ const KR_EN_languageUnits = [
 	[616, "부르다", "to sing", "Action Verb", ["transitive_general"], "", "reu_irregular", "SUOBI14", 3, "", "", '{"domain":"action", "req":"any", "traits":["music", "vocal"], "prod":"sung", "polarity":1}', ""],
 	[617, "자르다", "to cut", "Action Verb", ["transitive_general"], "", "reu_irregular", "SUOBI14", 3, "", "", '{"domain":"action", "req":"object", "traits":["divide"], "prod":"cut", "polarity":0}', ""],
 	[618, "에게/한테", "to/for", "Grammar", ["particle"], "", ["{N:person}에게", "{N:person}한테"], "SUOBI14", 3, "", "", '{"domain":"grammar", "traits":["dative", "person"]}', ""],
-
-	// Grammar from SUOBI14
 	[619, "~(으)면", "if/when", "Grammar", ["condition", "devtest"], "", ["{VP_AVst}으/면 {Clause}", "{VP_DVst}으/면 {Clause}"], "SUOBI14", 3, "", "", '{"logic":"condition"}', ""],
 	[620, "~는데", "but/and", "Grammar", ["conjunction", "devtest"], "", ["{VP_AVst}는데 {Clause}"], "SUOBI14", 3, "", "", '{"logic":"contrast","polarity_match":false}', ""],
 	[621, "~(으)ㄴ데", "but/and", "Grammar", ["conjunction", "devtest"], "", ["{VP_DVst}으/ㄴ데 {Clause}"], "SUOBI14", 3, "", "", '{"logic":"contrast","polarity_match":false}', ""],
-
-	// Vocabulary from SUOBI15
 	[622, "전화번호", "phone number", "Noun", ["object"], "", "", "SUOBI15", 3, "", "", '{"domain":"object", "traits":["communication", "number"], "polarity":0}', ""],
 	[623, "잠깐만요", "one moment", "Exclamation", ["interjection"], "", "", "SUOBI15", 2, "", "", '{"domain":"discourse", "traits":["wait", "pause"]}', ""],
 	[624, "국가 번호", "country code", "Noun", ["object"], "", "", "SUOBI15", 3, "", "", '{"domain":"object", "traits":["communication", "number"], "polarity":0}', ""],
@@ -860,15 +836,11 @@ const KR_EN_languageUnits = [
 	[641, "성함", "name (honorific)", "Noun", ["attribute"], "", "", "SUOBI15", 3, "", "", '{"domain":"attribute", "traits":["name", "honorific"]}', ""],
 	[642, "댁", "house (honorific)", "Noun", ["place"], "", "", "SUOBI15", 3, "", "", '{"domain":"place", "traits":["home", "honorific"], "polarity":0}', ""],
 	[643, "여쭙다", "to ask (honorific)", "Action Verb", ["transitive_general", "dative_person"], "", "b_irregular", "SUOBI15", 3, "", "", '{"domain":"action", "req":"person", "traits":["question", "honorific"], "prod":"asked", "polarity":0}', ""],
-
-	// Grammar from SUOBI15
 	[644, "~(으)ㄴ", "relative clause (verb past / adjective present)", "Grammar", ["modifier", "devtest"], "", ["{AVst}으/ㄴ {N:place}", "{DVst}으/ㄴ {N:place}"], "SUOBI15", 3, "", "", '{"logic":"modifier"}', ""],
 	[645, "~는", "relative clause (verb present)", "Grammar", ["modifier", "devtest"], "", ["{AVst}는 {N:place}"], "SUOBI15", 3, "", "", '{"logic":"modifier"}', ""],
 	[646, "~(으)ㄹ", "relative clause (future)", "Grammar", ["modifier", "devtest"], "", ["{AVst}으/ㄹ {N:place}"], "SUOBI15", 3, "", "", '{"logic":"modifier"}', ""],
 	[647, "께", "to/for (honorific)", "Grammar", ["particle"], "", ["{N:person}께"], "SUOBI15", 3, "", "", '{"domain":"grammar", "traits":["dative", "person", "honorific"]}', ""],
 	[648, "께서", "subject marker (honorific)", "Grammar", ["particle"], "", ["{N:person}께서"], "SUOBI15", 3, "", "", '{"domain":"grammar", "traits":["subject", "person", "honorific"]}', ""],
-
-	// Vocabulary from SUOBI16
 	[649, "택시", "taxi", "Noun", ["transportation"], "", "", "SUOBI16", 3, "", "", '{"domain":"transportation", "traits":["vehicle", "car"], "polarity":0}', ""],
 	[650, "가깝다", "to be close", "Descriptive Verb", ["descriptive_place"], "", "b_irregular", "SUOBI16", 3, "", "", '{"domain":"state", "req":"place", "traits":["distance", "near"], "polarity":1}', ""],
 	[651, "걸리다", "to take (time)", "Action Verb", ["intransitive_general"], "", "regular", "SUOBI16", 3, "", "", '{"domain":"action", "traits":["duration"], "prod":"taken", "polarity":0}', ""],
@@ -898,13 +870,9 @@ const KR_EN_languageUnits = [
 	[675, "도착하다", "to arrive", "Action Verb", ["intransitive_place"], "", "hada", "SUOBI16", 3, "", "", '{"domain":"action", "req":"place", "traits":["motion", "arrival"], "prod":"arrived", "polarity":1}', ""],
 	[676, "출발하다", "to depart", "Action Verb", ["intransitive_place"], "", "hada", "SUOBI16", 3, "", "", '{"domain":"action", "req":"place", "traits":["motion", "departure"], "prod":"departed", "polarity":0}', ""],
 	[677, "번", "number", "Noun", ["attribute"], "", "", "SUOBI16", 3, "", "", '{"domain":"attribute", "traits":["number", "counter"]}', ""],
-
-	// Grammar from SUOBI16
 	[678, "~(으)시~", "honorific infix", "Grammar", ["honorific", "devtest"], "", ["{AVst}으/십니다", "{AVst}으/셔요"], "SUOBI16", 3, "", "", '{"logic":"honorific"}', ""],
 	[679, "~(으)ㄴ 적이 있다/없다", "have experience of", "Grammar", ["experience"], "", ["{AVst}으/ㄴ 적이 있어요", "{AVst}으/ㄴ 적이 없어요"], "SUOBI16", 3, "", "", '{"logic":"experience", "polarity":0}', ""],
 	[680, "보다 (더)", "more than", "Grammar", ["particle"], "", ["{N:place}보다 {DVst}아/어요"], "SUOBI16", 3, "", "", '{"logic":"comparison", "polarity":0}', ""],
-
-	// Vocabulary from SUOBI17
 	[681, "미터", "meter", "Noun", ["measureWord"], "", "", "SUOBI17", 3, "", "", '{"domain":"quantity", "type":"distance"}', ""],
 	[682, "사거리", "4 way intersection", "Noun", ["place"], "", "", "SUOBI17", 3, "", "", '{"domain":"place", "traits":["intersection"]}', ""],
 	[683, "약국", "pharmacy", "Noun", ["place"], "", "", "SUOBI17", 3, "", "", '{"domain":"place", "traits":["commercial", "medical"]}', ""],
@@ -934,12 +902,8 @@ const KR_EN_languageUnits = [
 	[707, "내려가다", "to go down", "Action Verb", ["intransitive_motion", "intransitive_place"], "", "regular", "SUOBI17", 3, "", "", '{"domain":"motion", "req":"high", "prod":"low", "polarity":0}', ""],
 	[708, "들어가다", "to enter", "Action Verb", ["intransitive_motion", "intransitive_place"], "", "regular", "SUOBI17", 3, "", "", '{"domain":"motion", "req":"outside", "prod":"inside", "polarity":0}', ""],
 	[709, "올라가다", "to go up", "Action Verb", ["intransitive_motion", "intransitive_place"], "", "regular", "SUOBI17", 3, "", "", '{"domain":"motion", "req":"low", "prod":"high", "polarity":0}', ""],
-
-	// Grammar from SUOBI17
 	[710, "~(으)ㄴ 후에 / ~기 전에", "after / before doing", "Grammar", ["time_clause"], "", ["{AVst}으/ㄴ 후에 {Clause}", "{AVst}기 전에 {Clause}"], "SUOBI17", 3, "", "", '{"logic":"sequence", "polarity":0}', "{VP_adnominal}\\s+후에"],
 	[711, "~(으)면서", "while doing", "Grammar", ["conjunction", "devtest"], "", ["{AVst}으/면서 {Clause}"], "SUOBI17", 3, "", "", '{"logic":"parallel"}', ""],
-
-	// Vocabulary from SUOBI18
 	[712, "일기예보", "weather forecast", "Noun", ["information"], "", "", "SUOBI18", 3, "", "", '{"domain":"information", "topic":"weather"}', ""],
 	[713, "따뜻하다", "to be warm", "Descriptive Verb", ["descriptive_general", "weather"], "", "hada", "SUOBI18", 3, "", "", '{"domain":"weather", "attribute":"temperature", "polarity":1}', ""],
 	[714, "가지고 오다", "to bring", "Action Verb", ["transitive_general"], "", "regular", "SUOBI18", 3, "", "", '{"domain":"transfer", "req":"object", "prod":"possess", "polarity":0}', ""],
@@ -966,11 +930,7 @@ const KR_EN_languageUnits = [
 	[735, "여름", "summer", "Noun", ["time", "season"], "", "", "SUOBI18", 3, "", "", '{"domain":"time", "type":"season", "traits":["hot"]}', ""],
 	[736, "가을", "autumn", "Noun", ["time", "season"], "", "", "SUOBI18", 3, "", "", '{"domain":"time", "type":"season", "traits":["cool"]}', ""],
 	[737, "겨울", "winter", "Noun", ["time", "season"], "", "", "SUOBI18", 3, "", "", '{"domain":"time", "type":"season", "traits":["cold"]}', ""],
-
-	// Grammar from SUOBI18
 	[738, "~기 / ~는 것", "doing", "Grammar", ["modifier", "gerund", "devtest"], "", ["{AVst}기", "{AVst}는 것"], "SUOBI18", 3, "", "", '{"logic":"gerund"}', ""],
-
-	// Vocabulary from SUOBI19
 	[739, "민박집", "bed and breakfast", "Noun", ["place"], "", "", "SUOBI19", 4, "", "", '{"domain":"place", "traits":["lodging", "traditional"]}', ""],
 	[740, "전주", "Jeonju", "Noun", ["place"], "", "", "SUOBI19", 4, "", "", '{"domain":"place", "traits":["city", "domestic"]}', ""],
 	[741, "민박하다", "to stay at bed and breakfast", "Action Verb", ["intransitive_place"], "", "hada", "SUOBI19", 4, "", "", '{"domain":"stay", "req":"lodging", "prod":"rest", "polarity":0}', ""],
@@ -991,8 +951,6 @@ const KR_EN_languageUnits = [
 	[756, "신다", "to wear (shoes)", "Action Verb", ["transitive_clothes"], "", "regular", "SUOBI19", 3, "", "", '{"domain":"action", "req":"footwear", "prod":"dressed", "polarity":0}', ""],
 	[757, "쓰다", "to wear on head", "Action Verb", ["transitive_clothes", "transitive_general"], "", "eu_irregular", "SUOBI19", 3, "", "", '{"domain":"action", "req":"headwear", "prod":"dressed", "polarity":0}', ""],
 	[758, "돈을 바꾸다", "to exchange money", "Action Verb", ["intransitive_general"], "", "regular", "SUOBI19", 4, "", "", '{"domain":"finance", "req":"currency", "prod":"exchanged", "polarity":0}', ""],
-
-	// Vocabulary from SUOBI20
 	[759, "학기", "semester", "Noun", ["time"], "", "", "SUOBI20", 4, "", "", '{"domain":"time", "type":"academic_period"}', ""],
 	[760, "돌아오다", "to come back", "Action Verb", ["intransitive_place"], "", "regular", "SUOBI20", 3, "", "", '{"domain":"motion", "req":"origin", "prod":"returned", "polarity":0}', ""],
 	[761, "방학하다", "to vacation", "Action Verb", ["intransitive_general"], "", "hada", "SUOBI20", 4, "", "", '{"domain":"activity", "req":"academic", "prod":"vacation", "polarity":1}', ""],
@@ -1016,8 +974,6 @@ const KR_EN_languageUnits = [
 	[779, "한글날", "Hangul Proclamation day", "Noun", ["time", "event"], "", "", "SUOBI20", 4, "", "", '{"domain":"culture", "type":"holiday", "traits":["hangul"], "polarity":1}', ""],
 	[780, "휴가", "vacation", "Noun", ["time", "event"], "", "", "SUOBI20", 3, "", "", '{"domain":"leisure", "type":"work_break", "polarity":1}', ""],
 	[781, "휴일", "holiday", "Noun", ["time", "event"], "", "", "SUOBI20", 3, "", "", '{"domain":"time", "type":"day_off", "polarity":1}', ""],
-
-	// Vocabulary from class2011
 	[782, "건강하다", "healthy", "Descriptive Verb", ["descriptive_person", "descriptive_general"], "", "hada", "class2011", 3, "", "", '{"domain":"state", "req":"person", "polarity":1}', ""],
 	[783, "광고 회사", "advertising company", "Noun", ["place"], "", "", "class2011", 4, "", "", '{"domain":"place", "traits":["facility", "work", "advertising"]}', ""],
 	[784, "그만두다", "to quit/leave", "Action Verb", ["transitive_general"], "", "regular", "class2011", 4, "", "", '{"domain":"action", "req":"activity", "prod":"ceased", "polarity":-1}', ""],
@@ -1036,10 +992,8 @@ const KR_EN_languageUnits = [
 	[797, "출근하다", "to go to work", "Action Verb", ["intransitive_general", "intransitive_place"], "", "hada", "class2011", 4, "", "", '{"domain":"activity", "req":"person", "traits":["work", "commute"], "polarity":0}', ""],
 	[798, "출판사", "publisher", "Noun", ["place"], "", "", "class2011", 4, "", "", '{"domain":"place", "traits":["facility", "work", "publishing"]}', ""],
 	[799, "항공사", "airline", "Noun", ["place"], "", "", "class2011", 4, "", "", '{"domain":"place", "traits":["facility", "transportation", "airline"]}', ""],
-	// Grammar from class2011
 	[800, "-게", "so that / in a manner of (adverbial)", "Grammar", [], "", ["{DVst}게 {VP_AVst}아/어요"], "class2011", 3, "", "", '{"logic":"adverbial", "domain":"manner"}', ""],
 	[801, "-어지다", "to become / get (changed state)", "Grammar", [], "", ["{DVst}아/어져요", "{DVst}아/어졌어요"], "class2011", 3, "", "", '{"logic":"change_of_state", "domain":"aspect", "prod":"become"}', ""],
-	// Vocabulary from class2012
 	[802, "경영학", "business administration", "Noun", ["object", "academic"], "", "", "class2012", 3, "", "", '{"domain":"academic", "field":"business"}', ""],
 	[803, "경제학", "economics", "Noun", ["object", "academic"], "", "", "class2012", 3, "", "", '{"domain":"academic", "field":"economics"}', ""],
 	[804, "교육학", "pedagogy, education", "Noun", ["object", "academic"], "", "", "class2012", 3, "", "", '{"domain":"academic", "field":"education"}', ""],
@@ -1054,10 +1008,8 @@ const KR_EN_languageUnits = [
 	[813, "전공하다", "to major in", "Action Verb", ["transitive_general"], "", "hada", "class2012", 3, "", "", '{"domain":"action", "req":"academic", "prod":"specialization"}', ""],
 	[814, "졸업하다", "to graduate", "Action Verb", ["transitive_place", "intransitive_general"], "", "hada", "class2012", 2, "", "", '{"domain":"action", "req":"place", "prod":"completion", "polarity":1}', ""],
 	[815, "컴퓨터공학", "computer engineering", "Noun", ["object", "academic"], "", "", "class2012", 3, "", "", '{"domain":"academic", "field":"computer_engineering"}', ""],
-	// Grammar from class2012
 	[816, "-(으)려고", "in order to, intending to", "Grammar", ["purpose", "intention"], "", ["{Adv} {VP_AVst}으/려고 해요", "{VP_AVst}으/려고 {Clause}"], "class2012", 2, "", "", '{"logic":"purpose", "domain":"intention"}', ""],
 	[817, "-(으)ㄴ 지", "since (time elapsed)", "Grammar", ["time_clause", "duration"], "", ["{VP_AVst}으/ㄴ 지 오래됐어요", "{VP_AVst}으/ㄴ 지 {Number:sinoNumber(1,10)}년이 됐어요"], "class2012", 2, "", "", '{"logic":"duration", "domain":"time"}', "{VP_adnominal}\\s+지\\s+({Number}|{Noun:time}).*되"],
-	// Vocabulary from class2021
 	[818, "귀", "ear", "Noun", ["bodyPart", "object"], "", "", "class2021", 2, "", "", '{"domain":"body", "part":"ear"}', ""],
 	[819, "날씬하다", "slender, slim", "Descriptive Verb", ["descriptive_person", "descriptive_general"], "", "hada", "class2021", 3, "", "", '{"domain":"appearance", "traits":["body"], "polarity":1}', ""],
 	[820, "도와주다", "to help, give help", "Action Verb", ["transitive_general", "transitive_person", "dative_person"], "", "regular", "class2021", 2, "", "", '{"domain":"action", "req":"person", "prod":"assistance", "polarity":1}', ""],
@@ -1077,11 +1029,9 @@ const KR_EN_languageUnits = [
 	[834, "착하다", "good-natured, kind", "Descriptive Verb", ["descriptive_person", "descriptive_general"], "", "hada", "class2021", 2, "", "", '{"domain":"personality", "polarity":1}', ""],
 	[835, "코", "nose", "Noun", ["bodyPart", "object"], "", "", "class2021", 2, "", "", '{"domain":"body", "part":"nose"}', ""],
 	[836, "허리", "waist, lower back", "Noun", ["bodyPart", "object"], "", "", "class2021", 2, "", "", '{"domain":"body", "part":"waist"}', ""],
-	// Grammar from class2021
 	[837, "-겠다 (conjecture)", "must be, looks like (conjecture)", "Grammar", ["declarative", "conjecture"], "conjecture", ["{VP_DVst}겠어요", "{VP_AVst}겠어요"], "class2021", 2, "", "", '{"logic":"conjecture", "domain":"aspect"}', ""],
 	[838, "-겠다 (intention)", "will, intend to (intention)", "Grammar", ["declarative", "intention"], "intention", ["{VP_AVst}겠습니다"], "class2021", 2, "", "", '{"logic":"intention", "domain":"aspect"}', ""],
 	[839, "-네요", "indeed, oh it is (realization)", "Grammar", ["declarative", "exclamation"], "", ["{VP_DVst}네요", "{VP_AVst}네요", "{Noun:time}에 {VP_AVst}네요"], "class2021", 2, "", "", '{"logic":"realization", "domain":"aspect"}', ""],
-	// Vocabulary from class2022
 	[840, "고모", "paternal aunt (father's sister)", "Noun", ["person", "family"], "", "", "class2022", 3, "", "", '{"domain":"family", "relation":"paternal_aunt"}', ""],
 	[841, "고모부", "uncle (husband of father's sister)", "Noun", ["person", "family"], "", "", "class2022", 3, "", "", '{"domain":"family", "relation":"paternal_aunt_husband"}', ""],
 	[842, "공무원", "public servant, civil servant", "Noun", ["person", "profession"], "", "", "class2022", 3, "", "", '{"domain":"profession", "field":"public_service"}', ""],
@@ -1097,11 +1047,9 @@ const KR_EN_languageUnits = [
 	[852, "친척", "relative, relation", "Noun", ["person", "family"], "", "", "class2022", 2, "", "", '{"domain":"family", "relation":"relative"}', ""],
 	[853, "큰아버지", "paternal uncle (father's older brother)", "Noun", ["person", "family"], "", "", "class2022", 3, "", "", '{"domain":"family", "relation":"older_paternal_uncle"}', ""],
 	[854, "큰어머니", "aunt (wife of father's older brother)", "Noun", ["person", "family"], "", "", "class2022", 3, "", "", '{"domain":"family", "relation":"older_paternal_aunt"}', ""],
-	// Grammar from class2022
 	[855, "-(으)ㄹ 때", "when, at the time of", "Grammar", ["time_clause", "condition"], "", ["{DVst}으/ㄹ 때 {Clause}", "{VP_AVst}으/ㄹ 때 {Clause}"], "class2022", 2, "", "", '{"logic":"time_condition", "domain":"time"}', ""],
 	[856, "의 (possessive)", "possessive particle ('s, of)", "Grammar", ["particle", "possessive"], "possessive", ["{Noun:person}의 {Noun:person}", "{Noun:person}의 {Noun:place}"], "class2022", 2, "", "", '{"logic":"possessive"}', ""],
 	[857, "의 (relation)", "relationship/origin particle (of)", "Grammar", ["particle", "relationship"], "relationship", ["{Noun:person}의 {Noun}"], "class2022", 2, "", "", '{"logic":"relationship"}', ""],
-	// Vocabulary from class2031
 	[858, "거리", "street, road, distance", "Noun", ["place", "object"], "", "", "class2031", 2, "", "", '{"domain":"place", "traits":["path", "outdoor"]}', ""],
 	[859, "구경거리", "attraction, sight to see", "Noun", ["object", "activity"], "", "", "class2031", 3, "", "", '{"domain":"activity", "traits":["sightseeing"]}', ""],
 	[860, "남해", "South Sea (of Korea)", "Noun", ["place", "properNoun"], "", "", "class2031", 3, "", "", '{"domain":"place", "traits":["sea", "geography"]}', ""],
@@ -1121,11 +1069,9 @@ const KR_EN_languageUnits = [
 	[874, "한라산", "Hallasan (mountain in Jeju)", "Noun", ["place", "properNoun"], "", "", "class2031", 3, "", "", '{"domain":"place", "traits":["mountain", "geography"]}', ""],
 	[875, "해변", "beach, seashore", "Noun", ["place"], "", "", "class2031", 3, "", "", '{"domain":"place", "traits":["coast", "nature"]}', ""],
 	[876, "해산물", "seafood", "Noun", ["food", "object"], "", "", "class2031", 3, "", "", '{"domain":"food", "traits":["seafood"]}', ""],
-	// Grammar from class2031
 	[877, "-만에", "after, for the first time in (time duration)", "Grammar", ["time_clause", "duration"], "", ["{Number:sinoNumber(1,10)}년만에 {VP_AVst}아/어요", "얼마만에 {VP_AVst}아/어요"], "class2031", 2, "", "", '{"logic":"duration", "domain":"time"}', ""],
 	[878, "-어 보다 (attempt)", "try doing (attempt)", "Grammar", ["suggestion", "imperative"], "attempt", ["{VP_AVst}아/어 봐요", "{VP_AVst}아/어 보세요"], "class2031", 2, "", "", '{"logic":"attempt", "domain":"action"}', ""],
 	[879, "-어 보다 (experience)", "have tried, experienced (experience)", "Grammar", ["declarative", "experience"], "experience", ["{VP_AVst}아/어 봤어요"], "class2031", 2, "", "", '{"logic":"experience", "domain":"aspect"}', ""],
-	// Vocabulary from class2032
 	[880, "관광지", "tourist attraction, sight", "Noun", ["place"], "", "", "class2032", 2, "", "", '{"domain":"place", "traits":["tourism"]}', ""],
 	[881, "그립다", "to miss, long for", "Descriptive Verb", ["descriptive_person", "descriptive_general"], "", "b_irregular", "class2032", 2, "", "", '{"domain":"emotion", "traits":["longing"], "polarity":-1}', ""],
 	[882, "기쁘다", "glad, happy", "Descriptive Verb", ["descriptive_person", "descriptive_general"], "", "eu_irregular", "class2032", 2, "", "", '{"domain":"emotion", "traits":["joy"], "polarity":1}', ""],
@@ -1138,11 +1084,9 @@ const KR_EN_languageUnits = [
 	[889, "유명하다", "famous, well-known", "Descriptive Verb", ["descriptive_place", "descriptive_person", "descriptive_general"], "", "hada", "class2032", 2, "", "", '{"domain":"reputation", "polarity":1}', ""],
 	[890, "행복하다", "happy", "Descriptive Verb", ["descriptive_person", "descriptive_general"], "", "hada", "class2032", 2, "", "", '{"domain":"emotion", "traits":["happiness"], "polarity":1}', ""],
 	[891, "화가 나다", "to get angry, be enraged", "Action Verb", ["intransitive_general"], "", "regular", "class2032", 2, "", "", '{"domain":"emotion", "traits":["anger"], "polarity":-1}', ""],
-	// Grammar from class2032
 	[892, "-기 때문에", "because, because of", "Grammar", ["reason", "conjunction"], "", ["{Adv} {VP_DVst}기 때문에 {Clause}", "{VP_AVst}기 때문에 {Clause}"], "class2032", 2, "", "", '{"logic":"reason", "domain":"aspect"}', ""],
 	[893, "-는데 (background)", "and, so, while (background context)", "Grammar", ["conjunction", "background"], "background", ["{VP_AVst}는데 {Clause}"], "class2032", 2, "", "", '{"logic":"background", "domain":"aspect"}', ""],
 	[894, "-는데 (contrast)", "but, however (contrast)", "Grammar", ["conjunction", "contrast"], "contrast", ["{VP_DVst}으/ㄴ데 {Clause}", "{VP_AVst}는데 {Clause}"], "class2032", 2, "", "", '{"logic":"contrast", "domain":"aspect"}', ""],
-	// Vocabulary from class2041
 	[895, "계약하다", "to sign a contract, make an agreement", "Action Verb", ["transitive_general", "intransitive_general"], "", "hada", "class2041", 3, "", "", '{"domain":"action", "req":"contract", "prod":"agreement"}', ""],
 	[896, "동네", "neighborhood, village", "Noun", ["place"], "", "", "class2041", 2, "", "", '{"domain":"place", "traits":["neighborhood", "area"]}', ""],
 	[897, "룸메이트", "roommate", "Noun", ["person"], "", "", "class2041", 3, "", "", '{"domain":"person", "relation":"roommate"}', ""],
@@ -1159,7 +1103,6 @@ const KR_EN_languageUnits = [
 	[908, "주유소", "gas station", "Noun", ["place"], "", "", "class2041", 2, "", "", '{"domain":"place", "traits":["facility", "fuel"]}', ""],
 	[909, "짐", "luggage, load, baggage", "Noun", ["object"], "", "", "class2041", 2, "", "", '{"domain":"object", "traits":["luggage"]}', ""],
 	[910, "찜질방", "Korean sauna, bathhouse", "Noun", ["place"], "bathhouse", "", "class2041", 3, "", "", '{"domain":"place", "traits":["spa", "facility"]}', ""],
-	// Grammar from class2041
 	[911, "-어야겠다", "must, should, ought to (strong intention)", "Grammar", ["obligation", "intention"], "", ["{VP_AVst}아/어야겠어요"], "class2041", 2, "", "", '{"logic":"obligation", "domain":"aspect"}', ""],
 	[912, "-었으면 좋겠다", "I wish, I hope (hope or desire)", "Grammar", ["desire", "declarative"], "", ["{VP_AVst}았/었으면 좋겠어요", "{VP_DVst}았/었으면 좋겠어요"], "class2041", 2, "", "", '{"logic":"desire", "domain":"aspect"}', ""],
 	[913, "거실", "living room", "Noun", ["place", "home"], "", "", "class2042", 2, "", "", '{"domain":"place", "traits":["room", "home"]}', ""],
@@ -1875,7 +1818,28 @@ const KR_EN_languageUnits = [
 	[1623, "년", "year (counter)", "Noun", ["counter", "time"], "classifier for years or duration in years", "", "studytext12", 1, "Universal", "", '{"domain":"time", "type":"counter"}', "{Number}\\s*_"],
 	[1624, "와 / 과", "and / with (comitative nominal particle)", "Grammar", ["particle", "connector"], "nominal conjunction: 과 after consonant, 와 after vowel", ["{N}와/과 {N}이/가 {DVst}아/어요"], "studytext12", 1, "Universal", "", '{"domain":"grammar", "type":"nominal_connective"}', "{Noun}\\+(_|과|와)"],
 	[1625, "-고 싶어하다", "want to do (3rd person perspective)", "Grammar", ["grammar", "desire", "3rd_person"], "expresses 3rd-person desire/wishes", ["{VP_AVst}고 싶어해요"], "studytext12", 2, "Universal", "", '{"domain":"grammar", "type":"auxiliary_predicate"}', "{VP}\\+고\\s+싶어하"],
-	[1626, "저", "that (over there, determiner)", "Determiner", ["determiner", "demonstrative"], "prenominal demonstrative modifier 'that (over there)'", "", "studytext12", 1, "Universal", "", '{"domain":"deixis", "proximity":"distal"}', "^_\\s+{Noun}"]
+	[1626, "저", "that (over there, determiner)", "Determiner", ["determiner", "demonstrative"], "prenominal demonstrative modifier 'that (over there)'", "", "studytext12", 1, "Universal", "", '{"domain":"deixis", "proximity":"distal"}', "^_\\s+{Noun}"],
+	[1627, "러시아", "Russia", "Noun", ["place", "country"], "Russian Federation", "", "studytext21", 2, "Universal", "", '{"domain":"geography", "type":"country"}', ""],
+	[1628, "일본어", "Japanese language", "Noun", ["language", "education"], "Japanese language", "", "studytext21", 2, "Universal", "", '{"domain":"language", "type":"natural_language"}', ""],
+	[1629, "제목", "title, subject, heading", "Noun", ["concept", "media"], "heading, subject, or title of text/post", "", "studytext21", 1, "Universal", "", '{"domain":"concept", "type":"title"}', ""],
+	[1630, "개월", "month (duration counter)", "Noun", ["counter", "time"], "counting classifier for months duration", "", "studytext21", 1, "Universal", "", '{"domain":"time", "type":"counter"}', "{Number}\\s*_"],
+	[1631, "전", "before, ago, previous", "Noun", ["time", "order"], "point in past relative to now ('ago', 'before')", "", "studytext21", 1, "Universal", "", '{"domain":"time", "type":"relative_past"}', "({Number}\\s*{Counter:time}|{Noun:time})\\s*_"],
+	[1632, "한국어학당", "Korean language institute", "Noun", ["education", "place_indoor", "place"], "university Korean language center/school", "", "studytext21", 2, "Universal", "", '{"domain":"education", "type":"institution"}', ""],
+	[1633, "공부", "study, studying", "Noun", ["education", "activity"], "academic study, learning activity", "", "studytext21", 1, "Universal", "", '{"domain":"education", "type":"activity"}', ""],
+	[1634, "날", "day, date", "Noun", ["time", "calendar"], "specific day or date", "", "studytext21", 1, "Universal", "", '{"domain":"time", "type":"day"}', ""],
+	[1635, "지루하다", "to be boring, tedious, dull", "Descriptive Verb", ["emotion", "state", "descriptive_general"], "tedious, uninteresting", "hada", "studytext21", 2, "Universal", "", '{"domain":"state", "polarity":-1}', ""],
+	[1636, "노래", "song", "Noun", ["art", "music", "entertainment"], "vocal song, music piece", "", "studytext21", 1, "Universal", "", '{"domain":"art", "type":"song"}', ""],
+	[1637, "취미", "hobby, pastime", "Noun", ["leisure", "activity", "interest"], "leisure interest, hobby", "", "studytext21", 1, "Universal", "", '{"domain":"leisure", "type":"hobby"}', ""],
+	[1638, "같다", "to be same, identical, similar, like", "Descriptive Verb", ["comparison", "state", "descriptive_general"], "identical, similar, same", "regular", "studytext21", 1, "Universal", "", '{"domain":"state", "type":"equality"}', ""],
+	[1639, "분", "person (honorific), counter for people", "Noun", ["person", "honorific", "counter"], "honorific term/classifier for person", "", "studytext21", 1, "Honorific", "Honorific equivalent of 사람 / 명", '{"domain":"person", "honorific":true}', "{VP_adnominal}\\s*_"],
+	[1640, "전화", "telephone, phone call", "Noun", ["communication", "device"], "telephone equipment or telephone call", "", "studytext21", 1, "Universal", "", '{"domain":"communication", "type":"device"}', ""],
+	[1641, "일", "work, task, matter, thing, business", "Noun", ["activity", "concept"], "task, business, matter ('할 일')", "", "studytext21", 1, "Universal", "", '{"domain":"activity", "type":"work"}', "{VP_adnominal}\\s*_"],
+	[1642, "마리아", "Maria (name)", "Noun", ["person", "properNoun"], "female given name Maria", "", "studytext21", 1, "Universal", "", '{"domain":"person", "traits":["properNoun"]}', ""],
+	[1643, "마리", "Marie (name)", "Noun", ["person", "properNoun"], "given name Marie", "", "studytext21", 1, "Universal", "", '{"domain":"person", "traits":["properNoun"]}', ""],
+	[1644, "-(으)십시오", "please do (formal polite imperative)", "Grammar", ["imperative", "formal", "honorific"], "formal polite imperative verb ending", ["{AVst}으/십시오"], "studytext21", 1, "Formal", "Formal polite imperative", '{"domain":"grammar", "mood":"imperative", "formality":"formal"}', "{VP_AVst}\\+으?십시오"],
+	[1645, "-는군요 / -군요", "exclamatory ending expressing realization/discovery ('I see that..., oh so...')", "Grammar", ["exclamation", "realization"], "expresses surprise/discovery of newly realized fact", ["{VP_AVst}는군요", "{VP_DVst}군요"], "studytext21", 2, "Universal", "", '{"domain":"grammar", "mood":"exclamatory"}', "{VP}\\+는?군요"],
+	[1646, "-(으)면 좋겠다", "I hope/wish that (present desire)", "Grammar", ["desire", "condition"], "expresses speaker's wish or desired state", ["{VP_AVst}으/면 좋겠어요", "{VP_DVst}으/면 좋겠어요"], "studytext21", 2, "Universal", "", '{"domain":"grammar", "type":"wishing"}', "{VP}\\+으?면\\s+좋겠"],
+	[1647, "이야기하다", "to talk, converse, chat", "Action Verb", ["communication", "action", "social"], "to converse, chat, tell a story", "hada", "studytext21", 1, "Universal", "Replace with 말씀하시다 for respected subjects", '{"domain":"communication", "action":"talk"}', ""]
 ];
 
 // Build the initial cache from the hardcoded array

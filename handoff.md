@@ -98,11 +98,11 @@ Maps surface Hangul tokens to:
     *   `node homonyms.js least [10]`: Displays the least confusable tokens.
     *   `node homonyms.js stats`: Summary metrics of total tokens, direct units, LUTs, and phonetic links.
 *   **LLM-Friendly File Structure**: `printHelp()` and all functional logic (`getPhoneticCandidates`, `updateHomonyms`, `lookupToken`, `runCli`) reside at the top of the file with a prominent LLM guidance banner. The monolithic 2,200+ line `HOMONYMS` dictionary is quarantined at the bottom directly before the module exports.
-*   **Dataset Status**: 100% of `data.js` vocabulary ingested (2,922 tokens, 3,490+ mapped entries). 0 orphan links. Exhaustive tests pass with 0 errors across 3,368 generated sentences.
+*   **Dataset Status**: 100% of `data.js` vocabulary ingested (2,949 tokens, 3,520+ mapped entries). 0 orphan links. Exhaustive tests pass with 0 errors across 3,403 generated sentences.
 
 ### 6. `text_analyzer.js` (Passage Ingestion, Morphological Decomposition & Disambiguation Engine)
 Automated analysis pipeline that decomposes real Korean passages from `studytexts.js` into constituent language units, resolves homonyms and polysemous morphemes, generates student study checklists, and identifies curriculum gaps:
-*   **Zero Hard-Coded Word Statements**: All homonym disambiguation (e.g. `저` pronoun vs. determiner; `이` determiner vs. numeral vs. noun; `하고` particle vs. verb connective; `-(으)ㄴ 후에` / `-(으)ㄴ 지` bound grammar vs. free nouns) is driven declaratively by `SyntaxFrame` metadata (Column 12 in `data.js`) and surrounding semantic tags.
+*   **Zero Hard-Coded Word Statements**: All homonym disambiguation (e.g. `저` pronoun vs. determiner; `이` determiner vs. numeral vs. noun; `하고` particle vs. verb connective; `-(으)ㄴ 후에` / `-(으)ㄴ 지` bound grammar vs. free nouns; `일` noun vs. number; `분` honorific person vs. minute) is driven declaratively by `SyntaxFrame` metadata (Column 12 in `data.js`) and surrounding semantic tags.
 *   **`SyntaxFrame` Specification**:
     *   `_` : Anchor target morpheme/word.
     *   `\+` : Direct morphological cliticization (no whitespace).
@@ -122,14 +122,16 @@ Automated analysis pipeline that decomposes real Korean passages from `studytext
 *   **Dual-Report Outputs**:
     1.  *Learner Study Checklist*: Active vocabulary and grammar units used in the text to master.
     2.  *Curriculum Gap Inventory*: Missing vocabulary and grammar patterns flagged for ingestion.
-*   **First Passage Ingestion (`studytext12`) COMPLETE**: Ingested 24 new units (IDs 1603–1626, including `독일`, `문화`, `학교`, `한국어`, `되다`, `이해하다`, `소개하다`, `와 / 과`, `-고 싶어하다`, determiners `이`/`그`/`저`). 100% of `studytext12` is now recognized with 0 gaps and 15 homonym occurrences cleanly resolved.
+*   **Passages Ingested**:
+    *   `studytext12`: Ingested 24 units (IDs 1603–1626, including `독일`, `문화`, `학교`, `한국어`, `되다`, `이해하다`, `소개하다`, `와 / 과`, `-고 싶어하다`, determiners `이`/`그`/`저`). 100% recognized with 0 gaps.
+    *   `studytext21`: Ingested 21 units (IDs 1627–1647, including `러시아`, `일본어`, `제목`, `개월`, `전`, `한국어학당`, `공부`, `날`, `지루하다`, `노래`, `취미`, `같다`, `분`, `전화`, `일`, `마리아`, `마리`, `이야기하다`, `-(으)십시오`, `-는군요 / -군요`, `-(으)면 좋겠다`). 100% recognized with 0 gaps and 21 homonyms cleanly resolved.
 
 ---
 
 ## Next Steps for the Next Agent
 
 1. **Prioritize Ingestion of Remaining Study Texts (Phase 1.5) [HIGH PRIORITY]**:
-   - Systematically run `node text_analyzer.js <passageName>` across all remaining texts in `studytexts.js` (`studytext11`, `studytext21`, `studytext22`, `studytext31`, `studytext32`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext63`).
+   - Systematically run `node text_analyzer.js <passageName>` across all remaining texts in `studytexts.js` (next: `studytext22`, followed by `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext63`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`).
    - Extract the curriculum gap inventory for each passage (vocabulary, grammar patterns, counters, particles).
    - Batch-insert the missing units into `data.js` via `select.js INSERT FROMFILE` with complete `SyntaxFrame`, `SemanticTags`, and `SemanticVector` metadata.
    - Sync new units into `homonyms.js` via `node homonyms.js update`.

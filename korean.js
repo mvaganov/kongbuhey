@@ -730,7 +730,8 @@ function reconstructFromLanguageUnitTree(tree) {
 						const unitId = typeof child === 'number' ? child : (Array.isArray(child) && typeof child[0] === 'number' ? child[0] : null);
 						const u = (unitId !== null && units) ? units[unitId] : null;
 						if (type === 'Adv' && u && u[DATA_SCHEMA.PartofSpeech] !== 'Adverb') return false;
-						if (type === 'VP_AVst' && u && u[DATA_SCHEMA.PartofSpeech] === 'Adverb') return false;
+						if ((type === 'VP_AVst' || type === 'AVst') && u && u[DATA_SCHEMA.PartofSpeech] !== 'Action Verb') return false;
+						if ((type === 'VP_DVst' || type === 'DVst') && u && u[DATA_SCHEMA.PartofSpeech] !== 'Descriptive Verb') return false;
 					}
 					return true;
 				});
@@ -765,7 +766,6 @@ function reconstructFromLanguageUnitTree(tree) {
 		let replacement = "";
 
 		if (tokenType === "VP_AVst" || tokenType === "AVst" || tokenType === "VP_DVst" || tokenType === "DVst") {
-			const isAction = tokenType.includes("AVst");
 			const verbId = Array.isArray(child) ? child[0] : (typeof child === 'number' ? child : null);
 			const nounId = (Array.isArray(child) && child.length > 1) ? child[1] : null;
 			const verb = (verbId !== null && units) ? units[verbId] : null;
@@ -778,7 +778,8 @@ function reconstructFromLanguageUnitTree(tree) {
 				if (tokenType === "AVst" || tokenType === "DVst") {
 					replacement = stem;
 				} else {
-					const phrase = isAction ? buildActionVerbPhrase(verb, stem, noun) : buildDescriptiveVerbPhrase(verb, stem, noun);
+					const isVerbAction = verb[DATA_SCHEMA.PartofSpeech] === 'Action Verb';
+					const phrase = isVerbAction ? buildActionVerbPhrase(verb, stem, noun) : buildDescriptiveVerbPhrase(verb, stem, noun);
 					replacement = phrase.text;
 				}
 			} else {
