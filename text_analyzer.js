@@ -75,8 +75,9 @@ const PARTICLE_SPECS = [
 	{ text: "에서", ids: [199], desc: "에서 (Location of action / source)" },
 	{ text: "에게", ids: [618], desc: "에게 (Dative)" },
 	{ text: "한테", ids: [618], desc: "한테 (Dative informal)" },
-	{ text: "으로", ids: [1240, 1241, 1242], desc: "-(으)로 (Direction / Means / Status)", batchimReq: true },
-	{ text: "로", ids: [1240, 1241, 1242], desc: "-(으)로 (Direction / Means / Status)", batchimReq: false },
+	{ text: "께서", ids: [648], desc: "께서 (Honorific subject marker)" },
+	{ text: "으로", ids: [1240, 1241, 1242], desc: "-(으)로 (Direction / Means / Status)", batchimReq: "consonant_not_l" },
+	{ text: "로", ids: [1240, 1241, 1242], desc: "-(으)로 (Direction / Means / Status)", batchimReq: "vowel_or_l" },
 	{ text: "이나", ids: [1333, 1334], desc: "이나 (Choice / Quantity)", batchimReq: true },
 	{ text: "이랑", ids: [276], desc: "(이)랑 (And / With)", batchimReq: true },
 	{ text: "랑", ids: [276], desc: "(이)랑 (And / With)", batchimReq: false },
@@ -432,6 +433,13 @@ function disambiguateCandidates(candidates, context) {
 
 const VERB_SUFFIX_RULES = [
 	// 5-syllable compound endings
+	{ suffix: "도와주셨어요", stemType: "fixed_base", baseVerb: "도와주다", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "이야기하셔서", stemType: "fixed_base", baseVerb: "이야기하다", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-아/어서", pos: "Verb Ending", id: 459, gloss: "cause / sequential (ID 459)" }] },
+	{ suffix: "이야기했어요", stemType: "fixed_base", baseVerb: "이야기하다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "익숙해졌어요", stemType: "fixed_base", baseVerb: "익숙하다", grammar: [{ text: "-어지다", pos: "Verb Ending", id: 801, gloss: "become / get (ID 801)" }, { text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "재미있었어요", stemType: "fixed_base", baseVerb: "재미있다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "어려웠어요", stemType: "fixed_base", baseVerb: "어렵다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "어려웠지만", stemType: "fixed_base", baseVerb: "어렵다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
 	{ suffix: "하시는군요", stemType: "hada", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-는군요", pos: "Verb Ending", id: 1645, gloss: "realization exclamatory (ID 1645)" }] },
 	{ suffix: "하겠습니다", stemType: "hada", grammar: [{ text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "-습니다", pos: "Verb Ending", id: 50, gloss: "formal declarative (ID 50)" }] },
 
@@ -445,6 +453,28 @@ const VERB_SUFFIX_RULES = [
 	{ suffix: "하십시오", stemType: "hada", grammar: [{ text: "-(으)십시오", pos: "Verb Ending", id: 1644, gloss: "formal imperative (ID 1644)" }] },
 	{ suffix: "하십니까", stemType: "hada", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-ㅂ니까", pos: "Verb Ending", id: 50, gloss: "formal question (ID 50)" }] },
 	{ suffix: "으십니까", stemType: "stem_da", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-ㅂ니까", pos: "Verb Ending", id: 50, gloss: "formal question (ID 50)" }] },
+	{ suffix: "하셔서", stemType: "hada", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-아/어서", pos: "Verb Ending", id: 459, gloss: "cause / sequential (ID 459)" }] },
+	{ suffix: "셨어요", stemType: "stem_da", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "해졌어요", stemType: "hada", grammar: [{ text: "-어지다", pos: "Verb Ending", id: 801, gloss: "become / get (ID 801)" }, { text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "했지만", stemType: "hada", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
+	{ suffix: "았지만", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
+	{ suffix: "었지만", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
+	{ suffix: "왔는데", stemType: "fixed_base", baseVerb: "오다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-는데", pos: "Verb Ending", id: 620, gloss: "background/contrastive (ID 620)" }] },
+	{ suffix: "봤는데", stemType: "fixed_base", baseVerb: "보다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-는데", pos: "Verb Ending", id: 620, gloss: "background/contrastive (ID 620)" }] },
+	{ suffix: "됐는데", stemType: "fixed_base", baseVerb: "되다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-는데", pos: "Verb Ending", id: 620, gloss: "background/contrastive (ID 620)" }] },
+	{ suffix: "했는데", stemType: "hada", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-는데", pos: "Verb Ending", id: 620, gloss: "background/contrastive (ID 620)" }] },
+	{ suffix: "았는데", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-는데", pos: "Verb Ending", id: 620, gloss: "background/contrastive (ID 620)" }] },
+	{ suffix: "었는데", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-는데", pos: "Verb Ending", id: 620, gloss: "background/contrastive (ID 620)" }] },
+	{ suffix: "괜찮은데", stemType: "fixed_base", baseVerb: "괜찮다", grammar: [{ text: "-는데", pos: "Verb Ending", id: 620, gloss: "background/contrastive (ID 620)" }] },
+	{ suffix: "좋았어요", stemType: "fixed_base", baseVerb: "좋다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "있었어요", stemType: "fixed_base", baseVerb: "있다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "없었어요", stemType: "fixed_base", baseVerb: "없다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "왔어요", stemType: "fixed_base", baseVerb: "오다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "봤어요", stemType: "fixed_base", baseVerb: "보다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "됐어요", stemType: "fixed_base", baseVerb: "되다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "했어요", stemType: "hada", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "웠어요", stemType: "stem_b_irregular", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "웠지만", stemType: "stem_b_irregular", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
 
 	// 3-syllable endings
 	{ suffix: "으려고", stemType: "stem_da", grammar: [{ text: "-(으)려고", pos: "Verb Ending", id: 816, gloss: "intentive 'in order to' (ID 816)" }] },
@@ -463,6 +493,10 @@ const VERB_SUFFIX_RULES = [
 	{ suffix: "했네요", stemType: "hada", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-네요", pos: "Verb Ending", id: 839, gloss: "realization/surprise (ID 839)" }] },
 	{ suffix: "겠네요", stemType: "stem_da", grammar: [{ text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "conjecture/volition (ID 838)" }, { text: "-네요", pos: "Verb Ending", id: 839, gloss: "realization/surprise (ID 839)" }] },
 	{ suffix: "겠어요", stemType: "stem_da", grammar: [{ text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "았어요", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "었어요", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "하지만", stemType: "hada", grammar: [{ text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
+	{ suffix: "못해요", stemType: "fixed_base", baseVerb: "못하다", grammar: [{ text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
 	{ suffix: "해서", stemType: "hada", grammar: [{ text: "-아/어서", pos: "Verb Ending", id: 459, gloss: "cause / sequential (ID 459)" }] },
 	{ suffix: "겨서", stemType: "stem_gi_da", grammar: [{ text: "-아/어서", pos: "Verb Ending", id: 459, gloss: "cause / sequential (ID 459)" }] },
 	{ suffix: "아서", stemType: "stem_da", grammar: [{ text: "-아/어서", pos: "Verb Ending", id: 459, gloss: "cause / sequential (ID 459)" }] },
@@ -482,6 +516,13 @@ const VERB_SUFFIX_RULES = [
 	{ suffix: "니까", stemType: "stem_da", grammar: [{ text: "-(으)니까", pos: "Verb Ending", id: 53, gloss: "since / because (ID 53)" }] },
 	{ suffix: "면서", stemType: "stem_da", grammar: [{ text: "-(으)면서", pos: "Verb Ending", id: 711, gloss: "while doing (ID 711)" }] },
 	{ suffix: "려고", stemType: "stem_da", grammar: [{ text: "-(으)려고", pos: "Verb Ending", id: 816, gloss: "intentive 'in order to' (ID 816)" }] },
+	{ suffix: "지만", stemType: "stem_da", grammar: [{ text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
+	{ suffix: "은데", stemType: "stem_da", grammar: [{ text: "-는데", pos: "Verb Ending", id: 620, gloss: "background/contrastive (ID 620)" }] },
+
+	// Past contracted endings
+	{ suffix: "지만", stemType: "stem_past_contracted", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
+	{ suffix: "어요", stemType: "stem_past_contracted", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "는데", stemType: "stem_past_contracted", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-는데", pos: "Verb Ending", id: 620, gloss: "background/contrastive (ID 620)" }] },
 
 	// 1-syllable endings
 	{ suffix: "해", stemType: "hada_informal", grammar: [{ text: "-아/어", pos: "Verb Ending", id: 459, gloss: "informal / sequential (ID 459)" }] },
@@ -505,6 +546,9 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "") {
 			} else if (rule.stemType === 'stem_da') {
 				if (word.length <= rule.suffix.length) continue;
 				const stem = word.slice(0, -rule.suffix.length);
+				const lastChar = stem.slice(-1);
+				const d = decomposeHangul(lastChar);
+				if (d && d.final === 20 && stem !== "있" && !stem.endsWith("있")) continue; // let past tense / contracted past rules handle it
 				baseVerb = stem + "다";
 			} else if (rule.stemType === 'stem_gi_da') {
 				if (word.length <= rule.suffix.length) continue;
@@ -517,6 +561,28 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "") {
 				const root = word.slice(0, -1);
 				baseVerb = root + "다";
 				isAdnominal = true;
+			} else if (rule.stemType === 'stem_b_irregular') {
+				const stemWithoutSuffix = word.slice(0, -rule.suffix.length);
+				if (stemWithoutSuffix.length < 1) continue;
+				const lastChar = stemWithoutSuffix.slice(-1);
+				const d = decomposeHangul(lastChar);
+				if (d && d.final === 0) { // open vowel (e.g. 어려, 반가, 고마, 쉬)
+					const bChar = composeHangul(d.initial, d.medial, 17); // attach ㅂ coda (종성 17 = ㅂ)
+					baseVerb = stemWithoutSuffix.slice(0, -1) + bChar + "다";
+				} else {
+					continue;
+				}
+			} else if (rule.stemType === 'stem_past_contracted') {
+				const stemWithFinal = word.slice(0, -rule.suffix.length);
+				if (stemWithFinal.length < 1) continue;
+				const lastChar = stemWithFinal.slice(-1);
+				const d = decomposeHangul(lastChar);
+				if (d && d.final === 20 && stemWithFinal !== "있" && !stemWithFinal.endsWith("있")) { // ㅆ batchim, excluding root '있'
+					const stripped = setFinal(lastChar, 0);
+					baseVerb = stemWithFinal.slice(0, -1) + stripped + "다";
+				} else {
+					continue;
+				}
 			} else if (rule.stemType === 'hada_or_particle') {
 				const root = word.slice(0, -rule.suffix.length);
 				const candidateVerb = root ? root + "하다" : "하다";
@@ -668,6 +734,38 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 		}
 	}
 
+	// 0.2 Noun + Copula + -아/어서: 이어서 / 여서 (e.g. 대전이어서, 친구여서)
+	if (word.endsWith("이어서") && word.length > 3) {
+		const stem = word.slice(0, -3);
+		const stemUnits = vocabByKo.get(stem) || [];
+		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
+		return {
+			surface: word,
+			category: "noun_copula_connective",
+			lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : stem },
+			grammar: [
+				{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" },
+				{ text: "-아/어서", pos: "Verb Ending", unit: unitById.get(459), gloss: "cause / sequential (ID 459)" }
+			]
+		};
+	}
+	if (word.endsWith("여서") && word.length > 2) {
+		const stem = word.slice(0, -2);
+		const stemUnits = vocabByKo.get(stem) || [];
+		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
+		return {
+			surface: word,
+			category: "noun_copula_connective",
+			lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : stem },
+			grammar: [
+				{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" },
+				{ text: "-아/어서", pos: "Verb Ending", unit: unitById.get(459), gloss: "cause / sequential (ID 459)" }
+			]
+		};
+	}
+
 	// 1. Pronominal Irregular Subject Allomorphs (제+가 -> 제가, 내+가 -> 내가, 네+가 -> 네가)
 	if (word.endsWith("가") && word.length === 2) {
 		const stem = word[0];
@@ -728,6 +826,19 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 				} : null
 			};
 		}
+	}
+
+	// 2.5 Noun + Plural suffix -들 (e.g. 친척들, 학생들, 친구들)
+	if (word.endsWith("들") && word.length > 1) {
+		const singularStem = word.slice(0, -1);
+		const sUnits = vocabByKo.has(singularStem) ? vocabByKo.get(singularStem).filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun') : [];
+		const nUnit = sUnits.length > 0 ? sUnits[0] : null;
+		return {
+			surface: word,
+			category: "noun_plural",
+			lexical: { text: singularStem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + singularStem + ")" },
+			grammar: [{ text: "들", pos: "Plural Suffix", unit: unitById.get(550), gloss: "plural suffix (ID 550)" }]
+		};
 	}
 
 	// 3. Number + Counter + Particle (e.g. 1년쯤, 2년 동안, 3시에)
@@ -855,17 +966,53 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 				};
 			}
 		}
+
+		// Case C: Consonant stem + 을 (e.g. 있을, 없을, 먹을, 들을, 작을, 많을)
+		if (word.endsWith("을") && word.length >= 2) {
+			const rawStem = word.slice(0, -1);
+			let baseVerb = rawStem + "다";
+			if (rawStem === "들") baseVerb = "듣다"; // ㄷ-irregular
+			else if (rawStem === "걸") baseVerb = "걷다";
+			const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
+			if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || vUnit[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) {
+				return {
+					surface: word,
+					category: "adnominal_modifier",
+					lexical: { text: baseVerb, pos: vUnit[DATA_SCHEMA.PartofSpeech], unit: vUnit, missing: false, gloss: vUnit[DATA_SCHEMA.English] },
+					grammar: [{ text: "-(으)ㄹ", pos: "Adnominal Ending", unit: unitById.get(646), gloss: "prospective adnominal (ID 646)" }]
+				};
+			}
+		}
 	}
 
 	// 12. Noun + Attached Particle Cliticization
 	for (const spec of PARTICLE_SPECS) {
 		if (word.endsWith(spec.text) && word.length > spec.text.length) {
-			const stem = word.slice(0, -spec.text.length);
-			const lastChar = stem.slice(-1);
-			const batchim = hasBatchim(lastChar);
+			let stem = word.slice(0, -spec.text.length);
+			let isPlural = false;
 
-			if (spec.batchimReq === true && !batchim && spec.text !== "으로") continue;
-			if (spec.batchimReq === false && batchim) continue;
+			// Handle plural suffix -들 (e.g. 친척들 + 과 -> 친척들과, 학생들 + 이 -> 학생들이)
+			if (stem.endsWith("들") && stem.length > 1) {
+				const singularStem = stem.slice(0, -1);
+				if (vocabByKo.has(singularStem)) {
+					stem = singularStem;
+					isPlural = true;
+				}
+			}
+
+			const lastChar = (isPlural ? "들" : stem).slice(-1);
+			const batchim = hasBatchim(lastChar);
+			const d = decomposeHangul(lastChar);
+
+			if (spec.batchimReq === "consonant_not_l") {
+				if (!batchim || (d && d.final === 8)) continue;
+			} else if (spec.batchimReq === "vowel_or_l") {
+				if (batchim && (!d || d.final !== 8)) continue;
+			} else if (spec.batchimReq === true && !batchim) {
+				continue;
+			} else if (spec.batchimReq === false && batchim) {
+				continue;
+			}
 
 			const stemUnits = vocabByKo.get(stem) || [];
 			const validNounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
@@ -927,6 +1074,23 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			}
 
 			const finalDisambig = disambigInfo || stemDisambigInfo;
+			const grammarList = [];
+			if (isPlural) {
+				grammarList.push({
+					text: "들",
+					pos: "Plural Suffix",
+					unit: unitById.get(550),
+					missing: false,
+					gloss: "plural suffix (ID 550)"
+				});
+			}
+			grammarList.push({
+				text: spec.text,
+				pos: "Particle",
+				unit: chosenParticleUnit,
+				missing: !chosenParticleUnit,
+				gloss: chosenParticleUnit ? chosenParticleUnit[DATA_SCHEMA.English] : spec.desc
+			});
 
 			return {
 				surface: word,
@@ -938,13 +1102,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 					missing: !stemUnit,
 					gloss: stemUnit ? stemUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")"
 				},
-				grammar: [{
-					text: spec.text,
-					pos: "Particle",
-					unit: chosenParticleUnit,
-					missing: !chosenParticleUnit,
-					gloss: chosenParticleUnit ? chosenParticleUnit[DATA_SCHEMA.English] : spec.desc
-				}],
+				grammar: grammarList,
 				disambiguation: finalDisambig
 			};
 		}

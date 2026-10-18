@@ -51,7 +51,7 @@ const TEXT_ANALYZER_PATH = path.resolve(__dirname, 'text_analyzer.js');
 const STUDYTEXTS_PATH = path.resolve(__dirname, 'studytexts.js');
 
 // Known fully-ingested passages that must ALWAYS have 0 gaps (regression tests)
-const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21"];
+const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", "studytext22"];
 
 function failFast(stageName, errorDetail) {
 	console.error(`\n======================================================`);

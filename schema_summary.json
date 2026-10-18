@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-18T10:55:24.887Z",
-  "totalUnits": 1648,
-  "validVectorCount": 1648,
+  "generatedAt": "2026-10-18T14:03:33.679Z",
+  "totalUnits": 1657,
+  "validVectorCount": 1657,
   "partsOfSpeech": [
     "Action Verb",
     "Adverb",
@@ -14,14 +14,14 @@
     "Pronoun"
   ],
   "posCounts": {
-    "Noun": 869,
-    "Pronoun": 28,
+    "Noun": 874,
+    "Pronoun": 29,
     "Exclamation": 16,
     "Descriptive Verb": 123,
     "Grammar": 164,
-    "Action Verb": 308,
+    "Action Verb": 310,
     "Adverb": 82,
-    "Number": 55,
+    "Number": 56,
     "Determiner": 3
   },
   "semanticTags": [
@@ -164,11 +164,13 @@
     "island",
     "job",
     "kitchen",
+    "korea",
     "koreanMeasureWord",
     "koreanNumber",
     "koreanRoot",
     "language",
     "leisure",
+    "life",
     "lifestyle",
     "limitation",
     "location",
@@ -181,6 +183,7 @@
     "measurement",
     "media",
     "medicine",
+    "mental",
     "mild_surprise",
     "modifier",
     "money",
@@ -199,6 +202,7 @@
     "opinion",
     "option",
     "order",
+    "ordinal",
     "organization",
     "particle",
     "party",
@@ -234,6 +238,7 @@
     "relationship",
     "restriction",
     "retrospective",
+    "role",
     "school",
     "season",
     "sensory",
@@ -298,8 +303,8 @@
     "koreanRoot": 11,
     "greeting": 10,
     "descriptive_person": 33,
-    "emotion": 15,
-    "place": 158,
+    "emotion": 16,
+    "place": 160,
     "devtest": 52,
     "questionWord": 18,
     "properNoun": 9,
@@ -318,7 +323,7 @@
     "descriptive_food": 7,
     "food_adjective": 1,
     "intransitive_motion": 17,
-    "time": 136,
+    "time": 137,
     "frequency": 13,
     "interrogative": 9,
     "suggestion": 6,
@@ -345,7 +350,7 @@
     "descriptive_place": 12,
     "location_action": 1,
     "direction": 19,
-    "number": 12,
+    "number": 13,
     "time_amount": 1,
     "measureWord": 25,
     "koreanMeasureWord": 9,
@@ -360,7 +365,7 @@
     "Adv": 1,
     "accompaniment": 1,
     "past": 5,
-    "event": 26,
+    "event": 27,
     "sequence": 4,
     "bodyPart": 12,
     "also": 1,
@@ -378,9 +383,9 @@
     "promise": 2,
     "purpose": 2,
     "job": 2,
-    "family": 29,
+    "family": 30,
     "concept": 24,
-    "ability": 2,
+    "ability": 3,
     "inability": 2,
     "clothes": 11,
     "shoes": 5,
@@ -418,13 +423,13 @@
     "addition": 2,
     "clothing": 24,
     "accessory": 7,
-    "pronoun": 1,
+    "pronoun": 2,
     "transitive_object": 5,
     "economy": 3,
     "color": 10,
     "determiner": 4,
     "organization": 2,
-    "social": 12,
+    "social": 13,
     "informal": 7,
     "plant": 2,
     "affirmation": 1,
@@ -444,7 +449,7 @@
     "formal": 3,
     "bound_noun": 4,
     "aspect": 1,
-    "action": 60,
+    "action": 62,
     "helping": 2,
     "communication": 13,
     "clausal": 7,
@@ -472,7 +477,7 @@
     "mild_surprise": 1,
     "banking": 10,
     "hygiene": 1,
-    "order": 3,
+    "order": 4,
     "starting_point": 1,
     "mail": 14,
     "measurement": 9,
@@ -540,7 +545,7 @@
     "environment": 1,
     "lifestyle": 1,
     "evaluation": 2,
-    "city": 1,
+    "city": 2,
     "disaster": 1,
     "indirect_quotation": 1,
     "housework": 6,
@@ -552,13 +557,18 @@
     "sun": 1,
     "country": 2,
     "world": 1,
-    "culture": 1,
+    "culture": 2,
     "discourse": 1,
     "counter": 3,
     "connector": 1,
     "3rd_person": 1,
     "interest": 1,
-    "realization": 1
+    "realization": 1,
+    "life": 1,
+    "ordinal": 1,
+    "korea": 1,
+    "role": 1,
+    "mental": 1
   },
   "honorificRules": [
     "Addressed respectfully as 기사님",
@@ -644,13 +654,16 @@
   },
   "semanticVectors": {
     "keys": [
+      "ability",
       "action",
       "aspect",
       "attribute",
+      "country",
       "direction",
       "distance",
       "domain",
       "duration",
+      "event",
       "field",
       "formality",
       "frequency",
@@ -662,6 +675,7 @@
       "method",
       "mood",
       "number",
+      "order",
       "part",
       "person",
       "point",
@@ -671,6 +685,7 @@
       "prod",
       "property",
       "proximity",
+      "reference",
       "relation",
       "req",
       "role",
@@ -747,6 +762,7 @@
       "intention",
       "language",
       "leisure",
+      "life",
       "lifestyle",
       "linguistics",
       "location",
@@ -754,6 +770,7 @@
       "manner",
       "measure",
       "media",
+      "mental",
       "mind",
       "modifier",
       "motion",
@@ -849,6 +866,7 @@
       "celebrity",
       "choice",
       "chores",
+      "city",
       "city_chuncheon",
       "clothes",
       "coin",
@@ -912,6 +930,7 @@
       "fare",
       "favor",
       "fax",
+      "feeling",
       "filler",
       "final",
       "fine_dust",
@@ -988,6 +1007,7 @@
       "one_way",
       "open",
       "opposite",
+      "ordinal",
       "outdoors",
       "outing",
       "overseas_travel",
@@ -1095,6 +1115,9 @@
       1
     ],
     "keyValues": {
+      "ability": [
+        -1
+      ],
       "action": [
         "apply",
         "apply_ointment",
@@ -1102,6 +1125,7 @@
         "attend",
         "be_delivered",
         "be_tardy",
+        "birth",
         "bring_person",
         "build",
         "calculate_pay",
@@ -1186,6 +1210,9 @@
         "sky",
         "temperature"
       ],
+      "country": [
+        "KR"
+      ],
       "direction": [
         "left",
         "right",
@@ -1257,6 +1284,7 @@
         "intention",
         "language",
         "leisure",
+        "life",
         "lifestyle",
         "linguistics",
         "location",
@@ -1264,6 +1292,7 @@
         "manner",
         "measure",
         "media",
+        "mental",
         "mind",
         "modifier",
         "motion",
@@ -1313,6 +1342,9 @@
         5,
         10,
         "brief"
+      ],
+      "event": [
+        "wedding"
       ],
       "field": [
         "business",
@@ -1472,6 +1504,9 @@
       ],
       "number": [
         "plural"
+      ],
+      "order": [
+        "first"
       ],
       "part": [
         "ear",
@@ -1643,9 +1678,13 @@
         "medial",
         "proximal"
       ],
+      "reference": [
+        "distal"
+      ],
       "relation": [
         "after",
         "alumnus",
+        "aunt",
         "before",
         "beforehand",
         "earlier",
@@ -2333,6 +2372,7 @@
         "celebrity",
         "choice",
         "chores",
+        "city",
         "city_chuncheon",
         "clothes",
         "coin",
@@ -2396,6 +2436,7 @@
         "fare",
         "favor",
         "fax",
+        "feeling",
         "filler",
         "final",
         "fine_dust",
@@ -2472,6 +2513,7 @@
         "one_way",
         "open",
         "opposite",
+        "ordinal",
         "outdoors",
         "outing",
         "overseas_travel",
@@ -2577,6 +2619,7 @@
         "day"
       ],
       "value": [
+        3,
         30,
         40,
         50,
@@ -2713,7 +2756,9 @@
         ]
       },
       "place": {
-        "types": [],
+        "types": [
+          "city"
+        ],
         "actions": [],
         "traits": [
           "academic",
@@ -3296,7 +3341,8 @@
           "building_floor",
           "completeness",
           "distance",
-          "frequency"
+          "frequency",
+          "ordinal"
         ],
         "actions": [],
         "traits": [
@@ -4309,6 +4355,20 @@
       },
       "deixis": {
         "types": [],
+        "actions": [],
+        "traits": []
+      },
+      "life": {
+        "types": [],
+        "actions": [
+          "birth"
+        ],
+        "traits": []
+      },
+      "mental": {
+        "types": [
+          "feeling"
+        ],
         "actions": [],
         "traits": []
       }

@@ -1839,7 +1839,16 @@ const KR_EN_languageUnits = [
 	[1644, "-(으)십시오", "please do (formal polite imperative)", "Grammar", ["imperative", "formal", "honorific"], "formal polite imperative verb ending", ["{AVst}으/십시오"], "studytext21", 1, "Formal", "Formal polite imperative", '{"domain":"grammar", "mood":"imperative", "formality":"formal"}', "{VP_AVst}\\+으?십시오"],
 	[1645, "-는군요 / -군요", "exclamatory ending expressing realization/discovery ('I see that..., oh so...')", "Grammar", ["exclamation", "realization"], "expresses surprise/discovery of newly realized fact", ["{VP_AVst}는군요", "{VP_DVst}군요"], "studytext21", 2, "Universal", "", '{"domain":"grammar", "mood":"exclamatory"}', "{VP}\\+는?군요"],
 	[1646, "-(으)면 좋겠다", "I hope/wish that (present desire)", "Grammar", ["desire", "condition"], "expresses speaker's wish or desired state", ["{VP_AVst}으/면 좋겠어요", "{VP_DVst}으/면 좋겠어요"], "studytext21", 2, "Universal", "", '{"domain":"grammar", "type":"wishing"}', "{VP}\\+으?면\\s+좋겠"],
-	[1647, "이야기하다", "to talk, converse, chat", "Action Verb", ["communication", "action", "social"], "to converse, chat, tell a story", "hada", "studytext21", 1, "Universal", "Replace with 말씀하시다 for respected subjects", '{"domain":"communication", "action":"talk"}', ""]
+	[1647, "이야기하다", "to talk, converse, chat", "Action Verb", ["communication", "action", "social"], "to converse, chat, tell a story", "hada", "studytext21", 1, "Universal", "Replace with 말씀하시다 for respected subjects", '{"domain":"communication", "action":"talk"}', ""],
+	[1648, "태어나다", "to be born", "Action Verb", ["action", "life"], "", "regular", "studytext22", 2, "Universal", "", '{"domain":"life","action":"birth"}', ""],
+	[1649, "못하다", "to be poor at, cannot do", "Action Verb", ["action", "ability"], "to be poor at / incapable", "hada", "studytext22", 1, "Universal", "", '{"domain":"action","ability":-1}', ""],
+	[1650, "셋째", "third (ordinal)", "Number", ["number", "ordinal"], "", "", "studytext22", 2, "Universal", "", '{"domain":"quantity","type":"ordinal","value":3}', "_\\s+{Noun}"],
+	[1651, "결혼식", "wedding ceremony", "Noun", ["culture", "social", "event"], "", "", "studytext22", 2, "Universal", "", '{"domain":"social","event":"wedding"}', ""],
+	[1652, "대전", "Daejeon (city in Korea)", "Noun", ["place", "city", "korea"], "city", "", "studytext22", 3, "Universal", "", '{"domain":"place","type":"city","country":"KR"}', ""],
+	[1653, "그곳", "that place, there", "Pronoun", ["pronoun", "place"], "", "", "studytext22", 2, "Universal", "", '{"domain":"place","reference":"distal"}', ""],
+	[1654, "작은어머니", "aunt (wife of father's younger brother)", "Noun", ["role", "family"], "", "", "studytext22", 3, "Universal", "", '{"domain":"family","relation":"aunt"}', ""],
+	[1655, "기분", "feeling, mood", "Noun", ["mental", "emotion"], "", "", "studytext22", 2, "Universal", "", '{"domain":"mental","type":"feeling"}', ""],
+	[1656, "처음", "first time, for the first time", "Noun", ["time", "order"], "", "", "studytext22", 1, "Universal", "", '{"domain":"time","order":"first"}', ""]
 ];
 
 // Build the initial cache from the hardcoded array

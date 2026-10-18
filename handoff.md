@@ -122,21 +122,28 @@ Single command that executes all repository test suites with fail-fast behavior:
 *   **Stage 2: Schema Taxonomy Sync**: Validates freshness and structure of `schema_summary.json`.
 *   **Stage 3: Homonym Dictionary Sync**: Validates token count, ensures 0 broken `_neighbor` links.
 *   **Stage 4: Exhaustive Sentence Generation**: Runs `exhaustive.js` in an isolated subprocess; asserts 100% unit coverage and 0 morphology/LUT errors across all generated sentences.
-*   **Stage 5: Text Analyzer Passage Check**: Validates ingested study texts (`studytext12`, `studytext21`, or custom source) ensuring 0 gaps.
+*   **Stage 5: Text Analyzer Passage Check**: Validates ingested study texts (`studytext12`, `studytext21`, `studytext22`, or custom source) ensuring 0 gaps.
 *   **Performance**: Completes entire 5-stage validation in ~3.7 seconds.
+
+---
+
+## Current Study Texts Ingested (Phase 1.5)
+*   **`studytext12`**: 24 units ingested (IDs 1603–1626). 100% recognized, 0 gaps.
+*   **`studytext21`**: 21 units ingested (IDs 1627–1647). 100% recognized, 21 homonyms resolved, 0 gaps.
+*   **`studytext22`**: 9 units ingested (IDs 1648–1656). 100% recognized, 16 homonyms resolved, 0 gaps.
 
 ---
 
 ## Next Steps for the Next Agent
 
 1. **Prioritize Ingestion of Remaining Study Texts (Phase 1.5) [HIGH PRIORITY]**:
-   - Ingest next passage: **`studytext22`**, followed by `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext63`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`.
+   - Ingest next passage: **`studytext31`**, followed by `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext63`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`.
    - **Accelerated Ingestion Workflow**:
-     1. Run `node text_analyzer.js studytext22` -> review analysis and generated `scratch/new_units_studytext22.json`.
+     1. Run `node text_analyzer.js studytext31` -> review analysis and auto-generated `scratch/new_units_studytext31.json`.
      2. Refine definitions, `SyntaxFrame` (if homonym collision), and tags in the generated scaffold.
-     3. Insert units via `node select.js INSERT FROMFILE scratch/new_units_studytext22.json --source studytext22`.
-     4. Update homonyms via `node homonyms.js update --source studytext22`.
-     5. Run single verification command: `node test.js studytext22` (fails fast in < 4s if any issue arises).
+     3. Insert units via `node select.js INSERT FROMFILE scratch/new_units_studytext31.json --source studytext31`.
+     4. Update homonyms via `node homonyms.js update --source studytext31`.
+     5. Run single verification command: `node test.js studytext31` (fails fast in < 4s if any issue arises).
    - **Constraint**: Work strictly in small batches per passage; DO NOT run curriculum-wide pre-scanners.
 
 2. **Pronunciation Engine Completion & English-Phoneme TTS Engine**:

@@ -159,6 +159,17 @@ function runSemanticTests(currentGrammarUnits) {
 		}
 	});
 
+	// Exercise in-scope Number units if present
+	const inScopeNumbers = getFilteredWords("Number");
+	if (inScopeNumbers.length > 0) {
+		const numOptions = generateTemplateTokenOptions("{Number} {Noun}", 0);
+		numOptions.forEach(opt => {
+			if (opt.units) opt.units.forEach(u => markUnitUsed(u));
+			const resolved = applyMorphology(opt.text);
+			validateSentence(resolved, "Number phrase");
+		});
+	}
+
 	// Also run contextual semantic samples on current source grammar templates
 	if (currentGrammarUnits && currentGrammarUnits.length > 0) {
 		console.log("\n--- Source Grammar Semantic Generation ---");
