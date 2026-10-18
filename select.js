@@ -30,8 +30,10 @@ COMMANDS:
 
 OPTIONS:
   --source, -s <tag>   Curriculum source for inserted units (default: ::YYYYMMDD)
-  --format <fmt>       tsv, json, jsonl, table, raw
-                       (Auto: TSV if complexity <= 8, else JSON. Weights: vector=4, tags=2, conj=2, other=1)
+  --format <fmt>       tsv, jsonl, json, table, raw
+                       (Auto: TSV if complexity <= 8, else JSONL. JSON used only when explicitly requested.)
+  --summary [n]        Truncate large results after n rows (default: 5) with a '... [{n} more rows truncated]' suffix
+  -v, --verbose        Include detailed operation messages (quiet by default on mutations)
   --dry-run            Preview changes without modifying data.js
   --data <path>        Custom data file (default: ./data.js)
 
@@ -491,7 +493,7 @@ function executeSelect(queryStr, options = {}) {
 	let format = explicitFormat;
 	if (!format) {
 		const complexity = getColumnComplexity(selectedCols, DATA_SCHEMA);
-		format = complexity <= COMPLEXITY_THRESHOLD ? 'tsv' : 'json';
+		format = complexity <= COMPLEXITY_THRESHOLD ? 'tsv' : 'jsonl';
 	}
 
 	// Filter rows
@@ -523,16 +525,24 @@ function executeSelect(queryStr, options = {}) {
 }
 
 // --- Output Serialization ---
-function formatResults(results, format = 'json') {
+function formatResults(results, format = 'jsonl', summary = null) {
+	let rowsToFormat = results;
+	let truncationSuffix = "";
+	const limitCount = typeof summary === 'number' ? summary : (summary ? 5 : null);
+	if (limitCount !== null && results.length > limitCount) {
+		rowsToFormat = results.slice(0, limitCount);
+		truncationSuffix = `\n... [${results.length - limitCount} more rows truncated]`;
+	}
+
 	switch (format.toLowerCase()) {
 		case 'jsonl':
-			return results.map(r => JSON.stringify(r)).join('\n');
+			return rowsToFormat.map(r => JSON.stringify(r)).join('\n') + truncationSuffix;
 
 		case 'tsv': {
-			if (results.length === 0) return "";
-			const headers = Object.keys(results[0]);
+			if (rowsToFormat.length === 0) return "";
+			const headers = Object.keys(rowsToFormat[0]);
 			const lines = [headers.join('\t')];
-			for (const r of results) {
+			for (const r of rowsToFormat) {
 				const row = headers.map(h => {
 					const val = r[h];
 					if (val === null || val === undefined) return "";
@@ -541,16 +551,16 @@ function formatResults(results, format = 'json') {
 				});
 				lines.push(row.join('\t'));
 			}
-			return lines.join('\n');
+			return lines.join('\n') + truncationSuffix;
 		}
 
 		case 'table': {
-			if (results.length === 0) return "Empty set (0 rows)";
-			const headers = Object.keys(results[0]);
+			if (rowsToFormat.length === 0) return "Empty set (0 rows)";
+			const headers = Object.keys(rowsToFormat[0]);
 			const colWidths = {};
 			headers.forEach(h => colWidths[h] = h.length);
 
-			results.forEach(r => {
+			rowsToFormat.forEach(r => {
 				headers.forEach(h => {
 					let s = r[h];
 					if (typeof s === 'object') s = JSON.stringify(s);
@@ -569,7 +579,7 @@ function formatResults(results, format = 'json') {
 			const divider = '+' + headers.map(h => '-'.repeat(colWidths[h] + 2)).join('+') + '+';
 			const headerRow = '| ' + headers.map(h => pad(h, colWidths[h])).join(' | ') + ' |';
 
-			const rows = results.map(r => {
+			const rows = rowsToFormat.map(r => {
 				return '| ' + headers.map(h => {
 					let val = r[h];
 					if (typeof val === 'object') val = JSON.stringify(val);
@@ -577,19 +587,20 @@ function formatResults(results, format = 'json') {
 				}).join(' | ') + ' |';
 			});
 
-			return [divider, headerRow, divider, ...rows, divider, `(${results.length} rows)`].join('\n');
+			const countMsg = truncationSuffix ? `(${results.length} rows total, displaying ${rowsToFormat.length})` : `(${results.length} rows)`;
+			return [divider, headerRow, divider, ...rows, divider, countMsg].join('\n') + truncationSuffix;
 		}
 
 		case 'raw': {
-			return results.map(r => {
+			return rowsToFormat.map(r => {
 				const u = buildUnitFromRecord(r, r.Source || getDefaultSource(), r.Id ?? 0, SCHEMA_COLUMNS);
 				return formatUnitLine(u, false, SCHEMA_COLUMNS);
-			}).join('\n');
+			}).join('\n') + truncationSuffix;
 		}
 
 		case 'json':
 		default:
-			return JSON.stringify(results, null, 2);
+			return JSON.stringify(rowsToFormat, null, 2) + truncationSuffix;
 	}
 }
 
@@ -758,6 +769,18 @@ function writeDataFile(modifiedLines, filePath = DATA_FILE_PATH) {
 	// Safely copy tmp over target file
 	fs.copyFileSync(tmpPath, filePath);
 	fs.unlinkSync(tmpPath);
+
+	// Automatically update schema analysis if schema_analysis.js is present
+	try {
+		const schemaAnalysisPath = path.resolve(__dirname, 'schema_analysis.js');
+		if (fs.existsSync(schemaAnalysisPath)) {
+			delete require.cache[schemaAnalysisPath];
+			const schemaAnalysis = require(schemaAnalysisPath);
+			if (typeof schemaAnalysis.updateSchemaSummary === 'function') {
+				schemaAnalysis.updateSchemaSummary();
+			}
+		}
+	} catch (_) { }
 }
 
 // --- UPDATE Execution ---
@@ -1314,6 +1337,8 @@ function runCli() {
 	let dryRun = false;
 	let dataFile = DATA_FILE_PATH;
 	let source = null;
+	let summary = null;
+	let verbose = false;
 
 	const filteredArgs = [];
 	for (let i = 0; i < rawArgs.length; i++) {
@@ -1328,6 +1353,16 @@ function runCli() {
 			source = rawArgs[++i];
 		} else if (arg.startsWith('--source=')) {
 			source = arg.substring(9);
+		} else if (arg === '--summary') {
+			if (i + 1 < rawArgs.length && /^\d+$/.test(rawArgs[i + 1])) {
+				summary = parseInt(rawArgs[++i], 10);
+			} else {
+				summary = 5;
+			}
+		} else if (arg.startsWith('--summary=')) {
+			summary = parseInt(arg.substring(10), 10) || 5;
+		} else if (arg === '-v' || arg === '--verbose') {
+			verbose = true;
 		} else {
 			filteredArgs.push(arg);
 		}
@@ -1340,22 +1375,30 @@ function runCli() {
 	}
 
 	try {
-		const result = execute(commandStr, { format, dryRun, dataFile, source });
+		const result = execute(commandStr, { format, dryRun, dataFile, source, summary, verbose });
 		if (result.results !== undefined) {
 			// SELECT output
-			console.log(formatResults(result.results, result.format));
+			console.log(formatResults(result.results, result.format, summary));
 		} else if (result.added !== undefined) {
 			// ADD column output
-			console.log(result.message);
+			if (verbose || dryRun) {
+				console.log(result.message);
+			}
 		} else if (result.updated !== undefined) {
 			// UPDATE output
-			console.log(`Success: Updated ${result.updated} unit(s) in ${path.basename(dataFile)}${result.inserted ? ` (inserted ${result.inserted})` : ''}${result.dryRun ? ' [DRY RUN]' : ''}.`);
+			if (verbose || dryRun) {
+				console.log(`Success: Updated ${result.updated} unit(s) in ${path.basename(dataFile)}${result.inserted ? ` (inserted ${result.inserted})` : ''}${result.dryRun ? ' [DRY RUN]' : ''}.`);
+			}
 		} else if (result.inserted !== undefined) {
 			// INSERT output
-			console.log(`Success: Inserted ${result.inserted} unit(s) into ${path.basename(dataFile)}${result.dryRun ? ' [DRY RUN]' : ''}.`);
+			if (verbose || dryRun) {
+				console.log(`Success: Inserted ${result.inserted} unit(s) into ${path.basename(dataFile)}${result.dryRun ? ' [DRY RUN]' : ''}.`);
+			}
 		} else if (result.deleted !== undefined) {
 			// DELETE output
-			console.log(`Success: Deleted ${result.deleted} unit(s) from ${path.basename(dataFile)}${result.dryRun ? ' [DRY RUN]' : ''}.`);
+			if (verbose || dryRun) {
+				console.log(`Success: Deleted ${result.deleted} unit(s) from ${path.basename(dataFile)}${result.dryRun ? ' [DRY RUN]' : ''}.`);
+			}
 		} else if (result.count !== undefined) {
 			console.log(result.count);
 		}

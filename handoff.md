@@ -52,7 +52,10 @@ A robust, centralized module that handles complex rules of Korean text manipulat
 
 ### 4. `select.js` (SQL-like Data Subsetting & Batch Modification Tool)
 Pure JavaScript CLI and programmatic module for querying, exporting, and updating subsets of `KR_EN_languageUnits` in `data.js` without loading all 750+ units into LLM context:
-*   **Querying (`SELECT`)**: Filter by columns (`Korean`, `English`, `Id`, `SemanticVector`, `SemanticTags`, `Source`, etc.), condition (`WHERE Source = 'SUOBI01' AND SemanticTags CONTAINS 'food'`), order, and limit (`LIMIT 10`). Output formats include `json` (default), `jsonl`, `tsv`, `table` (ASCII), and `raw` (JS array literal).
+*   **Querying (`SELECT`)**: Filter by columns (`Korean`, `English`, `Id`, `SemanticVector`, `SemanticTags`, `Source`, etc.), condition (`WHERE Source = 'SUOBI01' AND SemanticTags CONTAINS 'food'`), order, and limit (`LIMIT 10`). Output formats include `jsonl` (default for complex queries), `json` (only if explicitly specified), `tsv`, `table` (ASCII), and `raw` (JS array literal).
+*   **`--summary [n]` Output Truncation**: Truncates large query result sets to the top $n$ rows (default: 5) and prints an informative suffix `... [{n} more rows truncated]`.
+*   **Quiet by Default with `-v` / `--verbose`**: Mutating operations (`INSERT`, `UPDATE`, `DELETE`, `ADD`) execute quietly by default, outputting only on error unless `-v` or `--verbose` is provided.
+*   **Automatic Schema Sync**: Mutating operations automatically trigger `schema_analysis.updateSchemaSummary()` to keep schema taxonomies synchronized.
 *   **File Update Workflow (`UPDATE ... FROMFILE`)**:
     *   Export subset: `node select.js SELECT Korean, English, Id, SemanticVector WHERE Source = 'SUOBI01' > output.txt`
     *   Agent/user performs targeted inspection or edits in `output.txt`.
@@ -71,17 +74,21 @@ Pure JavaScript CLI and programmatic module for querying, exporting, and updatin
         - `node select.js "ADD id 0 FIRST"`
     *   Supports positions `FIRST`, `LAST`, `AFTER <col>`, and `BEFORE <col>`, with support for string, numeric, boolean, or array default values and `--dry-run`.
 *   **Context Window Efficiency & Dynamic Format Selection**:
-    *   To optimize LLM context window token density, `select.js` defaults to tab-delimited (`tsv`) for low-complexity column sets and `json` for high-complexity queries when no explicit format is specified.
-    *   **Complexity Scoring**:
-        - Standard scalar columns (`Id`, `Korean`, `English`, `PartofSpeech`, `Disambiguation`, `Source`, `PriorityScore`, `FormalityLevel`, `HonorificRules`): 1 point each.
-        - `SemanticTags` and `Conjugation` (arrays): 2 points each.
-        - `SemanticVector` (nested JSON dictionary): 4 points.
-        - `*` (all columns): sums to 17 points.
-    *   Queries with score $\le 8$ default to `tsv` (e.g. `SELECT Id Korean English PriorityScore`), achieving ~60-75% token reduction over verbose JSON. Queries with score $> 8$ (or `*`) default to `json` for nested data clarity.
-    *   Explicit `--format <fmt>` CLI flag or inline `FORMAT <fmt>` query keyword always overrides automatic detection.
-*   **Safety & Comment Preservation**: In-place line-mapping modifies target rows directly without disturbing comments (such as `// Vocabulary from SUOBI01`), validates syntax via temporary files before committing, and automatically supports Windows UTF-16LE, UTF-8 BOM, and standard UTF-8 encodings. Section comment records (`{ "comment": "// ..." }`) in input files are also preserved during insertion without duplication.
+    *   Queries with complexity score $\le 8$ default to `tsv` (e.g. `SELECT Id Korean English PriorityScore`), achieving ~60-75% token reduction over verbose JSON.
+    *   Queries with score $> 8$ (or `*`) default to `jsonl` (one line per row) to preserve structured data while eliminating whitespace overhead. Multi-line `json` is used only if explicitly requested (`--format json` or `FORMAT json`).
 
-### 5. `homonyms.js` (Korean Homonym, Stem & Phonetic Confusables Engine)
+### 5. `schema_analysis.js` (Taxonomy Extractor & Unit Draft Scaffolder)
+Analyzes `data.js` and provides canonical taxonomies and draft unit scaffolding:
+*   **Canonical Taxonomies**:
+    - **Parts of Speech**: 9 canonical values (`Action Verb`, `Adverb`, `Descriptive Verb`, `Determiner`, `Exclamation`, `Grammar`, `Noun`, `Number`, `Pronoun`).
+    - **SemanticTags**: All 266+ unique tags with frequency distributions.
+    - **Honorific Rules**: All 39 unique rules in the dataset.
+    - **SemanticVector Domains & Keys**: 107 domains, 41 vector properties, and allowed values.
+*   **Taxonomy Cache**: Persists summary to `schema_summary.json` for rapid, zero-overhead lookup without re-parsing `data.js`.
+*   **Automatic Cache Updates**: Hooked into both `select.js` and `homonyms.js` mutations to auto-update whenever the dataset changes.
+*   **Draft Unit Scaffolder (`scaffoldUnit(korean, raw, source)`)**: Generates pre-populated JSON unit drafts with recommended POS, `PriorityScore`, `SyntaxFrame`, default `SemanticTags`, and valid `SemanticVector` templates.
+
+### 6. `homonyms.js` (Korean Homonym, Stem & Phonetic Confusables Engine)
 Maps surface Hangul tokens to:
 1. **Direct Unit References (`number`)**: Direct vocabulary matches or base verb stems (e.g. `2` for `저`, `44` for `가`, `11` for `사람`).
 2. **Language Unit Trees (`Array`)**: Canonical LUTs `[grammarId, [childId]]` representing morphological combinations yielding that surface token or portmanteau (e.g. `간`: `[[644, [44]], ...]` from `가다` + `-(으)ㄴ`; `저는`: `[[36, [2]]]` from `저` + `은/는`; `누가`: `[[96, [30]], 66]` from `누구` + `이/가`).
@@ -93,49 +100,44 @@ Maps surface Hangul tokens to:
 *   **Incremental Batch Updates**: `node homonyms.js update [--source S1,S2] [--ids start..end] [--clean] [--dry-run]`
 *   **Reverse Ingestion & Paragraph Parsing**: `node homonyms.js parse "<paragraph>"` breaks down real Korean text into matching lexical units, LUT trees, and prefixes/suffixes.
 *   **Token Confusability Scoring**: Weighted score based on $(N_{\text{direct}} \times 1.0) + (N_{\text{LUT}} \times 1.2) + (N_{\text{phonetic}} \times 0.8)$.
+*   **Auto-Update Hook**: Triggers `schema_analysis.updateSchemaSummary()` automatically upon writing dictionary updates.
 *   **Rankings & Analytics**:
     *   `node homonyms.js top [10]`: Displays the most confusable tokens.
     *   `node homonyms.js least [10]`: Displays the least confusable tokens.
     *   `node homonyms.js stats`: Summary metrics of total tokens, direct units, LUTs, and phonetic links.
-*   **LLM-Friendly File Structure**: `printHelp()` and all functional logic (`getPhoneticCandidates`, `updateHomonyms`, `lookupToken`, `runCli`) reside at the top of the file with a prominent LLM guidance banner. The monolithic 2,200+ line `HOMONYMS` dictionary is quarantined at the bottom directly before the module exports.
 *   **Dataset Status**: 100% of `data.js` vocabulary ingested (2,949 tokens, 3,520+ mapped entries). 0 orphan links. Exhaustive tests pass with 0 errors across 3,403 generated sentences.
 
-### 6. `text_analyzer.js` (Passage Ingestion, Morphological Decomposition & Disambiguation Engine)
+### 7. `text_analyzer.js` (Passage Ingestion, Morphological Decomposition & Disambiguation Engine)
 Automated analysis pipeline that decomposes real Korean passages from `studytexts.js` into constituent language units, resolves homonyms and polysemous morphemes, generates student study checklists, and identifies curriculum gaps:
+*   **Declarative Verb Suffix Architecture**: Replaced hardcoded `if (word.endsWith(...))` branching with a centralized, declarative table (`VERB_SUFFIX_RULES`, 47 rules) sorted by syllable length descending. Handles connective suffixes (`-고`, `-며`, `-지만`), honorific infixes (`-(으)시-`), past tense markers (`-았/었-`), formal/informal endings, nominalizers (`-(으)ㅁ`, `-기`), and causative/passive forms cleanly.
 *   **Zero Hard-Coded Word Statements**: All homonym disambiguation (e.g. `저` pronoun vs. determiner; `이` determiner vs. numeral vs. noun; `하고` particle vs. verb connective; `-(으)ㄴ 후에` / `-(으)ㄴ 지` bound grammar vs. free nouns; `일` noun vs. number; `분` honorific person vs. minute) is driven declaratively by `SyntaxFrame` metadata (Column 12 in `data.js`) and surrounding semantic tags.
-*   **`SyntaxFrame` Specification**:
-    *   `_` : Anchor target morpheme/word.
-    *   `\+` : Direct morphological cliticization (no whitespace).
-    *   `\s+` : Whitespace separation between orthographic tokens.
-    *   `^`, `$` : Phrase / token boundaries.
-    *   `{Noun}`, `{Noun:place}`, `{Noun:time}`, `{Noun:tool|vehicle|language}` : POS & semantic category constraints.
-    *   `{Verb}`, `{Verb:movement}`, `{Verb:stative}`, `{Verb:cognition}` : Predicate constraints.
-    *   `{VP}`, `{VP_adnominal}` : Verb stems and adnominal participles.
-    *   `{Particle}`, `{Number}`, `{Counter}` : Case/topic markers, numeric values, and classifiers.
-*   **Semantic Valency Disambiguation**: Polysemous particles like `-에` and `-(으)로` inspect surrounding noun semantic tags and clause predicates:
-    *   `-에` (ID 200, Direction): `{Noun:place}\+에\s+.*{Verb:movement}`
-    *   `-에` (ID 132, Location / Reference): `{Noun:place}\+에\s+.*{Verb:stative}|{Noun:abstract}\+에`
-    *   `-에` (ID 275, Time): `{Noun:time}\+에`
-    *   `-(으)로` (ID 1240, Direction): `{Noun:place}\+으?로\s+.*{Verb:movement}`
-    *   `-(으)로` (ID 1241, Means / Instrument / Language): `{Noun:tool|vehicle|language|material}\+으?로`
+*   **Automated Draft Unit Generation**: When missing vocabulary or grammar patterns are detected in a passage, `text_analyzer.js` automatically creates `scratch/new_units_<source>.json` using `schema_analysis.scaffoldUnit()` pre-populated with schema fields, ready for quick human/agent review and insertion.
 *   **Intentional Pedagogical Ambiguity**: When surrounding linguistic context admits multiple valid interpretations (e.g. `한국의` possessive vs. origin), the engine flags `intentional_ambiguity: true` and generates an instructive explanation for the learner rather than arbitrarily picking one.
-*   **Dual-Report Outputs**:
-    1.  *Learner Study Checklist*: Active vocabulary and grammar units used in the text to master.
-    2.  *Curriculum Gap Inventory*: Missing vocabulary and grammar patterns flagged for ingestion.
-*   **Passages Ingested**:
-    *   `studytext12`: Ingested 24 units (IDs 1603–1626, including `독일`, `문화`, `학교`, `한국어`, `되다`, `이해하다`, `소개하다`, `와 / 과`, `-고 싶어하다`, determiners `이`/`그`/`저`). 100% recognized with 0 gaps.
-    *   `studytext21`: Ingested 21 units (IDs 1627–1647, including `러시아`, `일본어`, `제목`, `개월`, `전`, `한국어학당`, `공부`, `날`, `지루하다`, `노래`, `취미`, `같다`, `분`, `전화`, `일`, `마리아`, `마리`, `이야기하다`, `-(으)십시오`, `-는군요 / -군요`, `-(으)면 좋겠다`). 100% recognized with 0 gaps and 21 homonyms cleanly resolved.
+*   **Small-Batch Workflow**: Prioritizes per-passage inspection over bulk curriculum scanning to catch bugs and edge cases immediately.
+
+### 8. `test.js` (Unified Fast-Failing Test Suite)
+Single command that executes all repository test suites with fail-fast behavior:
+`node test.js [source] [-v]`
+*   **Stage 1: Schema & Data Integrity**: Verifies strictly sequential IDs (0..N-1), schema array length (12 elements), non-empty values, valid POS types, valid priority scores (1–5), and valid JSON semantic vectors (`domain` or `logic`).
+*   **Stage 2: Schema Taxonomy Sync**: Validates freshness and structure of `schema_summary.json`.
+*   **Stage 3: Homonym Dictionary Sync**: Validates token count, ensures 0 broken `_neighbor` links.
+*   **Stage 4: Exhaustive Sentence Generation**: Runs `exhaustive.js` in an isolated subprocess; asserts 100% unit coverage and 0 morphology/LUT errors across all generated sentences.
+*   **Stage 5: Text Analyzer Passage Check**: Validates ingested study texts (`studytext12`, `studytext21`, or custom source) ensuring 0 gaps.
+*   **Performance**: Completes entire 5-stage validation in ~3.7 seconds.
 
 ---
 
 ## Next Steps for the Next Agent
 
 1. **Prioritize Ingestion of Remaining Study Texts (Phase 1.5) [HIGH PRIORITY]**:
-   - Systematically run `node text_analyzer.js <passageName>` across all remaining texts in `studytexts.js` (next: `studytext22`, followed by `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext63`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`).
-   - Extract the curriculum gap inventory for each passage (vocabulary, grammar patterns, counters, particles).
-   - Batch-insert the missing units into `data.js` via `select.js INSERT FROMFILE` with complete `SyntaxFrame`, `SemanticTags`, and `SemanticVector` metadata.
-   - Sync new units into `homonyms.js` via `node homonyms.js update`.
-   - Run `node exhaustive.js` after each batch to ensure 100% test fidelity (0 errors) across the entire dataset.
+   - Ingest next passage: **`studytext22`**, followed by `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext63`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`.
+   - **Accelerated Ingestion Workflow**:
+     1. Run `node text_analyzer.js studytext22` -> review analysis and generated `scratch/new_units_studytext22.json`.
+     2. Refine definitions, `SyntaxFrame` (if homonym collision), and tags in the generated scaffold.
+     3. Insert units via `node select.js INSERT FROMFILE scratch/new_units_studytext22.json --source studytext22`.
+     4. Update homonyms via `node homonyms.js update --source studytext22`.
+     5. Run single verification command: `node test.js studytext22` (fails fast in < 4s if any issue arises).
+   - **Constraint**: Work strictly in small batches per passage; DO NOT run curriculum-wide pre-scanners.
 
 2. **Pronunciation Engine Completion & English-Phoneme TTS Engine**:
    - **Pronunciation Exception Rules**: Complete the substantive morpheme boundary liaison rules (`옷 안 [오단]`), verb stem coda dissimilations (`맑게 [말께]`), and non-lateralizing Sino-Korean compounds (`생산량 [생산냥]`) documented in [pronunciation_exceptions.md](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/pronunciation_exceptions.md).

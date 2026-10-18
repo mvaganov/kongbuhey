@@ -371,6 +371,18 @@ function updateHomonyms(options = {}) {
         }
         const newContent = content.replace(pattern, block);
         fs.writeFileSync(targetFile, newContent, 'utf8');
+
+        // Automatically update schema analysis if schema_analysis.js is present
+        try {
+            const schemaAnalysisPath = path.resolve(__dirname, 'schema_analysis.js');
+            if (fs.existsSync(schemaAnalysisPath)) {
+                delete require.cache[schemaAnalysisPath];
+                const schemaAnalysis = require(schemaAnalysisPath);
+                if (typeof schemaAnalysis.updateSchemaSummary === 'function') {
+                    schemaAnalysis.updateSchemaSummary();
+                }
+            }
+        } catch (_) { }
     }
 
     return {
