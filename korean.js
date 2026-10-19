@@ -235,7 +235,8 @@ const ACTION_VERB_SPECS = [
 	{ tag: "transitive_sports", nounTag: "sports", particle: "object", fallbackTag: "activity" },
 	{ tag: "transitive_transportation", nounTag: "transportation", particle: "object" },
 	{ tag: "transitive_place", nounTag: "place", particle: "object", preferDomain: true },
-	{ tag: "intransitive_motion", nounTag: "place", particle: "location", preferDomain: true }
+	{ tag: "intransitive_motion", nounTag: "place", particle: "location", preferDomain: true },
+	{ tag: "intransitive_place", nounTag: "place", particle: "location", preferDomain: true }
 ];
 
 const DESCRIPTIVE_VERB_SPECS = [
@@ -381,6 +382,8 @@ function getTokenOptions(token, depth = 0) {
 		}
 	} else if (token.type === "Adv") {
 		options = getFilteredWords("Adverb", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
+	} else if (token.type === "Det" || token.type === "Determiner") {
+		options = getFilteredWords("Determiner", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
 	} else if (token.type === "Exclamation") {
 		options = getFilteredWords("Exclamation", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
 	} else if (token.type === "Clause" || token.type === "VP") {
@@ -423,7 +426,7 @@ function getTokenOptions(token, depth = 0) {
 			if (hasTag(av, "transitive_place")) {
 				getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
 			}
-			if (hasTag(av, "intransitive_motion")) {
+			if (hasTag(av, "intransitive_motion") || hasTag(av, "intransitive_place")) {
 				getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}에 ${stem}`, [av, n])));
 			}
 			if (hasTag(av, "intransitive_general")) options.push(new TokenOption(stem, [av]));
