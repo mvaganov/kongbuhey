@@ -164,7 +164,7 @@ Single command that executes all repository test suites with fail-fast behavior:
      Once all units (0..1656) have been audited and all `TODO`s recorded, query the full set via `node select.js "SELECT Id, Korean, English, sv.TODO WHERE sv.TODO != ''"`. From these aggregated linguistic patterns, we will:
      1. **Enhance Forward Phrase Generation (`korean.js`)**: Implement real selectional restrictions (e.g. clothing collocations for `입다/신다/쓰다/끼다`, temporal tense concord for `내일/어제/지금`, honorific concord for humble/respectful pronouns, spatial relational collocations `[Noun + 의] + position + 에/에서`).
      2. **Enhance Reverse Parsing & Text Disambiguation (`text_analyzer.js` & `homonyms.js`)**: Convert determiner rules, bound morpheme constructions, and particle contractions (e.g. `누구 + 가 -> 누가`, `어느 + Noun`) into declarative `SyntaxFrame` and morphological decomposition rules for arbitrary Korean text.
-   - **Current Status**: IDs 0–200 are **100% completed and verified** (46,057 generated sentences passing morphology checks with 0 errors).
+   - **Current Status**: IDs 0–600 (Batches 1–15) are **100% completed and verified** (all generated sentences passing morphology checks with 0 errors across exhaustive and fast test suites). Next batch: IDs 601–640 (Batch 16).
 
 2. **Prioritize Ingestion of Remaining Study Texts (Phase 1.5)**:
    - Ingest next passage: **`studytext31`**, followed by `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext63`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`.
