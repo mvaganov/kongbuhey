@@ -612,7 +612,7 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 			const formulas = gu[DATA_SCHEMA.Conjugation] || [];
 			if (formulas.length > 1 && match.formulaIndex > 0) {
 				const sigs = formulas.map(f => (f.match(/\{[^}]+\}/g) || []).join(','));
-				grammarId = sigs[match.formulaIndex] === sigs[0] ? template : gu[DATA_SCHEMA.Id];
+				grammarId = sigs.slice(0, match.formulaIndex).includes(sigs[match.formulaIndex]) ? template : gu[DATA_SCHEMA.Id];
 			} else {
 				grammarId = gu[DATA_SCHEMA.Id];
 			}
