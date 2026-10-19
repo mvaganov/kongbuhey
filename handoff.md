@@ -4,7 +4,7 @@
 **Goal:** Build an educational web app (pure HTML/CSS/Vanilla JS, no server) to help users recognize Korean words and grammar. It generates random sentences from a structured vocabulary/grammar collection to test recognition.
 
 **Development Phases:**
-1. **[CURRENT] Core Engine & Data:** Develop the semantic schema, grammar formula system, and morphology engine.
+1. **[CURRENT] Core Engine & Semantic Rules:** Develop the semantic schema, grammar formula system, morphology engine, and fine-grained semantic rule matrix to guarantee valid phrase generation.
 2. **Flash-card UI:** Build a UI that generates random sentences and allows users to self-score.
 3. **Quiz UI:** Build a more advanced quizzing interface.
 
@@ -138,33 +138,29 @@ Single command that executes all repository test suites with fail-fast behavior:
 
 ## Next Steps for the Next Agent
 
-1. **Semantic Vector Cleanup & Linguistic `TODO` Flagging (Units 201..1656) [TOP PRIORITY]**:
-   - **Context & Motivation**:
-     Previously, the `SemanticVector` column (Column 11) accumulated dozens of unconstrained, one-off JSON keys (`traits`, `type`, `action`, `symptom`, `method`, `art`, etc.) across 1,600+ units that were never consumed by generation code, inflating `schema_summary.json` to 4,300+ lines. Meanwhile, real linguistic constraints (selectional restrictions, register concord, spatial proximity, temporal concord, bound relational structures, morphophonemics) went uncaptured.
-   - **The Small-Batch Audit Workflow (30–50 units per batch)**:
-     - Work through the remaining units systematically (e.g. Batch 6: IDs 201–240, Batch 7: IDs 241–280, etc.).
-     - Inspect batch using `select.js`:
-       ```bash
-       node select.js "SELECT Id, Korean, English, PartofSpeech, SemanticTags, SemanticVector WHERE Id >= 201 AND Id < 241"
-       ```
-     - For each unit:
-       1. **Promote genuine lexical traits to `SemanticTags`**: Move meaningful categorizations (e.g. `country`, `facility`, `sports`, `room`, `nature`, `water`) into `SemanticTags` (Column 4) where `findNounForVerbTag` in `korean.js` can directly consume them.
-       2. **Cull redundant, dead metadata from `SemanticVector`**: Keep only the active schema fields (`domain`, `polarity`, `req`, `prod`, `logic`).
-       3. **Flag valuable linguistic constraints with `"TODO"`**: If a unit exhibits real linguistic rules (e.g., verb argument restrictions, noun-adjective collocations, tense harmony, honorific/register concord), write a concise note in `"TODO": "..."` inside `SemanticVector`.
-     - Apply updates back to `data.js` via `select.js`:
-       ```bash
-       node select.js UPDATE SemanticTags, SemanticVector FROMFILE scratch/update_batchN.json
-       ```
-     - Validate the batch using scoped exhaustive testing:
-       ```bash
-       node exhaustive.js --range 201-240
-       ```
-     - Run the full fast test suite: `node test.js` (fails fast in < 4s if any issue occurs).
-   - **Post-Audit Pattern Mining (`sv.TODO` Integration)**:
-     Once all units (0..1656) have been audited and all `TODO`s recorded, query the full set via `node select.js "SELECT Id, Korean, English, sv.TODO WHERE sv.TODO != ''"`. From these aggregated linguistic patterns, we will:
-     1. **Enhance Forward Phrase Generation (`korean.js`)**: Implement real selectional restrictions (e.g. clothing collocations for `입다/신다/쓰다/끼다`, temporal tense concord for `내일/어제/지금`, honorific concord for humble/respectful pronouns, spatial relational collocations `[Noun + 의] + position + 에/에서`).
-     2. **Enhance Reverse Parsing & Text Disambiguation (`text_analyzer.js` & `homonyms.js`)**: Convert determiner rules, bound morpheme constructions, and particle contractions (e.g. `누구 + 가 -> 누가`, `어느 + Noun`) into declarative `SyntaxFrame` and morphological decomposition rules for arbitrary Korean text.
-   - **Current Status**: IDs 0–1200 (Batches 1–30, representing 1,201 of 1,657 units or 72.5% of the curriculum) are **100% completed and verified** (all generated sentences passing morphology checks with 0 errors across exhaustive and fast test suites; 973 units cataloged with detailed linguistic sv.TODO notes). Next batch: IDs 1201–1240 (Batch 31).
+1. **Semantic Rules & Phrase Generation Engine Implementation [CURRENT HIGHEST PRIORITY]**:
+   - **Foundational Project Value**:
+     The ultimate value of Kongbuhey relies on correct random phrase generation to provide authentic context for learning Korean grammar and vocabulary. Following the 100% completion of the curriculum audit (all 1,657 units standardized, 1,429 units cataloged with `sv.TODO`), developing these semantic rules is the highest priority for the project.
+   - **Specification & Technical Roadmap**:
+     The complete architectural plan, linguistic specifications, and testing strategies are codified in [`SEMANTIC_RULES_ROADMAP.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/SEMANTIC_RULES_ROADMAP.md).
+   - **Phased Implementation Summary**:
+     - **Phase A (Collocations & Descriptive Selection — F1, F2, F10)**:
+       - Refactor `ACTION_VERB_SPECS` and `DESCRIPTIVE_VERB_SPECS` in `korean.js` into fine-grained selectional tables (apparel wear verbs, intake, transit, sports/instruments, daily activity).
+       - Add pronoun case sandhi (`누가`, `이게/그게/저게`, `이건/그건/저건`, `뭘/뭐가`) to `applyMorphology`.
+       - Build `test/collocation_test.js` to assert 100% semantic compatibility between predicates and arguments.
+     - **Phase B (Case & Spatio-Temporal Concord — F3, F5, F7, F9)**:
+       - Enhance `attachParticle` for locative duality (`-에` vs `-에서`) and dative animacy (`-에게` vs `-에` vs `-께`).
+       - Implement temporal tense harmony between adverbs and grammar formulas in `generateSemanticSentence`.
+       - Implement spatial relational phrase generator (`[Noun + 의] + [Position] + 에/에서`).
+       - Split `{Adv}` into `{Adv_Degree}`, `{Adv_Manner}`, and `{Adv_Discourse}`.
+       - Build `test/particle_concord_test.js` and `test/temporal_concord_test.js`.
+     - **Phase C (Honorifics & Classifier Matrices — F4, F6, F8)**:
+       - Implement subject/dative honorific concord and lexical suppletions (`자다` $\rightarrow$ `주무시다`, `밥` $\rightarrow$ `진지`, `주다` $\rightarrow$ `드리다`).
+       - Enforce noun-to-counter measure word matrix (`개`, `명`, `마리`, `권`, `병`, `잔`, `대`, `켤레`, `벌`, `송이`).
+       - Restrict imperative/propositive moods strictly to Action Verbs.
+       - Build `test/honorific_concord_test.js` and `test/counter_concord_test.js`.
+     - **Phase D (Continuous Test Integration)**:
+       - Add Stage 6 (Semantic & Collocation Validity) into `test.js` to permanently guard against semantic regressions in CI.
 
 2. **Prioritize Ingestion of Remaining Study Texts (Phase 1.5)**:
    - Ingest next passage: **`studytext31`**, followed by `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext63`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`.
