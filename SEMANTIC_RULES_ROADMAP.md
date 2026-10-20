@@ -285,7 +285,7 @@ graph TD
 
 | Feature | Units Collapsed | Core Module | Existing Test Infra Sufficient? | Recommended Testing Action |
 | :--- | :---: | :--- | :---: | :--- |
-| **F1: Verb-Noun Collocations** | **437** | `korean.js` (`ACTION_VERB_SPECS`) | ❌ No | Build `test/collocation_test.js` |
+| **F1: Verb-Noun Collocations** | **437** | `korean.js` (`ACTION_VERB_SPECS`, `collocation_filter`) | ✅ Completed | 211 tests passing in `collocation_test.js` |
 | **F2: Descriptive Sensory Selection** | **165** | `korean.js` (`DESCRIPTIVE_VERB_SPECS`) | ❌ No | Add sensory assertions to `collocation_test.js` |
 | **F3: Case Particle Specialization** | **297** | `korean.js` (`attachParticle`) | ⚠️ Partial | Build `test/particle_concord_test.js` |
 | **F4: Speech Register & Honorifics** | **66** | `korean.js` (`buildVerbPhrase`) | ❌ No | Build `test/honorific_concord_test.js` |

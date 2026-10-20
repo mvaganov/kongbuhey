@@ -145,9 +145,13 @@ Single command that executes all repository test suites with fail-fast behavior:
      The complete architectural plan, linguistic specifications, and testing strategies are codified in [`SEMANTIC_RULES_ROADMAP.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/SEMANTIC_RULES_ROADMAP.md).
    - **Phased Implementation Summary**:
      - **Phase A (Collocations & Descriptive Selection — F1, F2, F10)**:
-       - Refactor `ACTION_VERB_SPECS` and `DESCRIPTIVE_VERB_SPECS` in `korean.js` into fine-grained selectional tables (apparel wear verbs, intake, transit, sports/instruments, daily activity).
-       - Add pronoun case sandhi (`누가`, `이게/그게/저게`, `이건/그건/저건`, `뭘/뭐가`) to `applyMorphology`.
-       - Build `test/collocation_test.js` to assert 100% semantic compatibility between predicates and arguments.
+       - **Feature 1 (Completed)**: Verb-Noun Collocation Matrix implemented.
+         - Reusable semantic tags (`clothing`, `footwear`, `headwear`, `handwear`, `neckwear`, `watch`, `wearable`, `reading`, `visual_media`, `audio`, `song`, `writing`, `vehicle`, `racketSports`, `instrument`, `teeth`, `room`, `bodyPart`) mapped across verbs and nouns in `data.js`.
+         - Embedded JavaScript execution supported via `sv.collocation_filter` in `SemanticVector` with header `/*js:filter*/` for fine-grained predicate constraints (e.g. `치다`, `입다`, `신다`, `쓰다`, `끼다`, `매다`, `차다`, `벗다`, `먹다`, `마시다`, `운전하다`, `타다`, `씻다`).
+         - Engine refactored in `korean.js` (`getNounCandidatesForVerb`, `getVerbParticleType`, `buildActionVerbPhrase`, `getTokenOptions`).
+         - Built `collocation_test.js` (211 tests passing, 0 failures). Full `node test.js` suite passing (100% green, 5.08s).
+       - **Feature 2 (Next)**: Descriptive Sensory & Dimensional Selection (`DESCRIPTIVE_VERB_SPECS`).
+       - Add pronoun case sandhi (`누가`, `이게/그게/저게`, `이건/그건/저건`, `뭘/뭐가`) to `applyMorphology` (F10).
      - **Phase B (Case & Spatio-Temporal Concord — F3, F5, F7, F9)**:
        - Enhance `attachParticle` for locative duality (`-에` vs `-에서`) and dative animacy (`-에게` vs `-에` vs `-께`).
        - Implement temporal tense harmony between adverbs and grammar formulas in `generateSemanticSentence`.
