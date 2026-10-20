@@ -27,14 +27,16 @@ COMMANDS:
   INSERT INTO KR_EN_languageUnits (<cols>) VALUES (<vals>)
   DELETE FROM KR_EN_languageUnits WHERE <cond>
   ADD <col> <defaultVal> (FIRST|LAST|AFTER <c>|BEFORE <c>)   Alter schema & rows
+  AUDIT [SEMANTIC]                          Audit verbs for semantic rule coverage and starvation
 
 OPTIONS:
   --source, -s <tag>   Curriculum source for inserted units (default: ::YYYYMMDD)
   --format <fmt>       tsv, jsonl, json, table, raw
                        (Auto: TSV if complexity <= 8, else JSONL. JSON used only when explicitly requested.)
   --summary [n]        Truncate large results after n rows (default: 5) with a '... [{n} more rows truncated]' suffix
-  -v, --verbose        Include detailed operation messages (quiet by default on mutations)
+  --strict             Fail fast with error on semantic diversity warnings or unregistered tags
   --dry-run            Preview changes without modifying data.js
+  -v, --verbose        Include detailed operation messages (quiet by default on mutations)
   --data <path>        Custom data file (default: ./data.js)
 
 SCHEMA COLUMNS (aliases: id, ko, en, pos, tags, disambig, conj, src, score, formality, honorific, vector):
@@ -62,6 +64,15 @@ KEY LLM WORKFLOW PATTERNS:
 
 const fs = require('fs');
 const path = require('path');
+
+const {
+	ACTION_VERB_SPECS,
+	DESCRIPTIVE_VERB_SPECS,
+	getNounCandidatesForVerb,
+	getSubjectCandidatesForDescriptiveVerb,
+	parseAndValidateCollocationFilter,
+	hasTag
+} = require('./korean.js');
 
 const DATA_FILE_PATH = path.resolve(__dirname, 'data.js');
 
@@ -265,6 +276,14 @@ function buildUnitFromRecord(rec, resolvedSource, newId = 0, schemaCols = SCHEMA
 			let tagsArr = [];
 			if (rec.SemanticTags instanceof Set) tagsArr = Array.from(rec.SemanticTags);
 			else if (Array.isArray(rec.SemanticTags)) tagsArr = rec.SemanticTags;
+			else if (typeof rec.SemanticTags === 'string') {
+				try {
+					const parsed = JSON.parse(rec.SemanticTags);
+					if (Array.isArray(parsed)) tagsArr = parsed;
+				} catch (_) {
+					tagsArr = rec.SemanticTags.split(',').map(t => t.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
+				}
+			}
 			return tagsArr;
 		}
 		if (col.name === 'PartofSpeech') {
@@ -272,6 +291,415 @@ function buildUnitFromRecord(rec, resolvedSource, newId = 0, schemaCols = SCHEMA
 		}
 		return rec[col.name] !== undefined ? rec[col.name] : (col.type === 'number' ? 0 : "");
 	});
+}
+
+/**
+ * Resolves the specific semantic constraint tag or mechanism responsible for
+ * filtering arguments for a given verb.
+ */
+function getVerbSemanticConstraint(unit, schemaCols = SCHEMA_COLUMNS) {
+	if (!unit) return "unknown";
+	const getIdx = (colName) => {
+		const found = schemaCols.find ? schemaCols.find(c => c.name === colName) : null;
+		if (found) return found.index;
+		return schemaCols[colName] !== undefined ? schemaCols[colName] : -1;
+	};
+	const svIdx = getIdx("SemanticVector");
+	const posIdx = getIdx("PartofSpeech");
+	const tagsIdx = getIdx("SemanticTags");
+	const svVal = svIdx >= 0 ? unit[svIdx] : null;
+
+	let sv = {};
+	try { sv = typeof svVal === 'string' ? JSON.parse(svVal) : svVal; } catch (_) {}
+
+	const pos = posIdx >= 0 ? unit[posIdx] : "Noun";
+	const tagsVal = tagsIdx >= 0 ? unit[tagsIdx] : [];
+	const tags = tagsVal instanceof Set ? Array.from(tagsVal) : (Array.isArray(tagsVal) ? tagsVal : []);
+
+	// Prioritize the specific semantic selection tag responsible for the restriction
+	let specTag = null;
+	if (pos === "Descriptive Verb") {
+		const spec = DESCRIPTIVE_VERB_SPECS.find(s => tags.includes(s.tag));
+		if (spec) specTag = spec.tag;
+	} else if (pos === "Action Verb") {
+		const spec = ACTION_VERB_SPECS.find(s => tags.includes(s.tag));
+		if (spec) specTag = spec.tag;
+	}
+	if (!specTag) {
+		const anySelTag = tags.find(t => t.startsWith("transitive_") || t.startsWith("descriptive_") || t.startsWith("intransitive_") || t.startsWith("dative_"));
+		if (anySelTag) specTag = anySelTag;
+	}
+
+	if (specTag) {
+		return specTag;
+	}
+
+	if (sv && sv.collocation_filter) return "collocation_filter";
+	if (sv && sv.req && sv.req !== 'any') return `sv.req (${sv.req})`;
+
+	return "global fallback (object)";
+}
+
+/**
+ * Detects whether a language unit has conflated multiple distinct homonymous/polysemous
+ * senses with divergent semantic selection constraints into a single row.
+ *
+ * @param {Array} unit - The 12-column language unit array.
+ * @param {Object} schemaCols - Schema columns or index map.
+ * @returns {string[]|null} List of ambiguity conflict reasons, or null if none.
+ */
+function detectUndifferentiatedHomonym(unit, schemaCols = SCHEMA_COLUMNS) {
+	if (!unit) return null;
+	const getIdx = (colName) => {
+		const found = schemaCols.find ? schemaCols.find(c => c.name === colName) : null;
+		if (found) return found.index;
+		return schemaCols[colName] !== undefined ? schemaCols[colName] : -1;
+	};
+
+	const posIdx = getIdx("PartofSpeech");
+	const koIdx = getIdx("Korean");
+	const idIdx = getIdx("Id");
+	const enIdx = getIdx("English");
+	const disIdx = getIdx("Disambiguation");
+	const tagsIdx = getIdx("SemanticTags");
+	const svIdx = getIdx("SemanticVector");
+
+	const pos = posIdx >= 0 ? unit[posIdx] : "Noun";
+	if (pos !== "Action Verb" && pos !== "Descriptive Verb") return null;
+
+	const id = idIdx >= 0 ? unit[idIdx] : "?";
+	const ko = koIdx >= 0 ? unit[koIdx] : "?";
+	const en = (enIdx >= 0 ? unit[enIdx] : "") || "";
+	const dis = (disIdx >= 0 ? unit[disIdx] : "") || "";
+	const tagsVal = tagsIdx >= 0 ? unit[tagsIdx] : [];
+	const tags = tagsVal instanceof Set ? Array.from(tagsVal) : (Array.isArray(tagsVal) ? tagsVal : []);
+	const svVal = svIdx >= 0 ? unit[svIdx] : null;
+
+	let sv = {};
+	try { sv = typeof svVal === 'string' ? JSON.parse(svVal) : svVal; } catch (_) {}
+
+	const selTags = tags.filter(t => t.startsWith('transitive_') || t.startsWith('descriptive_') || t.startsWith('intransitive_') || t.startsWith('dative_'));
+	const issues = [];
+
+	// 1. Cross-Domain Conflations in Tags
+	const hasWeather = tags.includes('weather') || (sv && sv.domain === 'weather');
+	const hasWearable = tags.includes('wearable') || tags.includes('clothing') || tags.includes('footwear') || tags.includes('handwear') || (sv && sv.domain === 'clothing');
+	const hasFood = tags.includes('food') || tags.includes('drink') || tags.includes('cooking') || (sv && sv.domain === 'food');
+	const hasTransport = tags.includes('transportation') || tags.includes('vehicle') || (sv && sv.domain === 'transportation');
+	const hasSports = tags.includes('sports') || selTags.includes('transitive_sports');
+	const hasInstrument = tags.includes('instrument') || tags.includes('music') || selTags.includes('transitive_instrument');
+	const hasPostal = tags.includes('postal') || (sv && sv.domain === 'postal');
+	const hasTheater = tags.includes('theater') || tags.includes('acting');
+	const hasSchedule = tags.includes('schedule');
+
+	if (hasWeather && hasWearable) {
+		issues.push("Contradictory domain tags conflated: 'weather' + 'wearable/clothing'");
+	}
+	if (hasWeather && hasFood) {
+		issues.push("Contradictory domain tags conflated: 'weather' + 'food/cooking'");
+	}
+	if (hasWeather && hasTransport) {
+		issues.push("Contradictory domain tags conflated: 'weather' + 'transportation'");
+	}
+	if (hasSports && hasInstrument) {
+		issues.push("Contradictory domain tags conflated: 'sports' + 'musical instrument'");
+	}
+	if (hasPostal && hasFood) {
+		issues.push("Contradictory domain tags conflated: 'postal' + 'food/cooking'");
+	}
+	if (hasSchedule && hasTheater) {
+		issues.push("Contradictory domain tags conflated: 'schedule' + 'theater/acting'");
+	}
+
+	// 2. Domain vs Selection Tag Contradiction
+	if (sv && sv.domain) {
+		if (sv.domain === 'weather' && selTags.some(t => t.includes('handwear') || t.includes('clothing') || t.includes('footwear') || t.includes('neckwear'))) {
+			issues.push(`SemanticVector domain '${sv.domain}' contradicts wearable selection tag: ${selTags.join(', ')}`);
+		}
+		if (sv.domain === 'clothing' && tags.includes('weather')) {
+			issues.push(`SemanticVector domain '${sv.domain}' contradicts 'weather' tag`);
+		}
+	}
+
+	// 3. Mutually exclusive specific selection tags
+	const specificTrans = selTags.filter(t => 
+		t.includes('neckwear') || t.includes('handwear') || t.includes('footwear') || 
+		t.includes('headwear') || t.includes('watch') || t.includes('sports') || 
+		t.includes('instrument')
+	);
+	if (specificTrans.length > 1) {
+		const hasTwoIncompatible = (
+			(specificTrans.includes('transitive_sports') && specificTrans.includes('transitive_instrument')) ||
+			(specificTrans.some(t => t.includes('wear') || t.includes('watch')) && specificTrans.some(t => t.includes('sports') || t.includes('instrument')))
+		);
+		if (hasTwoIncompatible) {
+			issues.push(`Multiple mutually incompatible specific selection tags: ${specificTrans.join(' vs ')}`);
+		}
+	}
+
+	// 4. Divergent senses in definition where a specific constraint only applies to one sense
+	const enLower = en.toLowerCase();
+	const distinctParens = [...new Set(((en + ' ' + dis).match(/\(([^)]+)\)/g) || []).map(p => p.toLowerCase()))];
+	if (distinctParens.length >= 2 && (specificTrans.length > 0 || (sv && sv.collocation_filter))) {
+		const isCrossDomainParen = (
+			(distinctParens.some(p => p.includes('weather') || p.includes('rain') || p.includes('fog')) &&
+			 distinctParens.some(p => p.includes('cloth') || p.includes('ring') || p.includes('glove') || p.includes('bag') || p.includes('bedding'))) ||
+			(distinctParens.some(p => p.includes('sport') || p.includes('tennis')) &&
+			 distinctParens.some(p => p.includes('piano') || p.includes('instrument')))
+		);
+		if (isCrossDomainParen) {
+			issues.push(`Divergent domain senses in definition: ${distinctParens.join(' vs ')} with specific constraint`);
+		}
+	}
+
+	if (specificTrans.length > 0) {
+		for (const st of specificTrans) {
+			if (st === 'transitive_handwear' && (enLower.includes('fog') || enLower.includes('trap'))) {
+				issues.push(`Selection tag '${st}' applies only to handwear, but definition includes '${en}'`);
+			}
+			if (st === 'transitive_watch' && (enLower.includes('kick') || enLower.includes('cold') || enLower.includes('full'))) {
+				issues.push(`Selection tag '${st}' applies only to watch, but definition includes '${en}'`);
+			}
+		}
+	}
+
+	return issues.length > 0 ? issues : null;
+}
+
+/**
+ * Validates a language unit against the semantic argument selection rules and taxonomy.
+ * Emits actionable error messages with direct pointers to korean.js specifications.
+ *
+ * @param {Array} unit - The 12-column language unit array.
+ * @param {Array[]} allUnits - The full curriculum unit array (for context).
+ * @param {Object} schemaCols - The schema column definitions or index map.
+ * @param {Object} options - Configuration options ({ strict: boolean, strictAmbiguity: boolean }).
+ */
+function validateLanguageUnitSemanticSelection(unit, allUnits, schemaCols = SCHEMA_COLUMNS, options = {}) {
+	if (!unit) return;
+	const getIdx = (colName) => {
+		const found = schemaCols.find ? schemaCols.find(c => c.name === colName) : null;
+		if (found) return found.index;
+		return schemaCols[colName] !== undefined ? schemaCols[colName] : -1;
+	};
+
+	const posIdx = getIdx("PartofSpeech");
+	const koIdx = getIdx("Korean");
+	const idIdx = getIdx("Id");
+	const tagsIdx = getIdx("SemanticTags");
+	const svIdx = getIdx("SemanticVector");
+
+	const pos = posIdx >= 0 ? unit[posIdx] : "Noun";
+	const id = idIdx >= 0 ? unit[idIdx] : "?";
+	const ko = koIdx >= 0 ? unit[koIdx] : "?";
+	const tagsVal = tagsIdx >= 0 ? unit[tagsIdx] : [];
+	const tags = tagsVal instanceof Set ? Array.from(tagsVal) : (Array.isArray(tagsVal) ? tagsVal : []);
+
+	// 1. Validate collocation_filter in SemanticVector if present
+	const svVal = svIdx >= 0 ? unit[svIdx] : null;
+	if (svVal) {
+		try {
+			const parsed = typeof svVal === 'string' ? JSON.parse(svVal) : svVal;
+			if (parsed && parsed.collocation_filter) {
+				parseAndValidateCollocationFilter(parsed.collocation_filter, id);
+			}
+		} catch (filterErr) {
+			const errMsg = `[SEMANTIC FILTER ERROR] Unit '${ko}' (Id: ${id}) has invalid collocation_filter: ${filterErr.message}\n` +
+				`-> Location: SemanticVector column in data.js\n` +
+				`-> Expected format: /*js:filter*/ (noun, hasTag) => ...\n` +
+				`-> See korean.js (parseAndValidateCollocationFilter, lines ~410-465) for specifications.`;
+			if (options.strict) throw new Error(errMsg);
+			else console.error(`\n${errMsg}\n`);
+		}
+	}
+
+	// 2. Check for Undifferentiated Homonym / Ambiguity Conflation
+	const ambiguityIssues = detectUndifferentiatedHomonym(unit, schemaCols);
+	if (ambiguityIssues && ambiguityIssues.length > 0) {
+		const warnMsg = `[SEMANTIC AMBIGUITY WARNING] Verb '${ko}' (Id: ${id}) appears to combine multiple distinct senses with conflicting selection constraints:\n` +
+			ambiguityIssues.map(iss => `  * ${iss}`).join('\n') + '\n' +
+			`-> RECOMMENDATION: A word with definitions implying distinct uses should have separate entries if any use requires distinct semantic tags (e.g. '이' has Id:237 [number], Id:361 [teeth], Id:1618 [determiner]).\n` +
+			`-> Split '${ko}' into distinct entries with differentiated Disambiguations and targeted tags.\n`;
+		if (options.strictAmbiguity) throw new Error(warnMsg);
+		else console.warn(`\n${warnMsg}`);
+	}
+
+	// 3. Validate Descriptive Verbs
+	if (pos === "Descriptive Verb") {
+		const descriptiveTags = new Set(DESCRIPTIVE_VERB_SPECS.map(s => s.tag));
+		for (const tag of tags) {
+			if (tag.startsWith("descriptive_") && !descriptiveTags.has(tag)) {
+				const errMsg = `[SEMANTIC SELECTION RULE ERROR] Descriptive Verb '${ko}' (Id: ${id}) has unrecognized selection tag '${tag}'.\n` +
+					`-> This tag is NOT registered in DESCRIPTIVE_VERB_SPECS in korean.js!\n` +
+					`-> To establish argument selection rules for '${tag}', register it in korean.js (DESCRIPTIVE_VERB_SPECS, lines ~335-408):\n` +
+					`     { tag: "${tag}", nounTag: "<targetNounTag>", fallbackTag: "<optionalFallback>" }\n` +
+					`-> See korean.js: 'HOW TO ADD A NEW SEMANTIC SELECTION TAG WITH NEW RULES'.`;
+				if (options.strict) throw new Error(errMsg);
+				else console.warn(`\n${errMsg}\n`);
+			}
+		}
+
+		const hasSuppressDiversity = tags.some(t => {
+			const u = String(t).toUpperCase();
+			return u === 'SUPPRESS_SEMANTIC_DIVERSITY_WARNING' || u === 'SUPRESS_SEMANTIC_DIVERSITY_WARNING';
+		});
+
+		try {
+			const cands = getSubjectCandidatesForDescriptiveVerb(unit);
+			const constraint = getVerbSemanticConstraint(unit, schemaCols);
+			if (cands.length === 0) {
+				const errMsg = `[SEMANTIC STARVATION ERROR] Descriptive Verb '${ko}' (Id: ${id}) has ZERO valid candidate subjects under constraint '${constraint}'!\n` +
+					`-> Sentence generation with this verb will be impossible or blocked.\n` +
+					`-> Check korean.js (DESCRIPTIVE_VERB_SPECS, lines ~335-408) to verify target nounTag or add matching nouns in data.js.`;
+				if (options.strict) throw new Error(errMsg);
+				else console.error(`\n${errMsg}\n`);
+			} else if (cands.length < 3 && !hasSuppressDiversity) {
+				console.warn(`\n[SEMANTIC DIVERSITY WARNING] Descriptive Verb '${ko}' (Id: ${id}) has only ${cands.length} valid candidate subject(s) (${cands.map(c => koIdx >= 0 ? c[koIdx] : c[1]).join(', ')}) under constraint '${constraint}'.\n` +
+					`-> Expected at least 3 candidates to ensure diverse sentence generation.\n` +
+					`-> Check korean.js (DESCRIPTIVE_VERB_SPECS) or expand matching nouns in data.js.\n`);
+			}
+		} catch (candErr) {
+			console.error(`\n[SEMANTIC EVALUATION ERROR] Failed to resolve subject candidates for '${ko}' (Id: ${id}): ${candErr.message}\n`);
+		}
+	}
+
+	// 4. Validate Action Verbs
+	if (pos === "Action Verb") {
+		const actionTags = new Set(ACTION_VERB_SPECS.map(s => s.tag));
+		for (const tag of tags) {
+			if ((tag.startsWith("transitive_") || tag.startsWith("intransitive_") || tag.startsWith("dative_")) && !actionTags.has(tag)) {
+				const errMsg = `[SEMANTIC SELECTION RULE ERROR] Action Verb '${ko}' (Id: ${id}) has unrecognized selection tag '${tag}'.\n` +
+					`-> This tag is NOT registered in ACTION_VERB_SPECS in korean.js!\n` +
+					`-> To establish argument selection rules for '${tag}', register it in korean.js (ACTION_VERB_SPECS, lines ~280-334):\n` +
+					`     { tag: "${tag}", nounTag: "<targetNounTag>", particle: "object"|"location"|"dative" }\n` +
+					`-> See korean.js: 'HOW TO ADD A NEW SEMANTIC SELECTION TAG WITH NEW RULES'.`;
+				if (options.strict) throw new Error(errMsg);
+				else console.warn(`\n${errMsg}\n`);
+			}
+		}
+
+		const isPureIntransitive = hasTag(unit, "intransitive_general") || hasTag(unit, "intransitive_food");
+		if (!isPureIntransitive) {
+			const hasSuppressDiversity = tags.some(t => {
+				const u = String(t).toUpperCase();
+				return u === 'SUPPRESS_SEMANTIC_DIVERSITY_WARNING' || u === 'SUPRESS_SEMANTIC_DIVERSITY_WARNING';
+			});
+			try {
+				const cands = getNounCandidatesForVerb(unit);
+				const constraint = getVerbSemanticConstraint(unit, schemaCols);
+				if (cands.length === 0) {
+					const errMsg = `[SEMANTIC STARVATION ERROR] Action Verb '${ko}' (Id: ${id}) has ZERO valid candidate noun arguments under constraint '${constraint}'!\n` +
+						`-> Check korean.js (ACTION_VERB_SPECS, lines ~280-334) or collocation_filter in data.js.`;
+					if (options.strict) throw new Error(errMsg);
+					else console.error(`\n${errMsg}\n`);
+				} else if (cands.length < 3 && !hasSuppressDiversity) {
+					console.warn(`\n[SEMANTIC DIVERSITY WARNING] Action Verb '${ko}' (Id: ${id}) has only ${cands.length} valid candidate noun(s) (${cands.map(c => koIdx >= 0 ? c[koIdx] : c[1]).join(', ')}) under constraint '${constraint}'.\n` +
+						`-> Expected at least 3 candidates to ensure diverse sentence generation.\n` +
+						`-> Check korean.js (ACTION_VERB_SPECS) or expand matching nouns in data.js.\n`);
+				}
+			} catch (candErr) {
+				console.error(`\n[SEMANTIC EVALUATION ERROR] Failed to resolve noun candidates for '${ko}' (Id: ${id}): ${candErr.message}\n`);
+			}
+		}
+	}
+}
+
+/**
+ * Audits all language units in data.js for semantic argument selection coverage,
+ * identifying unregistered selection tags, zero-candidate starvation, and low-diversity verbs.
+ */
+function auditSemanticRules(options = {}) {
+	const dataPath = options.dataFile || DATA_FILE_PATH;
+	const { KR_EN_languageUnits, DATA_SCHEMA } = loadData(dataPath);
+	console.log(`\n======================================================`);
+	console.log(` AUDITING SEMANTIC SELECTION RULES & CANDIDATE POOLS  `);
+	console.log(` Dataset: ${path.basename(dataPath)} (${KR_EN_languageUnits.length} units)`);
+	console.log(`======================================================\n`);
+
+	let verbCount = 0;
+	let starvedCount = 0;
+	let lowDiversityCount = 0;
+	let unregTagCount = 0;
+	let ambiguousCount = 0;
+
+	const actionTags = new Set(ACTION_VERB_SPECS.map(s => s.tag));
+	const descriptiveTags = new Set(DESCRIPTIVE_VERB_SPECS.map(s => s.tag));
+
+	for (const unit of KR_EN_languageUnits) {
+		if (!unit) continue;
+		const pos = unit[DATA_SCHEMA.PartofSpeech];
+		const id = unit[DATA_SCHEMA.Id];
+		const ko = unit[DATA_SCHEMA.Korean];
+		const tags = Array.from(unit[DATA_SCHEMA.SemanticTags] || []);
+
+		if (pos === "Descriptive Verb" || pos === "Action Verb") {
+			verbCount++;
+			const ambig = detectUndifferentiatedHomonym(unit, DATA_SCHEMA);
+			if (ambig && ambig.length > 0) {
+				ambiguousCount++;
+				console.warn(`[AMBIGUOUS HOMONYM] ${pos} '${ko}' (Id: ${id}): ${ambig.join('; ')}`);
+			}
+		}
+
+		const hasSuppressDiversity = tags.some(t => {
+			const u = String(t).toUpperCase();
+			return u === 'SUPPRESS_SEMANTIC_DIVERSITY_WARNING' || u === 'SUPRESS_SEMANTIC_DIVERSITY_WARNING';
+		});
+
+		if (pos === "Descriptive Verb") {
+			for (const t of tags) {
+				if (t.startsWith("descriptive_") && !descriptiveTags.has(t)) {
+					unregTagCount++;
+					console.warn(`[UNREGISTERED TAG] Descriptive Verb '${ko}' (Id: ${id}): tag '${t}' not in DESCRIPTIVE_VERB_SPECS in korean.js`);
+				}
+			}
+			const cands = getSubjectCandidatesForDescriptiveVerb(unit);
+			const constraint = getVerbSemanticConstraint(unit, DATA_SCHEMA);
+			if (cands.length === 0) {
+				starvedCount++;
+				console.error(`[STARVATION] Descriptive Verb '${ko}' (Id: ${id}) has 0 candidate subjects under constraint '${constraint}'!`);
+			} else if (cands.length < 3 && !hasSuppressDiversity) {
+				lowDiversityCount++;
+				console.warn(`[LOW DIVERSITY] Descriptive Verb '${ko}' (Id: ${id}) has only ${cands.length} candidate(s): ${cands.map(c => c[DATA_SCHEMA.Korean]).join(', ')} under constraint '${constraint}'`);
+			}
+		} else if (pos === "Action Verb") {
+			for (const t of tags) {
+				if ((t.startsWith("transitive_") || t.startsWith("intransitive_") || t.startsWith("dative_")) && !actionTags.has(t)) {
+					unregTagCount++;
+					console.warn(`[UNREGISTERED TAG] Action Verb '${ko}' (Id: ${id}): tag '${t}' not in ACTION_VERB_SPECS in korean.js`);
+				}
+			}
+			const isPureIntransitive = hasTag(unit, "intransitive_general") || hasTag(unit, "intransitive_food");
+			if (!isPureIntransitive) {
+				const cands = getNounCandidatesForVerb(unit);
+				const constraint = getVerbSemanticConstraint(unit, DATA_SCHEMA);
+				if (cands.length === 0) {
+					starvedCount++;
+					console.error(`[STARVATION] Action Verb '${ko}' (Id: ${id}) has 0 candidate objects under constraint '${constraint}'!`);
+				} else if (cands.length < 3 && !hasSuppressDiversity) {
+					lowDiversityCount++;
+					console.warn(`[LOW DIVERSITY] Action Verb '${ko}' (Id: ${id}) has only ${cands.length} candidate(s): ${cands.map(c => c[DATA_SCHEMA.Korean]).join(', ')} under constraint '${constraint}'`);
+				}
+			}
+		}
+	}
+
+	console.log(`\n------------------------------------------------------`);
+	console.log(`Audited ${verbCount} verbs in ${path.basename(dataPath)}:`);
+	console.log(`  Unregistered selection tags : ${unregTagCount}`);
+	console.log(`  Starved verbs (0 candidates): ${starvedCount}`);
+	console.log(`  Low diversity (<3 candidates): ${lowDiversityCount}`);
+	console.log(`  Ambiguous homonym conflations: ${ambiguousCount}`);
+	console.log(`======================================================\n`);
+
+	return {
+		totalVerbs: verbCount,
+		unregisteredTags: unregTagCount,
+		starvedVerbs: starvedCount,
+		lowDiversityVerbs: lowDiversityCount,
+		ambiguousHomonyms: ambiguousCount,
+		format: 'text'
+	};
 }
 
 // --- WHERE Clause Evaluation ---
@@ -881,6 +1309,8 @@ function executeUpdateFromFile(inputFile, explicitCols = null, options = {}) {
 				}
 			}
 
+			validateLanguageUnitSemanticSelection(existing, KR_EN_languageUnits, DATA_SCHEMA, options);
+
 			const lineIdx = unitIndices[targetId];
 			const isLast = (targetId === unitIndices.length - 1);
 			lines[lineIdx] = formatUnitLine(existing, isLast);
@@ -906,6 +1336,7 @@ function executeUpdateFromFile(inputFile, explicitCols = null, options = {}) {
 				: (options.source || (rec.Source && rec.Source.trim()) || defaultSource);
 
 			const newUnit = buildUnitFromRecord(rec, resolvedSource, unitIndices.length + insertedCount, SCHEMA_COLUMNS);
+			validateLanguageUnitSemanticSelection(newUnit, KR_EN_languageUnits, DATA_SCHEMA, options);
 
 			// Find closing `];`
 			let closeIdx = lines.findIndex(l => l.trim().startsWith('];'));
@@ -1066,6 +1497,7 @@ function executeInsert(insertStr, options = {}) {
 		: (options.source || (record.Source && record.Source.trim()) || defaultSource);
 
 	const newUnit = buildUnitFromRecord(record, resolvedSource, unitIndices.length, SCHEMA_COLUMNS);
+	validateLanguageUnitSemanticSelection(newUnit, null, SCHEMA_COLUMNS, options);
 
 	let closeIdx = lines.findIndex(l => l.trim().startsWith('];'));
 	if (closeIdx === -1) closeIdx = lines.length;
@@ -1378,8 +1810,10 @@ function execute(commandStr, options = {}) {
 		const whereClause = trimmed.substring(5).replace(/^\s*WHERE\s*/i, '').trim();
 		const res = executeSelect(`SELECT Id WHERE ${whereClause}`, options);
 		return { count: res.count, format: 'text' };
+	} else if (upper.startsWith('AUDIT')) {
+		return auditSemanticRules(options);
 	} else {
-		throw new Error(`Unrecognized command: "${trimmed}". Expected SELECT, UPDATE, INSERT, DELETE, or COUNT.`);
+		throw new Error(`Unrecognized command: "${trimmed}". Expected SELECT, UPDATE, INSERT, DELETE, COUNT, or AUDIT.`);
 	}
 }
 
@@ -1421,6 +1855,11 @@ function runCli() {
 			}
 		} else if (arg.startsWith('--summary=')) {
 			summary = parseInt(arg.substring(10), 10) || 5;
+		} else if (arg === '--strict') {
+			options = options || {};
+			options.strict = true;
+		} else if (arg === '--audit' || arg === '--audit-semantic') {
+			filteredArgs.push('AUDIT');
 		} else if (arg === '-v' || arg === '--verbose') {
 			verbose = true;
 		} else {
@@ -1480,6 +1919,10 @@ module.exports = {
 	executeInsert,
 	executeDelete,
 	executeAddColumn,
+	auditSemanticRules,
+	validateLanguageUnitSemanticSelection,
+	detectUndifferentiatedHomonym,
+	getVerbSemanticConstraint,
 	formatResults,
 	loadData,
 	DATA_SCHEMA: SCHEMA_COLUMNS

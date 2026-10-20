@@ -226,14 +226,77 @@ function getNumberTokenOptions(baseTag, min, max, isAttributive) {
 // =========================================================================
 // 4. Verb Phrase Building & Argument Specs
 // =========================================================================
+/**
+ * SEMANTIC ARGUMENT SELECTION SCHEMA & TAXONOMY RULES
+ * ===================================================
+ * This subsystem governs how Action Verbs and Descriptive Verbs select their
+ * noun arguments (direct objects, nominal subjects, datives, or locations)
+ * to ensure semantic plausibility across sentence generation.
+ *
+ * 4-TIER ARGUMENT RESOLUTION HIERARCHY:
+ * -------------------------------------
+ * 1. TIER 1 - Embedded `collocation_filter` in SemanticVector:
+ *    - An inline JavaScript predicate (with validated header comment) that
+ *      runs against candidate nouns: `/*js:filter* / (n, hasTag) => ...`.
+ *    - Overrides coarse category tags and enforces fine-grained constraints
+ *      (e.g., negative exclusions like `!hasTag(n, "clothing")`).
+ *    - MUST maintain candidate diversity: every filter must leave >= 3 valid
+ *      candidate nouns in the curriculum to prevent lexical starvation.
+ *
+ * 2. TIER 2 - Granular Category Spec Matching:
+ *    - Matches selection tags on the verb against ACTION_VERB_SPECS or
+ *      DESCRIPTIVE_VERB_SPECS (e.g. `descriptive_taste` -> `food`, `transitive_clothing` -> `clothing`).
+ *    - Filters nouns in `data.js` having the target `nounTag`.
+ *
+ * 3. TIER 3 - Domain / Fallback Tag Matching:
+ *    - If `preferDomain: true`, prioritizes nouns whose `SemanticVector.domain`
+ *      matches the selection domain.
+ *    - If 0 nouns match `nounTag`, cascades to `fallbackTag` (e.g. `drink` for taste).
+ *
+ * 4. TIER 4 - Global Lexicon Fallback:
+ *    - If all prior tiers yield 0 candidates, falls back to nouns tagged `object`
+ *      (or general nouns excluding `measureWord`).
+ *
+ * -------------------------------------------------------------------------
+ * HOW TO ADD A NEW SEMANTIC SELECTION TAG WITH NEW RULES (FOR LLMS & DEVS):
+ * -------------------------------------------------------------------------
+ * When introducing a new verb or adjective that requires restricted argument
+ * selection (e.g. `transitive_cosmetics` or `descriptive_luminosity`):
+ *
+ * STEP 1: Verify Noun Taxonomy in data.js
+ *   Ensure the vocabulary has at least 3 nouns tagged with the target noun category
+ *   (e.g. `cosmetics` or `lightSource`). If not, tag appropriate nouns via `select.js`.
+ *
+ * STEP 2: Register the Rule in korean.js
+ *   Add a spec object to ACTION_VERB_SPECS or DESCRIPTIVE_VERB_SPECS below:
+ *     // For Action Verbs:
+ *     { tag: "transitive_cosmetics", nounTag: "cosmetics", particle: "object", fallbackTag: "accessory" }
+ *     // For Descriptive Verbs:
+ *     { tag: "descriptive_luminosity", nounTag: "lightSource", fallbackTag: "room" }
+ *
+ * STEP 3: Tag the Verb in data.js
+ *   Assign the registered tag (e.g. `transitive_cosmetics`) to the verb's SemanticTags.
+ *   Use select.js to apply the update:
+ *     node select.js "UPDATE KR_EN_languageUnits SET SemanticTags = [...] WHERE Korean = '...'"
+ *
+ * STEP 4: Add Negative Exclusions via collocation_filter (If Needed)
+ *   If single-tag matching is too permissive (e.g. you need to exclude specific subcategories):
+ *   Set `collocation_filter` in the verb's SemanticVector with the mandatory `/*js:filter* /` header:
+ *     '{"domain":"...", "collocation_filter":"/*js:filter* / (n, hasTag) => hasTag(n, \"cosmetics\") && !hasTag(n, \"clothing\")"}'
+ *
+ * STEP 5: Validate and Verify
+ *   Run the automated test suites to ensure 0 regressions and >= 3 candidates:
+ *     node collocation_test.js
+ *     node test.js
+ */
 const ACTION_VERB_SPECS = [
 	// Apparel (Fine-grained)
 	{ tag: "transitive_clothing", nounTag: "clothing", particle: "object" },
 	{ tag: "transitive_footwear", nounTag: "footwear", particle: "object" },
 	{ tag: "transitive_headwear", nounTag: "headwear", particle: "object" },
-	{ tag: "transitive_handwear", nounTag: "handwear", particle: "object" },
-	{ tag: "transitive_neckwear", nounTag: "neckwear", particle: "object" },
-	{ tag: "transitive_watch", nounTag: "watch", particle: "object" },
+	{ tag: "transitive_handwear", nounTag: "handwear", particle: "object", fallbackTag: "accessory" },
+	{ tag: "transitive_neckwear", nounTag: "neckwear", particle: "object", fallbackTag: "accessory" },
+	{ tag: "transitive_watch", nounTag: "watch", particle: "object", fallbackTag: "accessory" },
 	{ tag: "transitive_wearable", nounTag: "wearable", particle: "object" },
 
 	// Consumption
@@ -244,47 +307,137 @@ const ACTION_VERB_SPECS = [
 	{ tag: "transitive_reading", nounTag: "reading", particle: "object" },
 	{ tag: "transitive_visual", nounTag: "visual_media", particle: "object" },
 	{ tag: "transitive_audio", nounTag: "audio", particle: "object" },
-	{ tag: "transitive_song", nounTag: "song", particle: "object" },
+	{ tag: "transitive_song", nounTag: "song", particle: "object", fallbackTag: "person" },
 	{ tag: "transitive_writing", nounTag: "writing", particle: "object" },
+	{ tag: "transitive_language", nounTag: "language", particle: "object" },
+	{ tag: "transitive_information", nounTag: "abstract", particle: "object", fallbackTag: "education" },
+
+	// Activities & Sports
+	{ tag: "transitive_activity", nounTag: "activity", particle: "object" },
+	{ tag: "transitive_instrument", nounTag: "instrument", particle: "object" },
+	{ tag: "transitive_sports", nounTag: "racketSports", particle: "object", fallbackTag: "sports" },
 
 	// Vehicles & Transportation
 	{ tag: "transitive_vehicle", nounTag: "vehicle", particle: "object" },
 	{ tag: "transitive_transportation", nounTag: "transportation", particle: "object" },
 
-	// Sports & Music
-	{ tag: "transitive_instrument", nounTag: "instrument", particle: "object" },
-	{ tag: "transitive_sports", nounTag: "racketSports", particle: "object", fallbackTag: "sports" },
-
 	// Hygiene & Chores
-	{ tag: "transitive_teeth", nounTag: "teeth", particle: "object" },
+	{ tag: "transitive_teeth", nounTag: "teeth", particle: "object", fallbackTag: "bodyPart" },
 	{ tag: "transitive_bodyPart", nounTag: "bodyPart", particle: "object" },
 	{ tag: "transitive_room", nounTag: "room", particle: "object" },
 
 	// Social & General
 	{ tag: "transitive_person", nounTag: "person", particle: "object" },
+	{ tag: "transitive_social", nounTag: "person", particle: "object" },
 	{ tag: "dative_person", nounTag: "person", particle: "dative" },
 	{ tag: "transitive_place", nounTag: "place", particle: "object", preferDomain: true },
+	{ tag: "transitive_object", nounTag: "object", particle: "object" },
 	{ tag: "transitive_general", nounTag: "object", particle: "object", fallbackTag: null },
+
+	// Intransitive Motion & Location
 	{ tag: "intransitive_motion", nounTag: "place", particle: "location", preferDomain: true },
-	{ tag: "intransitive_place", nounTag: "place", particle: "location", preferDomain: true }
+	{ tag: "intransitive_place", nounTag: "place", particle: "location", preferDomain: true },
+	{ tag: "intransitive_person", nounTag: "person", particle: "subject" },
+	{ tag: "intransitive_social", nounTag: "person", particle: "subject" },
+	{ tag: "intransitive_food", nounTag: null, particle: null },
+	{ tag: "intransitive_general", nounTag: null, particle: null }
 ];
 
 const DESCRIPTIVE_VERB_SPECS = [
-	{ tag: "descriptive_food", nounTag: "food" },
+	// Taste / Flavor (food, drinks)
+	{ tag: "descriptive_taste", nounTag: "food", fallbackTag: "drink", preferDomain: true },
+
+	// Weather / Atmosphere / Climate
+	{ tag: "descriptive_weather", nounTag: "weather" },
+
+	// Tactile & Liquid Temperature (water, drinks, food)
+	{ tag: "descriptive_tactile_temperature", nounTag: "drink", fallbackTag: "food" },
+
+	// Physical Dimensions: Spatial (rooms, houses, streets, roads)
+	{ tag: "descriptive_dimension_spatial", nounTag: "room", fallbackTag: "place" },
+
+	// Physical Dimensions: Linear Length (clothing, time, distance, lines)
+	{ tag: "descriptive_dimension_length", nounTag: "clothing", fallbackTag: "time" },
+
+	// Physical Dimensions: Height (mountains, buildings, elevation)
+	{ tag: "descriptive_dimension_height", nounTag: "mountain", fallbackTag: "building" },
+
+	// Physical Dimensions: Weight (luggage, books, bags)
+	{ tag: "descriptive_dimension_weight", nounTag: "luggage", fallbackTag: "object" },
+
+	// Physical Dimensions: Thickness (clothing, books)
+	{ tag: "descriptive_dimension_thickness", nounTag: "clothing", fallbackTag: "book" },
+
+	// Physical Dimensions: General Scale / Size (rooms, buildings, objects)
+	{ tag: "descriptive_dimension_scale", nounTag: "room", fallbackTag: "object" },
+
+	// Price & Cost (clothing, commodities, food)
+	{ tag: "descriptive_price", nounTag: "clothing", fallbackTag: "commodity" },
+
+	// Cleanliness & Hygiene (rooms, places, facilities)
+	{ tag: "descriptive_cleanliness", nounTag: "room", fallbackTag: "place" },
+
+	// Acoustics & Noise (rooms, places, neighborhoods)
+	{ tag: "descriptive_acoustic", nounTag: "room", fallbackTag: "place" },
+
+	// Psychological & Emotional State (people, heart, mood)
+	{ tag: "descriptive_emotion", nounTag: "person", fallbackTag: "emotion" },
+
+	// Personal Traits & Animate Characteristics (strictly people)
+	{ tag: "descriptive_person_trait", nounTag: "person" },
 	{ tag: "descriptive_person", nounTag: "person" },
+
+	// Difficulty & Comprehension (languages, tasks, exams)
+	{ tag: "descriptive_difficulty", nounTag: "education", fallbackTag: "abstract" },
+
+	// Speed & Velocity (vehicles, people)
+	{ tag: "descriptive_speed", nounTag: "vehicle", fallbackTag: "person" },
+
+	// Color & Visual Appearance (clothing, nature, objects)
+	{ tag: "descriptive_color", nounTag: "clothing", fallbackTag: "nature" },
+	{ tag: "descriptive_appearance", nounTag: "clothing", fallbackTag: "person" },
+
+	// Locations & Facilities
 	{ tag: "descriptive_place", nounTag: "place" },
+
+	// Food (General)
+	{ tag: "descriptive_food", nounTag: "food" },
+
+	// Fallback general object
 	{ tag: "descriptive_general", nounTag: "object", fallbackTag: null }
 ];
 
 /**
- * Parses and validates the header of a collocation_filter string.
- * Format expected: /*<lang>[:<subtype>]* / <code>
- * Currently required language: 'js' (e.g., /*js:filter* / or /*js* /).
+ * Parses and validates the comment header of a `collocation_filter` string.
+ *
+ * HOW COLLOCATION_FILTER WORKS:
+ * ------------------------------
+ * The `collocation_filter` is an embedded executable predicate stored inside
+ * the JSON `SemanticVector` column of `data.js` on specific language units:
+ *   e.g.: '{"domain":"food", "collocation_filter":"/*js:filter* / (n, hasTag) => hasTag(n, \"food\") && !hasTag(n, \"facility\")"}'
+ *
+ * INTERPLAY WITH SEMANTIC TAG RESTRICTIONS:
+ * -----------------------------------------
+ * 1. Tier 1 Precedence: If defined, `collocation_filter` executes BEFORE and
+ *    overrides coarse single-tag specs (Tier 2).
+ * 2. Expressive Relational Constraints: Enables negative exclusions
+ *    (`!hasTag(n, 'clothing')`), multi-tag conjunctions/disjunctions, and
+ *    fine-grained domain gating impossible with simple flat tags.
+ * 3. Candidate Diversity Contract: Every filter must evaluate to >= 3 valid
+ *    candidate nouns in the current vocabulary to prevent lexical starvation
+ *    and monotonous sentence generation.
+ * 4. Header Comment Specification:
+ *    - Format: `/*<lang>[:<subtype>]* / <code>`
+ *    - Required Language: Must start with `'js'` (e.g. `/*js:filter* /` or `/*js* /`).
+ *    - Security & DSL Extensibility: Validates the language header so that
+ *      missing or unrecognized headers trigger immediate, descriptive errors.
+ *      This prevents malformed scripts and prepares the architecture for future
+ *      declarative or regular expression DSLs (e.g. `/*dsl:tag* /`).
  *
  * @param {string} filterStr - The raw filter string from SemanticVector.
- * @param {number|string} verbId - Optional verb ID for error reporting.
- * @returns {{ lang: string, subtype: string, code: string }}
- * @throws {Error} If header is missing, malformed, or language is not 'js'.
+ * @param {number|string} verbId - Optional verb ID for error diagnostics.
+ * @returns {{ lang: string, subtype: string, code: string }} Parsed header metadata and executable code body.
+ * @throws {Error} If header is missing, malformed, or specifies an unsupported language.
  */
 function parseAndValidateCollocationFilter(filterStr, verbId = "unknown") {
 	if (typeof filterStr !== 'string') {
@@ -340,6 +493,52 @@ function getNounCandidatesForVerb(verbUnit) {
 	// 3. Fallback to ACTION_VERB_SPECS based on SemanticTags
 	for (const spec of ACTION_VERB_SPECS) {
 		if (hasTag(verbUnit, spec.tag)) {
+			let words = getFilteredWords("Noun", spec.nounTag).filter(n => !hasTag(n, "measureWord"));
+			if (spec.preferDomain) {
+				const domainWords = words.filter(w => parseSemanticVector(w).domain);
+				if (domainWords.length > 0) words = domainWords;
+			}
+			if (words.length === 0 && spec.fallbackTag !== undefined) {
+				words = getFilteredWords("Noun", spec.fallbackTag || undefined).filter(n => !hasTag(n, "measureWord"));
+			}
+			if (words.length > 0) return words;
+		}
+	}
+
+	let fallback = getFilteredWords("Noun", "object").filter(n => !hasTag(n, "measureWord"));
+	if (fallback.length === 0) fallback = getFilteredWords("Noun").filter(n => !hasTag(n, "measureWord"));
+	return fallback;
+}
+
+function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
+	const sv = parseSemanticVector(dvUnit);
+
+	// 1. Embedded executable JavaScript filter in SemanticVector
+	if (sv && typeof sv.collocation_filter === 'string') {
+		try {
+			const { lang, code } = parseAndValidateCollocationFilter(sv.collocation_filter, dvUnit[DATA_SCHEMA.Id]);
+			if (lang === 'js') {
+				const filterFn = new Function('noun', 'hasTag', `return (${code})(noun, hasTag);`);
+				const allNouns = getFilteredWords("Noun");
+				const matched = allNouns.filter(n => {
+					try { return filterFn(n, hasTag); } catch (e) { return false; }
+				});
+				if (matched.length > 0) return matched;
+			}
+		} catch (e) {
+			console.error(`Failed to execute collocation_filter on descriptive unit ${dvUnit[DATA_SCHEMA.Id]}:`, e.message || e);
+		}
+	}
+
+	// 2. Explicit semantic vector requirement (sv.req)
+	if (sv && sv.req && sv.req !== 'any') {
+		const reqNouns = getFilteredWords("Noun", sv.req).filter(n => !hasTag(n, "measureWord"));
+		if (reqNouns.length > 0) return reqNouns;
+	}
+
+	// 3. Fallback to DESCRIPTIVE_VERB_SPECS based on SemanticTags
+	for (const spec of DESCRIPTIVE_VERB_SPECS) {
+		if (hasTag(dvUnit, spec.tag)) {
 			let words = getFilteredWords("Noun", spec.nounTag).filter(n => !hasTag(n, "measureWord"));
 			if (spec.preferDomain) {
 				const domainWords = words.filter(w => parseSemanticVector(w).domain);
@@ -422,10 +621,12 @@ function buildActionVerbPhrase(word, stem, chosenNoun = null) {
 }
 
 function buildDescriptiveVerbPhrase(word, stem, chosenNoun = null) {
-	const spec = DESCRIPTIVE_VERB_SPECS.find(s => hasTag(word, s.tag));
-	if (!spec) return { text: stem, noun: null };
-
-	const noun = chosenNoun || findNounForVerbTag(spec);
+	let noun = chosenNoun;
+	if (!noun) {
+		const candidates = getSubjectCandidatesForDescriptiveVerb(word);
+		noun = getRandom(candidates);
+		if (noun) markUnitUsed(noun);
+	}
 	if (!noun) return { text: stem, noun: null };
 
 	const nounKo = typeof noun === 'string' ? noun : noun[DATA_SCHEMA.Korean];
@@ -565,14 +766,12 @@ function getTokenOptions(token, depth = 0) {
 	} else if (token.type === "VP_DVst") {
 		getFilteredWords("Descriptive Verb", token.tag).forEach(dv => {
 			const stem = getConjugatedStem(dv[KoreanWord], dv[Conjugation]);
-			if (hasTag(dv, "descriptive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
-			if (hasTag(dv, "descriptive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
-			if (hasTag(dv, "descriptive_place")) getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
-			if (hasTag(dv, "descriptive_general")) {
-				let nouns = getFilteredWords("Noun", "object");
-				if (nouns.length === 0) nouns = getFilteredWords("Noun");
-				nouns.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}이/가 ${stem}`, [dv, n])));
-			}
+			const candidates = getSubjectCandidatesForDescriptiveVerb(dv);
+			candidates.forEach(n => {
+				const nounKo = n[KoreanWord];
+				const phrase = `${attachParticle(nounKo, "subject")} ${stem}`;
+				options.push(new TokenOption(phrase, [dv, n]));
+			});
 		});
 	}
 
@@ -1411,7 +1610,9 @@ const exportedMembers = {
 	deduplicateTokenOptions,
 	getConjugatedStem,
 	ACTION_VERB_SPECS,
+	DESCRIPTIVE_VERB_SPECS,
 	getNounCandidatesForVerb,
+	getSubjectCandidatesForDescriptiveVerb,
 	getVerbParticleType,
 	parseAndValidateCollocationFilter
 };

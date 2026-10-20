@@ -49,6 +49,7 @@ const SCHEMA_ANALYSIS_PATH = path.resolve(__dirname, 'schema_analysis.js');
 const EXHAUSTIVE_PATH = path.resolve(__dirname, 'exhaustive.js');
 const TEXT_ANALYZER_PATH = path.resolve(__dirname, 'text_analyzer.js');
 const STUDYTEXTS_PATH = path.resolve(__dirname, 'studytexts.js');
+const { validateLanguageUnitSemanticSelection } = require('./select.js');
 
 // Known fully-ingested passages that must ALWAYS have 0 gaps (regression tests)
 const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", "studytext22"];
@@ -137,6 +138,15 @@ try {
 				}
 			} catch (jsonErr) {
 				failFast("Stage 1 (Data Integrity)", `Invalid JSON in SemanticVector at ID ${id} (${ko}): ${jsonErr.message}\nContent: ${vec}`);
+			}
+		}
+
+		// Semantic argument selection rules & collocation filter validation
+		if (pos === "Descriptive Verb" || pos === "Action Verb") {
+			try {
+				validateLanguageUnitSemanticSelection(unit, KR_EN_languageUnits, DATA_SCHEMA, { strict: true, strictAmbiguity: true });
+			} catch (selErr) {
+				failFast("Stage 1 (Data Integrity)", selErr.message);
 			}
 		}
 	}
