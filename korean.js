@@ -227,14 +227,44 @@ function getNumberTokenOptions(baseTag, min, max, isAttributive) {
 // 4. Verb Phrase Building & Argument Specs
 // =========================================================================
 const ACTION_VERB_SPECS = [
+	// Apparel (Fine-grained)
+	{ tag: "transitive_clothing", nounTag: "clothing", particle: "object" },
+	{ tag: "transitive_footwear", nounTag: "footwear", particle: "object" },
+	{ tag: "transitive_headwear", nounTag: "headwear", particle: "object" },
+	{ tag: "transitive_handwear", nounTag: "handwear", particle: "object" },
+	{ tag: "transitive_neckwear", nounTag: "neckwear", particle: "object" },
+	{ tag: "transitive_watch", nounTag: "watch", particle: "object" },
+	{ tag: "transitive_wearable", nounTag: "wearable", particle: "object" },
+
+	// Consumption
 	{ tag: "transitive_food", nounTag: "food", particle: "object", preferDomain: true },
 	{ tag: "transitive_drink", nounTag: "drink", particle: "object", preferDomain: true },
+
+	// Media, Arts & Communication
+	{ tag: "transitive_reading", nounTag: "reading", particle: "object" },
+	{ tag: "transitive_visual", nounTag: "visual_media", particle: "object" },
+	{ tag: "transitive_audio", nounTag: "audio", particle: "object" },
+	{ tag: "transitive_song", nounTag: "song", particle: "object" },
+	{ tag: "transitive_writing", nounTag: "writing", particle: "object" },
+
+	// Vehicles & Transportation
+	{ tag: "transitive_vehicle", nounTag: "vehicle", particle: "object" },
+	{ tag: "transitive_transportation", nounTag: "transportation", particle: "object" },
+
+	// Sports & Music
+	{ tag: "transitive_instrument", nounTag: "instrument", particle: "object" },
+	{ tag: "transitive_sports", nounTag: "racketSports", particle: "object", fallbackTag: "sports" },
+
+	// Hygiene & Chores
+	{ tag: "transitive_teeth", nounTag: "teeth", particle: "object" },
+	{ tag: "transitive_bodyPart", nounTag: "bodyPart", particle: "object" },
+	{ tag: "transitive_room", nounTag: "room", particle: "object" },
+
+	// Social & General
 	{ tag: "transitive_person", nounTag: "person", particle: "object" },
 	{ tag: "dative_person", nounTag: "person", particle: "dative" },
-	{ tag: "transitive_general", nounTag: "object", particle: "object", fallbackTag: null },
-	{ tag: "transitive_sports", nounTag: "sports", particle: "object", fallbackTag: "activity" },
-	{ tag: "transitive_transportation", nounTag: "transportation", particle: "object" },
 	{ tag: "transitive_place", nounTag: "place", particle: "object", preferDomain: true },
+	{ tag: "transitive_general", nounTag: "object", particle: "object", fallbackTag: null },
 	{ tag: "intransitive_motion", nounTag: "place", particle: "location", preferDomain: true },
 	{ tag: "intransitive_place", nounTag: "place", particle: "location", preferDomain: true }
 ];
@@ -245,6 +275,95 @@ const DESCRIPTIVE_VERB_SPECS = [
 	{ tag: "descriptive_place", nounTag: "place" },
 	{ tag: "descriptive_general", nounTag: "object", fallbackTag: null }
 ];
+
+/**
+ * Parses and validates the header of a collocation_filter string.
+ * Format expected: /*<lang>[:<subtype>]* / <code>
+ * Currently required language: 'js' (e.g., /*js:filter* / or /*js* /).
+ *
+ * @param {string} filterStr - The raw filter string from SemanticVector.
+ * @param {number|string} verbId - Optional verb ID for error reporting.
+ * @returns {{ lang: string, subtype: string, code: string }}
+ * @throws {Error} If header is missing, malformed, or language is not 'js'.
+ */
+function parseAndValidateCollocationFilter(filterStr, verbId = "unknown") {
+	if (typeof filterStr !== 'string') {
+		throw new Error(`Invalid collocation_filter on unit ${verbId}: expected string, got ${typeof filterStr}.`);
+	}
+	const trimmed = filterStr.trim();
+	const headerMatch = trimmed.match(/^\/\*\s*([a-zA-Z0-9_-]+)(?::([^\*]+))?\s*\*\/\s*([\s\S]*)$/);
+	if (!headerMatch) {
+		throw new Error(`Invalid collocation_filter on unit ${verbId}: missing or malformed header comment. Expected /*js:...*/ or /*js*/.`);
+	}
+
+	const lang = headerMatch[1].toLowerCase();
+	const subtype = (headerMatch[2] || "").trim();
+	const code = headerMatch[3].trim();
+
+	if (lang !== 'js') {
+		throw new Error(`Unsupported collocation_filter language '${headerMatch[1]}' on unit ${verbId}. Expected 'js' (e.g. /*js:filter*/).`);
+	}
+
+	if (!code) {
+		throw new Error(`Empty code body in collocation_filter on unit ${verbId}.`);
+	}
+
+	return { lang, subtype, code };
+}
+
+function getNounCandidatesForVerb(verbUnit) {
+	const sv = parseSemanticVector(verbUnit);
+
+	// 1. Embedded executable JavaScript filter in SemanticVector
+	if (sv && typeof sv.collocation_filter === 'string') {
+		try {
+			const { lang, code } = parseAndValidateCollocationFilter(sv.collocation_filter, verbUnit[DATA_SCHEMA.Id]);
+			if (lang === 'js') {
+				const filterFn = new Function('noun', 'hasTag', `return (${code})(noun, hasTag);`);
+				const allNouns = getFilteredWords("Noun");
+				const matched = allNouns.filter(n => {
+					try { return filterFn(n, hasTag); } catch (e) { return false; }
+				});
+				if (matched.length > 0) return matched;
+			}
+		} catch (e) {
+			console.error(`Failed to execute collocation_filter on unit ${verbUnit[DATA_SCHEMA.Id]}:`, e.message || e);
+		}
+	}
+
+	// 2. Explicit semantic vector requirement (sv.req)
+	if (sv && sv.req) {
+		const reqNouns = getFilteredWords("Noun", sv.req).filter(n => !hasTag(n, "measureWord"));
+		if (reqNouns.length > 0) return reqNouns;
+	}
+
+	// 3. Fallback to ACTION_VERB_SPECS based on SemanticTags
+	for (const spec of ACTION_VERB_SPECS) {
+		if (hasTag(verbUnit, spec.tag)) {
+			let words = getFilteredWords("Noun", spec.nounTag).filter(n => !hasTag(n, "measureWord"));
+			if (spec.preferDomain) {
+				const domainWords = words.filter(w => parseSemanticVector(w).domain);
+				if (domainWords.length > 0) words = domainWords;
+			}
+			if (words.length === 0 && spec.fallbackTag !== undefined) {
+				words = getFilteredWords("Noun", spec.fallbackTag || undefined).filter(n => !hasTag(n, "measureWord"));
+			}
+			if (words.length > 0) return words;
+		}
+	}
+
+	let fallback = getFilteredWords("Noun", "object").filter(n => !hasTag(n, "measureWord"));
+	if (fallback.length === 0) fallback = getFilteredWords("Noun").filter(n => !hasTag(n, "measureWord"));
+	return fallback;
+}
+
+function getVerbParticleType(verbUnit) {
+	if (hasTag(verbUnit, "dative_person")) return "dative";
+	if (hasTag(verbUnit, "intransitive_motion", "intransitive_place")) return "location";
+	const spec = ACTION_VERB_SPECS.find(s => hasTag(verbUnit, s.tag));
+	if (spec && spec.particle) return spec.particle;
+	return "object";
+}
 
 function findNounForVerbTag(spec) {
 	let words = getFilteredWords("Noun", spec.nounTag);
@@ -273,19 +392,33 @@ function attachParticle(nounKo, particleType) {
 }
 
 function buildActionVerbPhrase(word, stem, chosenNoun = null) {
-	let spec = null;
-	if (hasTag(word, "transitive_food") || hasTag(word, "transitive_drink")) {
-		spec = hasTag(word, "transitive_food") ? ACTION_VERB_SPECS[0] : ACTION_VERB_SPECS[1];
-	} else {
-		spec = ACTION_VERB_SPECS.find(s => hasTag(word, s.tag));
-	}
-	if (!spec) return { text: stem, noun: null };
+	const isPureIntransitive = (hasTag(word, "intransitive_general") || hasTag(word, "intransitive_motion") || hasTag(word, "intransitive_place"))
+		&& !ACTION_VERB_SPECS.some(s => s.particle === "object" && hasTag(word, s.tag))
+		&& !parseSemanticVector(word).collocation_filter;
 
-	const noun = chosenNoun || findNounForVerbTag(spec);
+	if (isPureIntransitive) {
+		if (hasTag(word, "intransitive_motion") || hasTag(word, "intransitive_place")) {
+			const placeNoun = chosenNoun || getRandom(getFilteredWords("Noun", "place")) || getRandom(getWords("Noun", "place"));
+			if (placeNoun) {
+				markUnitUsed(placeNoun);
+				const nounKo = typeof placeNoun === 'string' ? placeNoun : placeNoun[DATA_SCHEMA.Korean];
+				return { text: `${attachParticle(nounKo, "location")} ${stem}`, noun: placeNoun };
+			}
+		}
+		return { text: stem, noun: null };
+	}
+
+	let noun = chosenNoun;
+	if (!noun) {
+		const candidates = getNounCandidatesForVerb(word);
+		noun = getRandom(candidates);
+		if (noun) markUnitUsed(noun);
+	}
 	if (!noun) return { text: stem, noun: null };
 
 	const nounKo = typeof noun === 'string' ? noun : noun[DATA_SCHEMA.Korean];
-	return { text: `${attachParticle(nounKo, spec.particle)} ${stem}`, noun };
+	const particleType = getVerbParticleType(word);
+	return { text: `${attachParticle(nounKo, particleType)} ${stem}`, noun };
 }
 
 function buildDescriptiveVerbPhrase(word, stem, chosenNoun = null) {
@@ -406,30 +539,28 @@ function getTokenOptions(token, depth = 0) {
 	} else if (token.type === "VP_AVst") {
 		getFilteredWords("Action Verb", token.tag).forEach(av => {
 			const stem = getConjugatedStem(av[KoreanWord], av[Conjugation]);
-			if (hasTag(av, "transitive_food")) getFilteredWords("Noun", "food").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-			if (hasTag(av, "transitive_drink")) getFilteredWords("Noun", "drink").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-			if (hasTag(av, "transitive_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-			if (hasTag(av, "dative_person")) getFilteredWords("Noun", "person").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}에게 ${stem}`, [av, n])));
-			if (hasTag(av, "transitive_general")) {
-				let objs = getFilteredWords("Noun", "object");
-				if (objs.length === 0) objs = getFilteredWords("Noun");
-				objs.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
+			const isPureIntransitive = (hasTag(av, "intransitive_general") || hasTag(av, "intransitive_motion") || hasTag(av, "intransitive_place"))
+				&& !ACTION_VERB_SPECS.some(s => s.particle === "object" && hasTag(av, s.tag))
+				&& !parseSemanticVector(av).collocation_filter;
+
+			if (isPureIntransitive) {
+				if (hasTag(av, "intransitive_motion") || hasTag(av, "intransitive_place")) {
+					getFilteredWords("Noun", "place").forEach(n => {
+						options.push(new TokenOption(`${n[KoreanWord]}에 ${stem}`, [av, n]));
+					});
+				} else {
+					options.push(new TokenOption(stem, [av]));
+				}
+				return;
 			}
-			if (hasTag(av, "transitive_sports")) {
-				let sports = getFilteredWords("Noun", "sports");
-				if (sports.length === 0) sports = getFilteredWords("Noun", "activity");
-				sports.forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-			}
-			if (hasTag(av, "transitive_transportation")) {
-				getFilteredWords("Noun", "transportation").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-			}
-			if (hasTag(av, "transitive_place")) {
-				getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}을/를 ${stem}`, [av, n])));
-			}
-			if (hasTag(av, "intransitive_motion") || hasTag(av, "intransitive_place")) {
-				getFilteredWords("Noun", "place").forEach(n => options.push(new TokenOption(`${n[KoreanWord]}에 ${stem}`, [av, n])));
-			}
-			if (hasTag(av, "intransitive_general")) options.push(new TokenOption(stem, [av]));
+
+			const particleType = getVerbParticleType(av);
+			const nouns = getNounCandidatesForVerb(av);
+			nouns.forEach(n => {
+				const nounKo = n[KoreanWord];
+				const phrase = `${attachParticle(nounKo, particleType)} ${stem}`;
+				options.push(new TokenOption(phrase, [av, n]));
+			});
 		});
 	} else if (token.type === "VP_DVst") {
 		getFilteredWords("Descriptive Verb", token.tag).forEach(dv => {
@@ -1278,7 +1409,11 @@ const exportedMembers = {
 	KOREAN_NUMBER_VALUES,
 	TokenOption,
 	deduplicateTokenOptions,
-	getConjugatedStem
+	getConjugatedStem,
+	ACTION_VERB_SPECS,
+	getNounCandidatesForVerb,
+	getVerbParticleType,
+	parseAndValidateCollocationFilter
 };
 
 if (typeof window !== 'undefined') {
