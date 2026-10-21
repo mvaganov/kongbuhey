@@ -28,18 +28,25 @@ Contains the 12-element schema array for Language Units (Vocabulary and Grammar)
 * **File Layout & LLM Tooling**: Functional logic (`DATA_SCHEMA`, in-memory cache engine, `addLearningUnit`, `getWords`, `hasTag`) is positioned at the top of `data.js` (lines 1–150) above `KR_EN_languageUnits`. Agents must use `select.js` to query, count, or modify data rows rather than reading the data array directly.
 
 * **Current Dataset Status:** 
-  - **1,663 units (100% complete curriculum from words0.js and words1.js + study texts)**: Covers `SUOBI00` through `SUOBI20` from `words0.js`, all 40 classes (`class2011` through `class2202`) from `words1.js`, and ingested study texts (`studytext12`, `studytext21`, `studytext22`).
+  - **1,693 units (100% complete curriculum from words0.js, words1.js, study texts, and canonical semantic units)**: Sequential IDs 0..1692. Covers `SUOBI00` through `SUOBI20`, all 40 classes (`class2011` through `class2202`), and ingested study texts (`studytext12`, `studytext21`, `studytext22`).
+  - **Single Point of Truth in `data.js`**: All Korean vocabulary, counting systems, honorific titles, institutions, directional/origin/humble verbs, particle allomorphs, and pronoun sandhi rules reside exclusively in `data.js`:
+    - `elder_noun` semantic tag assigns elder status to senior kinship and titles (`선생님`, `교수님`, `부모님`, `어머니`, `아버지`, `할머니`, `할아버지`, `사장님`, `어르신`, `선배`, `부장`, `팀장`, `작은아버지`, `작은어머니`, `큰아버지`, `큰어머니`, etc.).
+    - `inanimate_institution` tag marks facilities and organizations (`회사`, `은행`, `학교`, `병원`, `우체국`, `경찰서`, `대사관`, `소방서`, `구청`, etc.).
+    - `locative_origin`, `locative_goal`, `locative_static`, and `dative_humble` dynamically populate directional, existence, and humble verb sets without hardcoded Hangul.
+    - `Number` units define numeric values directly in `SemanticVector` (`sv.value`), dynamically constructing Sino and Pure Korean digit arrays, tens, cardinal/attributive forms, and value lookup maps at initialization.
+    - `Grammar` units specify `allomorph_pair` and `allomorph_patterns` in `SemanticVector`, dynamically compiling `PARTICLE_PAIRS` and regex concord rules in `korean.js`.
+    - `Pronoun` units specify `sandhi` transformation rules in `SemanticVector`, dynamically compiling `PRONOUN_REPLACEMENTS`.
   - **Homonym Disambiguation Architecture**: Undifferentiated homonyms with divergent semantic selection constraints are cleanly separated into distinct language units (conforming to the multi-entry model of `이` [Id 237 number, Id 361 teeth, Id 1618 determiner]):
     - `치다`: Unit 396 (racket/cue sports: golf, tennis, ping-pong, billiards, bowling; `transitive_sports`) vs Unit 1486 (musical instruments: piano, guitar, drums; `transitive_instrument`).
     - `부치다`: Unit 1321 (postal mail/send: letters, parcels; `transitive_general`, `postal`) vs Unit 1658 (culinary griddle/fry pancake: jeon, pancake, egg; `transitive_food`, `cooking`).
     - `연기하다`: Unit 1503 (schedule delay/postpone; `transitive_general`, `schedule`) vs Unit 1659 (theatrical act/perform; `intransitive_general`, `theater`, `art`).
     - `개다`: Unit 1560 (weather clear up; `intransitive_general`, `weather`) vs Unit 1660 (domestic fold clothes/bedding; `transitive_clothing`, `chore`).
-    - `내리다`: Unit 667 (transit alight/get off vehicle; `intransitive_general`, `transportation`) vs Unit 1567 (meteorological precipitation fall: rain, snow; `weather`, `intransitive_general`).
+    - `내리다`: Unit 667 (transit alight/get off vehicle; `intransitive_general`, `transportation`, `locative_origin`) vs Unit 1567 (meteorological precipitation fall: rain, snow; `weather`, `intransitive_general`, `locative_origin`).
     - `끼다`: Unit 1565 (wearable: gloves, ring; `transitive_handwear`) vs Unit 1657 (meteorological accumulation: fog, clouds; `weather`, `intransitive_general`).
   - **Automated Ambiguity & Diversity Safeguards**: `select.js` and `test.js` actively enforce:
     1. Zero conflated homonym verbs with cross-domain tag conflicts or divergent definitions.
-    2. Strict candidate diversity ($\ge 3$ candidates per verb). Specialized single-target verbs (`닦다`, `부르다`, `차다`, `끼다`) are explicitly tagged with `SUPPRESS_SEMANTIC_DIVERSITY_WARNING` (case-insensitive, also supporting `SUPRESS_SEMANTIC_DIVERSITY_WARNING`), while other categories were expanded with authentic vocabulary (`팔찌` 1661 for `차다`, `스카프` 1662 for `매다`).
-  - Sentence validation: 100% pass rate with 0 errors across Cartesian test suites (`node test.js`, 5,164 generated sentences; `collocation_test.js`, 732 assertions across 13 suites).
+    2. Strict candidate diversity ($\ge 3$ candidates per verb). Specialized single-target verbs (`닦다`, `부르다`, `차다`, `끼다`) are explicitly tagged with `SUPPRESS_SEMANTIC_DIVERSITY_WARNING`.
+  - Sentence validation: 100% pass rate with 0 errors across Cartesian test suites (`node test.js`, 5 suites passed; `collocation_test.js`, 732 assertions; `particle_concord_test.js`, 128 assertions; `test/dynamic_semantic_sets_test.js`, 9 assertions).
 
 ### 2. `korean.js` (Morphology, Pronunciation & Semantic Generation Engine)
 A robust, centralized module that handles complex rules of Korean text manipulation, standard pronunciation, and semantic generation (refactored for high token and syntactic density: 1,280 lines / 59.6 KB, down from 1,935 lines / 83.6 KB, a ~34% reduction in line count and ~29% in file size with 100% backward compatibility):
@@ -164,7 +171,12 @@ Single command that executes all repository test suites with fail-fast behavior:
          - Test suite in `collocation_test.js` expanded to 12 suites (475 tests passing, 0 failures). Full `node test.js` suite passing (100% green, 5.03s).
        - Add pronoun case sandhi (`누가`, `이게/그게/저게`, `이건/그건/저건`, `뭘/뭐가`) to `applyMorphology` (F10).
      - **Phase B (Case & Spatio-Temporal Concord — F3, F5, F7, F9)**:
-       - Enhance `attachParticle` for locative duality (`-에` vs `-에서`) and dative animacy (`-에게` vs `-에` vs `-께`).
+       - **Feature 3 (Completed)**: Case Particle Semantic Specialization implemented.
+         - Locative duality: destination/allative & static existence (`-에`) vs origin/departure & dynamic activity site (`-에서`).
+         - Dative animacy & respect: respected elders & humble verbs (`-께`) vs inanimate institutions/places (`-에`) vs animate non-elders (`-에게` / `-한테`).
+         - Instrumental `-(으)로`: phonological coda `ㄹ` exception (`지하철로`, `연필로`), vowel coda (`버스로`), non-ㄹ consonant coda (`젓가락으로`).
+         - Comitative (`-와/과`, `-하고`, `-(이)랑`), ablative person (`-에게서`, `-한테서`), and subject honorific (`-께서`).
+         - Built `particle_concord_test.js` & `test/particle_concord_test.js` (128 tests passing, 0 failures). Full `node test.js` suite passing (100% green).
        - Implement temporal tense harmony between adverbs and grammar formulas in `generateSemanticSentence`.
        - Implement spatial relational phrase generator (`[Noun + 의] + [Position] + 에/에서`).
        - Split `{Adv}` into `{Adv_Degree}`, `{Adv_Manner}`, and `{Adv_Discourse}`.
