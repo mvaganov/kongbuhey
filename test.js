@@ -3,11 +3,12 @@
  * test.js - Unified Test Runner for Kongbuhey
  *
  * Executes the complete validation pipeline with FAIL-FAST behavior:
- *   [1/5] Schema & Data Integrity       (data.js: sequential IDs, column lengths, valid JSON vectors)
- *   [2/5] Schema Taxonomy Sync          (schema_analysis.js: taxonomy validity & cache freshness)
- *   [3/5] Homonym Dictionary Sync       (homonyms.js: 0 broken phonetic links, vocabulary coverage)
- *   [4/5] Exhaustive Generation Check   (exhaustive.js: morphology, 100% unit coverage, 0 errors)
- *   [5/5] Text Analyzer Passage Check   (text_analyzer.js: 0 gaps on ingested study texts)
+ *   [1/6] Schema & Data Integrity       (data.js: sequential IDs, column lengths, valid JSON vectors)
+ *   [2/6] Schema Taxonomy Sync          (schema_analysis.js: taxonomy validity & cache freshness)
+ *   [3/6] Homonym Dictionary Sync       (homonyms.js: 0 broken phonetic links, vocabulary coverage)
+ *   [4/6] Exhaustive Generation Check   (exhaustive.js: morphology, 100% unit coverage, 0 errors)
+ *   [5/6] Text Analyzer Passage Check   (text_analyzer.js: 0 gaps on ingested study texts)
+ *   [6/6] Semantic Rules & Honorifics   (collocation, particle concord, honorific suppletion suites)
  *
  * Usage:
  *   node test.js                 # Run all validation suites across full curriculum
@@ -22,11 +23,12 @@ USAGE:
   node test.js [source] [options]
 
 VALIDATION STAGES (Fails fast on any error):
-  [1/5] Schema & Data Integrity     Validates 12-col schema, sequential IDs (0..N-1), valid POS, priority scores (1-5), JSON vectors
-  [2/5] Schema Taxonomy Sync        Verifies schema_summary.json freshness against data.js (auto-syncs if needed)
-  [3/5] Homonym Dictionary Sync     Verifies HOMONYMS token count and ensures 0 broken phonetic (_neighbor) links
-  [4/5] Exhaustive Generation Check Runs exhaustive.js in isolated subprocess: 100% unit coverage, 0 morphology/LUT errors
-  [5/5] Text Analyzer Passage Check Regression check on ingested study texts (studytext12, studytext21): 0 curriculum gaps
+  [1/6] Schema & Data Integrity     Validates 12-col schema, sequential IDs (0..N-1), valid POS, priority scores (1-5), JSON vectors
+  [2/6] Schema Taxonomy Sync        Verifies schema_summary.json freshness against data.js (auto-syncs if needed)
+  [3/6] Homonym Dictionary Sync     Verifies HOMONYMS token count and ensures 0 broken phonetic (_neighbor) links
+  [4/6] Exhaustive Generation Check Runs exhaustive.js in isolated subprocess: 100% unit coverage, 0 morphology/LUT errors
+  [5/6] Text Analyzer Passage Check Regression check on ingested study texts (studytext12, studytext21): 0 curriculum gaps
+  [6/6] Semantic & Honorific Concord Validates verb-noun collocations, case particle specialization, and honorific concord
 
 OPTIONS:
   <source>             Target curriculum source (e.g. studytext21, class2012) for scoped validation
@@ -76,9 +78,9 @@ function runTests(options = {}) {
 	}
 
 // -----------------------------------------------------------------------------
-// [1/5] Schema & Data Integrity
+// [1/6] Schema & Data Integrity
 // -----------------------------------------------------------------------------
-process.stdout.write(`[1/5] Schema & Data Integrity ............ `);
+process.stdout.write(`[1/6] Schema & Data Integrity ............ `);
 try {
 	delete require.cache[DATA_PATH];
 	const { KR_EN_languageUnits, DATA_SCHEMA } = require(DATA_PATH);
@@ -157,9 +159,9 @@ try {
 }
 
 // -----------------------------------------------------------------------------
-// [2/5] Schema Taxonomy & Metadata Freshness
+// [2/6] Schema Taxonomy & Metadata Freshness
 // -----------------------------------------------------------------------------
-process.stdout.write(`[2/5] Schema Taxonomy Sync ............... `);
+process.stdout.write(`[2/6] Schema Taxonomy Sync ............... `);
 try {
 	delete require.cache[SCHEMA_ANALYSIS_PATH];
 	const schemaAnalysis = require(SCHEMA_ANALYSIS_PATH);
@@ -181,9 +183,9 @@ try {
 }
 
 // -----------------------------------------------------------------------------
-// [3/5] Homonym Dictionary Sync
+// [3/6] Homonym Dictionary Sync
 // -----------------------------------------------------------------------------
-process.stdout.write(`[3/5] Homonym Dictionary Sync ............ `);
+process.stdout.write(`[3/6] Homonym Dictionary Sync ............ `);
 try {
 	delete require.cache[HOMONYMS_PATH];
 	const { HOMONYMS } = require(HOMONYMS_PATH);
@@ -215,9 +217,9 @@ try {
 }
 
 // -----------------------------------------------------------------------------
-// [4/5] Exhaustive Generation & Morphology Verification
+// [4/6] Exhaustive Generation & Morphology Verification
 // -----------------------------------------------------------------------------
-process.stdout.write(`[4/5] Exhaustive Sentence Generation ..... `);
+process.stdout.write(`[4/6] Exhaustive Sentence Generation ..... `);
 try {
 	const child_process = require('child_process');
 
@@ -250,9 +252,9 @@ try {
 }
 
 // -----------------------------------------------------------------------------
-// [5/5] Text Analyzer Study Text Check
+// [5/6] Text Analyzer Study Text Check
 // -----------------------------------------------------------------------------
-process.stdout.write(`[5/5] Text Analyzer Passage Check ........ `);
+process.stdout.write(`[5/6] Text Analyzer Passage Check ........ `);
 try {
 	delete require.cache[TEXT_ANALYZER_PATH];
 	delete require.cache[STUDYTEXTS_PATH];
@@ -283,9 +285,47 @@ try {
 	failFast("Stage 5 (Text Analyzer)", err.stack || err.message);
 }
 
+// -----------------------------------------------------------------------------
+// [6/6] Semantic Rules, Particle & Honorific Concord Check
+// -----------------------------------------------------------------------------
+process.stdout.write(`[6/6] Semantic & Honorific Concord ....... `);
+try {
+	const child_process = require('child_process');
+	const suiteScripts = [
+		{ name: "Collocations (F1, F2)", path: path.resolve(__dirname, 'collocation_test.js') },
+		{ name: "Case Particles (F3)", path: path.resolve(__dirname, 'particle_concord_test.js') },
+		{ name: "Honorifics (F4)", path: path.resolve(__dirname, 'test', 'honorific_concord_test.js') },
+		{ name: "Dynamic Semantic Sets", path: path.resolve(__dirname, 'test', 'dynamic_semantic_sets_test.js') }
+	];
+
+	let totalAssertions = 0;
+	for (const suite of suiteScripts) {
+		const out = child_process.execFileSync(process.execPath, [suite.path], {
+			encoding: 'utf8',
+			stdio: ['pipe', 'pipe', 'pipe']
+		});
+
+		const countMatch = out.match(/TOTAL TESTS:\s*(\d+)/);
+		if (countMatch) {
+			totalAssertions += parseInt(countMatch[1], 10);
+		} else {
+			const passCount = (out.match(/\[PASS\]/g) || []).length;
+			totalAssertions += passCount;
+		}
+
+		if (out.includes("FAILED:      ") && !out.includes("FAILED:      0")) {
+			failFast(`Stage 6 (${suite.name})`, out);
+		}
+	}
+
+	console.log(`[ PASS ] (4 suites, ${totalAssertions.toLocaleString()} assertions passed)`);
+} catch (err) {
+	failFast("Stage 6 (Semantic & Honorific Concord)", err.stdout || err.stderr || err.message);
+}
+
 	const elapsedSec = ((Date.now() - startTime) / 1000).toFixed(2);
 	console.log(`------------------------------------------------------`);
-	console.log(`OVERALL STATUS: ALL 5 SUITES PASSED (Duration: ${elapsedSec}s)`);
+	console.log(`OVERALL STATUS: ALL 6 SUITES PASSED (Duration: ${elapsedSec}s)`);
 	console.log(`======================================================\n`);
 	return { success: true, duration: elapsedSec };
 }
