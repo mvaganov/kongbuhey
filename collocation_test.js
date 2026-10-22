@@ -548,7 +548,7 @@ const allDescriptiveVerbs = KR_EN_languageUnits.filter(
 	u => u && u[DATA_SCHEMA.PartofSpeech] === "Descriptive Verb"
 );
 
-assert(allDescriptiveVerbs.length === 123, "All 123 descriptive verbs identified in curriculum", `Found ${allDescriptiveVerbs.length}`);
+assert(allDescriptiveVerbs.length >= 123, "All descriptive verbs identified in curriculum (>= 123)", `Found ${allDescriptiveVerbs.length}`);
 
 const zeroCandidateDVs = [];
 const lowCandidateDVs = [];

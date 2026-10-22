@@ -731,6 +731,15 @@ let STATIC_EXISTENCE_VERBS = new Set();
 let HUMBLE_DATIVE_VERBS = new Set();
 let TITLE_SUFFIX_SSI = "";
 
+let HONORIFIC_VERB_SUPPLETIONS = new Map();
+let HUMBLE_VERB_SUPPLETIONS = new Map();
+let HONORIFIC_NOUN_SUPPLETIONS = new Map();
+let HUMBLE_PRONOUN_SUPPLETIONS = new Map();
+let PLAIN_COUNTERPARTS = new Map();
+let HONORIFIC_WORDS = new Set();
+let HUMBLE_WORDS = new Set();
+let FORBIDDEN_PLAIN_WORDS_FOR_ELDERS = new Set();
+
 function initSemanticSets() {
 	ELDER_NOUN_TITLES.clear();
 	INANIMATE_INSTITUTION_NAMES.clear();
@@ -738,12 +747,21 @@ function initSemanticSets() {
 	ALLATIVE_GOAL_VERBS.clear();
 	STATIC_EXISTENCE_VERBS.clear();
 	HUMBLE_DATIVE_VERBS.clear();
+	HONORIFIC_VERB_SUPPLETIONS.clear();
+	HUMBLE_VERB_SUPPLETIONS.clear();
+	HONORIFIC_NOUN_SUPPLETIONS.clear();
+	HUMBLE_PRONOUN_SUPPLETIONS.clear();
+	PLAIN_COUNTERPARTS.clear();
+	HONORIFIC_WORDS.clear();
+	HUMBLE_WORDS.clear();
+	FORBIDDEN_PLAIN_WORDS_FOR_ELDERS.clear();
 
 	const allUnits = KR_EN_languageUnits || [];
 	for (const unit of allUnits) {
 		if (!unit) continue;
 		const ko = unit[DATA_SCHEMA.Korean];
 		if (!ko) continue;
+		const pos = unit[DATA_SCHEMA.PartofSpeech] || "";
 
 		if (hasTag(unit, "elder_noun")) {
 			ELDER_NOUN_TITLES.add(ko);
@@ -763,8 +781,79 @@ function initSemanticSets() {
 		if (hasTag(unit, "dative_humble")) {
 			HUMBLE_DATIVE_VERBS.add(ko);
 		}
-		if (unit[DATA_SCHEMA.PartofSpeech] === "Grammar" && hasTag(unit, "properNoun", "honorific") && !TITLE_SUFFIX_SSI) {
+		if (pos === "Grammar" && hasTag(unit, "properNoun", "honorific") && !TITLE_SUFFIX_SSI) {
 			TITLE_SUFFIX_SSI = ko;
+		}
+
+		const sv = parseSemanticVector(unit);
+		if (sv) {
+			if (sv.honorific_suppletion) {
+				if (pos === "Action Verb" || pos === "Descriptive Verb") {
+					HONORIFIC_VERB_SUPPLETIONS.set(ko, sv.honorific_suppletion);
+					FORBIDDEN_PLAIN_WORDS_FOR_ELDERS.add(ko);
+				} else if (pos === "Noun") {
+					HONORIFIC_NOUN_SUPPLETIONS.set(ko, sv.honorific_suppletion);
+					FORBIDDEN_PLAIN_WORDS_FOR_ELDERS.add(ko);
+				} else if (pos === "Pronoun") {
+					HUMBLE_PRONOUN_SUPPLETIONS.set(ko, sv.honorific_suppletion);
+				}
+			}
+			if (sv.humble_suppletion) {
+				if (pos === "Action Verb" || pos === "Descriptive Verb") {
+					HUMBLE_VERB_SUPPLETIONS.set(ko, sv.humble_suppletion);
+				} else if (pos === "Pronoun") {
+					HUMBLE_PRONOUN_SUPPLETIONS.set(ko, sv.humble_suppletion);
+				}
+			}
+			if (sv.plain_counterpart) {
+				PLAIN_COUNTERPARTS.set(ko, sv.plain_counterpart);
+			}
+		}
+
+		// Also check HonorificRules column to catch any declarative notes
+		const hr = unit[DATA_SCHEMA.HonorificRules] || "";
+		if (hr) {
+			const repMatch = hr.match(/Replace with ([가-힣]+) for respected subjects/);
+			if (repMatch) {
+				const target = repMatch[1];
+				if (pos === "Action Verb" || pos === "Descriptive Verb") {
+					if (!HONORIFIC_VERB_SUPPLETIONS.has(ko)) HONORIFIC_VERB_SUPPLETIONS.set(ko, target);
+					FORBIDDEN_PLAIN_WORDS_FOR_ELDERS.add(ko);
+				} else if (pos === "Noun") {
+					if (!HONORIFIC_NOUN_SUPPLETIONS.has(ko)) HONORIFIC_NOUN_SUPPLETIONS.set(ko, target);
+					FORBIDDEN_PLAIN_WORDS_FOR_ELDERS.add(ko);
+				}
+			}
+			const honMatch = hr.match(/Honorific:\s*([가-힣]+)/);
+			if (honMatch) {
+				const target = honMatch[1];
+				if (pos === "Action Verb" || pos === "Descriptive Verb") {
+					if (!HONORIFIC_VERB_SUPPLETIONS.has(ko)) HONORIFIC_VERB_SUPPLETIONS.set(ko, target);
+					FORBIDDEN_PLAIN_WORDS_FOR_ELDERS.add(ko);
+				} else if (pos === "Noun") {
+					if (!HONORIFIC_NOUN_SUPPLETIONS.has(ko)) HONORIFIC_NOUN_SUPPLETIONS.set(ko, target);
+					FORBIDDEN_PLAIN_WORDS_FOR_ELDERS.add(ko);
+				}
+			}
+			const formOfMatch = hr.match(/Honorific form of ([가-힣]+)/);
+			if (formOfMatch) {
+				const base = formOfMatch[1];
+				if (!PLAIN_COUNTERPARTS.has(ko)) PLAIN_COUNTERPARTS.set(ko, base);
+				if (pos === "Action Verb" || pos === "Descriptive Verb") {
+					if (!HONORIFIC_VERB_SUPPLETIONS.has(base)) HONORIFIC_VERB_SUPPLETIONS.set(base, ko);
+					FORBIDDEN_PLAIN_WORDS_FOR_ELDERS.add(base);
+				} else if (pos === "Noun") {
+					if (!HONORIFIC_NOUN_SUPPLETIONS.has(base)) HONORIFIC_NOUN_SUPPLETIONS.set(base, ko);
+					FORBIDDEN_PLAIN_WORDS_FOR_ELDERS.add(base);
+				}
+			}
+		}
+
+		if (hasTag(unit, "honorific", "honorificVerb", "honorific_noun", "honorific_person", "elder_noun")) {
+			HONORIFIC_WORDS.add(ko);
+		}
+		if (hasTag(unit, "humble", "humbleVerb", "dative_humble")) {
+			HUMBLE_WORDS.add(ko);
 		}
 	}
 }
@@ -791,6 +880,462 @@ function isInanimateInstitution(nounUnit, nounKo = "") {
 	}
 	if (nounKo && INANIMATE_INSTITUTION_NAMES.has(nounKo)) return true;
 	return false;
+}
+
+function getHonorificVerb(verbOrKo) {
+	const ko = typeof verbOrKo === 'string' ? verbOrKo : (verbOrKo ? verbOrKo[DATA_SCHEMA.Korean] : "");
+	return HONORIFIC_VERB_SUPPLETIONS.get(ko) || null;
+}
+
+function getHumbleVerb(verbOrKo) {
+	const ko = typeof verbOrKo === 'string' ? verbOrKo : (verbOrKo ? verbOrKo[DATA_SCHEMA.Korean] : "");
+	return HUMBLE_VERB_SUPPLETIONS.get(ko) || null;
+}
+
+function getHonorificNoun(nounOrKo) {
+	const ko = typeof nounOrKo === 'string' ? nounOrKo : (nounOrKo ? nounOrKo[DATA_SCHEMA.Korean] : "");
+	return HONORIFIC_NOUN_SUPPLETIONS.get(ko) || null;
+}
+
+function getHumblePronoun(pronounOrKo) {
+	const ko = typeof pronounOrKo === 'string' ? pronounOrKo : (pronounOrKo ? pronounOrKo[DATA_SCHEMA.Korean] : "");
+	return HUMBLE_PRONOUN_SUPPLETIONS.get(ko) || null;
+}
+
+function getPlainCounterpart(wordOrKo) {
+	const ko = typeof wordOrKo === 'string' ? wordOrKo : (wordOrKo ? wordOrKo[DATA_SCHEMA.Korean] : "");
+	return PLAIN_COUNTERPARTS.get(ko) || null;
+}
+
+function isHonorificWord(wordOrKo) {
+	const ko = typeof wordOrKo === 'string' ? wordOrKo : (wordOrKo ? wordOrKo[DATA_SCHEMA.Korean] : "");
+	return HONORIFIC_WORDS.has(ko);
+}
+
+function isHumbleWord(wordOrKo) {
+	const ko = typeof wordOrKo === 'string' ? wordOrKo : (wordOrKo ? wordOrKo[DATA_SCHEMA.Korean] : "");
+	return HUMBLE_WORDS.has(ko);
+}
+
+function isForbiddenForElder(wordOrKo) {
+	const ko = typeof wordOrKo === 'string' ? wordOrKo : (wordOrKo ? wordOrKo[DATA_SCHEMA.Korean] : "");
+	return FORBIDDEN_PLAIN_WORDS_FOR_ELDERS.has(ko);
+}
+
+function getHonorificPredicate(verbOrKo, formality = "polite", options = {}) {
+	const verbUnit = getVerbUnit(verbOrKo);
+	const verbKo = verbUnit ? verbUnit[DATA_SCHEMA.Korean] : (typeof verbOrKo === 'string' ? verbOrKo : "");
+	if (!verbKo) return "";
+
+	if (options.indirectHonorific === true && verbKo === "있다") {
+		const conj = verbUnit ? verbUnit[DATA_SCHEMA.Conjugation] : "";
+		const stem = getConjugatedStem("있다", conj);
+		switch (formality) {
+			case "formal":
+			case "formal_polite":
+				return applyMorphology(stem + "으/십니다");
+			case "formal_question":
+				return applyMorphology(stem + "으/십니까?");
+			case "past":
+			case "past_polite":
+				return applyMorphology(stem + "으/셨어요");
+			case "past_formal":
+				return applyMorphology(stem + "으/셨습니다");
+			case "imperative":
+			case "imperative_polite":
+				return applyMorphology(stem + "으/세요");
+			case "imperative_formal":
+				return applyMorphology(stem + "으/십시오");
+			case "informal":
+			case "banmal":
+				return applyMorphology(stem + "으/셔");
+			case "stem":
+				return applyMorphology(stem + "으/시");
+			case "polite":
+			case "polite_informal":
+			default:
+				return applyMorphology(stem + "으/세요");
+		}
+	}
+
+	const suppletiveKo = HONORIFIC_VERB_SUPPLETIONS.get(verbKo);
+	const effectiveVerbKo = suppletiveKo || verbKo;
+	const effectiveUnit = suppletiveKo ? getVerbUnit(suppletiveKo) : verbUnit;
+
+	if (suppletiveKo) {
+		const stem = getStem(suppletiveKo);
+		const base = stem.slice(0, -1);
+		switch (formality) {
+			case "formal":
+			case "formal_polite":
+				return base + "십니다";
+			case "formal_question":
+				return base + "십니까?";
+			case "past":
+			case "past_polite":
+				return base + "셨어요";
+			case "past_formal":
+				return base + "셨습니다";
+			case "imperative":
+			case "imperative_polite":
+				return base + "세요";
+			case "imperative_formal":
+				return stem + "십시오";
+			case "informal":
+			case "banmal":
+				return base + "셔";
+			case "stem":
+				return stem;
+			case "polite":
+			case "polite_informal":
+			default:
+				return base + "세요";
+		}
+	}
+
+	const conj = effectiveUnit ? effectiveUnit[DATA_SCHEMA.Conjugation] : "";
+	const stem = getConjugatedStem(effectiveVerbKo, conj);
+
+	switch (formality) {
+		case "formal":
+		case "formal_polite":
+			return applyMorphology(stem + "으/십니다");
+		case "formal_question":
+			return applyMorphology(stem + "으/십니까?");
+		case "past":
+		case "past_polite":
+			return applyMorphology(stem + "으/셨어요");
+		case "past_formal":
+			return applyMorphology(stem + "으/셨습니다");
+		case "imperative":
+		case "imperative_polite":
+			return applyMorphology(stem + "으/세요");
+		case "imperative_formal":
+			return applyMorphology(stem + "으/십시오");
+		case "informal":
+		case "banmal":
+			return applyMorphology(stem + "으/셔");
+		case "stem":
+			return applyMorphology(stem + "으/시");
+		case "polite":
+		case "polite_informal":
+		default:
+			return applyMorphology(stem + "으/세요");
+	}
+}
+
+function getHumblePredicate(verbOrKo, formality = "polite", options = {}) {
+	const verbUnit = getVerbUnit(verbOrKo);
+	const verbKo = verbUnit ? verbUnit[DATA_SCHEMA.Korean] : (typeof verbOrKo === 'string' ? verbOrKo : "");
+	if (!verbKo) return "";
+
+	const humbleKo = HUMBLE_VERB_SUPPLETIONS.get(verbKo) || verbKo;
+	const humbleUnit = getVerbUnit(humbleKo);
+
+	if (humbleKo === "여쭙다") {
+		switch (formality) {
+			case "formal":
+			case "formal_polite":
+				return "여쭙니다";
+			case "formal_question":
+				return "여쭙니까?";
+			case "past":
+			case "past_polite":
+				return "여쭸어요";
+			case "past_formal":
+				return "여쭸습니다";
+			case "informal":
+			case "banmal":
+				return "여쭤";
+			case "stem":
+				return "여쭙";
+			case "polite":
+			case "polite_informal":
+			default:
+				return "여쭤요";
+		}
+	}
+
+	if (humbleKo === "뵙다") {
+		switch (formality) {
+			case "formal":
+			case "formal_polite":
+				return "뵙습니다";
+			case "formal_question":
+				return "뵙습니까?";
+			case "past":
+			case "past_polite":
+				return "뵀어요";
+			case "past_formal":
+				return "뵀습니다";
+			case "informal":
+			case "banmal":
+				return "봬";
+			case "stem":
+				return "뵙";
+			case "polite":
+			case "polite_informal":
+			default:
+				return "봬요";
+		}
+	}
+
+	const conj = humbleUnit ? humbleUnit[DATA_SCHEMA.Conjugation] : "";
+	const stem = getConjugatedStem(humbleKo, conj);
+
+	switch (formality) {
+		case "formal":
+		case "formal_polite":
+			return applyMorphology(stem + "습니다/ㅂ니다");
+		case "formal_question":
+			return applyMorphology(stem + "습니까/ㅂ니까?");
+		case "past":
+		case "past_polite":
+			return applyMorphology(stem + "았/었어요");
+		case "past_formal":
+			return applyMorphology(stem + "았/었습니다");
+		case "informal":
+		case "banmal":
+			return applyMorphology(stem + "아/어");
+		case "stem":
+			return stem;
+		case "polite":
+		case "polite_informal":
+		default:
+			return applyMorphology(stem + "아/어요");
+	}
+}
+
+function applyHonorificConcord(input, options = {}) {
+	if (typeof input === 'object' && input !== null) {
+		const subj = input.subject || options.subject;
+		const isElder = isElderNoun(subj) || options.honorific === true;
+		const recip = input.recipient || options.recipient || options.dativeRecipient;
+		const isElderRecip = isElderNoun(recip) || options.dativeType === "honorific";
+
+		let verb = input.verb || options.verb;
+		let noun = input.noun || options.noun;
+		let pronoun = input.pronoun || options.pronoun;
+
+		if (isElder) {
+			if (verb) {
+				const hv = getHonorificVerb(verb);
+				if (hv) verb = getVerbUnit(hv) || hv;
+			}
+			if (noun) {
+				const hn = getHonorificNoun(noun);
+				if (hn) noun = getNounUnit(hn) || hn;
+			}
+		}
+
+		if (isElderRecip && verb) {
+			const uv = getHumbleVerb(verb);
+			if (uv) verb = getVerbUnit(uv) || uv;
+		}
+
+		if ((isElder || isElderRecip) && pronoun) {
+			const hp = getHumblePronoun(pronoun);
+			if (hp) pronoun = hp;
+		}
+
+		let text = input.text || "";
+		if (text) {
+			text = applyHonorificConcord(text, { ...options, subject: subj, recipient: recip });
+		}
+
+		return { text, subject: subj, verb, noun, recipient: recip, pronoun };
+	}
+
+	let str = String(input);
+
+	for (const elder of ELDER_NOUN_TITLES) {
+		const subjRegex = new RegExp(`(^|[^가-힣])(${elder})(이|가)([^가-힣]|$)`, 'g');
+		str = str.replace(subjRegex, '$1$2께서$4');
+
+		const topRegex = new RegExp(`(^|[^가-힣])(${elder})는([^가-힣]|$)`, 'g');
+		str = str.replace(topRegex, '$1$2께서는$3');
+
+		const datRegex = new RegExp(`(^|[^가-힣])(${elder})(에게|한테)([^가-힣]|$)`, 'g');
+		str = str.replace(datRegex, '$1$2께$4');
+	}
+
+	str = str.replace(/([가-힣]+님)(이|가)([^가-힣]|$)/g, '$1께서$3');
+	str = str.replace(/([가-힣]+님)(에게|한테)([^가-힣]|$)/g, '$1께$3');
+
+	const isElderContext = options.honorific === true || (options.subject && isElderNoun(options.subject)) || /께서/.test(str);
+	if (isElderContext) {
+		for (const [plain, hon] of HONORIFIC_NOUN_SUPPLETIONS.entries()) {
+			const nounRegex = new RegExp(`(^|[^가-힣])(${plain})([을를이가은는의도]?)([^가-힣]|$)`, 'g');
+			str = str.replace(nounRegex, (m, pre, base, part, post) => {
+				const attached = part ? attachParticle(hon, part === '을' || part === '를' ? 'object' : part === '이' || part === '가' ? 'subject' : part === '은' || part === '는' ? 'topic' : part === '의' ? 'genitive' : 'additive') : hon;
+				return pre + attached + post;
+			});
+		}
+
+		str = str.replace(/(^|[^가-힣])자(요|다|고|며|서)([^가-힣]|$)/g, '$1주무세$2$3');
+		str = str.replace(/(^|[^가-힣])잡니다([^가-힣]|$)/g, '$1주무십니다$2');
+		str = str.replace(/(^|[^가-힣])잤어요([^가-힣]|$)/g, '$1주무셨어요$2');
+		str = str.replace(/(^|[^가-힣])잤습니다([^가-힣]|$)/g, '$1주무셨습니다$2');
+
+		str = str.replace(/(^|[^가-힣])먹(어요|다|고|으며|어서)([^가-힣]|$)/g, (m, pre, end, post) => {
+			const rep = end === '어요' ? '드세요' : end === '다' ? '드시다' : end === '고' ? '드시고' : end === '으며' ? '드시며' : '드셔서';
+			return pre + rep + post;
+		});
+		str = str.replace(/(^|[^가-힣])먹습니다([^가-힣]|$)/g, '$1드십니다$2');
+		str = str.replace(/(^|[^가-힣])먹었어요([^가-힣]|$)/g, '$1드셨어요$2');
+		str = str.replace(/(^|[^가-힣])먹었습니다([^가-힣]|$)/g, '$1드셨습니다$2');
+
+		str = str.replace(/(^|[^가-힣])마(셔요|시다|시고|셔서)([^가-힣]|$)/g, (m, pre, end, post) => {
+			const rep = end === '셔요' ? '드세요' : end === '시다' ? '드시다' : end === '시고' ? '드시고' : '드셔서';
+			return pre + rep + post;
+		});
+		str = str.replace(/(^|[^가-힣])마십니다([^가-힣]|$)/g, '$1드십니다$2');
+
+		str = str.replace(/(^|[^가-힣])아(파요|프다|파서)([^가-힣]|$)/g, (m, pre, end, post) => {
+			const rep = end === '파요' ? '편찮으세요' : end === '프다' ? '편찮으시다' : '편찮으셔서';
+			return pre + rep + post;
+		});
+		str = str.replace(/(^|[^가-힣])아픕니다([^가-힣]|$)/g, '$1편찮으십니다$2');
+
+		str = str.replace(/(^|[^가-힣])죽(었어요|었다|었습니다)([^가-힣]|$)/g, (m, pre, end, post) => {
+			const rep = end === '었어요' ? '돌아가셨어요' : end === '었다' ? '돌아가셨다' : '돌아가셨습니다';
+			return pre + rep + post;
+		});
+	}
+
+	const isElderRecipContext = (options.recipient && isElderNoun(options.recipient)) || (options.dativeRecipient && isElderNoun(options.dativeRecipient)) || /께\s+/.test(str);
+	if (isElderRecipContext) {
+		str = str.replace(/(^|[^가-힣])주(어요|어|다|고|며|어서)([^가-힣]|$)/g, (m, pre, end, post) => {
+			const rep = end === '어요' ? '드려요' : end === '어' ? '드려' : end === '다' ? '드리다' : end === '고' ? '드리고' : end === '며' ? '드리며' : '드려서';
+			return pre + rep + post;
+		});
+		str = str.replace(/(^|[^가-힣])줘요([^가-힣]|$)/g, '$1드려요$2');
+		str = str.replace(/(^|[^가-힣])줍니다([^가-힣]|$)/g, '$1드립니다$2');
+		str = str.replace(/(^|[^가-힣])줬어요([^가-힣]|$)/g, '$1드렸어요$2');
+		str = str.replace(/(^|[^가-힣])줬습니다([^가-힣]|$)/g, '$1드렸습니다$2');
+
+		str = str.replace(/(^|[^가-힣])말(해요|합니다|하다|하고|해서)([^가-힣]|$)/g, (m, pre, end, post) => {
+			const rep = end === '해요' ? '말씀드려요' : end === '합니다' ? '말씀드립니다' : end === '하다' ? '말씀드리다' : end === '하고' ? '말씀드리고' : '말씀드려서';
+			return pre + rep + post;
+		});
+
+		str = str.replace(/(^|[^가-힣])물(어요|어|어서)([^가-힣]|$)/g, '$1여쭤$2$3');
+		str = str.replace(/(^|[^가-힣])묻(습니다|다|고)([^가-힣]|$)/g, (m, pre, end, post) => {
+			const rep = end === '습니다' ? '여쭙니다' : end === '다' ? '여쭙다' : '여쭈고';
+			return pre + rep + post;
+		});
+
+		str = str.replace(/(^|[^가-힣])만(나요|납니다|나다|나서|나고)([^가-힣]|$)/g, (m, pre, end, post) => {
+			const rep = end === '나요' ? '봬요' : end === '납니다' ? '뵙습니다' : end === '나다' ? '뵙다' : end === '나서' ? '봬서' : '뵙고';
+			return pre + rep + post;
+		});
+
+		str = str.replace(/(^|[^가-힣])내가([^가-힣]|$)/g, '$1제가$2');
+		str = str.replace(/(^|[^가-힣])나는([^가-힣]|$)/g, '$1저는$2');
+		str = str.replace(/(^|[^가-힣])나를([^가-힣]|$)/g, '$1저를$2');
+		str = str.replace(/(^|[^가-힣])우리가([^가-힣]|$)/g, '$1저희가$2');
+		str = str.replace(/(^|[^가-힣])우리는([^가-힣]|$)/g, '$1저희는$2');
+	}
+
+	return str;
+}
+
+function validateHonorificConcord(input, context = {}) {
+	const errors = [];
+	const text = typeof input === 'string' ? input : (input && input.text ? input.text : "");
+	const subj = (input && input.subject) || context.subject;
+	const recip = (input && input.recipient) || context.recipient || context.dativeRecipient;
+	const verb = (input && input.verb) || context.verb;
+	const noun = (input && input.noun) || context.noun;
+
+	const verbKo = verb ? (typeof verb === 'string' ? verb : verb[DATA_SCHEMA.Korean]) : "";
+	const nounKo = noun ? (typeof noun === 'string' ? noun : noun[DATA_SCHEMA.Korean]) : "";
+	const subjKo = subj ? (typeof subj === 'string' ? subj : subj[DATA_SCHEMA.Korean]) : "";
+	const recipKo = recip ? (typeof recip === 'string' ? recip : recip[DATA_SCHEMA.Korean]) : "";
+
+	const isSubjectElder = isElderNoun(subj, subjKo) || context.honorific === true || /께서/.test(text);
+	const isRecipientElder = isElderNoun(recip, recipKo) || /께\s+/.test(text) || context.dativeType === "honorific";
+
+	if (context.honorific === true || isElderNoun(subj, subjKo)) {
+		if (subjKo) {
+			const hasPlainSubj = new RegExp(`(^|[^가-힣])${subjKo}(이|가)([^가-힣]|$)`).test(text);
+			if (hasPlainSubj) {
+				errors.push(`Elder subject '${subjKo}' must take honorific subject particle '-께서', not '-이/가'`);
+			}
+		}
+	}
+
+	if (isSubjectElder) {
+		if (verbKo && FORBIDDEN_PLAIN_WORDS_FOR_ELDERS.has(verbKo)) {
+			const honVerb = HONORIFIC_VERB_SUPPLETIONS.get(verbKo);
+			errors.push(`Respected elder subject cannot use plain verb '${verbKo}' (supplete to '${honVerb}')`);
+		}
+		if (/(^|[^가-힣])(자요|잡니다|자다|자고|잤어요|잤다)([^가-힣]|$)/.test(text)) {
+			errors.push(`Forbidden plain verb '자다' used with respected elder subject (expected '주무시다')`);
+		}
+		if (/(^|[^가-힣])(먹어요|먹습니다|먹다|먹고|먹었어요|먹었다)([^가-힣]|$)/.test(text)) {
+			errors.push(`Forbidden plain verb '먹다' used with respected elder subject (expected '드시다')`);
+		}
+		if (/(^|[^가-힣])(마셔요|마십니다|마시다|마셨어요)([^가-힣]|$)/.test(text)) {
+			errors.push(`Forbidden plain verb '마시다' used with respected elder subject (expected '드시다')`);
+		}
+		if (/(^|[^가-힣])(아파요|아픕니다|아프다|아팠어요)([^가-힣]|$)/.test(text)) {
+			errors.push(`Forbidden plain verb '아프다' used with respected elder subject (expected '편찮으시다')`);
+		}
+		if (/(^|[^가-힣])(죽었어요|죽었다|죽습니다|죽다)([^가-힣]|$)/.test(text)) {
+			errors.push(`Forbidden plain verb '죽다' used with respected elder subject (expected '돌아가시다')`);
+		}
+
+		if (verbKo && HUMBLE_WORDS.has(verbKo)) {
+			errors.push(`Respected elder subject cannot use humble verb '${verbKo}' for own action`);
+		}
+		if (/(^|[^가-힣])(말씀드렸|말씀드립|말씀드려|여쭸|여쭈었|여쭙|여쭤|뵀|뵈었|뵙|도와드렸|도와드립|보여드렸|보여드립)/.test(text)) {
+			errors.push(`Respected elder subject cannot use humble verb for own action`);
+		}
+
+		if (nounKo && HONORIFIC_NOUN_SUPPLETIONS.has(nounKo)) {
+			const honNoun = HONORIFIC_NOUN_SUPPLETIONS.get(nounKo);
+			errors.push(`Plain noun '${nounKo}' should be honorific suppletion '${honNoun}' when referring to respected elder`);
+		}
+		if (/(^|[^가-힣])밥(을|이|은|도)?([^가-힣]|$)/.test(text) && /(드|잡수)/.test(text)) {
+			errors.push(`Plain noun '밥' should be honorific suppletion '진지' with honorific consumption verb`);
+		}
+		if (/(^|[^가-힣])나이(가|는|를)?([^가-힣]|$)/.test(text) && /(많으시|어떻게 되)/.test(text)) {
+			errors.push(`Plain noun '나이' should be honorific suppletion '연세' for elder`);
+		}
+	}
+
+	if (isRecipientElder) {
+		if (recipKo) {
+			const hasPlainDative = new RegExp(`(^|[^가-힣])${recipKo}(에게|한테)([^가-힣]|$)`).test(text);
+			if (hasPlainDative) {
+				errors.push(`Elder recipient '${recipKo}' must take honorific dative '-께', not '-에게/-한테'`);
+			}
+		}
+
+		if (verbKo && HUMBLE_VERB_SUPPLETIONS.has(verbKo)) {
+			const humble = HUMBLE_VERB_SUPPLETIONS.get(verbKo);
+			errors.push(`Elder recipient requires humble verb '${humble}', not plain verb '${verbKo}'`);
+		}
+		if (/(^|[^가-힣])(줘요|줍니다|주다|주고|줬어요|줬다)([^가-힣]|$)/.test(text)) {
+			errors.push(`Elder recipient requires humble verb '드리다', not '주다'`);
+		}
+		if (/(^|[^가-힣])(말해요|말합니다|말하다|말하고|말했어요)([^가-힣]|$)/.test(text)) {
+			errors.push(`Elder recipient requires humble verb '말씀드리다', not '말하다'`);
+		}
+		if (/(^|[^가-힣])(물어요|묻습니다|묻다|물었어요)([^가-힣]|$)/.test(text)) {
+			errors.push(`Elder recipient requires humble verb '여쭙다' or '여쭈어보다', not '묻다'`);
+		}
+
+		if (/(^|[^가-힣])(내가|나는|나를|나에게|나한테)([^가-힣]|$)/.test(text)) {
+			errors.push(`Informal 1st-person pronoun '나/내' cannot be used with elder recipient; use humble '저/제'`);
+		}
+	}
+
+	return {
+		valid: errors.length === 0,
+		errors
+	};
 }
 
 /**
@@ -834,7 +1379,14 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 			return nounKo + "께서";
 
 		case "topic":
+			if (options.honorific === true) {
+				return nounKo + "께서는";
+			}
 			return nounKo + (hasB ? "은" : "는");
+
+		case "topic_honorific":
+		case "honorific_topic":
+			return nounKo + "께서는";
 
 		case "dative": {
 			const isHumble = (verbUnit && hasTag(verbUnit, "humbleVerb", "dative_humble")) || HUMBLE_DATIVE_VERBS.has(verbKo);
@@ -935,44 +1487,111 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 	}
 }
 
-function buildActionVerbPhrase(word, stem, chosenNoun = null) {
-	const isPureIntransitive = (hasTag(word, "intransitive_general") || hasTag(word, "intransitive_motion") || hasTag(word, "intransitive_place"))
-		&& !ACTION_VERB_SPECS.some(s => s.particle === "object" && hasTag(word, s.tag))
-		&& !parseSemanticVector(word).collocation_filter;
+function buildActionVerbPhrase(word, stem, chosenNoun = null, options = {}) {
+	let activeWord = word;
+	let activeStem = stem;
+
+	const isSubjectElder = options.honorific === true || (options.subject && isElderNoun(options.subject));
+	const isRecipientElder = (options.recipient && isElderNoun(options.recipient)) || (options.dativeRecipient && isElderNoun(options.dativeRecipient)) || options.dativeType === "honorific";
+
+	if (isSubjectElder) {
+		const suppletiveKo = getHonorificVerb(activeWord);
+		if (suppletiveKo) {
+			const suppletiveUnit = getVerbUnit(suppletiveKo);
+			if (suppletiveUnit) {
+				activeWord = suppletiveUnit;
+				activeStem = getConjugatedStem(suppletiveKo, suppletiveUnit[DATA_SCHEMA.Conjugation]);
+			} else {
+				activeStem = getStem(suppletiveKo);
+			}
+		}
+	}
+
+	if (isRecipientElder) {
+		const humbleKo = getHumbleVerb(activeWord);
+		if (humbleKo) {
+			const humbleUnit = getVerbUnit(humbleKo);
+			if (humbleUnit) {
+				activeWord = humbleUnit;
+				activeStem = getConjugatedStem(humbleKo, humbleUnit[DATA_SCHEMA.Conjugation]);
+			} else {
+				activeStem = getStem(humbleKo);
+			}
+		}
+	}
+
+	const isPureIntransitive = (hasTag(activeWord, "intransitive_general") || hasTag(activeWord, "intransitive_motion") || hasTag(activeWord, "intransitive_place"))
+		&& !ACTION_VERB_SPECS.some(s => s.particle === "object" && hasTag(activeWord, s.tag))
+		&& !parseSemanticVector(activeWord).collocation_filter;
 
 	if (isPureIntransitive) {
-		if (hasTag(word, "intransitive_motion") || hasTag(word, "intransitive_place")) {
+		if (hasTag(activeWord, "intransitive_motion") || hasTag(activeWord, "intransitive_place")) {
 			const placeNoun = chosenNoun || getRandom(getFilteredWords("Noun", "place")) || getRandom(getWords("Noun", "place"));
 			if (placeNoun) {
 				markUnitUsed(placeNoun);
-				return { text: `${attachParticle(placeNoun, "location", word)} ${stem}`, noun: placeNoun };
+				return { text: `${attachParticle(placeNoun, "location", activeWord, options)} ${activeStem}`, noun: placeNoun, verb: activeWord };
 			}
 		}
-		return { text: stem, noun: null };
+		return { text: activeStem, noun: null, verb: activeWord };
 	}
 
 	let noun = chosenNoun;
 	if (!noun) {
-		const candidates = getNounCandidatesForVerb(word);
+		const candidates = getNounCandidatesForVerb(activeWord);
 		noun = getRandom(candidates);
 		if (noun) markUnitUsed(noun);
 	}
-	if (!noun) return { text: stem, noun: null };
+	if (!noun) return { text: activeStem, noun: null, verb: activeWord };
 
-	const particleType = getVerbParticleType(word);
-	return { text: `${attachParticle(noun, particleType, word)} ${stem}`, noun };
+	if (isSubjectElder) {
+		const suppletiveNounKo = getHonorificNoun(noun);
+		if (suppletiveNounKo) {
+			const suppletiveNounUnit = getNounUnit(suppletiveNounKo);
+			if (suppletiveNounUnit) noun = suppletiveNounUnit;
+		}
+	}
+
+	const particleType = getVerbParticleType(activeWord);
+	const particleOptions = { ...options };
+	if (isRecipientElder && (particleType === "dative" || particleType === "dative_person")) {
+		particleOptions.dativeType = "honorific";
+	}
+
+	return { text: `${attachParticle(noun, particleType, activeWord, particleOptions)} ${activeStem}`, noun, verb: activeWord };
 }
 
-function buildDescriptiveVerbPhrase(word, stem, chosenNoun = null) {
+function buildDescriptiveVerbPhrase(word, stem, chosenNoun = null, options = {}) {
 	let noun = chosenNoun;
 	if (!noun) {
 		const candidates = getSubjectCandidatesForDescriptiveVerb(word);
 		noun = getRandom(candidates);
 		if (noun) markUnitUsed(noun);
 	}
-	if (!noun) return { text: stem, noun: null };
+	if (!noun) return { text: stem, noun: null, verb: word };
 
-	return { text: `${attachParticle(noun, "subject", word)} ${stem}`, noun };
+	let activeWord = word;
+	let activeStem = stem;
+	const isHonorificMode = options.honorific === true;
+	const isElder = isElderNoun(noun);
+
+	if (isHonorificMode && isElder) {
+		const suppletiveKo = getHonorificVerb(activeWord);
+		if (suppletiveKo) {
+			const suppletiveUnit = getVerbUnit(suppletiveKo);
+			if (suppletiveUnit) {
+				activeWord = suppletiveUnit;
+				activeStem = getConjugatedStem(suppletiveKo, suppletiveUnit[DATA_SCHEMA.Conjugation]);
+			} else {
+				activeStem = getStem(suppletiveKo);
+			}
+		}
+	}
+
+	const particleOptions = { ...options };
+	if (isHonorificMode && isElder) {
+		particleOptions.allowHonorificSubject = true;
+	}
+	return { text: `${attachParticle(noun, "subject", activeWord, particleOptions)} ${activeStem}`, noun, verb: activeWord };
 }
 
 function expandSemanticVerb(pos, isAction, tokenType, currentContext, applyConstraint) {
@@ -1014,8 +1633,8 @@ function expandSemanticVerb(pos, isAction, tokenType, currentContext, applyConst
 	if (tokenType === "AVst" || tokenType === "DVst") {
 		return { text: stem, verb: word, noun: null };
 	}
-	const phrase = isAction ? buildActionVerbPhrase(word, stem) : buildDescriptiveVerbPhrase(word, stem);
-	return { text: phrase.text, verb: word, noun: phrase.noun };
+	const phrase = isAction ? buildActionVerbPhrase(word, stem, null, currentContext) : buildDescriptiveVerbPhrase(word, stem, null, currentContext);
+	return { text: phrase.text, verb: phrase.verb || word, noun: phrase.noun };
 }
 
 function expandSemanticActionVerb(tokenType, currentContext, applyConstraint) {
@@ -1590,7 +2209,7 @@ function applyMorphology(text) {
 
 	// Irregular Verbs
 	// 1. b_irregular
-	resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
+	resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
 		const base = setFinal(ch, 0);
 		return s === 'ㄴ' ? base + '운' : s === 'ㄹ' ? base + '울' : base + '우' + s;
 	});
@@ -1602,7 +2221,7 @@ function applyMorphology(text) {
 	});
 
 	// 2. l_irregular
-	resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
+	resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
 		if (s === 'ㄴ') return setFinal(ch, 4);
 		if (s === 'ㄹ') return ch;
 		if (/^(면|면서|러|려고|려면|로|라고)$/.test(s)) return ch + s;
@@ -1612,7 +2231,7 @@ function applyMorphology(text) {
 	resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]습니다\/ㅂ니다/g, (_, ch) => setFinal(ch, 17) + "니다");
 
 	// 3. d_irregular
-	resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
+	resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
 		const withL = setFinal(ch, 8);
 		return s === 'ㄴ' ? withL + '은' : s === 'ㄹ' ? withL + '을' : withL + '으' + s;
 	});
@@ -1636,7 +2255,7 @@ function applyMorphology(text) {
 	});
 
 	// 6. h_irregular
-	resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
+	resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
 		const base = setFinal(ch, 0);
 		return s === 'ㄴ' ? setFinal(base, 4) : s === 'ㄹ' ? setFinal(base, 8) : base + s;
 	});
@@ -1645,7 +2264,7 @@ function applyMorphology(text) {
 	});
 
 	// 7. s_irregular
-	resolvedKo = resolvedKo.replace(/([가-힣])\[s_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
+	resolvedKo = resolvedKo.replace(/([가-힣])\[s_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고|ㄹ|ㄴ)/g, (_, ch, s) => {
 		const base = setFinal(ch, 0);
 		return s === 'ㄴ' ? base + '은' : s === 'ㄹ' ? base + '을' : base + '으' + s;
 	});
@@ -1701,7 +2320,7 @@ function applyMorphology(text) {
 	});
 
 	// Resolve 으 insertion
-	resolvedKo = resolvedKo.replace(/([가-힣])으\/(니까|면|면서|러|려고|려면|세|시|셔|십|로|라고)/g, (_, ch, s) => {
+	resolvedKo = resolvedKo.replace(/([가-힣])으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고)/g, (_, ch, s) => {
 		const d = decomposeHangul(ch);
 		return ch + (d && d.final !== 0 && d.final !== 8 ? '으' : '') + s;
 	});
@@ -1710,6 +2329,12 @@ function applyMorphology(text) {
 	resolvedKo = resolvedKo.replace(/([가-힣])\(으\)로/g, (_, ch) => {
 		const d = decomposeHangul(ch);
 		return ch + (d && d.final !== 0 && d.final !== 8 ? '으로' : '로');
+	});
+
+	// Resolve (으)시 / (으)세 / (으)십 / (으)셨 based on batchim
+	resolvedKo = resolvedKo.replace(/([가-힣])\(으\)(시|세|셔|셨|십)/g, (_, ch, s) => {
+		const d = decomposeHangul(ch);
+		return ch + (d && d.final !== 0 && d.final !== 8 ? '으' : '') + s;
 	});
 
 	// Resolve 으/ㄹ
@@ -1743,7 +2368,7 @@ function applyMorphology(text) {
 		return m;
 	});
 
-	resolvedKo = resolvedKo.replace(/([가-힣])았(어요|어|다가|던)/g, (m, ch, s) => {
+	resolvedKo = resolvedKo.replace(/([가-힣])았(어요|어|다가|던|습니다|다)/g, (m, ch, s) => {
 		const d = decomposeHangul(ch);
 		if (!d || d.final !== 0) return m;
 		if (d.medial === 0) return composeHangul(d.initial, 0, 20) + s; // ㅏ -> 았
@@ -1752,9 +2377,9 @@ function applyMorphology(text) {
 	});
 
 	resolvedKo = resolvedKo.replace(/오아(요|서|도|야|라)/g, (m, s) => "와" + s);
-	resolvedKo = resolvedKo.replace(/오았(어요|어|다가|던)/g, (m, s) => "왔" + s);
+	resolvedKo = resolvedKo.replace(/오았(어요|어|다가|던|습니다|다)/g, (m, s) => "왔" + s);
 	resolvedKo = resolvedKo.replace(/하여(요|서|도|야|라|지|져|졌)/g, (m, s) => "해" + s);
-	resolvedKo = resolvedKo.replace(/하였(어요|어|다가|던)/g, (m, s) => "했" + s);
+	resolvedKo = resolvedKo.replace(/하였(어요|어|다가|던|습니다|다)/g, (m, s) => "했" + s);
 	resolvedKo = resolvedKo.replace(/마시(아|어)(요|서|도|야|라)/g, (m, v, s) => "마셔" + s);
 	resolvedKo = resolvedKo.replace(/크(아|어)(요|서|도|야|라)/g, (m, v, s) => "커" + s);
 	resolvedKo = resolvedKo.replace(/이어요/g, "이에요");
@@ -1768,7 +2393,7 @@ function applyMorphology(text) {
 		return m;
 	});
 
-	resolvedKo = resolvedKo.replace(/([가-힣])었(어요|어|다가|던)/g, (m, ch, s) => {
+	resolvedKo = resolvedKo.replace(/([가-힣])었(어요|어|다가|던|습니다|다)/g, (m, ch, s) => {
 		const d = decomposeHangul(ch);
 		if (!d || d.final !== 0) return m;
 		if (d.medial === 20) return composeHangul(d.initial, 6, 20) + s; // ㅣ -> 였
@@ -2015,6 +2640,28 @@ const exportedMembers = {
 	HUMBLE_DATIVE_VERBS,
 	PARTICLE_PAIRS,
 	PRONOUN_REPLACEMENTS,
+	HONORIFIC_VERB_SUPPLETIONS,
+	HUMBLE_VERB_SUPPLETIONS,
+	HONORIFIC_NOUN_SUPPLETIONS,
+	HUMBLE_PRONOUN_SUPPLETIONS,
+	PLAIN_COUNTERPARTS,
+	HONORIFIC_WORDS,
+	HUMBLE_WORDS,
+	FORBIDDEN_PLAIN_WORDS_FOR_ELDERS,
+	isElderNoun,
+	isInanimateInstitution,
+	getHonorificVerb,
+	getHumbleVerb,
+	getHonorificNoun,
+	getHumblePronoun,
+	getPlainCounterpart,
+	isHonorificWord,
+	isHumbleWord,
+	isForbiddenForElder,
+	getHonorificPredicate,
+	getHumblePredicate,
+	applyHonorificConcord,
+	validateHonorificConcord,
 	TokenOption,
 	deduplicateTokenOptions,
 	getConjugatedStem,

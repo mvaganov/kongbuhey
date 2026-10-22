@@ -28,7 +28,7 @@ Contains the 12-element schema array for Language Units (Vocabulary and Grammar)
 * **File Layout & LLM Tooling**: Functional logic (`DATA_SCHEMA`, in-memory cache engine, `addLearningUnit`, `getWords`, `hasTag`) is positioned at the top of `data.js` (lines 1–150) above `KR_EN_languageUnits`. Agents must use `select.js` to query, count, or modify data rows rather than reading the data array directly.
 
 * **Current Dataset Status:** 
-  - **1,693 units (100% complete curriculum from words0.js, words1.js, study texts, and canonical semantic units)**: Sequential IDs 0..1692. Covers `SUOBI00` through `SUOBI20`, all 40 classes (`class2011` through `class2202`), and ingested study texts (`studytext12`, `studytext21`, `studytext22`).
+  - **1,708 units (100% complete curriculum from words0.js, words1.js, study texts, and canonical semantic units)**: Sequential IDs 0..1707. Covers `SUOBI00` through `SUOBI20`, all 40 classes (`class2011` through `class2202`), ingested study texts (`studytext12`, `studytext21`, `studytext22`), and canonical honorific/case units.
   - **Single Point of Truth in `data.js`**: All Korean vocabulary, counting systems, honorific titles, institutions, directional/origin/humble verbs, particle allomorphs, and pronoun sandhi rules reside exclusively in `data.js`:
     - `elder_noun` semantic tag assigns elder status to senior kinship and titles (`선생님`, `교수님`, `부모님`, `어머니`, `아버지`, `할머니`, `할아버지`, `사장님`, `어르신`, `선배`, `부장`, `팀장`, `작은아버지`, `작은어머니`, `큰아버지`, `큰어머니`, etc.).
     - `inanimate_institution` tag marks facilities and organizations (`회사`, `은행`, `학교`, `병원`, `우체국`, `경찰서`, `대사관`, `소방서`, `구청`, etc.).
@@ -46,7 +46,7 @@ Contains the 12-element schema array for Language Units (Vocabulary and Grammar)
   - **Automated Ambiguity & Diversity Safeguards**: `select.js` and `test.js` actively enforce:
     1. Zero conflated homonym verbs with cross-domain tag conflicts or divergent definitions.
     2. Strict candidate diversity ($\ge 3$ candidates per verb). Specialized single-target verbs (`닦다`, `부르다`, `차다`, `끼다`) are explicitly tagged with `SUPPRESS_SEMANTIC_DIVERSITY_WARNING`.
-  - Sentence validation: 100% pass rate with 0 errors across Cartesian test suites (`node test.js`, 5 suites passed; `collocation_test.js`, 732 assertions; `particle_concord_test.js`, 128 assertions; `test/dynamic_semantic_sets_test.js`, 9 assertions).
+  - Sentence validation: 100% pass rate with 0 errors across Cartesian test suites (`node test.js`, 6 suites passed; `collocation_test.js`, 734 assertions; `particle_concord_test.js`, 128 assertions; `test/honorific_concord_test.js`, 220 assertions; `test/dynamic_semantic_sets_test.js`, 9 assertions).
 
 ### 2. `korean.js` (Morphology, Pronunciation & Semantic Generation Engine)
 A robust, centralized module that handles complex rules of Korean text manipulation, standard pronunciation, and semantic generation (refactored for high token and syntactic density: 1,280 lines / 59.6 KB, down from 1,935 lines / 83.6 KB, a ~34% reduction in line count and ~29% in file size with 100% backward compatibility):
@@ -182,12 +182,18 @@ Single command that executes all repository test suites with fail-fast behavior:
        - Split `{Adv}` into `{Adv_Degree}`, `{Adv_Manner}`, and `{Adv_Discourse}`.
        - Build `test/particle_concord_test.js` and `test/temporal_concord_test.js`.
      - **Phase C (Honorifics & Classifier Matrices — F4, F6, F8)**:
-       - Implement subject/dative honorific concord and lexical suppletions (`자다` $\rightarrow$ `주무시다`, `밥` $\rightarrow$ `진지`, `주다` $\rightarrow$ `드리다`).
+       - **Feature 4 (Completed)**: Speech Register & Honorific Concord with Lexical Suppletions implemented.
+         - Subject honorific concord: elder subject detection (`elder_noun`), subject particle suppletion (`-께서`, `-께서는`), honorific predicate marker (`-(으)시-`).
+         - Lexical verb suppletions: `자다` $\rightarrow$ `주무시다`, `먹다/마시다` $\rightarrow$ `드시다/잡수시다`, `있다` $\rightarrow$ `계시다` (vs indirect possession `있으시다`), `아프다` $\rightarrow$ `편찮으시다`, `죽다` $\rightarrow$ `돌아가시다`.
+         - Lexical noun suppletions: `밥` $\rightarrow$ `진지/식사`, `나이` $\rightarrow$ `연세`, `말` $\rightarrow$ `말씀`, `집` $\rightarrow$ `댁`, `이름` $\rightarrow$ `성함`, `생일` $\rightarrow$ `생신`, `사람/명` $\rightarrow$ `분`.
+         - Dative humble suppletions: elder recipient (`-께`), `주다` $\rightarrow$ `드리다`, `말하다` $\rightarrow$ `말씀드리다`, `묻다/물어보다` $\rightarrow$ `여쭙다/여쭈어보다`, `만나다/보다` $\rightarrow$ `뵙다`, `도와주다` $\rightarrow$ `도와드리다`, `보여주다` $\rightarrow$ `보여드리다`.
+         - 1st-person pronoun concord: polite/formal (`저/제`, `저희`) vs banmal/informal (`나/내`, `우리`).
+         - Dedicated test suite `test/honorific_concord_test.js` (220 tests passing, 0 failures).
        - Enforce noun-to-counter measure word matrix (`개`, `명`, `마리`, `권`, `병`, `잔`, `대`, `켤레`, `벌`, `송이`).
        - Restrict imperative/propositive moods strictly to Action Verbs.
-       - Build `test/honorific_concord_test.js` and `test/counter_concord_test.js`.
-     - **Phase D (Continuous Test Integration)**:
-       - Add Stage 6 (Semantic & Collocation Validity) into `test.js` to permanently guard against semantic regressions in CI.
+       - Build `test/counter_concord_test.js`.
+     - **Phase D (Continuous Test Integration — Completed)**:
+       - Added Stage 6 (`[6/6] Semantic Rules & Honorific Concord`) directly into `test.js`, running all 4 semantic suites (1,091 assertions: collocations 734, particle concord 128, honorific concord 220, dynamic sets 9) in ~1.5s with fail-fast CI protection.
 
 2. **Prioritize Ingestion of Remaining Study Texts (Phase 1.5)**:
    - Ingest next passage: **`studytext31`**, followed by `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext63`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`.
