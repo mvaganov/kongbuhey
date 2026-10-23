@@ -189,7 +189,14 @@ Single command that executes all repository test suites with fail-fast behavior:
          - Dynamic sets (`PAST_TIME_WORDS`, `FUTURE_TIME_WORDS`, `PRESENT_TIME_WORDS`, `BARE_TIME_WORDS_NO_PARTICLE`, `PAST_GRAMMAR_IDS`, `FUTURE_GRAMMAR_IDS`, `PRESENT_GRAMMAR_IDS`) populated from `data.js` without hardcoded Hangul.
          - Surface Korean phonological analysis: Unicode Jamo coda decomposition checking final coda 20 (`ㅆ`) reliably detects all conjugated past predicates (`갔어요`, `봤습니다`, `먹었어요`) while ignoring present roots (`있/없/겠`).
          - Dedicated test suite `test/temporal_concord_test.js` (495 tests passing, 0 failures).
-       - Implement spatial relational phrase generator (`[Noun + 의] + [Position] + 에/에서`) (F7).
+        - **Feature 7 (Completed)**: Deictic Demonstratives & Spatial Relational Noun Phrase Syntax implemented.
+          - Tripartite deictic proximity system: Proximal (`이`, `이것/이거`, `여기/이곳`, `이쪽`), Medial (`그`, `그것/그거`, `거기/그곳`, `그쪽`), Distal (`저`, `저것/저거`, `저기/저곳`, `저쪽`), Interrogative (`어느/어떤/무슨`, `무엇/뭐`, `어디`).
+          - Spatial relational frames: `[Reference Noun (+의)] + [Position] + [Locative Particle]`.
+          - Spatial positions (17 canonical units in `SPATIAL_POSITIONS`): `위`, `아래`, `밑`, `앞`, `뒤`, `옆`, `안`, `속`, `밖`, `사이`, `가운데`, `중간`, `근처`, `건너편`, `맞은편`, `오른쪽`, `왼쪽`.
+          - Locative particle concord: Static existence verbs (`있다/없다/계시다/살다/앉다/두다`) pair with `-에` (`책상 위에`); dynamic action verbs pair with `-에서` (`학교 앞에서`); directional motion verbs pair with `-(으)로` (`위로`, `오른쪽으로`).
+          - Determiner syntax: Determiners (`이, 그, 저, 어느`) strictly precede nominals; bare determiners attaching case particles directly (*“이가”, *“이를”, *“그을”*) are strictly prohibited and repaired (`이게`, `이걸`, `그걸`).
+          - Case-contracted demonstratives: `이게/그게/저게` (subject), `이건/그건/저건` (topic), `이걸/그걸/저걸` (object).
+          - Dedicated test suite `test/spatial_concord_test.js` (596 tests passing, 0 failures).
        - Split `{Adv}` into `{Adv_Degree}`, `{Adv_Manner}`, and `{Adv_Discourse}` (F9).
      - **Phase C (Honorifics & Classifier Matrices — F4, F6, F8)**:
        - **Feature 4 (Completed)**: Speech Register & Honorific Concord with Lexical Suppletions implemented.
@@ -210,7 +217,7 @@ Single command that executes all repository test suites with fail-fast behavior:
          - Dedicated test suite `test/counter_concord_test.js` (471 tests passing, 0 failures).
        - Restrict imperative/propositive moods strictly to Action Verbs (F8).
      - **Phase D (Continuous Test Integration — Completed)**:
-       - Added Stage 6 (`[6/6] Semantic Rules & Honorific Concord`) directly into `test.js`, running all 6 semantic suites (2,057 assertions: collocations 734, particle concord 128, honorific concord 220, temporal concord 495, classifier concord 471, dynamic sets 9) in ~1.8s with fail-fast CI protection.
+       - Added Stage 6 (`[6/6] Semantic Rules & Honorific Concord`) directly into `test.js`, running all 7 semantic suites (2,653 assertions: collocations 734, particle concord 128, honorific concord 220, temporal concord 495, classifier concord 471, spatial & deictic concord 596, dynamic sets 9) in ~1.9s with fail-fast CI protection.
 
 2. **Prioritize Ingestion of Remaining Study Texts (Phase 1.5)**:
    - Ingest next passage: **`studytext31`**, followed by `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext63`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`.
