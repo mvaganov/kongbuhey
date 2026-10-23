@@ -134,7 +134,7 @@ function getFilteredWords(pos, tag) {
 
 function getConjugatedStem(koreanWord, conjugation) {
 	let stem = getStem(koreanWord);
-	if (conjugation && conjugation !== "regular" && conjugation !== "") {
+	if (conjugation && conjugation !== "regular" && conjugation !== "" && /^[a-z_]+$/.test(conjugation)) {
 		stem += `[${conjugation}]`;
 	}
 	return stem;
@@ -770,6 +770,12 @@ let SINO_CLASSIFIERS = new Set();
 let CLASSIFIER_UNITS = new Map();
 let CLASSIFIER_NOUN_SPECS = [];
 
+let SPATIAL_POSITIONS = new Map();
+let DEICTIC_DETERMINERS = new Map();
+let DEICTIC_PRONOUNS = new Map();
+let DEICTIC_LOCATIVES = new Map();
+let DEICTIC_DIRECTIONS = new Map();
+
 function initSemanticSets() {
 	ELDER_NOUN_TITLES.clear();
 	INANIMATE_INSTITUTION_NAMES.clear();
@@ -796,6 +802,11 @@ function initSemanticSets() {
 	SINO_CLASSIFIERS.clear();
 	CLASSIFIER_UNITS.clear();
 	CLASSIFIER_NOUN_SPECS = [];
+	SPATIAL_POSITIONS.clear();
+	DEICTIC_DETERMINERS.clear();
+	DEICTIC_PRONOUNS.clear();
+	DEICTIC_LOCATIVES.clear();
+	DEICTIC_DIRECTIONS.clear();
 
 	const allUnits = KR_EN_languageUnits || [];
 	for (const unit of allUnits) {
@@ -942,6 +953,33 @@ function initSemanticSets() {
 					generalObject: !!cs.generalObject,
 					incompatibleTags: Array.isArray(cs.incompatibleTags) ? cs.incompatibleTags : []
 				});
+			}
+		}
+
+		// Spatial position nouns
+		if (pos === "Noun" && (hasTag(unit, "position") || (sv && sv.domain === "position"))) {
+			SPATIAL_POSITIONS.set(ko, {
+				unit,
+				ko,
+				en: unit[DATA_SCHEMA.English],
+				domain: sv?.domain || "position",
+				direction: sv?.direction || null
+			});
+		}
+
+		// Deictic Demonstratives & Determiners
+		if (hasTag(unit, "deictic", "demonstrative") || (sv && (sv.proximity || sv.deictic_type))) {
+			const prox = sv?.proximity || (hasTag(unit, "proximal") ? "proximal" : hasTag(unit, "medial") ? "medial" : hasTag(unit, "distal") ? "distal" : hasTag(unit, "interrogative") ? "interrogative" : "proximal");
+			const deicticType = sv?.deictic_type || (pos === "Determiner" ? "determiner" : pos === "Pronoun" && hasTag(unit, "place", "location") ? "place" : pos === "Pronoun" ? "thing" : hasTag(unit, "direction") ? "direction" : null);
+
+			if (pos === "Determiner" || deicticType === "determiner") {
+				DEICTIC_DETERMINERS.set(ko, { unit, ko, proximity: prox, type: "determiner" });
+			} else if (deicticType === "thing" || (pos === "Pronoun" && !hasTag(unit, "place", "location") && (hasTag(unit, "thing", "object") || sv?.domain === "object"))) {
+				DEICTIC_PRONOUNS.set(ko, { unit, ko, proximity: prox, type: "thing", formality: unit[DATA_SCHEMA.FormalityLevel] });
+			} else if (deicticType === "place" || (hasTag(unit, "place", "location") && (pos === "Pronoun" || pos === "Noun"))) {
+				DEICTIC_LOCATIVES.set(ko, { unit, ko, proximity: prox, type: "place" });
+			} else if (deicticType === "direction" || hasTag(unit, "direction")) {
+				DEICTIC_DIRECTIONS.set(ko, { unit, ko, proximity: prox, type: "direction" });
 			}
 		}
 	}
@@ -1930,6 +1968,224 @@ function validateCounterConcord(input, context = {}) {
 	};
 }
 
+// =========================================================================
+// Feature 7: Deictic Demonstratives & Spatial Relational Noun Phrase Syntax
+// =========================================================================
+
+function getSpatialPositions(options = {}) {
+	if (options.asUnits) {
+		return Array.from(SPATIAL_POSITIONS.values()).map(v => v.unit);
+	}
+	return Array.from(SPATIAL_POSITIONS.keys());
+}
+
+function getDeicticDemonstratives(options = {}) {
+	const results = [];
+	const filterType = options.type;
+	const filterProx = options.proximity;
+
+	const mapsToSearch = [];
+	if (!filterType || filterType === "determiner") mapsToSearch.push(DEICTIC_DETERMINERS);
+	if (!filterType || filterType === "thing" || filterType === "pronoun") mapsToSearch.push(DEICTIC_PRONOUNS);
+	if (!filterType || filterType === "place" || filterType === "locative") mapsToSearch.push(DEICTIC_LOCATIVES);
+	if (!filterType || filterType === "direction") mapsToSearch.push(DEICTIC_DIRECTIONS);
+
+	for (const m of mapsToSearch) {
+		for (const [ko, entry] of m.entries()) {
+			if (filterProx && entry.proximity !== filterProx) continue;
+			results.push(entry);
+		}
+	}
+	return results;
+}
+
+function isStaticExistenceVerb(verbOrKo) {
+	if (!verbOrKo) return false;
+	const ko = typeof verbOrKo === 'string' ? verbOrKo : (Array.isArray(verbOrKo) ? verbOrKo[DATA_SCHEMA.Korean] : "");
+	if (STATIC_EXISTENCE_VERBS.has(ko)) return true;
+	const unit = getVerbUnit(verbOrKo);
+	if (unit) {
+		if (hasTag(unit, "static", "existence", "residence", "locative_static")) return true;
+		const sv = parseSemanticVector(unit);
+		if (sv && sv.locative === "static") return true;
+	}
+	return false;
+}
+
+function buildSpatialPhrase(referenceNounOrPosition, positionOrOptions = null, maybeOptions = {}) {
+	let referenceNoun = referenceNounOrPosition;
+	let position = positionOrOptions;
+	let options = maybeOptions;
+
+	if (typeof positionOrOptions === 'object' && positionOrOptions !== null && !Array.isArray(positionOrOptions)) {
+		options = positionOrOptions;
+		position = null;
+	}
+
+	const refNounKo = typeof referenceNoun === 'string' ? referenceNoun : (Array.isArray(referenceNoun) ? referenceNoun[DATA_SCHEMA.Korean] : "");
+	if (!position && SPATIAL_POSITIONS.has(refNounKo)) {
+		position = referenceNoun;
+		referenceNoun = null;
+	}
+
+	const refUnit = typeof referenceNoun === 'object' && Array.isArray(referenceNoun) ? referenceNoun : getNounUnit(referenceNoun);
+	const refKo = typeof referenceNoun === 'string' ? referenceNoun : (refUnit ? refUnit[DATA_SCHEMA.Korean] : "");
+
+	let posUnit = typeof position === 'object' && Array.isArray(position) ? position : null;
+	let posKo = typeof position === 'string' ? position : (posUnit ? posUnit[DATA_SCHEMA.Korean] : "");
+
+	if (!posKo) {
+		const positions = getSpatialPositions();
+		posKo = positions.length > 0 ? positions[Math.floor(Math.random() * positions.length)] : "위";
+		posUnit = SPATIAL_POSITIONS.get(posKo)?.unit;
+	} else if (!posUnit && SPATIAL_POSITIONS.has(posKo)) {
+		posUnit = SPATIAL_POSITIONS.get(posKo)?.unit;
+	}
+
+	// Prenominal modifying noun phrase: [Ground] 위의 [Modifying Noun]
+	if (options.modifyingNoun) {
+		const modKo = typeof options.modifyingNoun === 'string' ? options.modifyingNoun : options.modifyingNoun[DATA_SCHEMA.Korean];
+		return `${refKo ? refKo + " " : ""}${posKo}의 ${modKo}`;
+	}
+
+	const hasGenitive = options.genitive === true;
+	const refPart = hasGenitive ? `${refKo}의` : refKo;
+
+	let particle = options.particle;
+	if (!particle) {
+		if (options.verb) {
+			particle = "location";
+		} else {
+			particle = "location_static";
+		}
+	} else if (particle === "static") {
+		particle = "location_static";
+	} else if (particle === "dynamic") {
+		particle = "location_dynamic";
+	}
+
+	const attachedPos = attachParticle(posKo, particle, options.verb, options);
+	return refPart ? `${refPart} ${attachedPos}` : attachedPos;
+}
+
+function buildDeicticPhrase(proximity = "proximal", targetType = "noun", options = {}) {
+	if (targetType === "noun" || options.noun) {
+		const determinerEntry = Array.from(DEICTIC_DETERMINERS.values()).find(d => d.proximity === proximity);
+		const detKo = determinerEntry ? determinerEntry.ko : (proximity === "medial" ? "그" : proximity === "distal" ? "저" : "이");
+		const nounKo = typeof options.noun === 'string' ? options.noun : (options.noun ? options.noun[DATA_SCHEMA.Korean] : (typeof targetType === 'string' && targetType !== "noun" ? targetType : "책"));
+		if (options.particle) {
+			return `${detKo} ` + attachParticle(nounKo, options.particle, options.verb, options);
+		}
+		return `${detKo} ${nounKo}`;
+	}
+
+	if (targetType === "thing" || targetType === "pronoun") {
+		const candidates = Array.from(DEICTIC_PRONOUNS.values()).filter(p => p.proximity === proximity);
+		const colloquial = options.colloquial === true;
+		const entry = candidates.find(c => colloquial ? (c.formality === "informal_low" || c.ko.endsWith("거")) : !c.ko.endsWith("거")) || candidates[0];
+		const baseKo = entry ? entry.ko : (proximity === "medial" ? "그것" : proximity === "distal" ? "저것" : "이것");
+		if (options.particle) {
+			return applyMorphology(attachParticle(baseKo, options.particle, options.verb, options));
+		}
+		return baseKo;
+	}
+
+	if (targetType === "place" || targetType === "locative") {
+		const formal = options.formal === true;
+		const candidates = Array.from(DEICTIC_LOCATIVES.values()).filter(l => l.proximity === proximity);
+		const entry = candidates.find(c => formal ? c.ko.endsWith("곳") : !c.ko.endsWith("곳")) || candidates[0];
+		const baseKo = entry ? entry.ko : (proximity === "medial" ? "거기" : proximity === "distal" ? "저기" : "여기");
+		if (options.particle) {
+			return attachParticle(baseKo, options.particle, options.verb, options);
+		}
+		return baseKo;
+	}
+
+	if (targetType === "direction") {
+		const candidates = Array.from(DEICTIC_DIRECTIONS.values()).filter(d => d.proximity === proximity);
+		const entry = candidates[0];
+		const baseKo = entry ? entry.ko : (proximity === "medial" ? "그쪽" : proximity === "distal" ? "저쪽" : "이쪽");
+		if (options.particle) {
+			return attachParticle(baseKo, options.particle, options.verb, options);
+		}
+		return baseKo;
+	}
+
+	return "";
+}
+
+function validateSpatialConcord(input, context = {}) {
+	const errors = [];
+	const text = typeof input === 'string' ? input : (input && input.text ? input.text : "");
+	if (!text) return { valid: true, errors: [] };
+
+	// 1. Determiner Bare Particle Prohibition
+	// Bare determiners modifying no nominal: 이, 그, 저, 어느 cannot attach case particles directly (*이가, *이를, *그을, *어느를)
+	const bareDeterminerMatches = text.match(/(^|[^가-힣])(?:(이)(가|를|을|에서)|(그)(가|를|을|에서)|(어느)(가|를|을|는|은|에|에서)|(저가))(?=[^가-힣]|$)/g);
+	if (bareDeterminerMatches) {
+		for (const m of bareDeterminerMatches) {
+			errors.push(`Bare demonstrative determiner cannot attach case particle directly: "${m.trim()}" in "${text}"`);
+		}
+	}
+
+	// 2. Spatial Relational Frame Static vs Dynamic Verb Particle Harmony
+	const positionsPattern = Array.from(SPATIAL_POSITIONS.keys()).join('|');
+	if (positionsPattern) {
+		// Static existence verb takes -에 (not -에서): e.g. *책상 위에서 책이 있어요
+		const staticStems = Array.from(STATIC_EXISTENCE_VERBS).map(v => v.replace(/다$/, '')).concat(['누워', '계세', '계십', '계셔', '계셨']);
+		if (staticStems.length > 0) {
+			const staticErrorRegex = new RegExp(`(?:${positionsPattern})에서\\s+(?:[^.!?]*\\s+)?(?:${staticStems.join('|')})`);
+			if (staticErrorRegex.test(text)) {
+				errors.push(`Spatial position noun takes '-에' (not '-에서') with static existence verb in: "${text}"`);
+			}
+		}
+
+		// Dynamic action verb takes -에서 (not -에): e.g. *학교 앞에 친구를 만나요
+		const dynamicActionErrorRegex = new RegExp(`(?:${positionsPattern})에\\s+(?:[가-힣]+[을를]\\s+)(?:만나|공부(?:하|해|했)|일(?:하|해|했)|운동(?:하|해|했)|먹|사|놀|기다(?:리|려)|마시|마셔|읽)`);
+		if (dynamicActionErrorRegex.test(text)) {
+			errors.push(`Spatial position noun takes '-에서' (not '-에') with dynamic action verb in: "${text}"`);
+		}
+	}
+
+	return {
+		valid: errors.length === 0,
+		errors
+	};
+}
+
+function applySpatialConcord(input) {
+	if (typeof input === 'object' && input !== null) {
+		let text = input.text || "";
+		if (text) {
+			text = applySpatialConcord(text);
+		}
+		return { ...input, text };
+	}
+
+	let str = String(input);
+
+	// Repair bare determiner + particle errors
+	str = str.replace(/(^|[^가-힣])이가(?=[^가-힣]|$)/g, '$1이게');
+	str = str.replace(/(^|[^가-힣])이를(?=[^가-힣]|$)/g, '$1이걸');
+	str = str.replace(/(^|[^가-힣])그가(?=[^가-힣]|$)/g, '$1그게');
+	str = str.replace(/(^|[^가-힣])그를(?=[^가-힣]|$)/g, '$1그걸');
+
+	// Repair static verb locative error on spatial positions: [Position]에서 ... 있다 -> [Position]에 ...
+	const positionsPattern = Array.from(SPATIAL_POSITIONS.keys()).join('|');
+	if (positionsPattern) {
+		const staticStems = Array.from(STATIC_EXISTENCE_VERBS).map(v => v.replace(/다$/, '')).concat(['누워', '계세', '계십', '계셔', '계셨']);
+		if (staticStems.length > 0) {
+			const repRegex = new RegExp(`(${positionsPattern})에서(\\s+(?:[^.!?]*\\s+)?(?:${staticStems.join('|')}))`, 'g');
+			str = str.replace(repRegex, '$1에$2');
+		}
+
+		const dynamicRepRegex = new RegExp(`(${positionsPattern})에(\\s+(?:[가-힣]+[을를]\\s+)(?:만나|공부(?:하|해|했)|일(?:하|해|했)|운동(?:하|해|했)|먹|사|놀|기다(?:리|려)|마시|마셔|읽))`, 'g');
+		str = str.replace(dynamicRepRegex, '$1에서$2');
+	}
+
+	return str;
+}
+
 /**
  * Attaches the appropriate grammatical case or semantic particle to a noun,
  * performing phonological batchim concord, honorific suppletion, animacy differentiation,
@@ -2332,6 +2588,31 @@ function getTokenOptions(token, depth = 0) {
 				options.push(new TokenOption(phrase, [dv, n]));
 			});
 		});
+	} else if (token.type === "Spatial_Phrase" || token.type === "Relational_Loc") {
+		const positions = getSpatialPositions();
+		let groundNouns = getFilteredWords("Noun", "place");
+		if (groundNouns.length === 0) groundNouns = getFilteredWords("Noun", "furniture");
+		if (groundNouns.length === 0) groundNouns = getFilteredWords("Noun", "object");
+		groundNouns.slice(0, 5).forEach(gn => {
+			const pos = positions[Math.floor(Math.random() * positions.length)];
+			const posUnit = SPATIAL_POSITIONS.get(pos)?.unit;
+			const phrase = `${gn[KoreanWord]} ${pos}에`;
+			options.push(new TokenOption(phrase, posUnit ? [gn, posUnit] : [gn]));
+		});
+	} else if (token.type === "Deictic_NP") {
+		const determiners = Array.from(DEICTIC_DETERMINERS.values());
+		const nouns = getFilteredWords("Noun", "object").slice(0, 5);
+		nouns.forEach(n => {
+			const det = determiners[Math.floor(Math.random() * determiners.length)];
+			const phrase = `${det.ko} ${n[KoreanWord]}`;
+			options.push(new TokenOption(phrase, [det.unit, n]));
+		});
+	} else if (token.type === "Deictic_Loc") {
+		const locs = Array.from(DEICTIC_LOCATIVES.values());
+		options = locs.map(l => new TokenOption(l.ko, [l.unit]));
+	} else if (token.type === "Deictic_Pronoun") {
+		const pros = Array.from(DEICTIC_PRONOUNS.values());
+		options = pros.map(p => new TokenOption(p.ko, [p.unit]));
 	}
 
 	options = deduplicateTokenOptions(options);
@@ -2594,6 +2875,44 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 				count,
 				classifierUnit ? classifierUnit[DATA_SCHEMA.Id] : classifier
 			];
+		} else if (tokenType === "Spatial_Phrase" || tokenType === "Relational_Loc") {
+			let groundNouns = getWords("Noun").filter(n => hasTag(n, "place") || hasTag(n, "furniture") || (hasTag(n, "object") && !hasTag(n, "measureWord") && !hasTag(n, "counter")));
+			if (groundNouns.length === 0) groundNouns = getWords("Noun", "place");
+			const sampledGround = groundNouns[Math.floor(Math.random() * groundNouns.length)];
+			const positions = getSpatialPositions();
+			const sampledPos = positions.length > 0 ? positions[Math.floor(Math.random() * positions.length)] : "위";
+			const posUnit = SPATIAL_POSITIONS.get(sampledPos)?.unit;
+
+			let particleType = "location";
+			if (tag === "static" || /에$/.test(token)) particleType = "location_static";
+			else if (tag === "dynamic" || /에서$/.test(token)) particleType = "location_dynamic";
+			else if (tag === "direction" || /로$/.test(token)) particleType = "direction";
+
+			replacementKo = buildSpatialPhrase(sampledGround, sampledPos, { particle: particleType });
+			childNode = [
+				sampledGround ? sampledGround[DATA_SCHEMA.Id] : 0,
+				posUnit ? posUnit[DATA_SCHEMA.Id] : sampledPos
+			];
+		} else if (tokenType === "Deictic_NP") {
+			const proximity = tag === "medial" ? "medial" : tag === "distal" ? "distal" : tag === "interrogative" ? "interrogative" : "proximal";
+			let nouns = getWords("Noun").filter(n => !hasTag(n, "measureWord") && !hasTag(n, "counter") && !hasTag(n, "place"));
+			const sampledNoun = nouns[Math.floor(Math.random() * nouns.length)];
+			replacementKo = buildDeicticPhrase(proximity, "noun", { noun: sampledNoun });
+			const detUnit = Array.from(DEICTIC_DETERMINERS.values()).find(d => d.proximity === proximity)?.unit;
+			childNode = [
+				detUnit ? detUnit[DATA_SCHEMA.Id] : 0,
+				sampledNoun ? sampledNoun[DATA_SCHEMA.Id] : 0
+			];
+		} else if (tokenType === "Deictic_Loc") {
+			const proximity = tag === "medial" ? "medial" : tag === "distal" ? "distal" : tag === "interrogative" ? "interrogative" : "proximal";
+			replacementKo = buildDeicticPhrase(proximity, "place");
+			const locUnit = Array.from(DEICTIC_LOCATIVES.values()).find(l => l.proximity === proximity && l.ko === replacementKo)?.unit;
+			childNode = locUnit ? locUnit[DATA_SCHEMA.Id] : replacementKo;
+		} else if (tokenType === "Deictic_Pronoun") {
+			const proximity = tag === "medial" ? "medial" : tag === "distal" ? "distal" : tag === "interrogative" ? "interrogative" : "proximal";
+			replacementKo = buildDeicticPhrase(proximity, "thing");
+			const proUnit = Array.from(DEICTIC_PRONOUNS.values()).find(p => p.proximity === proximity && p.ko === replacementKo)?.unit;
+			childNode = proUnit ? proUnit[DATA_SCHEMA.Id] : replacementKo;
 		} else if (tokenType === "Number" && tag && tag.includes("(")) {
 			const rangeMatch = tag.match(/^([a-zA-Z_]+)\((\d+)\s*,\s*(\d+)\)$/);
 			if (rangeMatch) {
@@ -2918,7 +3237,7 @@ function applyMorphology(text) {
 	});
 
 	// Strip leftover conjugation markers
-	resolvedKo = resolvedKo.replace(/\[[a-z_]+\]/g, '');
+	resolvedKo = resolvedKo.replace(/\[[^\]]+\]/g, '');
 
 	// Resolve particles based on previous character's batchim
 	if (!particlePairsRegex) {
@@ -3354,7 +3673,19 @@ const exportedMembers = {
 	buildClockTimePhrase,
 	getMonthName,
 	applyCounterConcord,
-	validateCounterConcord
+	validateCounterConcord,
+	SPATIAL_POSITIONS,
+	DEICTIC_DETERMINERS,
+	DEICTIC_PRONOUNS,
+	DEICTIC_LOCATIVES,
+	DEICTIC_DIRECTIONS,
+	getSpatialPositions,
+	getDeicticDemonstratives,
+	buildSpatialPhrase,
+	buildDeicticPhrase,
+	isStaticExistenceVerb,
+	validateSpatialConcord,
+	applySpatialConcord
 };
 
 if (typeof window !== 'undefined') {

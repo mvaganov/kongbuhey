@@ -157,9 +157,10 @@ graph TD
      * Relational positions: `위` (above), `아래/밑` (under), `앞` (in front), `뒤` (behind), `옆` (beside), `안/속` (inside), `밖` (outside), `사이` (between), `가운데` (middle), `근처` (near).
      * Examples: `책상 위에`, `학교 앞에서`, `의자 밑에`, `건물 근처에`.
 * **Current Problem Solved**: Enables the generator to produce natural spatial location phrases like *“책상 위에 책이 있습니다”* rather than only primitive single-noun locatives (*“책상이 있습니다”*).
-* **Engine Integration**: Implement a dedicated `{Spatial_Phrase}` / `{Relational_Loc}` generator in `getTokenOptions` in [`korean.js`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/korean.js).
+* **Engine Integration**: Dedicated `{Spatial_Phrase}`, `{Relational_Loc}`, `{Deictic_NP}`, `{Deictic_Loc}`, `{Deictic_Pronoun}` generators implemented in `getTokenOptions` and `generateSemanticSentence` in [`korean.js`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/korean.js). Helpers `buildSpatialPhrase`, `buildDeicticPhrase`, `validateSpatialConcord`, `applySpatialConcord` ensure 100% data-driven concord with zero hardcoded Hangul.
 * **Testing Infrastructure**:
-  * **Existing Infra**: Sufficient once the token generator is wired up; [`exhaustive.js`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/exhaustive.js) will expand and validate all combinations.
+  * **Status**: ✅ **Completed!**
+  * **Script**: `test/spatial_concord_test.js` (596 tests across 10 modules passing 100%, integrated directly into Stage 6 of `test.js`).
 
 ---
 
@@ -300,7 +301,7 @@ graph TD
 | **F4: Speech Register & Honorifics** | **66** | `korean.js` (`getHonorificPredicate`, `applyHonorificConcord`) | ✅ Completed | 220 tests passing in `test/honorific_concord_test.js` |
 | **F5: Temporal Tense Concord** | **63** | `korean.js` (`generateSemanticSentence`, `attachParticle`, `applyMorphology`) | ✅ Completed | 495 tests passing in `test/temporal_concord_test.js` |
 | **F6: Numeral-Classifier Matrix** | **535** | `korean.js` (`buildCountingPhrase`, `getMatchingClassifier`, `validateCounterConcord`) | ✅ Completed | 471 tests passing in `test/counter_concord_test.js` |
-| **F7: Deictic & Spatial Relational** | **234** | `korean.js` (`getTokenOptions`) | ✅ Yes | Exercised by `exhaustive.js` |
+| **F7: Deictic & Spatial Relational** | **234** | `korean.js` (`buildSpatialPhrase`, `buildDeicticPhrase`, `validateSpatialConcord`) | ✅ Completed | 596 tests passing in `test/spatial_concord_test.js` |
 | **F8: Mood & Negation Constraints** | **77** | `korean.js` (`generateTemplateTokenOptions`) | ⚠️ Partial | Add mood checks to `exhaustive.js` |
 | **F9: Adverbial Sub-Typing** | **101** | `korean.js` (`getTokenOptions`) | ❌ No | Add adverb scope checks |
 | **F10: Morphophonemic Sandhi** | **10** | `korean.js` (`applyMorphology`) | ✅ Yes | Covered by `exhaustive.js` + `test.js` |

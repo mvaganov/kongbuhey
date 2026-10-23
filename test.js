@@ -297,6 +297,7 @@ try {
 		{ name: "Honorifics (F4)", path: path.resolve(__dirname, 'test', 'honorific_concord_test.js') },
 		{ name: "Temporal Concord (F5)", path: path.resolve(__dirname, 'test', 'temporal_concord_test.js') },
 		{ name: "Classifier Concord (F6)", path: path.resolve(__dirname, 'test', 'counter_concord_test.js') },
+		{ name: "Spatial & Deictic Concord (F7)", path: path.resolve(__dirname, 'test', 'spatial_concord_test.js') },
 		{ name: "Dynamic Semantic Sets", path: path.resolve(__dirname, 'test', 'dynamic_semantic_sets_test.js') }
 	];
 
