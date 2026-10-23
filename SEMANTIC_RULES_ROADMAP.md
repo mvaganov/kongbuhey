@@ -121,18 +121,27 @@ graph TD
 
 ---
 
-#### Feature 5: Temporal Adverbial & Predicate Tense Concord
+#### Feature 5: Temporal Adverbial & Predicate Tense Concord (✅ Completed)
 * **Units Collapsed**: **63 units**.
 * **Linguistic Scope & Rules**:
-  * **Past-Restricted Time Words**: `어제, 그제, 지난주, 지난달, 작년, 아까, 방금, 옛날` $\rightarrow$ **strictly require past tense `-았/었-`**; strictly disallow prospective/future `-(으)ㄹ 거예요`, `-(으)려고 하다`, `-(으)ㄹ게요`.
-  * **Future-Restricted Time Words**: `내일, 모레, 다음주, 다음달, 내년, 곧, 앞으로` $\rightarrow$ **strictly require prospective/future endings**; strictly disallow past tense `-았/었-`.
-  * **Present/Ongoing Time Words**: `지금, 현재, 요즘, 매일, 항상` $\rightarrow$ pair with present tense or progressive `-고 있다`.
-  * **Deictic Time Particle Prohibition**: `오늘, 어제, 내일, 지금` cannot take the time particle `-에` (*“*오늘에”*, *“*어제에”* are ungrammatical).
-* **Current Problem Solved**: Eliminates temporal contradictions like *“어제 부산에 갈 거예요”* (Yesterday I will go to Busan) or *“내일 영화를 봤습니다”* (Tomorrow I saw a movie).
-* **Engine Integration**: Pass `temporal_polarity` (`past`, `present`, `future`) through `currentContext` in `generateSemanticSentence` in [`korean.js`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/korean.js), filtering Grammar predicate formulas accordingly.
+  * **Past-Restricted Time Words**: `어제, 그제, 지난주, 지난달, 작년, 아까, 방금, 옛날, 지난번, 이전, 과거` $\rightarrow$ **strictly require past tense `-았/었-`**; strictly disallow prospective/future `-(으)ㄹ 거예요`, `-(으)려고 하다`, `-(으)ㄹ게요`, `-을 건가요`.
+  * **Future-Restricted Time Words**: `내일, 모레, 다음주, 다음달, 내년, 곧, 앞으로, 미래, 이따가` $\rightarrow$ **strictly require prospective/future endings**; strictly disallow past tense `-았/었-`.
+  * **Present/Ongoing Time Words**: `지금, 현재, 요즘, 매일, 항상, 늘, 날마다, 올해, 금년, 이제` $\rightarrow$ pair with present tense or progressive `-고 있다`.
+  * **Deictic Time Particle Prohibition**: Pure deictic time adverbs (`어제, 오늘, 내일, 지금, 그제, 모레, 요즘, 언제, 아까, 방금, 이제`) strictly forbid the time particle `-에` (*“*어제에”*, *“*오늘에”*, *“*내일에”*, *“*지금에”* are ungrammatical in Korean).
+  * **Non-Deictic Time Nouns Require/Attach `-에`**: (`3시에, 월요일에, 1월에, 주말에, 봄에, 낮에, 밤에, 아침에, 방학에, 작년에, 내년에, 올해에`).
+* **Current Problem Solved**: Eliminates temporal contradictions like *“어제 부산에 갈 거예요”* (Yesterday I will go to Busan) or *“내일 영화를 봤습니다”* (Tomorrow I saw a movie) and accidental time particles (*“*어제에”*).
+* **Engine Integration**:
+  * Dynamic semantic extraction in `korean.js` (`initSemanticSets()` populates `PAST_TIME_WORDS`, `FUTURE_TIME_WORDS`, `PRESENT_TIME_WORDS`, `BARE_TIME_WORDS_NO_PARTICLE`, `PAST_GRAMMAR_IDS`, `FUTURE_GRAMMAR_IDS`, `PRESENT_GRAMMAR_IDS` dynamically from `data.js` tags without hardcoded Hangul).
+  * `getTemporalPolarity(wordOrUnit)` and `isDeicticTimeWord(nounUnit, nounKo)` helpers.
+  * Tense filtering in `filterWordsByTense(words, tense)` and `filterGrammarByTense(grammars, tense)`.
+  * `attachParticle(noun, "time")` returns bare word for deictic time words (or attaches topic marker) and attaches `-에` for non-deictic time nouns.
+  * `applyMorphology(text)` automatically repairs accidental `-에` on deictic time words (*“어제에”* $\rightarrow$ *“어제”*).
+  * `generateSemanticSentence` enforces temporal harmony via `currentContext.temporal_polarity` filtering `{Adv}`, `{Time}`, `{Clause}`.
+  * `validateTemporalConcord(input, context)` validates concord using Unicode coda decomposition (`ㅆ` past coda analysis) and future pattern checks.
+  * `applyTemporalConcord(input)` repairs deictic particle errors.
 * **Testing Infrastructure**:
-  * **Existing Infra**: Insufficient.
-  * **New Script Needed**: Create `test/temporal_concord_test.js` to assert that temporal adverbs never pair with conflicting verbal tenses.
+  * **Status**: ✅ **Completed!**
+  * **Script**: `test/temporal_concord_test.js` (495 tests across 10 modules passing 100%, integrated directly into Stage 6 of `test.js`).
 
 ---
 
@@ -289,7 +298,7 @@ graph TD
 | **F2: Descriptive Sensory Selection** | **165** | `korean.js` (`DESCRIPTIVE_VERB_SPECS`, `collocation_filter`) | ✅ Completed | 475 total tests passing in `collocation_test.js` |
 | **F3: Case Particle Specialization** | **297** | `korean.js` (`attachParticle`) | ✅ Completed | 128 tests passing in `particle_concord_test.js` |
 | **F4: Speech Register & Honorifics** | **66** | `korean.js` (`getHonorificPredicate`, `applyHonorificConcord`) | ✅ Completed | 220 tests passing in `test/honorific_concord_test.js` |
-| **F5: Temporal Tense Concord** | **63** | `korean.js` (`generateSemanticSentence`) | ❌ No | Build `test/temporal_concord_test.js` |
+| **F5: Temporal Tense Concord** | **63** | `korean.js` (`generateSemanticSentence`, `attachParticle`, `applyMorphology`) | ✅ Completed | 495 tests passing in `test/temporal_concord_test.js` |
 | **F6: Numeral-Classifier Matrix** | **535** | `korean.js` (`getNumberTokenOptions`) | ⚠️ Partial | Build `test/counter_concord_test.js` |
 | **F7: Deictic & Spatial Relational** | **234** | `korean.js` (`getTokenOptions`) | ✅ Yes | Exercised by `exhaustive.js` |
 | **F8: Mood & Negation Constraints** | **77** | `korean.js` (`generateTemplateTokenOptions`) | ⚠️ Partial | Add mood checks to `exhaustive.js` |
