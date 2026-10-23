@@ -776,6 +776,39 @@ let DEICTIC_PRONOUNS = new Map();
 let DEICTIC_LOCATIVES = new Map();
 let DEICTIC_DIRECTIONS = new Map();
 
+let IMPERATIVE_GRAMMAR_IDS = new Set();
+let PROPOSITIVE_GRAMMAR_IDS = new Set();
+let INABILITY_NEGATION_IDS = new Set();
+let GENERAL_NEGATION_IDS = new Set();
+let VOLITIONAL_GRAMMAR_IDS = new Set();
+let FORBIDDEN_NEGATIVE_ROOTS = new Set();
+let NEGATION_SUPPLETIONS = new Map();
+let AFFIRMATIVE_COUNTERPARTS = new Map();
+let SHORT_NEGATION_WORDS = new Set();
+let SHORT_INABILITY_WORDS = new Set();
+let SHORT_GENERAL_WORDS = new Set();
+let DESCRIPTIVE_SURFACE_MAP = new Map();
+let FORBIDDEN_DV_IMPERATIVE_FORMS = new Map();
+let FORBIDDEN_DV_PROPOSITIVE_FORMS = new Map();
+let FORBIDDEN_DV_LONG_INABILITY_FORMS = new Map();
+let FORBIDDEN_DV_VOLITIONAL_FORMS = new Map();
+let DEGREE_ADVERBS = new Map();
+let MANNER_ADVERBS = new Map();
+let DISCOURSE_ADVERBS = new Map();
+let NEGATIVE_POLARITY_ADVERBS = new Map();
+let ALL_NPI_WORDS = new Set();
+let AFFIRMATIVE_DEGREE_ADVERBS = new Map();
+let CLAUSAL_CONNECTIVES = new Map();
+let CAUSAL_CONNECTIVES = new Map();
+let CONTRAST_CONNECTIVES = new Map();
+let PURPOSE_CONNECTIVES = new Map();
+let CONDITION_CONNECTIVES = new Map();
+let SIMULTANEOUS_CONNECTIVES = new Map();
+let MOTION_VERBS = new Set();
+let MOTION_VERB_STEMS = new Set();
+let MULTI_WORD_CONNECTIVE_RULES = [];
+let DYNAMIC_SUFFIX_RULES = [];
+
 function initSemanticSets() {
 	ELDER_NOUN_TITLES.clear();
 	INANIMATE_INSTITUTION_NAMES.clear();
@@ -807,6 +840,38 @@ function initSemanticSets() {
 	DEICTIC_PRONOUNS.clear();
 	DEICTIC_LOCATIVES.clear();
 	DEICTIC_DIRECTIONS.clear();
+	IMPERATIVE_GRAMMAR_IDS.clear();
+	PROPOSITIVE_GRAMMAR_IDS.clear();
+	INABILITY_NEGATION_IDS.clear();
+	GENERAL_NEGATION_IDS.clear();
+	VOLITIONAL_GRAMMAR_IDS.clear();
+	FORBIDDEN_NEGATIVE_ROOTS.clear();
+	NEGATION_SUPPLETIONS.clear();
+	AFFIRMATIVE_COUNTERPARTS.clear();
+	SHORT_NEGATION_WORDS.clear();
+	SHORT_INABILITY_WORDS.clear();
+	SHORT_GENERAL_WORDS.clear();
+	DESCRIPTIVE_SURFACE_MAP.clear();
+	FORBIDDEN_DV_IMPERATIVE_FORMS.clear();
+	FORBIDDEN_DV_PROPOSITIVE_FORMS.clear();
+	FORBIDDEN_DV_LONG_INABILITY_FORMS.clear();
+	FORBIDDEN_DV_VOLITIONAL_FORMS.clear();
+	DEGREE_ADVERBS.clear();
+	MANNER_ADVERBS.clear();
+	DISCOURSE_ADVERBS.clear();
+	NEGATIVE_POLARITY_ADVERBS.clear();
+	ALL_NPI_WORDS.clear();
+	AFFIRMATIVE_DEGREE_ADVERBS.clear();
+	CLAUSAL_CONNECTIVES.clear();
+	CAUSAL_CONNECTIVES.clear();
+	CONTRAST_CONNECTIVES.clear();
+	PURPOSE_CONNECTIVES.clear();
+	CONDITION_CONNECTIVES.clear();
+	SIMULTANEOUS_CONNECTIVES.clear();
+	MOTION_VERBS.clear();
+	MOTION_VERB_STEMS.clear();
+	MULTI_WORD_CONNECTIVE_RULES = [];
+	DYNAMIC_SUFFIX_RULES = [];
 
 	const allUnits = KR_EN_languageUnits || [];
 	for (const unit of allUnits) {
@@ -982,7 +1047,257 @@ function initSemanticSets() {
 				DEICTIC_DIRECTIONS.set(ko, { unit, ko, proximity: prox, type: "direction" });
 			}
 		}
+
+		// Predicate Mood, Speech Act & Negation (Feature 8)
+		if (pos === "Grammar") {
+			if (sv?.mood === "imperative" || hasTag(unit, "imperative", "prohibition")) {
+				IMPERATIVE_GRAMMAR_IDS.add(unitId);
+			}
+			if (sv?.mood === "propositive" || hasTag(unit, "propositive", "suggestion")) {
+				PROPOSITIVE_GRAMMAR_IDS.add(unitId);
+			}
+			if (sv?.negation_type === "inability" || hasTag(unit, "inability")) {
+				INABILITY_NEGATION_IDS.add(unitId);
+			}
+			if (sv?.negation_type === "long_general" || (hasTag(unit, "negative") && !hasTag(unit, "inability"))) {
+				GENERAL_NEGATION_IDS.add(unitId);
+			}
+			if (sv?.mood === "volitional" || hasTag(unit, "volitional", "desire")) {
+				VOLITIONAL_GRAMMAR_IDS.add(unitId);
+			}
+		}
+
+		if (pos === "Adverb") {
+			if (sv?.negation_type === "short_inability" || hasTag(unit, "inability")) {
+				SHORT_INABILITY_WORDS.add(ko);
+				SHORT_NEGATION_WORDS.add(ko);
+			}
+			if (sv?.negation_type === "short_general" || (hasTag(unit, "negative") && !hasTag(unit, "inability"))) {
+				SHORT_GENERAL_WORDS.add(ko);
+				SHORT_NEGATION_WORDS.add(ko);
+			}
+		}
+
+		if (sv?.negation_suppletion) {
+			NEGATION_SUPPLETIONS.set(ko, sv.negation_suppletion);
+			if (sv.forbidden_negative_root) {
+				FORBIDDEN_NEGATIVE_ROOTS.add(ko);
+			}
+		}
+		if (sv?.affirmative_counterpart) {
+			AFFIRMATIVE_COUNTERPARTS.set(ko, sv.affirmative_counterpart);
+		}
+
+		// Adverbial Sub-Typing & Syntactic Placement (Feature 9)
+		if (pos === "Adverb" || pos === "Conjunction") {
+			const isDiscourse = sv?.adverb_type === "discourse" || pos === "Conjunction" || hasTag(unit, "adverb_discourse", "discourse", "conjunction");
+			const isNPI = sv?.npi || sv?.polarity_requirement === -1 || hasTag(unit, "negative_polarity", "npi");
+			let isDegree = sv?.adverb_type === "degree";
+			let isManner = sv?.adverb_type === "manner";
+
+			if (!isDegree && !isManner && !isDiscourse) {
+				if (hasTag(unit, "adverb_degree", "degree")) isDegree = true;
+				else if (hasTag(unit, "adverb_manner", "manner")) isManner = true;
+			}
+
+			if (isDiscourse) {
+				DISCOURSE_ADVERBS.set(ko, { unit, ko, position: "sentence_initial" });
+			}
+			if (isNPI) {
+				NEGATIVE_POLARITY_ADVERBS.set(ko, { unit, ko, polarity_requirement: -1, npi: true });
+				ALL_NPI_WORDS.add(ko);
+			}
+			if (isDegree) {
+				DEGREE_ADVERBS.set(ko, { unit, ko, target_pos: sv?.target_pos || "Descriptive Verb", npi: isNPI });
+				if (!isNPI) {
+					AFFIRMATIVE_DEGREE_ADVERBS.set(ko, { unit, ko, target_pos: sv?.target_pos || "Descriptive Verb" });
+				}
+			}
+			if (isManner) {
+				MANNER_ADVERBS.set(ko, { unit, ko, target_pos: sv?.target_pos || "Action Verb" });
+			}
+		}
+
+		// Feature 11: Motion Verbs for purpose connective concord (-(으)러)
+		if (pos === "Action Verb" && hasTag(unit, "motion_concord")) {
+			MOTION_VERBS.add(ko);
+			MOTION_VERB_STEMS.add(getStem(ko));
+		}
+
+		// Feature 11: Clausal Connectives (Causal, Contrastive, Purpose, Condition, Simultaneous)
+		if (pos === "Connective" || pos === "Grammar" || hasTag(unit, "connective", "conjunction", "clausal_connective", "reason", "cause", "purpose", "condition", "contrast", "simultaneous")) {
+			const isConnective = hasTag(unit, "connective", "conjunction", "clausal_connective") ||
+				pos === "Connective" ||
+				(pos === "Grammar" && (hasTag(unit, "reason", "cause", "purpose", "condition", "contrast", "simultaneous") || sv?.clause1_tense_allowed !== undefined || sv?.clause2_moods_allowed !== undefined));
+
+			if (isConnective) {
+				const connectiveInfo = {
+					unit,
+					ko,
+					id: unit[DATA_SCHEMA.Id],
+					clause1_tense_allowed: sv?.clause1_tense_allowed !== undefined ? sv.clause1_tense_allowed : true,
+					clause2_moods_allowed: sv?.clause2_moods_allowed || ["declarative", "interrogative", "imperative", "propositive", "suggestive"],
+					clause1_pos: sv?.clause1_pos || ["Action Verb", "Descriptive Verb"],
+					same_subject: sv?.same_subject || false,
+					outcome_polarity: sv?.outcome_polarity !== undefined ? sv.outcome_polarity : 0,
+					motion_verb_required: sv?.motion_verb_required || false,
+					function: sv?.function || (sv?.connective_type === "causal" || sv?.domain === "causal" || hasTag(unit, "reason", "cause", "causal") ? "cause" : (sv?.connective_type === "contrast" || sv?.domain === "contrast" || hasTag(unit, "contrast") ? "contrast" : (sv?.connective_type === "purpose" || sv?.domain === "purpose" || hasTag(unit, "purpose") ? "purpose" : (sv?.connective_type === "condition" || sv?.domain === "condition" || hasTag(unit, "condition") ? "condition" : (sv?.connective_type === "simultaneous" || sv?.domain === "simultaneous" || hasTag(unit, "simultaneous") ? "simultaneous" : "general"))))),
+					surface_forms: Array.isArray(sv?.surface_forms) ? sv.surface_forms : []
+				};
+
+				const registerKey = (k) => {
+					if (!k) return;
+					const trimmed = String(k).trim();
+					CLAUSAL_CONNECTIVES.set(trimmed, connectiveInfo);
+					const stripped = trimmed.replace(/^[-~]/, "");
+					CLAUSAL_CONNECTIVES.set(stripped, connectiveInfo);
+					CLAUSAL_CONNECTIVES.set(`-${stripped}`, connectiveInfo);
+					CLAUSAL_CONNECTIVES.set(`~${stripped}`, connectiveInfo);
+				};
+
+				registerKey(ko);
+				CLAUSAL_CONNECTIVES.set(String(unit[DATA_SCHEMA.Id]), connectiveInfo);
+				for (const sf of connectiveInfo.surface_forms) {
+					registerKey(sf);
+				}
+
+				if (connectiveInfo.function === "cause" || hasTag(unit, "reason", "cause", "causal")) {
+					CAUSAL_CONNECTIVES.set(ko, connectiveInfo);
+				} else if (connectiveInfo.function === "contrast" || hasTag(unit, "contrast")) {
+					CONTRAST_CONNECTIVES.set(ko, connectiveInfo);
+				} else if (connectiveInfo.function === "purpose" || hasTag(unit, "purpose")) {
+					PURPOSE_CONNECTIVES.set(ko, connectiveInfo);
+				} else if (connectiveInfo.function === "condition" || hasTag(unit, "condition")) {
+					CONDITION_CONNECTIVES.set(ko, connectiveInfo);
+				} else if (connectiveInfo.function === "simultaneous" || hasTag(unit, "simultaneous")) {
+					SIMULTANEOUS_CONNECTIVES.set(ko, connectiveInfo);
+				}
+			}
+		}
 	}
+
+	// Precompute descriptive verb surface forms and forbidden mood combinations (Feature 8)
+	const descriptiveUnits = allUnits.filter(u => u && u[DATA_SCHEMA.PartofSpeech] === "Descriptive Verb");
+	for (const du of descriptiveUnits) {
+		const dKo = du[DATA_SCHEMA.Korean];
+		if (!dKo) continue;
+		const dConj = du[DATA_SCHEMA.Conjugation];
+		const dStem = getConjugatedStem(dKo, dConj);
+		const rawStem = getStem(dKo);
+
+		// Record surface forms for inability checking (못 + [DV])
+		DESCRIPTIVE_SURFACE_MAP.set(dKo, du);
+		DESCRIPTIVE_SURFACE_MAP.set(rawStem, du);
+		DESCRIPTIVE_SURFACE_MAP.set(applyMorphology(dStem + "아/어요"), du);
+		DESCRIPTIVE_SURFACE_MAP.set(applyMorphology(dStem + "아/어"), du);
+		DESCRIPTIVE_SURFACE_MAP.set(applyMorphology(dStem + "습니다/ㅂ니다"), du);
+		DESCRIPTIVE_SURFACE_MAP.set(applyMorphology(dStem + "았/었어요"), du);
+		DESCRIPTIVE_SURFACE_MAP.set(applyMorphology(dStem + "았/었습니다"), du);
+
+		// Forbidden imperative combinations
+		FORBIDDEN_DV_IMPERATIVE_FORMS.set(applyMorphology(dStem + "으/십시오"), dKo);
+		FORBIDDEN_DV_IMPERATIVE_FORMS.set(applyMorphology(dStem + "으/세요"), dKo);
+		FORBIDDEN_DV_IMPERATIVE_FORMS.set(applyMorphology(dStem + "아/어라"), dKo);
+		FORBIDDEN_DV_IMPERATIVE_FORMS.set(rawStem + "지 마세요", dKo);
+		FORBIDDEN_DV_IMPERATIVE_FORMS.set(rawStem + "지 마십시오", dKo);
+		FORBIDDEN_DV_IMPERATIVE_FORMS.set(rawStem + "지 마", dKo);
+		FORBIDDEN_DV_IMPERATIVE_FORMS.set(rawStem + "지 마라", dKo);
+
+		// Forbidden propositive combinations
+		FORBIDDEN_DV_PROPOSITIVE_FORMS.set(applyMorphology(dStem + "으/ㅂ시다"), dKo);
+		FORBIDDEN_DV_PROPOSITIVE_FORMS.set(rawStem + "자", dKo);
+		FORBIDDEN_DV_PROPOSITIVE_FORMS.set(rawStem + "세", dKo);
+
+		// Forbidden inability long combinations
+		FORBIDDEN_DV_LONG_INABILITY_FORMS.set(rawStem + "지 못해요", dKo);
+		FORBIDDEN_DV_LONG_INABILITY_FORMS.set(rawStem + "지 못합니다", dKo);
+		FORBIDDEN_DV_LONG_INABILITY_FORMS.set(rawStem + "지 못하다", dKo);
+		FORBIDDEN_DV_LONG_INABILITY_FORMS.set(rawStem + "지 못했다", dKo);
+		FORBIDDEN_DV_LONG_INABILITY_FORMS.set(rawStem + "지 못했어요", dKo);
+		FORBIDDEN_DV_LONG_INABILITY_FORMS.set(rawStem + "지 못했습니다", dKo);
+
+		// Forbidden volitional combinations
+		FORBIDDEN_DV_VOLITIONAL_FORMS.set(rawStem + "고 싶어요", dKo);
+		FORBIDDEN_DV_VOLITIONAL_FORMS.set(rawStem + "고 싶습니다", dKo);
+		FORBIDDEN_DV_VOLITIONAL_FORMS.set(rawStem + "고 싶다", dKo);
+		FORBIDDEN_DV_VOLITIONAL_FORMS.set(rawStem + "고 싶어해요", dKo);
+		FORBIDDEN_DV_VOLITIONAL_FORMS.set(rawStem + "고 싶어합니다", dKo);
+	}
+
+	// Feature 11: Compile dynamic multi-word and suffix connective parsing rules from CLAUSAL_CONNECTIVES
+	const seenMultiWords = new Set();
+	const seenSuffixes = new Set();
+	const uniqueConnectiveSpecs = new Set(CLAUSAL_CONNECTIVES.values());
+
+	for (const spec of uniqueConnectiveSpecs) {
+		const rawForms = [spec.ko, ...(spec.surface_forms || [])];
+		const canonicalConn = spec.ko.startsWith("~") ? "-" + spec.ko.slice(1) : spec.ko;
+		for (const raw of rawForms) {
+			if (!raw) continue;
+			const clean = String(raw).trim().replace(/^[-~]/, "");
+			if (clean.includes(" ") || clean.includes("때문에") || clean.includes("바람에") || clean.includes("후에") || clean.includes("때")) {
+				if (!seenMultiWords.has(clean)) {
+					seenMultiWords.add(clean);
+					const pattern = new RegExp(`^(.*?)\\s*${clean.replace(/\s+/g, "\\s*")}\\s*(.*)$`);
+					MULTI_WORD_CONNECTIVE_RULES.push({
+						pattern,
+						connective: canonicalConn,
+						cWord: clean
+					});
+				}
+			} else {
+				const suffixItems = [];
+				if (clean.includes("(으)")) {
+					suffixItems.push({ suffix: clean.replace(/\(으\)/g, "으"), strip: clean.replace(/\(으\)/g, "으") });
+					suffixItems.push({ suffix: clean.replace(/\(으\)/g, ""), strip: clean.replace(/\(으\)/g, "") });
+				} else if (clean.includes("(느)")) {
+					suffixItems.push({ suffix: clean.replace(/\(느\)/g, "느"), strip: clean.replace(/\(느\)/g, "느") });
+					suffixItems.push({ suffix: clean.replace(/\(느\)/g, ""), strip: clean.replace(/\(느\)/g, "") });
+				} else {
+					suffixItems.push({ suffix: clean, strip: clean });
+				}
+
+				if (spec.ko.includes("아/어서") || clean === "아/어서") {
+					suffixItems.push({ suffix: "았어서", strip: "어서" });
+					suffixItems.push({ suffix: "었어서", strip: "어서" });
+					suffixItems.push({ suffix: "였어서", strip: "어서" });
+					suffixItems.push({ suffix: "했어서", strip: "어서" });
+					suffixItems.push({ suffix: "서", strip: "서", isSeoRule: true });
+				}
+
+				for (const item of suffixItems) {
+					if (!item.suffix || seenSuffixes.has(item.suffix)) continue;
+					seenSuffixes.add(item.suffix);
+					DYNAMIC_SUFFIX_RULES.push({
+						suffix: item.suffix,
+						strip: item.strip,
+						connective: canonicalConn,
+						isSeoRule: !!item.isSeoRule
+					});
+				}
+			}
+		}
+	}
+
+	const standardMultiGrammar = [
+		{ form: "ㄴ 후에", canonical: "-(으)ㄴ 후에" },
+		{ form: "은 후에", canonical: "-(으)ㄴ 후에" },
+		{ form: "ㄹ 때", canonical: "-(으)ㄹ 때" },
+		{ form: "을 때", canonical: "-(으)ㄹ 때" }
+	];
+	for (const smg of standardMultiGrammar) {
+		if (!seenMultiWords.has(smg.form)) {
+			seenMultiWords.add(smg.form);
+			MULTI_WORD_CONNECTIVE_RULES.push({
+				pattern: new RegExp(`^(.*?)\\s*${smg.form.replace(/\s+/g, "\\s*")}\\s*(.*)$`),
+				connective: smg.canonical,
+				cWord: smg.form
+			});
+		}
+	}
+
+	MULTI_WORD_CONNECTIVE_RULES.sort((a, b) => b.cWord.length - a.cWord.length);
+	DYNAMIC_SUFFIX_RULES.sort((a, b) => b.suffix.length - a.suffix.length);
 
 	CLASSIFIER_NOUN_SPECS.sort((a, b) => b.priority - a.priority);
 }
@@ -2186,6 +2501,1349 @@ function applySpatialConcord(input) {
 	return str;
 }
 
+// =========================================================================
+// Feature 8: Predicate Mood, Speech Act & Negation Restrictions
+// =========================================================================
+
+function isDescriptiveVerb(verbOrKo) {
+	if (!verbOrKo) return false;
+	const verbUnit = getVerbUnit(verbOrKo);
+	if (verbUnit) {
+		return verbUnit[DATA_SCHEMA.PartofSpeech] === "Descriptive Verb" || hasTag(verbUnit, "descriptive_verb");
+	}
+	const ko = typeof verbOrKo === 'string' ? verbOrKo : "";
+	const dv = getWords("Descriptive Verb").find(v => v[DATA_SCHEMA.Korean] === ko);
+	return !!dv;
+}
+
+function isActionVerb(verbOrKo) {
+	if (!verbOrKo) return false;
+	const verbUnit = getVerbUnit(verbOrKo);
+	if (verbUnit) {
+		return verbUnit[DATA_SCHEMA.PartofSpeech] === "Action Verb" || hasTag(verbUnit, "action_verb");
+	}
+	const ko = typeof verbOrKo === 'string' ? verbOrKo : "";
+	const av = getWords("Action Verb").find(v => v[DATA_SCHEMA.Korean] === ko);
+	return !!av;
+}
+
+function canTakeMood(verbOrKo, mood) {
+	if (!verbOrKo) return false;
+	const isUnit = Array.isArray(verbOrKo);
+	const verbUnit = isUnit ? verbOrKo : getVerbUnit(verbOrKo);
+	const ko = typeof verbOrKo === 'string' ? verbOrKo : (verbUnit ? verbUnit[DATA_SCHEMA.Korean] : "");
+	const pos = verbUnit ? verbUnit[DATA_SCHEMA.PartofSpeech] : "";
+
+	let isAction = false;
+	let isDescriptive = false;
+
+	if (isUnit) {
+		isAction = pos === "Action Verb" || hasTag(verbUnit, "action_verb");
+		isDescriptive = pos === "Descriptive Verb" || hasTag(verbUnit, "descriptive_verb");
+	} else {
+		isAction = pos === "Action Verb" || isActionVerb(ko);
+		isDescriptive = pos === "Descriptive Verb" || (isDescriptiveVerb(ko) && !isAction);
+	}
+
+	const normalizedMood = (mood || "").toLowerCase();
+
+	if ((normalizedMood === "negation" || normalizedMood === "short_negation" || normalizedMood === "long_negation") && FORBIDDEN_NEGATIVE_ROOTS.has(ko)) {
+		return false;
+	}
+
+	if (normalizedMood === "imperative" || normalizedMood === "prohibition" || normalizedMood === "propositive" || normalizedMood === "suggestion") {
+		return isAction && !isDescriptive;
+	}
+
+	if (normalizedMood === "inability" || normalizedMood === "short_inability" || normalizedMood === "long_inability") {
+		return isAction && !isDescriptive;
+	}
+
+	if (normalizedMood === "volitional" || normalizedMood === "desire") {
+		return isAction && !isDescriptive;
+	}
+
+	if (normalizedMood === "negation" || normalizedMood === "short_general" || normalizedMood === "long_general") {
+		return !FORBIDDEN_NEGATIVE_ROOTS.has(ko);
+	}
+
+	return true;
+}
+
+function getNegationSuppletion(verbOrKo) {
+	const ko = typeof verbOrKo === 'string' ? verbOrKo : (verbOrKo ? verbOrKo[DATA_SCHEMA.Korean] : "");
+	return NEGATION_SUPPLETIONS.get(ko) || null;
+}
+
+function getAffirmativeCounterpart(verbOrKo) {
+	const ko = typeof verbOrKo === 'string' ? verbOrKo : (verbOrKo ? verbOrKo[DATA_SCHEMA.Korean] : "");
+	return AFFIRMATIVE_COUNTERPARTS.get(ko) || null;
+}
+
+function conjugatePredicate(verbOrKo, formality = "polite", tense = "present") {
+	const verbUnit = getVerbUnit(verbOrKo);
+	const ko = typeof verbOrKo === 'string' ? verbOrKo : (verbUnit ? verbUnit[DATA_SCHEMA.Korean] : "");
+	if (!ko) return "";
+	const conj = verbUnit ? verbUnit[DATA_SCHEMA.Conjugation] : "";
+	const stem = getConjugatedStem(ko, conj);
+	const isAction = verbUnit ? verbUnit[DATA_SCHEMA.PartofSpeech] === "Action Verb" : isActionVerb(ko);
+
+	if (tense === "past") {
+		switch (formality) {
+			case "formal":
+			case "formal_polite":
+				return applyMorphology(stem + "았/었습니다");
+			case "plain":
+				return applyMorphology(stem + "았/었다");
+			case "polite":
+			case "polite_informal":
+			default:
+				return applyMorphology(stem + "았/었어요");
+		}
+	} else if (tense === "future") {
+		switch (formality) {
+			case "formal":
+			case "formal_polite":
+				return applyMorphology(stem + "으/ㄹ 것입니다");
+			case "plain":
+				return applyMorphology(stem + "으/ㄹ 것이다");
+			case "polite":
+			case "polite_informal":
+			default:
+				return applyMorphology(stem + "으/ㄹ 거예요");
+		}
+	} else {
+		switch (formality) {
+			case "formal":
+			case "formal_polite":
+				return applyMorphology(stem + "습니다/ㅂ니다");
+			case "plain":
+				return isAction ? applyMorphology(stem + "(느)ㄴ다") : (stem + "다");
+			case "stem":
+				return stem;
+			case "polite":
+			case "polite_informal":
+			default:
+				return applyMorphology(stem + "아/어요");
+		}
+	}
+}
+
+function buildNegatedPredicate(verbOrKo, options = {}) {
+	const verbUnit = getVerbUnit(verbOrKo);
+	const ko = typeof verbOrKo === 'string' ? verbOrKo : (verbUnit ? verbUnit[DATA_SCHEMA.Korean] : "");
+	if (!ko) return "";
+
+	const formality = options.formality || "polite";
+	const tense = options.tense || "present";
+	const isInability = !!options.inability || options.type === "inability";
+	const isLong = options.type === "long";
+
+	const suppletive = getNegationSuppletion(ko);
+	if (suppletive) {
+		return conjugatePredicate(suppletive, formality, tense);
+	}
+
+	if (isInability) {
+		if (!canTakeMood(ko, "inability")) {
+			throw new Error(`Descriptive verb '${ko}' cannot take inability negation (못 / -지 못하다).`);
+		}
+		const conj = verbUnit ? verbUnit[DATA_SCHEMA.Conjugation] : "";
+		const stem = getConjugatedStem(ko, conj);
+		if (isLong) {
+			return applyMorphology(stem + "지 " + conjugatePredicate("못하다", formality, tense));
+		} else {
+			return "못 " + conjugatePredicate(ko, formality, tense);
+		}
+	}
+
+	const conj = verbUnit ? verbUnit[DATA_SCHEMA.Conjugation] : "";
+	const stem = getConjugatedStem(ko, conj);
+	if (isLong) {
+		return applyMorphology(stem + "지 " + conjugatePredicate("않다", formality, tense));
+	} else {
+		return "안 " + conjugatePredicate(ko, formality, tense);
+	}
+}
+
+function buildMoodPredicate(verbOrKo, mood, formality = "polite", options = {}) {
+	const verbUnit = getVerbUnit(verbOrKo);
+	const ko = typeof verbOrKo === 'string' ? verbOrKo : (verbUnit ? verbUnit[DATA_SCHEMA.Korean] : "");
+	if (!ko) return "";
+
+	const normalizedMood = (mood || "").toLowerCase();
+
+	if (!canTakeMood(ko, normalizedMood)) {
+		throw new Error(`Verb '${ko}' cannot take mood '${mood}'. Descriptive verbs are restricted from imperative, propositive, inability, and volitional moods.`);
+	}
+
+	const conj = verbUnit ? verbUnit[DATA_SCHEMA.Conjugation] : "";
+	const stem = getConjugatedStem(ko, conj);
+	const rawStem = getStem(ko);
+
+	switch (normalizedMood) {
+		case "imperative": {
+			switch (formality) {
+				case "formal":
+				case "formal_polite":
+				case "formal_high":
+					return applyMorphology(stem + "으/십시오");
+				case "plain":
+				case "informal":
+					return applyMorphology(stem + "아/어라");
+				case "polite":
+				default:
+					return applyMorphology(stem + "으/세요");
+			}
+		}
+		case "prohibition": {
+			switch (formality) {
+				case "formal":
+				case "formal_polite":
+				case "formal_high":
+					return rawStem + "지 마십시오";
+				case "plain":
+				case "informal":
+					return options.plainEnding === "마라" ? (rawStem + "지 마라") : (rawStem + "지 마");
+				case "polite":
+				default:
+					return rawStem + "지 마세요";
+			}
+		}
+		case "propositive": {
+			switch (formality) {
+				case "formal":
+				case "formal_polite":
+				case "formal_high":
+					return applyMorphology(stem + "으/ㅂ시다");
+				case "suggestion":
+					return applyMorphology(stem + "으/ㄹ까요?");
+				case "plain":
+				case "informal":
+				default:
+					return rawStem + "자";
+			}
+		}
+		case "volitional":
+		case "desire": {
+			const isThirdPerson = options.person === 3 || options.perspective === "3rd";
+			if (isThirdPerson) {
+				switch (formality) {
+					case "formal":
+					case "formal_polite":
+					case "formal_high":
+						return rawStem + "고 싶어합니다";
+					case "plain":
+						return rawStem + "고 싶어한다";
+					case "polite":
+					default:
+						return rawStem + "고 싶어해요";
+				}
+			} else {
+				switch (formality) {
+					case "formal":
+					case "formal_polite":
+					case "formal_high":
+						return rawStem + "고 싶습니다";
+					case "plain":
+						return rawStem + "고 싶다";
+					case "polite":
+					default:
+						return rawStem + "고 싶어요";
+				}
+			}
+		}
+		default:
+			return conjugatePredicate(ko, formality, options.tense || "present");
+	}
+}
+
+function validateMoodConcord(text, context = {}) {
+	const errors = [];
+	if (!text || typeof text !== 'string') {
+		return { valid: true, errors: [] };
+	}
+
+	// 1. Forbidden Negative Roots (알다 -> 모르다, 있다 -> 없다)
+	const aldaDirectNeg = /(^|[^가-힣])(?:(?:안|못)\s+(?:알(?:아요|았어요|았습니다|다|고|아서|으면)|압니다)|알지\s+(?:않|못)(?:아요|았습니다|습니다|다|해요|했어요|합니다))(?=[^가-힣]|$)/g;
+	if (aldaDirectNeg.test(text)) {
+		errors.push(`Verb '알다' cannot be negated directly (must use suppletive '모르다') in: "${text}"`);
+	}
+
+	const itdaDirectNeg = /(^|[^가-힣])(?:(?:안|못)\s+(?:있(?:어요|었어요|았습니다|었습니다|다|고|어서|으면)|있습니다)|있지\s+(?:않|못)(?:아요|았습니다|습니다|다|해요|했어요|합니다))(?=[^가-힣]|$)/g;
+	if (itdaDirectNeg.test(text)) {
+		errors.push(`Verb '있다' cannot be negated directly (must use suppletive '없다') in: "${text}"`);
+	}
+
+	// 2. Inability Negation on Descriptive Verbs: 못 + [Descriptive Verb]
+	const motRegex = /(^|[^가-힣])못\s+([가-힣]+)(?=[^가-힣]|$)/g;
+	let motMatch;
+	while ((motMatch = motRegex.exec(text)) !== null) {
+		const targetWord = motMatch[2];
+		const dvUnit = DESCRIPTIVE_SURFACE_MAP.get(targetWord);
+		if (dvUnit) {
+			const dvKo = dvUnit[DATA_SCHEMA.Korean];
+			errors.push(`Descriptive verb '${dvKo}' cannot take inability negation '못' in: "${text}"`);
+		}
+	}
+
+	// 3. Long Inability Negation on Descriptive Verbs: [DV]-지 못하다
+	for (const [form, dvKo] of FORBIDDEN_DV_LONG_INABILITY_FORMS.entries()) {
+		if (text.includes(form)) {
+			errors.push(`Descriptive verb '${dvKo}' cannot take inability negation '-지 못하다' in: "${text}"`);
+		}
+	}
+
+	// 4. Imperative Mood on Descriptive Verbs: [DV]-(으)십시오, [DV]-(으)세요, [DV]-아/어라, [DV]-지 마(세요)
+	for (const [form, dvKo] of FORBIDDEN_DV_IMPERATIVE_FORMS.entries()) {
+		if (text.includes(form)) {
+			errors.push(`Descriptive verb '${dvKo}' cannot take imperative/prohibitive ending in: "${text}"`);
+		}
+	}
+
+	// 5. Propositive Mood on Descriptive Verbs: [DV]-(으)ㅂ시다, [DV]-자, [DV]-세
+	for (const [form, dvKo] of FORBIDDEN_DV_PROPOSITIVE_FORMS.entries()) {
+		if (text.includes(form)) {
+			errors.push(`Descriptive verb '${dvKo}' cannot take propositive ending in: "${text}"`);
+		}
+	}
+
+	// 6. Volitional Mood on Descriptive Verbs: [DV]-고 싶다 / [DV]-고 싶어하다
+	for (const [form, dvKo] of FORBIDDEN_DV_VOLITIONAL_FORMS.entries()) {
+		if (text.includes(form)) {
+			errors.push(`Descriptive verb '${dvKo}' cannot take volitional ending directly in: "${text}"`);
+		}
+	}
+
+	// 7. Volitional Perspective Concord (1st/2nd person vs 3rd person)
+	const thirdPersonSubjectRegex = /(^|[^가-힣])(?:친구|어머니|아버지|선생님|그 사람|동생|아이|학생|누나|형|언니|오빠|부모님|할머니|할아버지)(?:이|가|은|는|께서|\s+께서)?\s+(?:[^.!?]*\s+)?([가-힣]+고\s+싶(?:어요|습니다|다))(?=[^가-힣]|$)/;
+	if (context.person === 3 || thirdPersonSubjectRegex.test(text)) {
+		if (/(?:고\s+싶(?:어요|습니다|다))(?=[^가-힣]|$)/.test(text) && !/(?:고\s+싶어(?:해요|합니다|하다|한다))/.test(text)) {
+			errors.push(`3rd person subject requires '-고 싶어하다', not '-고 싶다' in: "${text}"`);
+		}
+	}
+
+	const firstSecondSubjectRegex = /(^|[^가-힣])(?:나|내|저|제|우리|너|네|당신|자네)(?:는|은|이|가)?\s+(?:[^.!?]*\s+)?([가-힣]+고\s+싶어(?:해요|합니다|하다|한다|해|하니|하냐))(?=[^가-힣]|$)/;
+	if (context.person === 1 || context.person === 2 || firstSecondSubjectRegex.test(text)) {
+		if (/(?:고\s+싶어(?:해요|합니다|하다|한다|해|하니|하냐))(?=[^가-힣]|$)/.test(text)) {
+			errors.push(`1st/2nd person subject requires '-고 싶다', not '-고 싶어하다' in: "${text}"`);
+		}
+	}
+
+	return {
+		valid: errors.length === 0,
+		errors: Array.from(new Set(errors))
+	};
+}
+
+function applyMoodConcord(input, options = {}) {
+	if (typeof input === 'object' && input !== null) {
+		let text = input.text || "";
+		if (text) {
+			text = applyMoodConcord(text, options);
+		}
+		return { ...input, text };
+	}
+
+	let str = String(input);
+
+	// 1. Repair direct negation of 알다 -> 모르다
+	str = str.replace(/(^|[^가-힣])(?:(?:안|못)\s+알아요|알지\s+(?:않|못)아요)(?=[^가-힣]|$)/g, '$1몰라요');
+	str = str.replace(/(^|[^가-힣])(?:(?:안|못)\s+압니다|알지\s+(?:않|못)습니다)(?=[^가-힣]|$)/g, '$1모릅니다');
+	str = str.replace(/(^|[^가-힣])(?:(?:안|못)\s+알았습니다|알지\s+(?:않|못)았습니다)(?=[^가-힣]|$)/g, '$1몰랐습니다');
+	str = str.replace(/(^|[^가-힣])(?:(?:안|못)\s+알았어요|알지\s+(?:않|못)았어요)(?=[^가-힣]|$)/g, '$1몰랐어요');
+	str = str.replace(/(^|[^가-힣])(?:(?:안|못)\s+알다|알지\s+(?:않|못)다)(?=[^가-힣]|$)/g, '$1모르다');
+
+	// 2. Repair direct negation of 있다 -> 없다
+	str = str.replace(/(^|[^가-힣])(?:(?:안|못)\s+있어요|있지\s+(?:않|못)아요)(?=[^가-힣]|$)/g, '$1없어요');
+	str = str.replace(/(^|[^가-힣])(?:(?:안|못)\s+있습니다|있지\s+(?:않|못)습니다)(?=[^가-힣]|$)/g, '$1없습니다');
+	str = str.replace(/(^|[^가-힣])(?:(?:안|못)\s+있었습니다|있지\s+(?:않|못)았습니다)(?=[^가-힣]|$)/g, '$1없었습니다');
+	str = str.replace(/(^|[^가-힣])(?:(?:안|못)\s+있었어요|있지\s+(?:않|못)았어요)(?=[^가-힣]|$)/g, '$1없었어요');
+	str = str.replace(/(^|[^가-힣])(?:(?:안|못)\s+있다|있지\s+(?:않|못)다)(?=[^가-힣]|$)/g, '$1없다');
+
+	// 3. Repair 못 + [Descriptive Verb] -> 안 + [Descriptive Verb]
+	str = str.replace(/(^|[^가-힣])못\s+([가-힣]+)(?=[^가-힣]|$)/g, (match, prefix, word) => {
+		if (DESCRIPTIVE_SURFACE_MAP.has(word)) {
+			return `${prefix}안 ${word}`;
+		}
+		return match;
+	});
+
+	// 4. Repair [DV]-지 못하다 -> [DV]-지 않다
+	for (const [form, dvKo] of FORBIDDEN_DV_LONG_INABILITY_FORMS.entries()) {
+		if (str.includes(form)) {
+			const rep = form.replace(/지\s*못(해요|합니다|하다|했다|했어요|했습니다)/, '지 않$1')
+			                .replace(/지 않해요/, '지 않아요')
+			                .replace(/지 않합니다/, '지 않습니다')
+			                .replace(/지 않하다/, '지 않다')
+			                .replace(/지 않했다/, '지 않았다')
+			                .replace(/지 않했어요/, '지 않았어요')
+			                .replace(/지 않했습니다/, '지 않았습니다');
+			str = str.replace(form, rep);
+		}
+	}
+
+	// 5. Repair Volitional perspective
+	const thirdPersonSubject = /(^|[^가-힣])((?:친구|어머니|아버지|선생님|그 사람|동생|아이|학생|누나|형|언니|오빠|부모님|할머니|할아버지)(?:이|가|은|는|께서|\s+께서)?\s+(?:[^.!?]*\s+)?)([가-힣]+고\s+)싶(어요|습니다|다)(?=[^가-힣]|$)/g;
+	str = str.replace(thirdPersonSubject, (m, pre, subj, verbGo, ending) => {
+		const repEnding = ending === '어요' ? '어해요' : ending === '습니다' ? '어합니다' : '어한다';
+		return `${pre}${subj}${verbGo}싶${repEnding}`;
+	});
+
+	const firstSecondSubject = /(^|[^가-힣])((?:나|내|저|제|우리|너|네|당신|자네)(?:는|은|이|가)?\s+(?:[^.!?]*\s+)?)([가-힣]+고\s+)싶어(해요|합니다|하다|한다)(?=[^가-힣]|$)/g;
+	str = str.replace(firstSecondSubject, (m, pre, subj, verbGo, ending) => {
+		const repEnding = ending === '해요' ? '어요' : ending === '합니다' ? '습니다' : '다';
+		return `${pre}${subj}${verbGo}싶${repEnding}`;
+	});
+
+	return str;
+}
+
+// =========================================================================
+// 4b. Adverbial Sub-Typing & Syntactic Placement (Feature 9)
+// =========================================================================
+function isDegreeAdverb(wordOrUnit) {
+	if (!wordOrUnit) return false;
+	const ko = typeof wordOrUnit === 'string' ? wordOrUnit : (Array.isArray(wordOrUnit) ? wordOrUnit[DATA_SCHEMA.Korean] : wordOrUnit.ko || wordOrUnit[DATA_SCHEMA.Korean]);
+	return DEGREE_ADVERBS.has(ko);
+}
+
+function isMannerAdverb(wordOrUnit) {
+	if (!wordOrUnit) return false;
+	const ko = typeof wordOrUnit === 'string' ? wordOrUnit : (Array.isArray(wordOrUnit) ? wordOrUnit[DATA_SCHEMA.Korean] : wordOrUnit.ko || wordOrUnit[DATA_SCHEMA.Korean]);
+	return MANNER_ADVERBS.has(ko);
+}
+
+function isDiscourseAdverb(wordOrUnit) {
+	if (!wordOrUnit) return false;
+	const ko = typeof wordOrUnit === 'string' ? wordOrUnit : (Array.isArray(wordOrUnit) ? wordOrUnit[DATA_SCHEMA.Korean] : wordOrUnit.ko || wordOrUnit[DATA_SCHEMA.Korean]);
+	return DISCOURSE_ADVERBS.has(ko);
+}
+
+function isNegativePolarityAdverb(wordOrUnit) {
+	if (!wordOrUnit) return false;
+	const ko = typeof wordOrUnit === 'string' ? wordOrUnit : (Array.isArray(wordOrUnit) ? wordOrUnit[DATA_SCHEMA.Korean] : wordOrUnit.ko || wordOrUnit[DATA_SCHEMA.Korean]);
+	return ALL_NPI_WORDS.has(ko);
+}
+
+function isNegativePredicate(text) {
+	if (!text || typeof text !== 'string') return false;
+	// 1. Short negation: 안 or 못 preceding a word
+	if (/(^|[^가-힣])(?:안|못)\s+[가-힣]+(?=[^가-힣]|$)/.test(text)) return true;
+	// 2. Long negation: -지 않-, -지 못-, -지 말-, -지 마-
+	if (/(?:지\s+(?:않|못|말|마)[가-힣]*)/.test(text)) return true;
+	// 3. Negative verbs: 모르다, 없다, 아니다
+	if (/(?:몰라(?:요|서|도)?|모릅니다|몰랐(?:어요|습니다)|모른다|모르고|모르면)(?=[^가-힣]|$)/.test(text)) return true;
+	if (/(?:없(?:어요|어서|어도|습니다|었다|었어요|었습니다|고|으면|는))(?=[^가-힣]|$)/.test(text)) return true;
+	if (/(?:아니(?:에요|요|라|어서|면|었습니다|었어|다))|아닙니다(?=[^가-힣]|$)/.test(text)) return true;
+	return false;
+}
+
+function canAdverbPrecede(adverbOrKo, verbOrKo, options = {}) {
+	const advKo = typeof adverbOrKo === 'string' ? adverbOrKo : (Array.isArray(adverbOrKo) ? adverbOrKo[DATA_SCHEMA.Korean] : adverbOrKo.ko || adverbOrKo[DATA_SCHEMA.Korean]);
+	const vKo = typeof verbOrKo === 'string' ? verbOrKo : (Array.isArray(verbOrKo) ? verbOrKo[DATA_SCHEMA.Korean] : verbOrKo.ko || verbOrKo[DATA_SCHEMA.Korean]);
+	if (!advKo || !vKo) return true;
+
+	const isDV = isDescriptiveVerb(verbOrKo);
+	const isPureDV = isDV && !isActionVerb(verbOrKo);
+	const isManner = MANNER_ADVERBS.has(advKo);
+	const isDegree = DEGREE_ADVERBS.has(advKo);
+	const isNPI = ALL_NPI_WORDS.has(advKo);
+
+	// Manner adverbs cannot modify purely descriptive verbs
+	if (isManner && !isDegree && isPureDV) {
+		return false;
+	}
+
+	// Short inability 못 cannot modify purely descriptive verbs
+	if (SHORT_INABILITY_WORDS.has(advKo) && isPureDV) {
+		return false;
+	}
+
+	// NPIs strictly require negative predicate
+	if (isNPI) {
+		const isNeg = options.isNegative || options.negated || isNegativePredicate(vKo);
+		if (!isNeg) return false;
+	}
+
+	return true;
+}
+
+function validateAdverbConcord(text, context = {}) {
+	const errors = [];
+	if (!text || typeof text !== 'string') {
+		return { valid: true, errors: [] };
+	}
+
+	// 1. Negative Polarity Items (NPIs): 전혀, 별로, etc.
+	// NPIs obligatorily require negative predicates
+	for (const npi of ALL_NPI_WORDS) {
+		const npiRegex = new RegExp(`(^|[^가-힣])${npi}(?=[^가-힣]|$)`, 'g');
+		let match;
+		while ((match = npiRegex.exec(text)) !== null) {
+			const afterNpi = text.substring(match.index + match[0].length);
+			if (!isNegativePredicate(afterNpi)) {
+				errors.push(`Negative polarity adverb '${npi}' strictly requires a negative predicate in: "${text}"`);
+			}
+		}
+	}
+
+	// 2. Manner Adverbs paired with Descriptive Verbs
+	// Manner adverbs (자세히, 열심히, 천천히, 빨리, 혼자, 함께, 잘, 못, etc.) strictly modify Action Verbs
+	for (const [mannerKo, info] of MANNER_ADVERBS.entries()) {
+		if (info.target_pos !== "Action Verb") continue;
+		const mannerRegex = new RegExp(`(^|[^가-힣])${mannerKo}\\s+([가-힣]+)(?:\\[[^\\]]+\\])?(?=[^가-힣]|$)`, 'g');
+		let match;
+		while ((match = mannerRegex.exec(text)) !== null) {
+			const targetWord = match[2];
+			const dvUnit = DESCRIPTIVE_SURFACE_MAP.get(targetWord);
+			if (dvUnit) {
+				const dvKo = dvUnit[DATA_SCHEMA.Korean];
+				if (isActionVerb(dvKo)) continue;
+				errors.push(`Manner adverb '${mannerKo}' cannot modify descriptive verb '${dvKo}' in: "${text}"`);
+			}
+		}
+	}
+
+	return {
+		valid: errors.length === 0,
+		errors: Array.from(new Set(errors))
+	};
+}
+
+function applyAdverbConcord(input, options = {}) {
+	if (typeof input === 'object' && input !== null) {
+		let text = input.text || "";
+		if (text) {
+			text = applyAdverbConcord(text, options);
+		}
+		return { ...input, text };
+	}
+
+	let str = String(input);
+
+	// 1. Repair Manner Adverb with Descriptive Verb
+	for (const [mannerKo, info] of MANNER_ADVERBS.entries()) {
+		if (info.target_pos !== "Action Verb") continue;
+		const mannerRegex = new RegExp(`(^|[^가-힣])${mannerKo}\\s+([가-힣]+)(?:\\[[^\\]]+\\])?(?=[^가-힣]|$)`, 'g');
+		str = str.replace(mannerRegex, (m, p1, targetWord) => {
+			const dvUnit = DESCRIPTIVE_SURFACE_MAP.get(targetWord);
+			if (dvUnit) {
+				const dvKo = dvUnit[DATA_SCHEMA.Korean];
+				if (isActionVerb(dvKo)) return m;
+				const repAdverb = options.degree_adverb || "아주";
+				return `${p1}${repAdverb} ${targetWord}`;
+			}
+			return m;
+		});
+	}
+
+	// 2. Repair NPI without negative predicate
+	for (const npi of ALL_NPI_WORDS) {
+		const npiRegex = new RegExp(`(^|[^가-힣])${npi}\\s+([가-힣]+)(?=[^가-힣]|$)`, 'g');
+		str = str.replace(npiRegex, (m, p1, targetWord) => {
+			if (isNegativePredicate(targetWord)) return m;
+
+			if (options.prefer_affirmative || options.repair_mode === "replace_adverb") {
+				const repAdverb = options.affirmative_adverb || "아주";
+				return `${p1}${repAdverb} ${targetWord}`;
+			}
+
+			// Negate the predicate
+			if (targetWord.startsWith("알았")) {
+				return `${p1}${npi} ${targetWord.replace(/^알았/, "몰랐")}`;
+			}
+			if (targetWord.startsWith("알아")) {
+				return `${p1}${npi} ${targetWord.replace(/^알아/, "몰라")}`;
+			}
+			if (targetWord.startsWith("압니")) {
+				return `${p1}${npi} ${targetWord.replace(/^압니/, "모릅니")}`;
+			}
+			if (targetWord.startsWith("알다")) {
+				return `${p1}${npi} ${targetWord.replace(/^알다/, "모르다")}`;
+			}
+			if (targetWord.startsWith("알고")) {
+				return `${p1}${npi} ${targetWord.replace(/^알고/, "모르고")}`;
+			}
+			if (targetWord.startsWith("알면")) {
+				return `${p1}${npi} ${targetWord.replace(/^알면/, "모르면")}`;
+			}
+
+			if (targetWord.startsWith("있었")) {
+				return `${p1}${npi} ${targetWord.replace(/^있었/, "없었")}`;
+			}
+			if (targetWord.startsWith("있어")) {
+				return `${p1}${npi} ${targetWord.replace(/^있어/, "없어")}`;
+			}
+			if (targetWord.startsWith("있습니")) {
+				return `${p1}${npi} ${targetWord.replace(/^있습니/, "없습니")}`;
+			}
+			if (targetWord.startsWith("있다")) {
+				return `${p1}${npi} ${targetWord.replace(/^있다/, "없다")}`;
+			}
+			if (targetWord.startsWith("있고")) {
+				return `${p1}${npi} ${targetWord.replace(/^있고/, "없고")}`;
+			}
+			if (targetWord.startsWith("있으면")) {
+				return `${p1}${npi} ${targetWord.replace(/^있으면/, "없으면")}`;
+			}
+			return `${p1}${npi} 안 ${targetWord}`;
+		});
+	}
+
+	return str;
+}
+
+// =========================================================================
+// 4c. Clausal Connectives & Causal Harmony (Feature 11)
+// =========================================================================
+
+/**
+ * Looks up connective specifications from CLAUSAL_CONNECTIVES map or canonical normalizations.
+ *
+ * @param {string|number|Array} connective - Connective string, unit ID, or language unit.
+ * @returns {Object|null} Connective specification with clausal constraints.
+ */
+function getConnectiveSpecs(connective) {
+	if (!connective) return null;
+	if (typeof connective === 'number' || (!isNaN(connective) && typeof connective === 'string' && CLAUSAL_CONNECTIVES.has(String(connective)))) {
+		return CLAUSAL_CONNECTIVES.get(String(connective)) || null;
+	}
+	if (typeof connective === 'object' && Array.isArray(connective)) {
+		const id = connective[DATA_SCHEMA.Id];
+		if (CLAUSAL_CONNECTIVES.has(String(id))) return CLAUSAL_CONNECTIVES.get(String(id));
+		const ko = connective[DATA_SCHEMA.Korean];
+		return CLAUSAL_CONNECTIVES.get(ko) || null;
+	}
+	const str = String(connective).trim();
+	const clean = str.replace(/^[-~]/, "");
+	return CLAUSAL_CONNECTIVES.get(str) ||
+		CLAUSAL_CONNECTIVES.get(clean) ||
+		CLAUSAL_CONNECTIVES.get(`-${clean}`) ||
+		CLAUSAL_CONNECTIVES.get(`~${clean}`) ||
+		null;
+}
+
+function isClausalConnective(wordOrUnit) {
+	return getConnectiveSpecs(wordOrUnit) !== null;
+}
+
+const MOOD_SUFFIX_ENTRIES = [
+	// Suggestive interrogatives: -(으)ㄹ까요, -(으)ㄹ래요 (requires ㄹ coda)
+	{ suffix: "까요", mood: "suggestive", requiresRieul: true },
+	{ suffix: "래요", mood: "suggestive", requiresRieul: true },
+
+	// Imperatives (formal, polite, prohibitive, plain)
+	{ suffix: "마십시오", mood: "imperative" },
+	{ suffix: "하십시오", mood: "imperative" },
+	{ suffix: "마세요", mood: "imperative" },
+	{ suffix: "마라", mood: "imperative" },
+	{ suffix: "십시오", mood: "imperative" },
+	{ suffix: "세요", mood: "imperative" },
+	{ suffix: "아라", mood: "imperative" },
+	{ suffix: "어라", mood: "imperative" },
+	{ suffix: "여라", mood: "imperative" },
+	{ suffix: "해라", mood: "imperative" },
+	{ suffix: "가라", mood: "imperative" },
+	{ suffix: "와라", mood: "imperative" },
+	{ suffix: "봐라", mood: "imperative" },
+	{ suffix: "자라", mood: "imperative" },
+
+	// Propositives
+	{ suffix: "읍시다", mood: "propositive" },
+	{ suffix: "시다", mood: "propositive", requiresBieup: true },
+	{ suffix: "자", mood: "propositive", excludeWords: ["남자", "여자", "모자", "의자", "탁자", "상자"] },
+
+	// Interrogatives
+	{ suffix: "는가", mood: "interrogative" },
+	{ suffix: "나요", mood: "interrogative" },
+	{ suffix: "가요", mood: "interrogative" },
+	{ suffix: "니", mood: "interrogative" },
+	{ suffix: "냐", mood: "interrogative" }
+];
+
+/**
+ * Detects the illocutionary mood of a Korean clause or sentence:
+ * - 'imperative' (-(으)세요, -(으)십시오, -지 마세요, -아/어라)
+ * - 'propositive' (-(으)ㅂ시다, -자)
+ * - 'suggestive' (-(으)ㄹ까요?, -(으)ㄹ래요?)
+ * - 'interrogative' (questions ending in ?, -니?, -냐?, -나요?, etc.)
+ * - 'declarative' (statements)
+ */
+function detectClauseMood(clause) {
+	if (!clause || typeof clause !== 'string') return "declarative";
+	const clean = clause.trim().replace(/[.!?,;~]+$/, "").trim();
+	const hasQuestionMark = clause.includes("?");
+
+	for (const entry of MOOD_SUFFIX_ENTRIES) {
+		if (clean.endsWith(entry.suffix)) {
+			if (entry.excludeWords && entry.excludeWords.some(w => clean.endsWith(w))) {
+				continue;
+			}
+			if (entry.requiresRieul) {
+				const prevChar = clean.slice(-entry.suffix.length - 1, -entry.suffix.length);
+				if (!prevChar) continue;
+				const d = decomposeHangul(prevChar);
+				if (!d || d.final !== 8) continue;
+			}
+			if (entry.requiresBieup) {
+				const prevChar = clean.slice(-entry.suffix.length - 1, -entry.suffix.length);
+				if (!prevChar) continue;
+				const d = decomposeHangul(prevChar);
+				if (!d || (d.final !== 17 && prevChar !== "읍")) continue;
+			}
+			return entry.mood;
+		}
+	}
+
+	if (hasQuestionMark) {
+		return "interrogative";
+	}
+
+	return "declarative";
+}
+
+/**
+ * Detects whether a clause contains past tense inflection (-았/었/였/했-).
+ * Gracefully ignores present-tense root syllables with coda 20 like 있- (unless followed by 었-).
+ */
+function detectClauseTense(clause) {
+	if (!clause || typeof clause !== 'string') return "present";
+	const clean = clause.trim();
+
+	for (let i = 0; i < clean.length; i++) {
+		const ch = clean[i];
+		const d = decomposeHangul(ch);
+		if (d && d.final === 20) { // Coda 20 = ㅆ
+			if (ch === '겠') continue; // Modal/future
+			if (ch === '있') {
+				const nextCh = clean[i + 1];
+				if (nextCh) {
+					const nextD = decomposeHangul(nextCh);
+					if (nextD && nextD.final === 20) return "past";
+				}
+				continue;
+			}
+			return "past";
+		}
+	}
+
+	return "present";
+}
+
+/**
+ * Checks whether a word surface form is a conjugated motion verb predicate (가다, 오다, 다니다, etc.).
+ */
+function isMotionPredicate(word) {
+	if (!word) return false;
+	const vUnit = getVerbUnit(word) || getVerbUnit(word + "다");
+	if (vUnit && (hasTag(vUnit, "motion_concord") || MOTION_VERBS.has(vUnit[DATA_SCHEMA.Korean]))) {
+		return true;
+	}
+	const motionPatterns = [
+		/^(?:.*?(?:돌아|올라|내려|들어|나))?(?:가|갔|갑|갈)/,
+		/^(?:.*?(?:돌아|올라|내려|들어|나))?(?:오|와|왔|옵|올)/,
+		/^다니|^다녀|^다녔|^다닙|^다닐/
+	];
+	return motionPatterns.some(p => p.test(word));
+}
+
+/**
+ * Parses a compound Korean sentence into Clause 1, Connective, and Clause 2.
+ */
+function parseSentenceToClauses(sentence) {
+	if (!sentence || typeof sentence !== 'string') return null;
+	const s = sentence.trim();
+
+	// 1. Multi-word connectives from data.js metadata
+	for (const m of MULTI_WORD_CONNECTIVE_RULES) {
+		const match = s.match(m.pattern);
+		if (match) {
+			return {
+				clause1: match[1].trim(),
+				connective: m.connective,
+				clause2: match[2].trim(),
+				connectiveWord: m.cWord
+			};
+		}
+	}
+
+	// 2. Single-word connective suffixes attached to Clause 1 final word
+	const words = s.split(/\s+/);
+	for (let i = 0; i < words.length - 1; i++) {
+		const w = words[i];
+		const c1Prefix = words.slice(0, i).join(" ");
+		const c2 = words.slice(i + 1).join(" ");
+
+		for (const rule of DYNAMIC_SUFFIX_RULES) {
+			if (w.endsWith(rule.suffix)) {
+				if (rule.isSeoRule) {
+					const prevChar = w.slice(-2, -1);
+					if (!prevChar) continue;
+					const d = decomposeHangul(prevChar);
+					if (!d || (d.final !== 0 && d.final !== 20)) continue;
+				}
+				const stem = w.slice(0, -(rule.strip || rule.suffix).length);
+				return {
+					clause1: (c1Prefix ? c1Prefix + " " : "") + stem,
+					connective: rule.connective,
+					clause2: c2,
+					connectiveWord: w
+				};
+			}
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Validates whether Clause 1 and Clause 2 can be grammatically joined by the given connective.
+ */
+function canConnectiveJoin(clause1, connectiveTextOrId, clause2, options = {}) {
+	const specs = getConnectiveSpecs(connectiveTextOrId);
+	if (!specs) {
+		return { valid: true, connective: connectiveTextOrId, errors: [], errorCodes: [] };
+	}
+
+	const errors = [];
+	const errorCodes = [];
+	const c1Str = typeof clause1 === 'string' ? clause1.trim() : "";
+	const c2Str = typeof clause2 === 'string' ? clause2.trim() : "";
+	const connName = specs.ko || connectiveTextOrId;
+
+	// 1. Clause 1 Tense Restriction
+	if (specs.clause1_tense_allowed === false) {
+		const t1 = detectClauseTense(c1Str);
+		if (t1 === "past") {
+			errors.push(`Connective '${connName}' does not permit past tense (-았/었/였-) in Clause 1: "${c1Str}"`);
+			errorCodes.push("ERR_CLAUSE1_PAST_TENSE");
+		}
+	}
+
+	// 2. Clause 2 Mood Restriction
+	const allowedMoods = new Set(specs.clause2_moods_allowed || ["declarative", "interrogative", "imperative", "propositive", "suggestive"]);
+	const c2Mood = detectClauseMood(c2Str);
+	if (!allowedMoods.has(c2Mood)) {
+		if (c2Mood === "imperative") {
+			errors.push(`Connective '${connName}' cannot be followed by an imperative clause: "${c2Str}"`);
+			errorCodes.push("ERR_CLAUSE2_IMPERATIVE_MOOD");
+		} else if (c2Mood === "propositive") {
+			errors.push(`Connective '${connName}' cannot be followed by a propositive clause: "${c2Str}"`);
+			errorCodes.push("ERR_CLAUSE2_PROPOSITIVE_MOOD");
+		} else if (c2Mood === "suggestive") {
+			errors.push(`Connective '${connName}' cannot be followed by a suggestive clause: "${c2Str}"`);
+			errorCodes.push("ERR_CLAUSE2_SUGGESTIVE_MOOD");
+		} else {
+			errors.push(`Connective '${connName}' cannot take mood '${c2Mood}' in Clause 2: "${c2Str}"`);
+			errorCodes.push("ERR_CLAUSE2_INVALID_MOOD");
+		}
+	}
+
+	// 3. Clause 1 Part of Speech Restriction
+	if (specs.clause1_pos && Array.isArray(specs.clause1_pos)) {
+		const allowedPos = new Set(specs.clause1_pos);
+		const c1Words = c1Str.split(/\s+/);
+		const lastC1Word = c1Words[c1Words.length - 1].replace(/[.!?,;~]+$/, "");
+		if (lastC1Word) {
+			const isDV = DESCRIPTIVE_SURFACE_MAP.has(lastC1Word) ||
+				isDescriptiveVerb(lastC1Word.endsWith("다") ? lastC1Word : lastC1Word + "다");
+			const isAV = isActionVerb(lastC1Word.endsWith("다") ? lastC1Word : lastC1Word + "다") ||
+				(!isDV && lastC1Word.endsWith("하")); // e.g. 일하, 공부하
+
+			if (isDV && !allowedPos.has("Descriptive Verb")) {
+				errors.push(`Connective '${connName}' requires an Action Verb in Clause 1, but found descriptive verb: "${lastC1Word}"`);
+				errorCodes.push("ERR_CLAUSE1_INVALID_POS");
+			} else if (isAV && !allowedPos.has("Action Verb")) {
+				errors.push(`Connective '${connName}' requires a Descriptive Verb in Clause 1, but found action verb: "${lastC1Word}"`);
+				errorCodes.push("ERR_CLAUSE1_INVALID_POS");
+			}
+		}
+	}
+
+	// 4. Motion Verb Requirement for Purpose Connectives (e.g. -(으)러)
+	if (specs.motion_verb_required) {
+		const c2Words = c2Str.split(/\s+/);
+		const lastC2Word = c2Words[c2Words.length - 1].replace(/[.!?,;~]+$/, "");
+		if (lastC2Word && !isMotionPredicate(lastC2Word)) {
+			errors.push(`Connective '${connName}' strictly requires a motion verb (가다, 오다, 다니다, etc.) in Clause 2, but found: "${lastC2Word}"`);
+			errorCodes.push("ERR_NON_MOTION_VERB");
+		}
+	}
+
+	// 5. Outcome Polarity Requirement (-느라고, -는 바람에)
+	if (specs.outcome_polarity === -1) {
+		if (options.outcomePolarity === 1) {
+			errors.push(`Connective '${connName}' requires a negative consequence or burden, but outcome is positive`);
+			errorCodes.push("ERR_OUTCOME_POLARITY");
+		} else {
+			const positiveDistractorKeywords = ["합격했", "성공했", "칭찬", "상을 받", "이겼", "기뻤"];
+			if (positiveDistractorKeywords.some(kw => c2Str.includes(kw))) {
+				errors.push(`Connective '${connName}' requires a negative consequence or burden, but found positive outcome: "${c2Str}"`);
+				errorCodes.push("ERR_OUTCOME_POLARITY");
+			}
+		}
+	}
+
+	// 6. Same Subject Requirement
+	if (specs.same_subject && options.subject1 && options.subject2 && options.subject1 !== options.subject2) {
+		errors.push(`Connective '${connName}' requires identical subjects in Clause 1 and Clause 2, but found '${options.subject1}' vs '${options.subject2}'`);
+		errorCodes.push("ERR_DIFFERENT_SUBJECT");
+	}
+
+	return {
+		valid: errors.length === 0,
+		connective: connName,
+		errors,
+		errorCodes,
+		clause1: c1Str,
+		clause2: c2Str
+	};
+}
+
+/**
+ * Validates clausal concord across a full Korean compound sentence or clause configuration.
+ */
+function validateClausalConcord(sentenceOrClauses, options = {}) {
+	if (!sentenceOrClauses) {
+		return { valid: true, errors: [], errorCodes: [], connective: null };
+	}
+
+	if (typeof sentenceOrClauses === 'object' && sentenceOrClauses.connective) {
+		return canConnectiveJoin(
+			sentenceOrClauses.clause1,
+			sentenceOrClauses.connective,
+			sentenceOrClauses.clause2,
+			options
+		);
+	}
+
+	if (typeof sentenceOrClauses === 'string') {
+		const parsed = parseSentenceToClauses(sentenceOrClauses);
+		if (!parsed) {
+			return { valid: true, errors: [], errorCodes: [], connective: null };
+		}
+		const res = canConnectiveJoin(parsed.clause1, parsed.connective, parsed.clause2, options);
+		res.originalSentence = sentenceOrClauses;
+		res.connectiveWord = parsed.connectiveWord;
+		return res;
+	}
+
+	return { valid: true, errors: [], errorCodes: [], connective: null };
+}
+
+/**
+ * Generates an explicitly ungrammatical distractor sentence for clausal connective quiz questions.
+ *
+ * Distractor Types:
+ * - 'tense_in_clause1': forces past tense into Clause 1 with a connective that forbids past tense (*비가 왔어서)
+ * - 'imperative_in_clause2': forces an imperative ending into Clause 2 after -아/어서 or -기 때문에 (*비가 와서 우산을 쓰세요)
+ * - 'propositive_in_clause2': forces a propositive ending into Clause 2 after -아/어서 (*날씨가 좋아서 공원에 갑시다)
+ * - 'adjective_in_clause1': uses a descriptive verb with -느라고 (*방이 작느라고 짐을 못 넣었어요)
+ * - 'positive_outcome': uses -느라고 with a positive success outcome (*열심히 공부하느라고 시험에 합격했어요)
+ * - 'non_motion_verb': uses -(으)러 with a non-motion verb (*책을 읽으러 커피를 마셔요)
+ */
+function generateClausalDistractor(arg1, arg2, arg3, arg4) {
+	let clause1, connective, clause2, distractorType;
+	if (arguments.length <= 2) {
+		const parsed = parseSentenceToClauses(arg1);
+		if (!parsed) return arg1;
+		clause1 = parsed.clause1;
+		connective = parsed.connective;
+		clause2 = parsed.clause2;
+		distractorType = arg2;
+	} else {
+		clause1 = arg1;
+		connective = arg2;
+		clause2 = arg3;
+		distractorType = arg4;
+	}
+
+	const c1 = String(clause1 || "").trim();
+	const conn = String(connective || "").trim();
+	const c2 = String(clause2 || "").trim();
+
+	switch (distractorType) {
+		case "tense_in_clause1":
+		case "clause1_past_tense": {
+			const c1Words = c1.split(/\s+/);
+			const lastWord = c1Words[c1Words.length - 1];
+			const c1Prefix = c1Words.slice(0, -1).join(" ");
+
+			// Determine past tense stem for the last word using Korean morphology
+			let pastStem = "";
+			const lastChar = lastWord.slice(-1);
+			const d = decomposeHangul(lastChar);
+			if (d) {
+				if (d.final === 0) {
+					pastStem = lastWord.slice(0, -1) + composeHangul(d.initial, d.medial, 20);
+				} else {
+					const takesA = (d.medial === 0 || d.medial === 8);
+					pastStem = lastWord + (takesA ? "았" : "었");
+				}
+			} else {
+				pastStem = lastWord + "었";
+			}
+			const pastC1 = (c1Prefix ? c1Prefix + " " : "") + pastStem;
+
+			if (conn.includes("러")) {
+				return `${pastC1}으러 ${c2}`;
+			} else if (conn.includes("느라고")) {
+				return `${pastC1}느라고 ${c2}`;
+			}
+			return `${pastC1}어서 ${c2}`;
+		}
+
+		case "imperative_in_clause2": {
+			let impC2 = c2;
+			if (detectClauseMood(impC2) !== "imperative") {
+				const c2Words = c2.split(/\s+/);
+				const lastWord = c2Words[c2Words.length - 1].replace(/[.!?,;~]+$/, "");
+				const c2Prefix = c2Words.slice(0, -1).join(" ");
+				const verbCandidate = getVerbUnit(lastWord) || getVerbUnit(lastWord + "다") || getVerbUnit(getStem(lastWord) + "다");
+				if (verbCandidate && canTakeMood(verbCandidate, "imperative")) {
+					impC2 = (c2Prefix ? c2Prefix + " " : "") + buildMoodPredicate(verbCandidate, "imperative", "polite");
+				} else {
+					impC2 = (c2Prefix ? c2Prefix + " " : "") + "하세요";
+				}
+			}
+
+			const targetConn = conn.includes("기 때문에") ? "기 때문에" : "아서/어서";
+			if (targetConn === "기 때문에") {
+				return `${c1}기 때문에 ${impC2}`;
+			}
+
+			// Conjugate Clause 1 with -아/어서 using morphology engine
+			const c1Words = c1.split(/\s+/);
+			const lastC1 = c1Words[c1Words.length - 1];
+			const c1Prefix = c1Words.slice(0, -1).join(" ");
+			const c1Verb = getVerbUnit(lastC1) || getVerbUnit(lastC1 + "다") || getVerbUnit(getStem(lastC1) + "다");
+			const conjC1Word = c1Verb
+				? conjugatePredicate(c1Verb, "polite", "present").replace(/요$/, "서")
+				: applyMorphology(lastC1 + "아/어서");
+			const conjC1 = (c1Prefix ? c1Prefix + " " : "") + conjC1Word;
+
+			return `${conjC1} ${impC2}`;
+		}
+
+		case "propositive_in_clause2": {
+			let propC2 = c2;
+			if (detectClauseMood(propC2) !== "propositive") {
+				const c2Words = c2.split(/\s+/);
+				const lastWord = c2Words[c2Words.length - 1].replace(/[.!?,;~]+$/, "");
+				const c2Prefix = c2Words.slice(0, -1).join(" ");
+				const verbCandidate = getVerbUnit(lastWord) || getVerbUnit(lastWord + "다") || getVerbUnit(getStem(lastWord) + "다");
+				if (verbCandidate && canTakeMood(verbCandidate, "propositive")) {
+					propC2 = (c2Prefix ? c2Prefix + " " : "") + buildMoodPredicate(verbCandidate, "propositive", "formal");
+				} else {
+					propC2 = (c2Prefix ? c2Prefix + " " : "") + "갑시다";
+				}
+			}
+
+			const c1Words = c1.split(/\s+/);
+			const lastC1 = c1Words[c1Words.length - 1];
+			const c1Prefix = c1Words.slice(0, -1).join(" ");
+			const c1Verb = getVerbUnit(lastC1) || getVerbUnit(lastC1 + "다") || getVerbUnit(getStem(lastC1) + "다");
+			const conjC1Word = c1Verb
+				? conjugatePredicate(c1Verb, "polite", "present").replace(/요$/, "서")
+				: applyMorphology(lastC1 + "아/어서");
+			const conjC1 = (c1Prefix ? c1Prefix + " " : "") + conjC1Word;
+
+			return `${conjC1} ${propC2}`;
+		}
+
+		case "adjective_in_clause1":
+		case "clause1_invalid_pos": {
+			const adjStem = c1.includes("작") ? c1 : "방이 작";
+			return `${adjStem}느라고 ${c2 || "짐을 못 넣었어요"}`;
+		}
+
+		case "positive_outcome": {
+			const c1Action = c1.includes("느라고") ? c1 : `${c1.replace(/다$/, "")}느라고`;
+			return `${c1Action} 시험에 합격했어요`;
+		}
+
+		case "non_motion_verb": {
+			const purposeC1 = c1.includes("러") ? c1 : `${c1}러`;
+			return `${purposeC1} 커피를 마셔요`;
+		}
+
+		default:
+			return `${c1} ${conn} ${c2}`;
+	}
+}
+
+/**
+ * Repairs ungrammatical clausal connective patterns to grammatical Korean.
+ */
+function applyClausalConcord(input, options = {}) {
+	if (typeof input === 'object' && input !== null) {
+		let text = input.text || "";
+		if (text) {
+			text = applyClausalConcord(text, options);
+		}
+		return { ...input, text };
+	}
+
+	let str = String(input);
+
+	// 1. Repair forbidden past tense before -아/어서 (*왔어서 -> 와서, *먹었어서 -> 먹어서, *했어서 -> 해서)
+	str = str.replace(/(?:^|\s)([가-힣]*?)([가-힣])어서(?=\s+|$)/g, (match, prefix, pastSyl) => {
+		const d = decomposeHangul(pastSyl);
+		if (!d || d.final !== 20) return match;
+		const leadSpace = match.startsWith(' ') ? ' ' : '';
+
+		if (pastSyl === '왔') return leadSpace + (prefix ? prefix + '와서' : '와서');
+		if (pastSyl === '갔') return leadSpace + (prefix ? prefix + '가서' : '가서');
+		if (pastSyl === '봤') return leadSpace + (prefix ? prefix + '봐서' : '봐서');
+		if (pastSyl === '줬') return leadSpace + (prefix ? prefix + '줘서' : '줘서');
+		if (pastSyl === '됐') return leadSpace + (prefix ? prefix + '돼서' : '돼서');
+		if (pastSyl === '했') return leadSpace + (prefix ? prefix + '해서' : '해서');
+
+		if (pastSyl === '었' || pastSyl === '았') {
+			const stemChar = prefix.slice(-1);
+			const stemD = decomposeHangul(stemChar);
+			if (stemD) {
+				const takesA = (stemD.medial === 0 || stemD.medial === 8);
+				return leadSpace + prefix + (takesA ? '아서' : '어서');
+			}
+			return leadSpace + prefix + '어서';
+		}
+
+		const noCoda = composeHangul(d.initial, d.medial, 0);
+		return leadSpace + prefix + noCoda + '어서';
+	});
+
+	// 2. Repair -아/어서 or -기 때문에 with Imperative/Propositive in Clause 2 (*비가 와서 우산을 쓰세요 -> 비가 오니까 우산을 쓰세요)
+	const parsed = parseSentenceToClauses(str);
+	if (parsed && (parsed.connective === "-아/어서" || parsed.connective === "-기 때문에" || parsed.connective.includes("아/어서") || parsed.connective.includes("기 때문에"))) {
+		const mood = detectClauseMood(parsed.clause2);
+		if (mood === "imperative" || mood === "propositive" || mood === "suggestive") {
+			const c1 = parsed.clause1;
+			let c1WithNikka = "";
+			if (c1.endsWith("와") || c1.endsWith("오")) c1WithNikka = c1.replace(/와$|오$/, "오니까");
+			else if (c1.endsWith("가")) c1WithNikka = c1 + "니까";
+			else if (c1.endsWith("좋아") || c1.endsWith("좋")) c1WithNikka = c1.replace(/좋아$|좋$/, "좋으니까");
+			else if (c1.endsWith("하") || c1.endsWith("해")) c1WithNikka = c1.replace(/하$|해$/, "하니까");
+			else {
+				const lastChar = c1.slice(-1);
+				c1WithNikka = hasBatchim(lastChar) ? c1 + "으니까" : c1 + "니까";
+			}
+			return `${c1WithNikka} ${parsed.clause2}`;
+		}
+	}
+
+	return str;
+}
+
+const CLAUSAL_QUIZ_BANKS = {
+	cause_imperative: [
+		{
+			clause1Nikka: "비가 오니까",
+			clause1Eoseo: "비가 와서",
+			clause1PastEoseo: "비가 왔어서",
+			clause1GiTtaemun: "비가 오기 때문에",
+			clause2: "우산을 쓰세요.",
+			explanation: "-(으)니까 allows imperative (-으세요) in Clause 2, whereas -아/어서 and -기 때문에 strictly forbid imperative and propositive endings. Additionally, -아/어서 does not allow past tense in Clause 1."
+		},
+		{
+			clause1Nikka: "날씨가 추우니까",
+			clause1Eoseo: "날씨가 추워서",
+			clause1PastEoseo: "날씨가 추웠어서",
+			clause1GiTtaemun: "날씨가 춥기 때문에",
+			clause2: "따뜻한 옷을 입으세요.",
+			explanation: "-(으)니까 allows imperative (-으세요) in Clause 2, whereas -아/어서 and -기 때문에 strictly forbid imperative endings."
+		},
+		{
+			clause1Nikka: "시간이 없으니까",
+			clause1Eoseo: "시간이 없어서",
+			clause1PastEoseo: "시간이 없었어서",
+			clause1GiTtaemun: "시간이 없기 때문에",
+			clause2: "빨리 가세요.",
+			explanation: "-(으)니까 allows imperative commands in Clause 2, while -아/어서 and -기 때문에 forbid imperative endings."
+		},
+		{
+			clause1Nikka: "길이 막히니까",
+			clause1Eoseo: "길이 막혀서",
+			clause1PastEoseo: "길이 막혔어서",
+			clause1GiTtaemun: "길이 막히기 때문에",
+			clause2: "지하철을 타세요.",
+			explanation: "-(으)니까 is used for reasons leading to commands or suggestions."
+		}
+	],
+	cause_propositive: [
+		{
+			clause1Nikka: "날씨가 좋으니까",
+			clause1Eoseo: "날씨가 좋아서",
+			clause1PastEoseo: "날씨가 좋았어서",
+			clause1GiTtaemun: "날씨가 좋기 때문에",
+			clause2: "공원에 갑시다.",
+			explanation: "Propositive proposals (-(으)ㅂ시다, -자) require -(으)니까 and cannot follow -아/어서 or -기 때문에."
+		},
+		{
+			clause1Nikka: "배가 고프니까",
+			clause1Eoseo: "배가 고파서",
+			clause1PastEoseo: "배가 고팠어서",
+			clause1GiTtaemun: "배가 고프기 때문에",
+			clause2: "식당에 갑시다.",
+			explanation: "Propositive proposals (-(으)ㅂ시다) require -(으)니까 and forbid -아/어서."
+		},
+		{
+			clause1Nikka: "시험이 끝나니까",
+			clause1Eoseo: "시험이 끝나서",
+			clause1PastEoseo: "시험이 끝났어서",
+			clause1GiTtaemun: "시험이 끝나기 때문에",
+			clause2: "영화를 봅시다.",
+			explanation: "Proposals for joint action require -(으)니까 and cannot take -아/어서."
+		}
+	],
+	reason_negative: [
+		{
+			correctC1: "공부하느라고",
+			pastC1: "공부했느라고",
+			adjC1: "방이 작느라고",
+			negOutcome: "잠을 못 잤어요.",
+			adjOutcome: "짐을 못 넣었어요.",
+			posOutcome: "시험에 합격했어요.",
+			explanation: "-느라고 strictly forbids past tense in Clause 1, requires an Action Verb (not a Descriptive Verb like 작다), and necessitates an unfortunate negative outcome or burden (not a success like 시험에 합격했어요)."
+		},
+		{
+			correctC1: "일하느라고",
+			pastC1: "일했느라고",
+			adjC1: "옷이 비싸느라고",
+			negOutcome: "점심을 못 먹었어요.",
+			adjOutcome: "사지 못했어요.",
+			posOutcome: "칭찬을 받았어요.",
+			explanation: "-느라고 requires an action verb in the present tense and connects to a negative outcome or burden."
+		},
+		{
+			correctC1: "준비하느라고",
+			pastC1: "준비했느라고",
+			adjC1: "날씨가 춥느라고",
+			negOutcome: "지각했어요.",
+			adjOutcome: "나가지 못했어요.",
+			posOutcome: "상을 받았어요.",
+			explanation: "-느라고 cannot take past tense, adjectives, or positive outcomes."
+		}
+	],
+	purpose_motion: [
+		{
+			actionC1: "책을 읽으러",
+			actionPastC1: "책을 읽었으러",
+			motionC2: "도서관에 가요.",
+			nonMotionC2a: "커피를 마셔요.",
+			nonMotionC2b: "집에 있어요.",
+			explanation: "-(으)러 strictly requires a motion verb (가다, 오다, 다니다) in Clause 2, and forbids past tense in Clause 1."
+		},
+		{
+			actionC1: "친구를 만나러",
+			actionPastC1: "친구를 만났으러",
+			motionC2: "카페에 왔어요.",
+			nonMotionC2a: "책을 읽어요.",
+			nonMotionC2b: "방에 있어요.",
+			explanation: "-(으)러 requires a motion verb in Clause 2 (가다, 오다, etc.) and non-past Clause 1."
+		},
+		{
+			actionC1: "운동을 하러",
+			actionPastC1: "운동을 했으러",
+			motionC2: "체육관에 가요.",
+			nonMotionC2a: "음악을 들어요.",
+			nonMotionC2b: "텔레비전을 봐요.",
+			explanation: "-(으)러 expresses purpose of motion and requires a directional motion verb in Clause 2."
+		}
+	]
+};
+
+/**
+ * Generates a complete clausal connective quiz question with 1 correct sentence and 3 targeted distractors.
+ * Dynamically selects questions and distractors across curriculum clause banks.
+ */
+function generateClausalQuizItem(options = {}) {
+	const topics = ["cause_imperative", "cause_propositive", "reason_negative", "purpose_motion"];
+	const topic = options.topic || (typeof getRandom === 'function' ? getRandom(topics) : topics[Math.floor(Math.random() * topics.length)]);
+	const bank = CLAUSAL_QUIZ_BANKS[topic] || CLAUSAL_QUIZ_BANKS.cause_imperative;
+	const entry = (options.index !== undefined && bank[options.index])
+		? bank[options.index]
+		: (typeof getRandom === 'function' ? getRandom(bank) : bank[Math.floor(Math.random() * bank.length)]);
+
+	let item = {};
+	if (topic === "cause_imperative") {
+		const correctSentence = `${entry.clause1Nikka} ${entry.clause2}`;
+		item = {
+			topic,
+			prompt: "다음 중 올바른 연결 어미를 사용한 문장을 고르십시오.",
+			translationPrompt: "Select the sentence with the correct clausal connective:",
+			correctSentence,
+			correctConnective: "-(으)니까",
+			options: [
+				{ text: correctSentence, correct: true },
+				{ text: `${entry.clause1Eoseo} ${entry.clause2}`, correct: false, trap: "imperative_in_clause2", errorCode: "ERR_CLAUSE2_IMPERATIVE_MOOD" },
+				{ text: `${entry.clause1PastEoseo} ${entry.clause2}`, correct: false, trap: "tense_in_clause1", errorCode: "ERR_CLAUSE1_PAST_TENSE" },
+				{ text: `${entry.clause1GiTtaemun} ${entry.clause2}`, correct: false, trap: "imperative_in_clause2", errorCode: "ERR_CLAUSE2_IMPERATIVE_MOOD" }
+			],
+			explanation: entry.explanation,
+			ruleSummary: "Causal Connective Concord: -(으)니까 vs -아/어서 / -기 때문에 (Imperative Restriction)"
+		};
+	} else if (topic === "cause_propositive") {
+		const correctSentence = `${entry.clause1Nikka} ${entry.clause2}`;
+		item = {
+			topic,
+			prompt: "다음 중 올바른 문장을 고르십시오.",
+			translationPrompt: "Select the grammatically correct proposal sentence:",
+			correctSentence,
+			correctConnective: "-(으)니까",
+			options: [
+				{ text: correctSentence, correct: true },
+				{ text: `${entry.clause1Eoseo} ${entry.clause2}`, correct: false, trap: "propositive_in_clause2", errorCode: "ERR_CLAUSE2_PROPOSITIVE_MOOD" },
+				{ text: `${entry.clause1PastEoseo} ${entry.clause2}`, correct: false, trap: "tense_in_clause1", errorCode: "ERR_CLAUSE1_PAST_TENSE" },
+				{ text: `${entry.clause1GiTtaemun} ${entry.clause2}`, correct: false, trap: "propositive_in_clause2", errorCode: "ERR_CLAUSE2_PROPOSITIVE_MOOD" }
+			],
+			explanation: entry.explanation,
+			ruleSummary: "Causal Connective Concord: -(으)니까 vs -아/어서 (Propositive Restriction)"
+		};
+	} else if (topic === "reason_negative") {
+		const correctSentence = `${entry.correctC1} ${entry.negOutcome}`;
+		item = {
+			topic,
+			prompt: "다음 중 올바른 문장을 고르십시오.",
+			translationPrompt: "Select the sentence that properly uses -느라고:",
+			correctSentence,
+			correctConnective: "-느라고",
+			options: [
+				{ text: correctSentence, correct: true },
+				{ text: `${entry.pastC1} ${entry.negOutcome}`, correct: false, trap: "tense_in_clause1", errorCode: "ERR_CLAUSE1_PAST_TENSE" },
+				{ text: `${entry.adjC1} ${entry.adjOutcome}`, correct: false, trap: "adjective_in_clause1", errorCode: "ERR_CLAUSE1_INVALID_POS" },
+				{ text: `${entry.correctC1} ${entry.posOutcome}`, correct: false, trap: "positive_outcome", errorCode: "ERR_OUTCOME_POLARITY" }
+			],
+			explanation: entry.explanation,
+			ruleSummary: "Causal Connective Concord: -느라고 Constraints (Action Verb + Present Tense + Negative Outcome)"
+		};
+	} else {
+		const correctSentence = `${entry.actionC1} ${entry.motionC2}`;
+		item = {
+			topic,
+			prompt: "다음 중 올바른 목적 연결 표현을 고르십시오.",
+			translationPrompt: "Select the correct purpose sentence with -(으)러:",
+			correctSentence,
+			correctConnective: "-(으)러",
+			options: [
+				{ text: correctSentence, correct: true },
+				{ text: `${entry.actionC1} ${entry.nonMotionC2a}`, correct: false, trap: "non_motion_verb", errorCode: "ERR_NON_MOTION_VERB" },
+				{ text: `${entry.actionPastC1} ${entry.motionC2}`, correct: false, trap: "tense_in_clause1", errorCode: "ERR_CLAUSE1_PAST_TENSE" },
+				{ text: `${entry.actionC1} ${entry.nonMotionC2b}`, correct: false, trap: "non_motion_verb", errorCode: "ERR_NON_MOTION_VERB" }
+			],
+			explanation: entry.explanation,
+			ruleSummary: "Purpose Connective Concord: -(으)러 Requires Motion Verb & Non-Past Clause 1"
+		};
+	}
+
+	if (options.shuffle && typeof shuffle === 'function') {
+		item.options = shuffle(item.options);
+	}
+
+	return item;
+}
+
 /**
  * Attaches the appropriate grammatical case or semantic particle to a noun,
  * performing phonological batchim concord, honorific suppletion, animacy differentiation,
@@ -2531,8 +4189,44 @@ function getTokenOptions(token, depth = 0) {
 				: (!hasTag(w, "attributive") || hasTag(w, "counting")));
 			options = words.map(w => new TokenOption(w[KoreanWord], [w]));
 		}
+	} else if (token.type === "Adv_Degree" || (token.type === "Adv" && token.tag === "degree")) {
+		let words = Array.from(DEGREE_ADVERBS.values()).map(info => info.unit);
+		if (token.tag && token.tag !== "degree") {
+			words = words.filter(w => hasTag(w, token.tag));
+		}
+		if (token.affirmative || token.polarity === 1 || (!token.negated && !token.isNegative)) {
+			words = words.filter(w => !ALL_NPI_WORDS.has(w[KoreanWord]));
+		}
+		options = words.map(w => new TokenOption(w[KoreanWord], [w]));
+	} else if (token.type === "Adv_Manner" || (token.type === "Adv" && token.tag === "manner")) {
+		let words = Array.from(MANNER_ADVERBS.values()).map(info => info.unit);
+		if (token.tag && token.tag !== "manner") {
+			words = words.filter(w => hasTag(w, token.tag));
+		}
+		if (token.target_pos === "Descriptive Verb" || token.isDV) {
+			words = [];
+		}
+		options = words.map(w => new TokenOption(w[KoreanWord], [w]));
+	} else if (token.type === "Adv_Discourse" || (token.type === "Adv" && (token.tag === "discourse" || token.tag === "conjunction"))) {
+		let words = Array.from(DISCOURSE_ADVERBS.values()).map(info => info.unit);
+		if (token.tag && token.tag !== "discourse" && token.tag !== "conjunction") {
+			words = words.filter(w => hasTag(w, token.tag));
+		}
+		options = words.map(w => new TokenOption(w[KoreanWord], [w]));
 	} else if (token.type === "Adv") {
-		options = getFilteredWords("Adverb", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
+		let words = getFilteredWords("Adverb", token.tag);
+		if (token.target_pos === "Descriptive Verb" || token.isDV) {
+			words = words.filter(w => {
+				const ko = w[KoreanWord];
+				if (SHORT_INABILITY_WORDS.has(ko)) return false;
+				if (MANNER_ADVERBS.has(ko) && !DEGREE_ADVERBS.has(ko)) return false;
+				return true;
+			});
+		}
+		if (token.affirmative || token.polarity === 1 || (!token.negated && !token.isNegative)) {
+			words = words.filter(w => !ALL_NPI_WORDS.has(w[KoreanWord]));
+		}
+		options = words.map(w => new TokenOption(w[KoreanWord], [w]));
 	} else if (token.type === "Det" || token.type === "Determiner") {
 		options = getFilteredWords("Determiner", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
 	} else if (token.type === "Exclamation") {
@@ -2742,10 +4436,23 @@ function expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint)
 
 	let posToFetch = "Noun";
 	if (tokenType === "Number") posToFetch = "Number";
-	else if (tokenType === "Adv" || tokenType === "Adv_Time") posToFetch = "Adverb";
+	else if (tokenType === "Adv" || tokenType === "Adv_Time" || tokenType === "Adv_Degree" || tokenType === "Adv_Manner" || tokenType === "Adv_Discourse") posToFetch = "Adverb";
 	else if (tokenType === "Exclamation") posToFetch = "Exclamation";
 
-	let words = getFilteredWords(posToFetch, tag);
+	let words = [];
+	if (tokenType === "Adv_Degree") {
+		words = Array.from(DEGREE_ADVERBS.values()).map(info => info.unit);
+		if (tag) words = words.filter(w => hasTag(w, tag));
+	} else if (tokenType === "Adv_Manner") {
+		words = Array.from(MANNER_ADVERBS.values()).map(info => info.unit);
+		if (tag) words = words.filter(w => hasTag(w, tag));
+	} else if (tokenType === "Adv_Discourse") {
+		words = Array.from(DISCOURSE_ADVERBS.values()).map(info => info.unit);
+		if (tag) words = words.filter(w => hasTag(w, tag));
+	} else {
+		words = getFilteredWords(posToFetch, tag);
+	}
+
 	if (applyConstraint && currentContext.logic === "cause_effect" && currentContext.produced_state) {
 		const domainWords = words.filter(w => parseSemanticVector(w).domain);
 		if (domainWords.length > 0) words = domainWords;
@@ -2754,6 +4461,20 @@ function expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint)
 	if (currentContext.temporal_polarity && (tokenType === "Adv" || tokenType === "Adv_Time" || tokenType === "Time" || tag === "time" || tag === "temporal" || tag === "adverb_time" || tag === "temporalNoun")) {
 		const tenseFiltered = filterWordsByTense(words, currentContext.temporal_polarity);
 		if (tenseFiltered.length > 0) words = tenseFiltered;
+	}
+
+	if ((tokenType === "Adv" || tokenType === "Adv_Degree" || tag === "adverb") && (currentContext.isDV || currentContext.target_pos === "Descriptive Verb")) {
+		words = words.filter(w => {
+			const ko = w[DATA_SCHEMA.Korean];
+			if (SHORT_INABILITY_WORDS.has(ko)) return false;
+			if (MANNER_ADVERBS.has(ko) && !DEGREE_ADVERBS.has(ko)) return false;
+			return true;
+		});
+	}
+
+	const isNegContext = currentContext.isNegative || currentContext.negated || currentContext.mood === "inability";
+	if (!isNegContext && (tokenType.startsWith("Adv") || tag === "adverb")) {
+		words = words.filter(w => !ALL_NPI_WORDS.has(w[DATA_SCHEMA.Korean]));
 	}
 
 	const chosen = getRandom(words);
@@ -2807,6 +4528,22 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 	}
 
 	let currentContext = { ...incomingContext };
+	if (/DVst/.test(template)) {
+		currentContext.isDV = true;
+	}
+	if (typeof grammarId === 'number') {
+		if (IMPERATIVE_GRAMMAR_IDS.has(grammarId)) currentContext.mood = "imperative";
+		else if (PROPOSITIVE_GRAMMAR_IDS.has(grammarId)) currentContext.mood = "propositive";
+		else if (INABILITY_NEGATION_IDS.has(grammarId)) currentContext.mood = "inability";
+		else if (VOLITIONAL_GRAMMAR_IDS.has(grammarId)) currentContext.mood = "volitional";
+
+		if (INABILITY_NEGATION_IDS.has(grammarId) || GENERAL_NEGATION_IDS.has(grammarId)) {
+			currentContext.isNegative = true;
+		}
+	}
+	if (/(?:않|못|마세|마십|없|아니)/.test(template)) {
+		currentContext.isNegative = true;
+	}
 	if (!currentContext.temporal_polarity) {
 		if (typeof grammarId === 'number') {
 			if (PAST_GRAMMAR_IDS.has(grammarId)) currentContext.temporal_polarity = "past";
@@ -3272,6 +5009,15 @@ function applyMorphology(text) {
 		return ch + ending;
 	});
 
+	// Resolve 으/ㅂ시다 and (으)ㅂ시다 based on batchim
+	resolvedKo = resolvedKo.replace(/([가-힣])(?:으\/ㅂ시다|\(으\)ㅂ시다)/g, (_, ch) => {
+		const d = decomposeHangul(ch);
+		if (d && d.final !== 0) {
+			return d.final === 8 ? setFinal(ch, 17) + "시다" : ch + "읍시다";
+		}
+		return setFinal(ch, 17) + "시다";
+	});
+
 	// Resolve 아/어/았/었 vowel harmony
 	resolvedKo = resolvedKo.replace(/([가-힣])(아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => {
 		const hv = getVowelHarmony(ch);
@@ -3281,9 +5027,12 @@ function applyMorphology(text) {
 		return ch + hv + s;
 	});
 
-	// Resolve 으 insertion
+	// Resolve 으 insertion and ㄹ-dropping before (세|시|셔|셨|십)
 	resolvedKo = resolvedKo.replace(/([가-힣])으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고)/g, (_, ch, s) => {
 		const d = decomposeHangul(ch);
+		if (d && d.final === 8 && (s === '세' || s === '시' || s === '셔' || s === '셨' || s === '십')) {
+			return setFinal(ch, 0) + s;
+		}
 		return ch + (d && d.final !== 0 && d.final !== 8 ? '으' : '') + s;
 	});
 
@@ -3296,6 +5045,7 @@ function applyMorphology(text) {
 	// Resolve (으)시 / (으)세 / (으)십 / (으)셨 based on batchim
 	resolvedKo = resolvedKo.replace(/([가-힣])\(으\)(시|세|셔|셨|십)/g, (_, ch, s) => {
 		const d = decomposeHangul(ch);
+		if (d && d.final === 8) return setFinal(ch, 0) + s;
 		return ch + (d && d.final !== 0 && d.final !== 8 ? '으' : '') + s;
 	});
 
@@ -3372,6 +5122,10 @@ function applyMorphology(text) {
 	}
 
 	resolvedKo = applyCounterConcord(resolvedKo);
+	resolvedKo = applySpatialConcord(resolvedKo);
+	resolvedKo = applyMoodConcord(resolvedKo);
+	resolvedKo = applyAdverbConcord(resolvedKo);
+	resolvedKo = applyClausalConcord(resolvedKo);
 
 	resolvedKo = resolvedKo.replace(/\u200B/g, '');
 	return resolvedKo;
@@ -3685,7 +5439,65 @@ const exportedMembers = {
 	buildDeicticPhrase,
 	isStaticExistenceVerb,
 	validateSpatialConcord,
-	applySpatialConcord
+	applySpatialConcord,
+	IMPERATIVE_GRAMMAR_IDS,
+	PROPOSITIVE_GRAMMAR_IDS,
+	INABILITY_NEGATION_IDS,
+	GENERAL_NEGATION_IDS,
+	VOLITIONAL_GRAMMAR_IDS,
+	FORBIDDEN_NEGATIVE_ROOTS,
+	NEGATION_SUPPLETIONS,
+	AFFIRMATIVE_COUNTERPARTS,
+	SHORT_NEGATION_WORDS,
+	SHORT_INABILITY_WORDS,
+	SHORT_GENERAL_WORDS,
+	DESCRIPTIVE_SURFACE_MAP,
+	FORBIDDEN_DV_IMPERATIVE_FORMS,
+	FORBIDDEN_DV_PROPOSITIVE_FORMS,
+	FORBIDDEN_DV_LONG_INABILITY_FORMS,
+	FORBIDDEN_DV_VOLITIONAL_FORMS,
+	isDescriptiveVerb,
+	isActionVerb,
+	canTakeMood,
+	getNegationSuppletion,
+	getAffirmativeCounterpart,
+	conjugatePredicate,
+	buildNegatedPredicate,
+	buildMoodPredicate,
+	validateMoodConcord,
+	applyMoodConcord,
+	DEGREE_ADVERBS,
+	MANNER_ADVERBS,
+	DISCOURSE_ADVERBS,
+	NEGATIVE_POLARITY_ADVERBS,
+	ALL_NPI_WORDS,
+	AFFIRMATIVE_DEGREE_ADVERBS,
+	isDegreeAdverb,
+	isMannerAdverb,
+	isDiscourseAdverb,
+	isNegativePolarityAdverb,
+	isNegativePredicate,
+	canAdverbPrecede,
+	validateAdverbConcord,
+	applyAdverbConcord,
+	CLAUSAL_CONNECTIVES,
+	CAUSAL_CONNECTIVES,
+	CONTRAST_CONNECTIVES,
+	PURPOSE_CONNECTIVES,
+	CONDITION_CONNECTIVES,
+	SIMULTANEOUS_CONNECTIVES,
+	MOTION_VERBS,
+	getConnectiveSpecs,
+	isClausalConnective,
+	detectClauseMood,
+	detectClauseTense,
+	isMotionPredicate,
+	parseSentenceToClauses,
+	canConnectiveJoin,
+	validateClausalConcord,
+	generateClausalDistractor,
+	applyClausalConcord,
+	generateClausalQuizItem
 };
 
 if (typeof window !== 'undefined') {

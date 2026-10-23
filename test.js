@@ -298,6 +298,9 @@ try {
 		{ name: "Temporal Concord (F5)", path: path.resolve(__dirname, 'test', 'temporal_concord_test.js') },
 		{ name: "Classifier Concord (F6)", path: path.resolve(__dirname, 'test', 'counter_concord_test.js') },
 		{ name: "Spatial & Deictic Concord (F7)", path: path.resolve(__dirname, 'test', 'spatial_concord_test.js') },
+		{ name: "Mood & Negation Concord (F8)", path: path.resolve(__dirname, 'test', 'grammar_mood_test.js') },
+		{ name: "Adverbial Concord (F9)", path: path.resolve(__dirname, 'test', 'adverb_test.js') },
+		{ name: "Clausal Connective Concord (F11)", path: path.resolve(__dirname, 'test', 'clausal_connective_test.js') },
 		{ name: "Dynamic Semantic Sets", path: path.resolve(__dirname, 'test', 'dynamic_semantic_sets_test.js') }
 	];
 

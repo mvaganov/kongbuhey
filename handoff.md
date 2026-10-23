@@ -28,28 +28,20 @@ Contains the 12-element schema array for Language Units (Vocabulary and Grammar)
 * **File Layout & LLM Tooling**: Functional logic (`DATA_SCHEMA`, in-memory cache engine, `addLearningUnit`, `getWords`, `hasTag`) is positioned at the top of `data.js` (lines 1–150) above `KR_EN_languageUnits`. Agents must use `select.js` to query, count, or modify data rows rather than reading the data array directly.
 
 * **Current Dataset Status:** 
-  - **1,726 units (100% complete curriculum from words0.js, words1.js, study texts, and canonical semantic units)**: Sequential IDs 0..1725. Covers `SUOBI00` through `SUOBI20`, all 40 classes (`class2011` through `class2202`), ingested study texts (`studytext12`, `studytext21`, `studytext22`), canonical honorific/case units, temporal tense units, and canonical counters/nouns (`살`, `대`, `채`, `호`, `학년`, `고양이`, `사진`, `편지`, `종이`, `사전`, `정장`, `라면`, `자동차`).
-  - **Single Point of Truth in `data.js`**: All Korean vocabulary, counting systems, honorific titles, institutions, directional/origin/humble verbs, temporal tense sets, particle allomorphs, and pronoun sandhi rules reside exclusively in `data.js`:
-    - `elder_noun` semantic tag assigns elder status to senior kinship and titles (`선생님`, `교수님`, `부모님`, `어머니`, `아버지`, `할머니`, `할아버지`, `사장님`, `어르신`, `선배`, `부장`, `팀장`, `작은아버지`, `작은어머니`, `큰아버지`, `큰어머니`, etc.).
-    - `inanimate_institution` tag marks facilities and organizations (`회사`, `은행`, `학교`, `병원`, `우체국`, `경찰서`, `대사관`, `소방서`, `구청`, etc.).
+  - **1,747 units (100% complete curriculum with clean SemanticVectors and zero TODOs)**: Sequential IDs 0..1746. Covers `SUOBI00` through `SUOBI20`, all 40 classes (`class2011` through `class2202`), ingested study texts (`studytext12`, `studytext21`, `studytext22`), canonical honorific/case units, temporal tense units, counters/nouns, adverbs, and core clausal connectives (`-아/어서`, `-(으)니까`, `-기 때문에`, `-느라고`, `-는 바람에`, `-(으)므로`, `-(으)러`, `-(으)면서`, `-(으)면`, `-지만`, `-는데`). All 1,504 historical TODO strings deleted, shrinking `data.js` to 330 KB (saving 190 KB / 36.6%) and `schema_summary.json` to 65 KB (saving 234 KB / 78%).
+  - **Single Point of Truth in `data.js`**: All Korean vocabulary, counting systems, honorific titles, institutions, directional/origin/humble verbs, temporal tense sets, particle allomorphs, pronoun sandhi rules, and clausal connectives reside exclusively in `data.js`:
+    - `elder_noun` semantic tag assigns elder status to senior kinship and titles.
+    - `inanimate_institution` tag marks facilities and organizations.
     - `locative_origin`, `locative_goal`, `locative_static`, and `dative_humble` dynamically populate directional, existence, and humble verb sets without hardcoded Hangul.
     - `temporal_past`, `temporal_future`, `temporal_present`, `tense`, and `no_time_particle` dynamically populate temporal polarity and deictic particle exclusion sets without hardcoded Hangul.
-    - `Number` units define numeric values directly in `SemanticVector` (`sv.value`), dynamically constructing Sino and Pure Korean digit arrays, tens, cardinal/attributive forms, and value lookup maps at initialization.
-    - `koreanMeasureWord` and `sinoMeasureWord` tags dynamically populate `KOREAN_CLASSIFIERS` and `SINO_CLASSIFIERS` sets without hardcoded Hangul.
-    - `classifier_spec` in `SemanticVector` dynamically populates `CLASSIFIER_NOUN_SPECS` with target noun categories, priorities, and fallback tags with zero hardcoded Hangul.
-    - `Grammar` units specify `allomorph_pair` and `allomorph_patterns` in `SemanticVector`, dynamically compiling `PARTICLE_PAIRS` and regex concord rules in `korean.js`.
-    - `Pronoun` units specify `sandhi` transformation rules in `SemanticVector`, dynamically compiling `PRONOUN_REPLACEMENTS`.
-  - **Homonym Disambiguation Architecture**: Undifferentiated homonyms with divergent semantic selection constraints are cleanly separated into distinct language units (conforming to the multi-entry model of `이` [Id 237 number, Id 361 teeth, Id 1618 determiner]):
-    - `치다`: Unit 396 (racket/cue sports: golf, tennis, ping-pong, billiards, bowling; `transitive_sports`) vs Unit 1486 (musical instruments: piano, guitar, drums; `transitive_instrument`).
-    - `부치다`: Unit 1321 (postal mail/send: letters, parcels; `transitive_general`, `postal`) vs Unit 1658 (culinary griddle/fry pancake: jeon, pancake, egg; `transitive_food`, `cooking`).
-    - `연기하다`: Unit 1503 (schedule delay/postpone; `transitive_general`, `schedule`) vs Unit 1659 (theatrical act/perform; `intransitive_general`, `theater`, `art`).
-    - `개다`: Unit 1560 (weather clear up; `intransitive_general`, `weather`) vs Unit 1660 (domestic fold clothes/bedding; `transitive_clothing`, `chore`).
-    - `내리다`: Unit 667 (transit alight/get off vehicle; `intransitive_general`, `transportation`, `locative_origin`) vs Unit 1567 (meteorological precipitation fall: rain, snow; `weather`, `intransitive_general`, `locative_origin`).
-    - `끼다`: Unit 1565 (wearable: gloves, ring; `transitive_handwear`) vs Unit 1657 (meteorological accumulation: fog, clouds; `weather`, `intransitive_general`).
-  - **Automated Ambiguity & Diversity Safeguards**: `select.js` and `test.js` actively enforce:
-    1. Zero conflated homonym verbs with cross-domain tag conflicts or divergent definitions.
-    2. Strict candidate diversity ($\ge 3$ candidates per verb). Specialized single-target verbs (`닦다`, `부르다`, `차다`, `끼다`) are explicitly tagged with `SUPPRESS_SEMANTIC_DIVERSITY_WARNING`.
-  - Sentence validation: 100% pass rate with 0 errors across Cartesian test suites (`node test.js`, 6 suites passed; `collocation_test.js`, 734 assertions; `particle_concord_test.js`, 128 assertions; `test/honorific_concord_test.js`, 220 assertions; `test/temporal_concord_test.js`, 495 assertions; `test/counter_concord_test.js`, 471 assertions; `test/dynamic_semantic_sets_test.js`, 9 assertions; total Stage 6 assertions: 2,057 assertions).
+    - `Number` units define numeric values directly in `SemanticVector` (`sv.value`).
+    - `koreanMeasureWord` and `sinoMeasureWord` tags dynamically populate classifiers.
+    - `classifier_spec` in `SemanticVector` dynamically populates `CLASSIFIER_NOUN_SPECS`.
+    - `clausal_connective`, `reason`, `cause`, `contrast`, `purpose`, `condition`, `simultaneous` tags and `SemanticVector` fields (`clause1_tense_allowed`, `clause2_moods_allowed`, `clause1_pos`, `same_subject`, `outcome_polarity`, `motion_verb_required`) dynamically populate `CLAUSAL_CONNECTIVES`, `CAUSAL_CONNECTIVES`, `PURPOSE_CONNECTIVES`, `CONTRAST_CONNECTIVES`, `CONDITION_CONNECTIVES`, and `SIMULTANEOUS_CONNECTIVES`.
+    - `Grammar` units specify `allomorph_pair` and `allomorph_patterns` in `SemanticVector`.
+    - `Pronoun` units specify `sandhi` transformation rules in `SemanticVector`.
+    - `adverb_degree`, `adverb_manner`, `adverb_discourse`, and `negative_polarity` dynamically populate adverbial sub-type sets and NPI polarity requirements in `korean.js`.
+  - Sentence validation: 100% pass rate with 0 errors across Cartesian test suites (`node test.js`, 6 stages passed; Stage 6 assertions: 5,853 assertions across 10 suites including `test/clausal_connective_test.js`).
 
 ### 2. `korean.js` (Morphology, Pronunciation & Semantic Generation Engine)
 A robust, centralized module that handles complex rules of Korean text manipulation, standard pronunciation, and semantic generation (refactored for high token and syntactic density: 1,280 lines / 59.6 KB, down from 1,935 lines / 83.6 KB, a ~34% reduction in line count and ~29% in file size with 100% backward compatibility):
@@ -125,7 +117,7 @@ Maps surface Hangul tokens to:
     *   `node homonyms.js top [10]`: Displays the most confusable tokens.
     *   `node homonyms.js least [10]`: Displays the least confusable tokens.
     *   `node homonyms.js stats`: Summary metrics of total tokens, direct units, LUTs, and phonetic links.
-*   **Dataset Status**: 100% of `data.js` vocabulary ingested (3,037 tokens, 3,600+ mapped entries). 0 orphan links. Exhaustive tests pass with 0 errors across 3,403 generated sentences.
+*   **Dataset Status**: 100% of `data.js` vocabulary ingested (3,062 tokens, 3,600+ mapped entries). 0 orphan links. Exhaustive tests pass with 0 errors across 6,232 generated sentences.
 
 ### 7. `text_analyzer.js` (Passage Ingestion, Morphological Decomposition & Disambiguation Engine)
 Automated analysis pipeline that decomposes real Korean passages from `studytexts.js` into constituent language units, resolves homonyms and polysemous morphemes, generates student study checklists, and identifies curriculum gaps:
@@ -143,7 +135,8 @@ Single command that executes all repository test suites with fail-fast behavior:
 *   **Stage 3: Homonym Dictionary Sync**: Validates token count, ensures 0 broken `_neighbor` links.
 *   **Stage 4: Exhaustive Sentence Generation**: Runs `exhaustive.js` in an isolated subprocess; asserts 100% unit coverage and 0 morphology/LUT errors across all generated sentences.
 *   **Stage 5: Text Analyzer Passage Check**: Validates ingested study texts (`studytext12`, `studytext21`, `studytext22`, or custom source) ensuring 0 gaps.
-*   **Performance**: Completes entire 5-stage validation in ~3.7 seconds.
+*   **Stage 6: Semantic & Honorific Concord**: Validates all 9 semantic concord suites (5,692 assertions across collocations, descriptive selection, particle concord, honorific suppletions, temporal tense harmony, counting measure words, spatial deictics, grammatical mood, and adverbial syntactic placement).
+*   **Performance**: Completes entire 6-stage validation in ~9.5 seconds.
 
 ---
 
@@ -156,68 +149,16 @@ Single command that executes all repository test suites with fail-fast behavior:
 
 ## Next Steps for the Next Agent
 
-1. **Semantic Rules & Phrase Generation Engine Implementation [CURRENT HIGHEST PRIORITY]**:
-   - **Foundational Project Value**:
-     The ultimate value of Kongbuhey relies on correct random phrase generation to provide authentic context for learning Korean grammar and vocabulary. Following the 100% completion of the curriculum audit (all 1,657 units standardized, 1,429 units cataloged with `sv.TODO`), developing these semantic rules is the highest priority for the project.
-   - **Specification & Technical Roadmap**:
-     The complete architectural plan, linguistic specifications, and testing strategies are codified in [`SEMANTIC_RULES_ROADMAP.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/SEMANTIC_RULES_ROADMAP.md).
-   - **Phased Implementation Summary**:
-     - **Phase A (Collocations & Descriptive Selection — F1, F2, F10)**:
-       - **Feature 1 (Completed)**: Verb-Noun Collocation Matrix implemented.
-         - Reusable semantic tags (`clothing`, `footwear`, `headwear`, `handwear`, `neckwear`, `watch`, `wearable`, `reading`, `visual_media`, `audio`, `song`, `writing`, `vehicle`, `racketSports`, `instrument`, `teeth`, `room`, `bodyPart`) mapped across verbs and nouns in `data.js`.
-         - Embedded JavaScript execution supported via `sv.collocation_filter` in `SemanticVector` with header `/*js:filter*/` for fine-grained predicate constraints (e.g. `치다`, `입다`, `신다`, `쓰다`, `끼다`, `매다`, `차다`, `벗다`, `먹다`, `마시다`, `운전하다`, `타다`, `씻다`).
-         - Engine refactored in `korean.js` (`getNounCandidatesForVerb`, `getVerbParticleType`, `buildActionVerbPhrase`, `getTokenOptions`).
-         - Built `collocation_test.js` (211 tests passing, 0 failures). Full `node test.js` suite passing (100% green, 5.08s).
-       - **Feature 2 (Completed)**: Descriptive Sensory & Dimensional Selection implemented.
-         - Granular taxonomy mapped in `DESCRIPTIVE_VERB_SPECS` (`descriptive_taste`, `descriptive_weather`, `descriptive_tactile_temperature`, `descriptive_dimension_spatial`, `descriptive_dimension_length`, `descriptive_dimension_height`, `descriptive_dimension_weight`, `descriptive_dimension_thickness`, `descriptive_dimension_scale`, `descriptive_price`, `descriptive_cleanliness`, `descriptive_acoustic`, `descriptive_emotion`, `descriptive_person_trait`, `descriptive_difficulty`, `descriptive_speed`).
-         - Engine refactored in `korean.js` (`getSubjectCandidatesForDescriptiveVerb`, `buildDescriptiveVerbPhrase`, `VP_DVst` token expansion with batchim-sensitive `-이/-가` subject particle concord).
-         - Test suite in `collocation_test.js` expanded to 12 suites (475 tests passing, 0 failures). Full `node test.js` suite passing (100% green, 5.03s).
-       - Add pronoun case sandhi (`누가`, `이게/그게/저게`, `이건/그건/저건`, `뭘/뭐가`) to `applyMorphology` (F10).
-     - **Phase B (Case & Spatio-Temporal Concord — F3, F5, F7, F9)**:
-       - **Feature 3 (Completed)**: Case Particle Semantic Specialization implemented.
-         - Locative duality: destination/allative & static existence (`-에`) vs origin/departure & dynamic activity site (`-에서`).
-         - Dative animacy & respect: respected elders & humble verbs (`-께`) vs inanimate institutions/places (`-에`) vs animate non-elders (`-에게` / `-한테`).
-         - Instrumental `-(으)로`: phonological coda `ㄹ` exception (`지하철로`, `연필로`), vowel coda (`버스로`), non-ㄹ consonant coda (`젓가락으로`).
-         - Comitative (`-와/과`, `-하고`, `-(이)랑`), ablative person (`-에게서`, `-한테서`), and subject honorific (`-께서`).
-         - Built `particle_concord_test.js` & `test/particle_concord_test.js` (128 tests passing, 0 failures). Full `node test.js` suite passing (100% green).
-       - **Feature 5 (Completed)**: Temporal Adverbial & Predicate Tense Concord implemented.
-         - Past-restricted time words (`어제`, `그제`, `지난주`, `지난달`, `작년`, `아까`, `방금`, `옛날`, etc.) strictly require past tense (`-았/었-`) and forbid prospective/future endings (`-(으)ㄹ 거예요`, `-(으)ㄹ게요`, `-(으)려고 하다`, `-을 건가요`).
-         - Future-restricted time words (`내일`, `모레`, `다음주`, `다음달`, `내년`, `곧`, `앞으로`, etc.) strictly require future/prospective endings and forbid past tense (`-았/었-`).
-         - Present / habitual / progressive time words (`지금`, `현재`, `요즘`, `매일`, `항상`, `늘`, `날마다`) pair with present tense or `-고 있다`.
-         - Deictic time particle prohibition: pure deictic words (`어제`, `오늘`, `내일`, `지금`, `그제`, `모레`, `요즘`, `언제`, `아까`, `방금`, `이제`) strictly forbid time particle `-에` (*“어제에”*, *“오늘에”* ungrammatical in Korean).
-         - Non-deictic time nouns (`3시`, `월요일`, `1월`, `주말`, `봄`, `낮`, `밤`, `아침`, `방학`, `작년`, `내년`, `올해`) standardly take `-에`.
-         - Dynamic sets (`PAST_TIME_WORDS`, `FUTURE_TIME_WORDS`, `PRESENT_TIME_WORDS`, `BARE_TIME_WORDS_NO_PARTICLE`, `PAST_GRAMMAR_IDS`, `FUTURE_GRAMMAR_IDS`, `PRESENT_GRAMMAR_IDS`) populated from `data.js` without hardcoded Hangul.
-         - Surface Korean phonological analysis: Unicode Jamo coda decomposition checking final coda 20 (`ㅆ`) reliably detects all conjugated past predicates (`갔어요`, `봤습니다`, `먹었어요`) while ignoring present roots (`있/없/겠`).
-         - Dedicated test suite `test/temporal_concord_test.js` (495 tests passing, 0 failures).
-        - **Feature 7 (Completed)**: Deictic Demonstratives & Spatial Relational Noun Phrase Syntax implemented.
-          - Tripartite deictic proximity system: Proximal (`이`, `이것/이거`, `여기/이곳`, `이쪽`), Medial (`그`, `그것/그거`, `거기/그곳`, `그쪽`), Distal (`저`, `저것/저거`, `저기/저곳`, `저쪽`), Interrogative (`어느/어떤/무슨`, `무엇/뭐`, `어디`).
-          - Spatial relational frames: `[Reference Noun (+의)] + [Position] + [Locative Particle]`.
-          - Spatial positions (17 canonical units in `SPATIAL_POSITIONS`): `위`, `아래`, `밑`, `앞`, `뒤`, `옆`, `안`, `속`, `밖`, `사이`, `가운데`, `중간`, `근처`, `건너편`, `맞은편`, `오른쪽`, `왼쪽`.
-          - Locative particle concord: Static existence verbs (`있다/없다/계시다/살다/앉다/두다`) pair with `-에` (`책상 위에`); dynamic action verbs pair with `-에서` (`학교 앞에서`); directional motion verbs pair with `-(으)로` (`위로`, `오른쪽으로`).
-          - Determiner syntax: Determiners (`이, 그, 저, 어느`) strictly precede nominals; bare determiners attaching case particles directly (*“이가”, *“이를”, *“그을”*) are strictly prohibited and repaired (`이게`, `이걸`, `그걸`).
-          - Case-contracted demonstratives: `이게/그게/저게` (subject), `이건/그건/저건` (topic), `이걸/그걸/저걸` (object).
-          - Dedicated test suite `test/spatial_concord_test.js` (596 tests passing, 0 failures).
-       - Split `{Adv}` into `{Adv_Degree}`, `{Adv_Manner}`, and `{Adv_Discourse}` (F9).
-     - **Phase C (Honorifics & Classifier Matrices — F4, F6, F8)**:
-       - **Feature 4 (Completed)**: Speech Register & Honorific Concord with Lexical Suppletions implemented.
-         - Subject honorific concord: elder subject detection (`elder_noun`), subject particle suppletion (`-께서`, `-께서는`), honorific predicate marker (`-(으)시-`).
-         - Lexical verb suppletions: `자다` $\rightarrow$ `주무시다`, `먹다/마시다` $\rightarrow$ `드시다/잡수시다`, `있다` $\rightarrow$ `계시다` (vs indirect possession `있으시다`), `아프다` $\rightarrow$ `편찮으시다`, `죽다` $\rightarrow$ `돌아가시다`.
-         - Lexical noun suppletions: `밥` $\rightarrow$ `진지/식사`, `나이` $\rightarrow$ `연세`, `말` $\rightarrow$ `말씀`, `집` $\rightarrow$ `댁`, `이름` $\rightarrow$ `성함`, `생일` $\rightarrow$ `생신`, `사람/명` $\rightarrow$ `분`.
-         - Dative humble suppletions: elder recipient (`-께`), `주다` $\rightarrow$ `드리다`, `말하다` $\rightarrow$ `말씀드리다`, `묻다/물어보다` $\rightarrow$ `여쭙다/여쭈어보다`, `만나다/보다` $\rightarrow$ `뵙다`, `도와주다` $\rightarrow$ `도와드리다`, `보여주다` $\rightarrow$ `보여드리다`.
-         - 1st-person pronoun concord: polite/formal (`저/제`, `저희`) vs banmal/informal (`나/내`, `우리`).
-         - Dedicated test suite `test/honorific_concord_test.js` (220 tests passing, 0 failures).
-       - **Feature 6 (Completed)**: Numeral-Classifier Matrix & Attributive Measure Word Syntax implemented.
-         - Pure Korean attributive numerals (`한, 두, 세, 네, 다섯, ... 스무`) strictly enforced before native Korean classifiers (`개, 명, 분, 마리, 권, 병, 잔, 대, 채, 송이, 장, 켤레, 벌, 자루, 그릇, 살, 시, 시간, 달, 줄, 판`).
-         - Sino-Korean numerals (`일, 이, 삼, 사, 오, ...`) strictly enforced with Sino classifiers (`년, 월, 일, 분, 초, 개월, 층, 호, 원, 인분, 세, 학년`).
-         - Cross-system clashes strictly rejected: Sino numeral + Pure counter (*“일 개”*, *“이 명”*, *“삼 마리”*) and Pure numeral + Sino counter (*“세 개월”*, *“두 년”*, *“다섯 층”*, *“한 원”*).
-         - Clock time hybrid formula enforced: `PureKorean + 시` + `SinoKorean + 분` (`한 시 삼십 분`).
-         - Month phonological reduction enforced: `6월` $\rightarrow$ `유월` (never `*육월`), `10월` $\rightarrow$ `시월` (never `*십월`).
-         - Noun-classifier category semantic compatibility enforced (`isCompatibleNounAndClassifier`, `getMatchingClassifier`, `buildCountingPhrase`) with 100% dynamic `classifier_spec` in `data.js` and zero hardcoded Hangul strings in `korean.js`.
-         - Accidental cardinal numeral repair (`applyCounterConcord` repairs *“하나 개”* $\rightarrow$ `한 개`, *“육월”* $\rightarrow$ `유월`).
-         - Dedicated test suite `test/counter_concord_test.js` (471 tests passing, 0 failures).
-       - Restrict imperative/propositive moods strictly to Action Verbs (F8).
-     - **Phase D (Continuous Test Integration — Completed)**:
-       - Added Stage 6 (`[6/6] Semantic Rules & Honorific Concord`) directly into `test.js`, running all 7 semantic suites (2,653 assertions: collocations 734, particle concord 128, honorific concord 220, temporal concord 495, classifier concord 471, spatial & deictic concord 596, dynamic sets 9) in ~1.9s with fail-fast CI protection.
+1. **Semantic Rules & Phrase Generation Engine Implementation [PHASE 1 COMPLETE, THEME 5 / FEATURE 11 COMPLETE]**:
+   - **Phase 1 Completion & Dataset Cleanup**:
+     All 10 linguistic features (F1 through F10) in [`SEMANTIC_RULES_ROADMAP.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/SEMANTIC_RULES_ROADMAP.md) are 100% implemented, tested, and green (5,695 assertions passed). All 1,504 historical `TODO` notes have been deleted from `data.js` and `schema_summary.json`, reducing dataset size from 521 KB to 330 KB (~191 KB saved) and `schema_summary.json` from 300 KB to 65 KB (~234 KB saved) with zero regressions across the entire test suite.
+   - **Feature 11: Clausal Connective Matrix & "Because" Causal Harmony [100% COMPLETED & VERIFIED]**:
+     - **Dynamic Motion Concord**: Directional motion verbs tagged with `"motion_concord"` in `data.js` and verified dynamically without compound OR conditionals.
+     - **Zero Magic Numbers / Lookups**: `getConnectiveSpecs` eliminates all hardcoded ID conditionals (`52`, `53`, `54`, etc.) and string branches, indexing directly from `data.js` semantic vectors (`surface_forms`).
+     - **Mood Ending Table**: `detectClauseMood` refactored into a declarative lookup table (`MOOD_SUFFIX_ENTRIES`), eliminating compound `endsWith` OR conditionals.
+     - **Dynamic Clausal Parser**: `parseSentenceToClauses` dynamically compiles multi-word and suffix rules (`MULTI_WORD_CONNECTIVE_RULES`, `DYNAMIC_SUFFIX_RULES`) directly from `CLAUSAL_CONNECTIVES`.
+     - **Morphological Distractor Engine**: `generateClausalDistractor` utilizes Hangul phonology, `conjugatePredicate`, and `buildMoodPredicate` instead of ad-hoc string replacement chains.
+     - **Dynamic Clausal Quiz Generator**: `generateClausalQuizItem` dynamically selects items from multi-pair curriculum question banks (`CLAUSAL_QUIZ_BANKS`), generating randomized multiple-choice questions with 1 valid sentence and 3 targeted ungrammatical distractors (156/156 assertions passing in `test/clausal_connective_test.js`; 5,845 assertions passing across all 6 stages of `node test.js`).
 
 2. **Prioritize Ingestion of Remaining Study Texts (Phase 1.5)**:
    - Ingest next passage: **`studytext31`**, followed by `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext63`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`.
