@@ -740,6 +740,14 @@ let HONORIFIC_WORDS = new Set();
 let HUMBLE_WORDS = new Set();
 let FORBIDDEN_PLAIN_WORDS_FOR_ELDERS = new Set();
 
+let PAST_TIME_WORDS = new Set();
+let FUTURE_TIME_WORDS = new Set();
+let PRESENT_TIME_WORDS = new Set();
+let BARE_TIME_WORDS_NO_PARTICLE = new Set();
+let PAST_GRAMMAR_IDS = new Set();
+let FUTURE_GRAMMAR_IDS = new Set();
+let PRESENT_GRAMMAR_IDS = new Set();
+
 function initSemanticSets() {
 	ELDER_NOUN_TITLES.clear();
 	INANIMATE_INSTITUTION_NAMES.clear();
@@ -755,6 +763,13 @@ function initSemanticSets() {
 	HONORIFIC_WORDS.clear();
 	HUMBLE_WORDS.clear();
 	FORBIDDEN_PLAIN_WORDS_FOR_ELDERS.clear();
+	PAST_TIME_WORDS.clear();
+	FUTURE_TIME_WORDS.clear();
+	PRESENT_TIME_WORDS.clear();
+	BARE_TIME_WORDS_NO_PARTICLE.clear();
+	PAST_GRAMMAR_IDS.clear();
+	FUTURE_GRAMMAR_IDS.clear();
+	PRESENT_GRAMMAR_IDS.clear();
 
 	const allUnits = KR_EN_languageUnits || [];
 	for (const unit of allUnits) {
@@ -855,7 +870,115 @@ function initSemanticSets() {
 		if (hasTag(unit, "humble", "humbleVerb", "dative_humble")) {
 			HUMBLE_WORDS.add(ko);
 		}
+
+		const unitId = unit[DATA_SCHEMA.Id];
+		const isPast = hasTag(unit, "temporal_past", "past") || (sv && sv.tense === "past");
+		const isFuture = hasTag(unit, "temporal_future", "future") || (sv && sv.tense === "future");
+		const isPresent = hasTag(unit, "temporal_present", "present") || (sv && sv.tense === "present");
+		const isNoParticle = hasTag(unit, "no_time_particle") || (sv && sv.no_time_particle === true);
+
+		if (isPast) {
+			if (pos === "Grammar") PAST_GRAMMAR_IDS.add(unitId);
+			else PAST_TIME_WORDS.add(ko);
+		}
+		if (isFuture) {
+			if (pos === "Grammar") FUTURE_GRAMMAR_IDS.add(unitId);
+			else FUTURE_TIME_WORDS.add(ko);
+		}
+		if (isPresent) {
+			if (pos === "Grammar") PRESENT_GRAMMAR_IDS.add(unitId);
+			else PRESENT_TIME_WORDS.add(ko);
+		}
+		if (isNoParticle) {
+			BARE_TIME_WORDS_NO_PARTICLE.add(ko);
+		}
 	}
+}
+
+function getTemporalPolarity(wordOrUnit) {
+	if (!wordOrUnit) return null;
+	const ko = typeof wordOrUnit === 'string' ? wordOrUnit : (Array.isArray(wordOrUnit) ? wordOrUnit[DATA_SCHEMA.Korean] : "");
+	const unit = typeof wordOrUnit === 'object' && Array.isArray(wordOrUnit) ? wordOrUnit : (getNounUnit(ko) || getVerbUnit(ko));
+	const id = unit ? unit[DATA_SCHEMA.Id] : (typeof wordOrUnit === 'number' ? wordOrUnit : null);
+
+	if (ko && PAST_TIME_WORDS.has(ko)) return "past";
+	if (id !== null && PAST_GRAMMAR_IDS.has(id)) return "past";
+
+	if (ko && FUTURE_TIME_WORDS.has(ko)) return "future";
+	if (id !== null && FUTURE_GRAMMAR_IDS.has(id)) return "future";
+
+	if (ko && PRESENT_TIME_WORDS.has(ko)) return "present";
+	if (id !== null && PRESENT_GRAMMAR_IDS.has(id)) return "present";
+
+	if (unit) {
+		if (hasTag(unit, "temporal_past", "past")) return "past";
+		if (hasTag(unit, "temporal_future", "future")) return "future";
+		if (hasTag(unit, "temporal_present", "present")) return "present";
+		const sv = parseSemanticVector(unit);
+		if (sv && sv.tense) return sv.tense;
+	}
+	return null;
+}
+
+function isDeicticTimeWord(nounUnit, nounKo = "") {
+	const ko = nounKo || (nounUnit ? nounUnit[DATA_SCHEMA.Korean] : "");
+	if (ko && BARE_TIME_WORDS_NO_PARTICLE.has(ko)) return true;
+	if (nounUnit) {
+		if (hasTag(nounUnit, "no_time_particle")) return true;
+		const sv = parseSemanticVector(nounUnit);
+		if (sv && sv.no_time_particle === true) return true;
+	}
+	return false;
+}
+
+function filterWordsByTense(words, tense) {
+	if (!words || words.length === 0 || !tense) return words || [];
+	let filtered = words;
+	if (tense === "past") {
+		filtered = words.filter(w => {
+			const pol = getTemporalPolarity(w);
+			return pol !== "future";
+		});
+	} else if (tense === "future") {
+		filtered = words.filter(w => {
+			const pol = getTemporalPolarity(w);
+			return pol !== "past";
+		});
+	} else if (tense === "present") {
+		filtered = words.filter(w => {
+			const pol = getTemporalPolarity(w);
+			return pol !== "past" && pol !== "future";
+		});
+	}
+	return filtered.length > 0 ? filtered : words;
+}
+
+function filterGrammarByTense(grammars, tense) {
+	if (!grammars || grammars.length === 0 || !tense) return grammars || [];
+	let filtered = grammars;
+	if (tense === "past") {
+		filtered = grammars.filter(g => {
+			const id = g[DATA_SCHEMA.Id];
+			if (FUTURE_GRAMMAR_IDS.has(id)) return false;
+			const sv = parseSemanticVector(g);
+			return sv.tense !== "future";
+		});
+	} else if (tense === "future") {
+		filtered = grammars.filter(g => {
+			const id = g[DATA_SCHEMA.Id];
+			if (PAST_GRAMMAR_IDS.has(id)) return false;
+			const sv = parseSemanticVector(g);
+			return sv.tense !== "past";
+		});
+	} else if (tense === "present") {
+		filtered = grammars.filter(g => {
+			const id = g[DATA_SCHEMA.Id];
+			if (PAST_GRAMMAR_IDS.has(id) || FUTURE_GRAMMAR_IDS.has(id)) return false;
+			const sv = parseSemanticVector(g);
+			return sv.tense !== "past" && sv.tense !== "future";
+		});
+	}
+	return filtered.length > 0 ? filtered : grammars;
 }
 
 function isElderNoun(nounUnit, nounKo = "") {
@@ -1338,6 +1461,93 @@ function validateHonorificConcord(input, context = {}) {
 	};
 }
 
+function validateTemporalConcord(input, context = {}) {
+	const errors = [];
+	const text = typeof input === 'string' ? input : (input && input.text ? input.text : "");
+	if (!text) return { valid: true, errors: [] };
+
+	// 1. Deictic time particle prohibition (*오늘에, *어제에, *내일에, *지금에)
+	for (const bare of BARE_TIME_WORDS_NO_PARTICLE) {
+		const deicticParticleRegex = new RegExp(`(^|[^가-힣])(${bare})에([^가-힣]|$)`);
+		if (deicticParticleRegex.test(text)) {
+			errors.push(`Deictic temporal word '${bare}' cannot take time particle -에 (*${bare}에) in: "${text}"`);
+		}
+	}
+
+	// 2. Identify temporal words present in text
+	const foundPast = [];
+	const foundFuture = [];
+	for (const word of PAST_TIME_WORDS) {
+		const reg = new RegExp(`(^|[^가-힣])${word}([^가-힣]|$)`);
+		if (reg.test(text)) foundPast.push(word);
+	}
+	for (const word of FUTURE_TIME_WORDS) {
+		const reg = new RegExp(`(^|[^가-힣])${word}([^가-힣]|$)`);
+		if (reg.test(text)) foundFuture.push(word);
+	}
+
+	// 3. Identify verbal tense markers in text
+	let hasPastPredicate = false;
+	for (let i = 0; i < text.length; i++) {
+		const ch = text[i];
+		if (ch === '있' || ch === '없' || ch === '겠') continue;
+		const d = decomposeHangul(ch);
+		if (d && d.final === 20) { // ㅆ coda
+			const rest = text.slice(i + 1);
+			if (/^(?:어요|습니다|다|어|죠|던|네|소|ㅂ니다)/.test(rest)) {
+				hasPastPredicate = true;
+				break;
+			}
+		}
+	}
+	if (!hasPastPredicate) {
+		hasPastPredicate = /(?:았|었|였|했|던|갔|봤|왔|잤)(?:어요|습니다|다|어|죠)/.test(text) && !/(았|었|였)으면\s*좋겠/.test(text);
+	}
+
+	// Future/prospective markers: -(으)ㄹ 거예요, -(으)ㄹ게요, -(으)려고 해요/합니다, -겠-, -을 건가요
+	const hasFuturePredicate = /((?:거(?:예요|야|입니다|에요|요|다))|(?:(?:ㄹ|을)\s*게요|게요)|(?:(?:으)?려고\s*(?:해|합|하|그))|(?:겠(?:어요|습니다|다|어|죠))|(?:(?:ㄹ|을)\s*건가요|건가요|것인가요))/.test(text);
+
+	// 4. Check for temporal contradictions
+	if (foundPast.length > 0 && hasFuturePredicate) {
+		errors.push(`Past temporal word(s) [${foundPast.join(', ')}] clash with prospective/future predicate in: "${text}"`);
+	}
+	if (foundFuture.length > 0 && hasPastPredicate) {
+		errors.push(`Future temporal word(s) [${foundFuture.join(', ')}] clash with past predicate in: "${text}"`);
+	}
+
+	if (context.temporal_polarity === "past" && hasFuturePredicate) {
+		errors.push(`Context requires past tense, but found future predicate in: "${text}"`);
+	}
+	if (context.temporal_polarity === "future" && hasPastPredicate) {
+		errors.push(`Context requires future tense, but found past predicate in: "${text}"`);
+	}
+
+	return {
+		valid: errors.length === 0,
+		errors
+	};
+}
+
+function applyTemporalConcord(input, options = {}) {
+	if (typeof input === 'object' && input !== null) {
+		let text = input.text || "";
+		if (text) {
+			text = applyTemporalConcord(text, options);
+		}
+		return { ...input, text };
+	}
+
+	let str = String(input);
+
+	// Normalize deictic time + -에
+	for (const bare of BARE_TIME_WORDS_NO_PARTICLE) {
+		const deicticRegex = new RegExp(`(^|[^가-힣])(${bare})에([^가-힣]|$)`, 'g');
+		str = str.replace(deicticRegex, '$1$2$3');
+	}
+
+	return str;
+}
+
 /**
  * Attaches the appropriate grammatical case or semantic particle to a noun,
  * performing phonological batchim concord, honorific suppletion, animacy differentiation,
@@ -1481,6 +1691,13 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 
 		case "plural":
 			return nounKo + "들";
+
+		case "time":
+		case "temporal":
+			if (isDeicticTimeWord(nounUnit, nounKo)) {
+				return (options.topic === true) ? nounKo + (hasB ? "은" : "는") : nounKo;
+			}
+			return nounKo + "에";
 
 		default:
 			return nounKo;
@@ -1836,6 +2053,11 @@ function expandSemanticClause(depth, currentContext) {
 	if (grammars.length === 0) grammars = getFilteredWords("Grammar").filter(g => hasTag(g, "declarative"));
 	if (grammars.length === 0) grammars = getFilteredWords("Grammar");
 
+	if (currentContext.temporal_polarity) {
+		const tenseGrammars = filterGrammarByTense(grammars, currentContext.temporal_polarity);
+		if (tenseGrammars.length > 0) grammars = tenseGrammars;
+	}
+
 	const grammar = getRandom(grammars);
 	if (grammar) {
 		markUnitUsed(grammar);
@@ -1857,7 +2079,7 @@ function expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint)
 
 	let posToFetch = "Noun";
 	if (tokenType === "Number") posToFetch = "Number";
-	else if (tokenType === "Adv") posToFetch = "Adverb";
+	else if (tokenType === "Adv" || tokenType === "Adv_Time") posToFetch = "Adverb";
 	else if (tokenType === "Exclamation") posToFetch = "Exclamation";
 
 	let words = getFilteredWords(posToFetch, tag);
@@ -1866,9 +2088,18 @@ function expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint)
 		if (domainWords.length > 0) words = domainWords;
 	}
 
+	if (currentContext.temporal_polarity && (tokenType === "Adv" || tokenType === "Adv_Time" || tokenType === "Time" || tag === "time" || tag === "temporal" || tag === "adverb_time" || tag === "temporalNoun")) {
+		const tenseFiltered = filterWordsByTense(words, currentContext.temporal_polarity);
+		if (tenseFiltered.length > 0) words = tenseFiltered;
+	}
+
 	const chosen = getRandom(words);
 	if (chosen) {
 		markUnitUsed(chosen);
+		const pol = getTemporalPolarity(chosen);
+		if (pol && !currentContext.temporal_polarity) {
+			currentContext.temporal_polarity = pol;
+		}
 		return { text: chosen[DATA_SCHEMA.Korean], unit: chosen };
 	}
 	return { text: "N/A", unit: null };
@@ -1912,8 +2143,16 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 		grammarId = template;
 	}
 
-	let koResult = template;
 	let currentContext = { ...incomingContext };
+	if (!currentContext.temporal_polarity) {
+		if (typeof grammarId === 'number') {
+			if (PAST_GRAMMAR_IDS.has(grammarId)) currentContext.temporal_polarity = "past";
+			else if (FUTURE_GRAMMAR_IDS.has(grammarId)) currentContext.temporal_polarity = "future";
+			else if (PRESENT_GRAMMAR_IDS.has(grammarId)) currentContext.temporal_polarity = "present";
+		}
+	}
+
+	let koResult = template;
 	const childrenTree = [];
 	const tokenRegex = /\{([^}:]+)(?::([^}]+))?\}/g;
 	let match;
@@ -2402,6 +2641,13 @@ function applyMorphology(text) {
 		return m;
 	});
 
+	if (BARE_TIME_WORDS_NO_PARTICLE && BARE_TIME_WORDS_NO_PARTICLE.size > 0) {
+		for (const bare of BARE_TIME_WORDS_NO_PARTICLE) {
+			const deicticRegex = new RegExp(`(^|[^가-힣])(${bare})에([^가-힣]|$)`, 'g');
+			resolvedKo = resolvedKo.replace(deicticRegex, '$1$2$3');
+		}
+	}
+
 	resolvedKo = resolvedKo.replace(/\u200B/g, '');
 	return resolvedKo;
 }
@@ -2672,7 +2918,20 @@ const exportedMembers = {
 	getVerbParticleType,
 	parseAndValidateCollocationFilter,
 	attachParticle,
-	hasRieulBatchim
+	hasRieulBatchim,
+	PAST_TIME_WORDS,
+	FUTURE_TIME_WORDS,
+	PRESENT_TIME_WORDS,
+	BARE_TIME_WORDS_NO_PARTICLE,
+	PAST_GRAMMAR_IDS,
+	FUTURE_GRAMMAR_IDS,
+	PRESENT_GRAMMAR_IDS,
+	getTemporalPolarity,
+	isDeicticTimeWord,
+	filterWordsByTense,
+	filterGrammarByTense,
+	validateTemporalConcord,
+	applyTemporalConcord
 };
 
 if (typeof window !== 'undefined') {

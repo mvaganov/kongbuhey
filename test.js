@@ -295,6 +295,7 @@ try {
 		{ name: "Collocations (F1, F2)", path: path.resolve(__dirname, 'collocation_test.js') },
 		{ name: "Case Particles (F3)", path: path.resolve(__dirname, 'particle_concord_test.js') },
 		{ name: "Honorifics (F4)", path: path.resolve(__dirname, 'test', 'honorific_concord_test.js') },
+		{ name: "Temporal Concord (F5)", path: path.resolve(__dirname, 'test', 'temporal_concord_test.js') },
 		{ name: "Dynamic Semantic Sets", path: path.resolve(__dirname, 'test', 'dynamic_semantic_sets_test.js') }
 	];
 
@@ -318,7 +319,7 @@ try {
 		}
 	}
 
-	console.log(`[ PASS ] (4 suites, ${totalAssertions.toLocaleString()} assertions passed)`);
+	console.log(`[ PASS ] (${suiteScripts.length} suites, ${totalAssertions.toLocaleString()} assertions passed)`);
 } catch (err) {
 	failFast("Stage 6 (Semantic & Honorific Concord)", err.stdout || err.stderr || err.message);
 }
