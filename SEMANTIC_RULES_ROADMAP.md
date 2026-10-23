@@ -299,7 +299,7 @@ graph TD
 | **F3: Case Particle Specialization** | **297** | `korean.js` (`attachParticle`) | ✅ Completed | 128 tests passing in `particle_concord_test.js` |
 | **F4: Speech Register & Honorifics** | **66** | `korean.js` (`getHonorificPredicate`, `applyHonorificConcord`) | ✅ Completed | 220 tests passing in `test/honorific_concord_test.js` |
 | **F5: Temporal Tense Concord** | **63** | `korean.js` (`generateSemanticSentence`, `attachParticle`, `applyMorphology`) | ✅ Completed | 495 tests passing in `test/temporal_concord_test.js` |
-| **F6: Numeral-Classifier Matrix** | **535** | `korean.js` (`getNumberTokenOptions`) | ⚠️ Partial | Build `test/counter_concord_test.js` |
+| **F6: Numeral-Classifier Matrix** | **535** | `korean.js` (`buildCountingPhrase`, `getMatchingClassifier`, `validateCounterConcord`) | ✅ Completed | 471 tests passing in `test/counter_concord_test.js` |
 | **F7: Deictic & Spatial Relational** | **234** | `korean.js` (`getTokenOptions`) | ✅ Yes | Exercised by `exhaustive.js` |
 | **F8: Mood & Negation Constraints** | **77** | `korean.js` (`generateTemplateTokenOptions`) | ⚠️ Partial | Add mood checks to `exhaustive.js` |
 | **F9: Adverbial Sub-Typing** | **101** | `korean.js` (`getTokenOptions`) | ❌ No | Add adverb scope checks |
