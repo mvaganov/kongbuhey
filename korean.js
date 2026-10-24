@@ -79,6 +79,9 @@ const clausalGenerator = require('./korean/concord/clausal_generator.js');
 const templateEngine = require('./korean/generation/template_engine.js');
 const semanticGenerator = require('./korean/generation/semantic_generator.js');
 
+// 6. Text Analyzer Subsystem
+const analyzer = require('./korean/analyzer/index.js');
+
 // Helper functions for options tracking and usage filters
 function setCurrentUsageFilter(filter) {
 	state.currentUsageFilter = filter;
@@ -367,7 +370,15 @@ const exportedMembers = {
 	reconstructFromLanguageUnitTree: lutSerializer.reconstructFromLanguageUnitTree,
 	flattenLanguageUnitTree: lutSerializer.flattenLanguageUnitTree,
 	encodeLanguageUnitIds: lutSerializer.encodeLanguageUnitIds,
-	decodeLanguageUnitIds: lutSerializer.decodeLanguageUnitIds
+	decodeLanguageUnitIds: lutSerializer.decodeLanguageUnitIds,
+
+	// Text Analyzer Subsystem
+	analyzer: analyzer,
+	analyzePassage: analyzer.analyzePassage,
+	analyzeSentence: analyzer.analyzeSentence,
+	analyzeSingleToken: analyzer.analyzeSingleToken,
+	evaluateSyntaxFrame: analyzer.evaluateSyntaxFrame,
+	disambiguateCandidates: analyzer.disambiguateCandidates
 };
 
 if (typeof window !== 'undefined') {

@@ -26,6 +26,15 @@ kongbuhey/
 ├── tts_demo.html               # Interactive browser SpeechSynthesis testbed
 ├── korean.js                   # Public facade re-exporting core modules
 ├── korean/
+│   ├── analyzer/
+│   │   ├── indexer.js          # Fast in-memory indexing, semantic tag caching & stem classification
+│   │   ├── particles.js        # Declarative particle specs, compound cliticization & batchim rules
+│   │   ├── syntax_frame.js     # SyntaxFrame evaluator, ontology matching & pedagogical ambiguity
+│   │   ├── verb_morphology.js  # Verb conjugation, irregular stems (ㅂ, ㄷ, 르, ㅡ) & adnominal participles
+│   │   ├── token_analyzer.js   # Single-token morphological decomposition engine
+│   │   ├── sentence_analyzer.js # Multi-word auxiliary constructions & clause predicate detection
+│   │   ├── passage_analyzer.js # Pure JS passage decomposition & report formatting (browser-safe)
+│   │   └── index.js            # Barrel export for analyzer subsystem
 │   ├── core/
 │   │   ├── primitives.js       # Unicode Hangul math (compose, decompose, batchim, vowel harmony)
 │   │   ├── morphology.js       # Irregular verbs, particles, honorific infixes, copula sandhi
@@ -37,7 +46,7 @@ kongbuhey/
 │       ├── verb_argument_specs.js # Declarative valency and case particles
 │       ├── pronunciation_rules.js # Statutory exception maps, saisori, Sino-Korean compounds
 │       └── honorific_specs.js  # Seniority, titles, suppletive verbs/nouns
-├── test/                       # 12 isolated test suites (concord, phonetics, clausal, collocations)
+├── test/                       # 13 isolated test suites (concord, phonetics, clausal, analyzer)
 └── history/                    # Historical documentation, previous handoffs, migration scripts
 ```
 
@@ -50,7 +59,7 @@ kongbuhey/
    - `korean/phonetics/english_phonemes.js`: Transliterates Korean text into Latin phonetic script optimized for browser speech synthesizers (English, French, Polish).
    - `korean/core/morphology.js`: Robust agglutinative morphology engine resolving batchim allomorphs, vowel harmony, irregulars (ㄷ, ㅂ, ㅅ, 르, ㅡ, ㅎ, ㄹ), and copula contractions.
 3. **`select.js`**: Query, filter, update, and insert units using familiar SQL-like syntax without loading all 1,747 rows into LLM context.
-4. **`text_analyzer.js`**: Decomposes natural Korean passages into constituent learning units, resolving homonyms and generating draft units for missing curriculum items.
+4. **`text_analyzer.js` & `korean/analyzer/`**: Decomposes natural Korean passages into constituent learning units, resolving homonyms and identifying curriculum gaps. Refactored into a modular, zero-dependency engine optimized for both Node CLI and interactive web browser execution (<5ms per passage).
 5. **`tts_demo.html`**: Visual and auditory testbed for evaluating browser `window.speechSynthesis` voices with customizable styles (`natural`, `hyphenated`, `spaced`) and pitch/rate controls.
 
 ---
@@ -65,7 +74,11 @@ kongbuhey/
 - Use `node select.js SELECT ...` (which defaults to compact TSV/JSONL) or `select.js --summary [n]` to inspect subsets.
 - Use `node select.js UPDATE ... FROMFILE` or `node select.js INSERT FROMFILE` for data modifications.
 
-### C. Speech Synthesis (TTS) Transliteration Rules
+### C. Web Runtime Readiness (Passage Analyzer)
+- All modules under `korean/analyzer/` are pure JavaScript with zero Node dependencies (`fs`, `path`).
+- Fast in-memory memoization caches combined semantic tags for instant $O(1)$ lookups, allowing learners to analyze their own homework or K-pop lyrics interactively in real time.
+
+### D. Speech Synthesis (TTS) Transliteration Rules
 - **No Double Consonants**: Double consonants (ㄲ, ㅆ, ㄸ, ㅃ, ㅉ) MUST be transliterated as single consonants (`k`, `s`, `t`, `p`, `j`). Western speech synthesizers treat double initial consonants as stutter bursts.
 - **No Acronym Letter-Spelling**: Vowels in closed syllables must not include trailing `h` (`an` instead of `ahn`, `man` instead of `mahn`) to prevent synthesizers from spelling out syllables letter-by-letter.
 - **Natural Word Joining**: Syllables must be joined into natural whole words (e.g. `Annyeong haseyo`) by default, preserving natural rhythm and preventing isolated initialisms or misplaced long diphthongs (such as `ny-` being pronounced as `/naɪ/`).
@@ -87,7 +100,7 @@ kongbuhey/
   - Stage 3: Homonym Dictionary Sync [ PASS ] (3,098 tokens)
   - Stage 4: Exhaustive Sentence Generation [ PASS ] (6,280 sentences, 0 errors)
   - Stage 5: Text Analyzer Passage Check [ PASS ] (studytext12, 21, 22, 31: 0 gaps)
-  - Stage 6: Semantic & Honorific Concord [ PASS ] (12 suites, 5,886 assertions passed)
+  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 5,888 assertions passed)
 
 ---
 
