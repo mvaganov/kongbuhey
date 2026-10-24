@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-24T15:22:04.450Z",
-  "totalUnits": 1787,
-  "validVectorCount": 1787,
+  "generatedAt": "2026-10-24T15:50:02.148Z",
+  "totalUnits": 1796,
+  "validVectorCount": 1796,
   "partsOfSpeech": [
     "Action Verb",
     "Adverb",
@@ -14,12 +14,12 @@
     "Pronoun"
   ],
   "posCounts": {
-    "Noun": 940,
+    "Noun": 947,
     "Pronoun": 36,
     "Exclamation": 16,
     "Descriptive Verb": 126,
     "Grammar": 180,
-    "Action Verb": 329,
+    "Action Verb": 331,
     "Adverb": 90,
     "Number": 66,
     "Determiner": 4
@@ -658,7 +658,7 @@
     "topic": 2,
     "declarative": 23,
     "present": 17,
-    "food": 93,
+    "food": 98,
     "food_bowl": 2,
     "drink": 11,
     "descriptive_general": 86,
@@ -669,7 +669,7 @@
     "intransitive_motion": 14,
     "locative_goal": 23,
     "motion_concord": 13,
-    "time": 123,
+    "time": 125,
     "temporal_present": 13,
     "no_time_particle": 21,
     "temporal_future": 13,
@@ -746,7 +746,7 @@
     "intransitive_general": 104,
     "intransitive_food": 1,
     "origin": 1,
-    "water": 4,
+    "water": 5,
     "land": 1,
     "residence": 4,
     "building": 3,
@@ -759,7 +759,7 @@
     "male": 14,
     "adult": 2,
     "fish": 1,
-    "experience": 5,
+    "experience": 6,
     "female": 14,
     "descriptive_cleanliness": 2,
     "descriptive_person_trait": 12,
@@ -794,7 +794,7 @@
     "Adv": 1,
     "meat": 11,
     "koreanFood": 8,
-    "transitive_food": 6,
+    "transitive_food": 7,
     "adverb_discourse": 11,
     "discourse": 28,
     "conditional": 3,
@@ -820,7 +820,7 @@
     "calendar": 14,
     "dayOfWeek": 7,
     "weekend": 3,
-    "event": 25,
+    "event": 26,
     "celebration": 2,
     "holiday": 12,
     "weekday": 5,
@@ -858,7 +858,7 @@
     "volitional": 2,
     "temporal_past": 13,
     "time_modifier": 3,
-    "duration": 18,
+    "duration": 19,
     "music": 8,
     "document": 19,
     "commercial": 14,
@@ -965,7 +965,7 @@
     "color": 12,
     "mountain": 2,
     "coast": 1,
-    "ingredient": 5,
+    "ingredient": 9,
     "seafood": 1,
     "auxiliary_verb": 19,
     "attempt": 2,
@@ -987,7 +987,7 @@
     "spatial": 17,
     "polite": 4,
     "progressive": 2,
-    "condiment": 10,
+    "condiment": 11,
     "spicy": 2,
     "abstract": 41,
     "station": 6,
@@ -996,10 +996,10 @@
     "salty": 1,
     "psychological": 1,
     "sour": 1,
-    "cooking": 15,
+    "cooking": 17,
     "tableware": 2,
     "taste": 1,
-    "vegetable": 10,
+    "vegetable": 11,
     "liquid": 3,
     "cookware": 3,
     "dish": 6,
@@ -1033,7 +1033,7 @@
     "emphasis": 4,
     "grammar": 44,
     "pet": 2,
-    "action": 8,
+    "action": 9,
     "informal": 9,
     "wedding": 1,
     "ambiance": 1,
@@ -1101,10 +1101,10 @@
     "place_outdoor": 5,
     "date": 1,
     "state": 7,
-    "bound_noun": 8,
+    "bound_noun": 10,
     "dining": 2,
     "personal_info": 1,
-    "culture": 20,
+    "culture": 21,
     "evaluation": 8,
     "favor": 2,
     "speaker": 1,
@@ -1208,7 +1208,7 @@
     "ordinal": 1,
     "feeling": 2,
     "elder": 1,
-    "intransitive": 5,
+    "intransitive": 6,
     "posture": 1,
     "b_irregular": 1,
     "speech": 1,
@@ -1450,6 +1450,7 @@
       "condition",
       "consume",
       "contrast",
+      "cooking",
       "counter",
       "culture",
       "degree",
@@ -1539,15 +1540,22 @@
     "types": [
       "addition",
       "beach",
+      "bound_noun",
       "cafe",
       "city",
+      "condiment",
       "direction",
       "duration",
+      "event",
       "guidance",
+      "ingredient",
+      "intransitive",
       "mountain",
       "necessity",
       "person_name",
       "sports",
+      "transitive",
+      "vegetable",
       "vehicle",
       "verb_ending"
     ],
@@ -1776,6 +1784,7 @@
         "condition",
         "consume",
         "contrast",
+        "cooking",
         "counter",
         "culture",
         "degree",
@@ -2283,6 +2292,7 @@
         "information",
         "inside",
         "language",
+        "liquid",
         "low",
         "machine",
         "material",
@@ -2368,15 +2378,22 @@
       "type": [
         "addition",
         "beach",
+        "bound_noun",
         "cafe",
         "city",
+        "condiment",
         "direction",
         "duration",
+        "event",
         "guidance",
+        "ingredient",
+        "intransitive",
         "mountain",
         "necessity",
         "person_name",
         "sports",
+        "transitive",
+        "vegetable",
         "vehicle",
         "verb_ending"
       ],
@@ -2453,7 +2470,11 @@
         "traits": []
       },
       "food": {
-        "types": [],
+        "types": [
+          "condiment",
+          "ingredient",
+          "vegetable"
+        ],
         "actions": [],
         "traits": []
       },
@@ -2647,7 +2668,9 @@
         "traits": []
       },
       "aspect": {
-        "types": [],
+        "types": [
+          "bound_noun"
+        ],
         "actions": [],
         "traits": []
       },
@@ -2929,7 +2952,9 @@
         "traits": []
       },
       "culture": {
-        "types": [],
+        "types": [
+          "event"
+        ],
         "actions": [],
         "traits": []
       },
@@ -3016,6 +3041,14 @@
       },
       "commodity": {
         "types": [],
+        "actions": [],
+        "traits": []
+      },
+      "cooking": {
+        "types": [
+          "intransitive",
+          "transitive"
+        ],
         "actions": [],
         "traits": []
       }

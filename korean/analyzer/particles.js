@@ -12,6 +12,8 @@ const PARTICLE_SPECS = Object.freeze([
 	{ text: "에서는", ids: [199, 36], desc: "에서 + 는 (Location topic)" },
 	{ text: "에서도", ids: [199, 366], desc: "에서 + 도 (Location additive)" },
 	{ text: "에는", ids: [132, 36], desc: "에 + 는 (Time/Location topic)" },
+	{ text: "에다가", ids: [995, 996], desc: "에다가 (Location on / in addition to)" },
+	{ text: "에다", ids: [995, 996], desc: "에다 (Location on / in addition to)" },
 	{ text: "에도", ids: [132, 366], desc: "에 + 도 (Time/Location additive)" },
 	{ text: "에게는", ids: [618, 36], desc: "에게 + 는 (Dative topic)" },
 	{ text: "에게도", ids: [618, 366], desc: "에게 + 도 (Dative additive)" },
