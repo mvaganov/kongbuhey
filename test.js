@@ -303,7 +303,8 @@ try {
 		{ name: "Clausal Connective Concord (F11)", path: path.resolve(__dirname, 'test', 'clausal_connective_test.js') },
 		{ name: "Dynamic Semantic Sets", path: path.resolve(__dirname, 'test', 'dynamic_semantic_sets_test.js') },
 		{ name: "Pronunciation Exceptions", path: path.resolve(__dirname, 'test', 'pronunciation_exceptions_test.js') },
-		{ name: "English Phonemes Transliteration", path: path.resolve(__dirname, 'test', 'english_phonemes_test.js') }
+		{ name: "English Phonemes Transliteration", path: path.resolve(__dirname, 'test', 'english_phonemes_test.js') },
+		{ name: "Text Analyzer Modular Subsystem", path: path.resolve(__dirname, 'test', 'analyzer_modular_test.js') }
 	];
 
 	let totalAssertions = 0;

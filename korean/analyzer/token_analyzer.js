@@ -1,0 +1,393 @@
+/**
+ * korean/analyzer/token_analyzer.js
+ *
+ * Single-Token Morphological Analysis Engine.
+ * Decomposes individual orthographic Korean tokens into lexical roots,
+ * affixes, particles, copulas, and numbers.
+ *
+ * Platform: Node.js & Browser (Vanilla JS, zero dependencies).
+ */
+
+const { DATA_SCHEMA, decomposeHangul, hasBatchim } =
+	(typeof require !== 'undefined' ? require('../core/primitives.js') : window);
+
+const { PARTICLE_SPECS, findExactParticle, checkBatchimRequirement } =
+	(typeof require !== 'undefined' ? require('./particles.js') : window);
+
+const { evaluateSyntaxFrame, disambiguateCandidates } =
+	(typeof require !== 'undefined' ? require('./syntax_frame.js') : window);
+
+const { matchVerbSuffix, matchAdnominalEnding } =
+	(typeof require !== 'undefined' ? require('./verb_morphology.js') : window);
+
+const { getIndex } =
+	(typeof require !== 'undefined' ? require('./indexer.js') : window);
+
+/**
+ * Analyzes a single Korean word/token within its sentence context.
+ * 
+ * @param {string} rawWord The surface token
+ * @param {string} prevWord Preceding word in sentence
+ * @param {string} nextWord Succeeding word in sentence
+ * @param {Object} sentenceContext Contextual sentence metadata (clausePredicate, etc.)
+ * @param {Object} explicitIndex Optional pre-built index
+ * @returns {Object|null} Decomposed token structure or null
+ */
+function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceContext = {}, explicitIndex = null) {
+	const word = rawWord.replace(/^[^\w가-힣]+|[^\w가-힣]+$/g, '');
+	if (!word) return null;
+
+	const index = explicitIndex || getIndex();
+	const unitById = index.unitById;
+	const vocabByKo = index.vocabByKo;
+
+	// 0. Standalone particle (e.g. from punctuation or source spacing)
+	const exactSpec = findExactParticle(word);
+	if (exactSpec) {
+		const pUnit = exactSpec.ids.length > 0 ? unitById.get(exactSpec.ids[0]) : null;
+		return {
+			surface: word,
+			category: "standalone_particle",
+			lexical: null,
+			grammar: [{
+				text: exactSpec.text,
+				pos: "Particle",
+				unit: pUnit,
+				missing: !pUnit,
+				gloss: pUnit ? pUnit[DATA_SCHEMA.English] : exactSpec.desc
+			}]
+		};
+	}
+
+	// 0.1 Noun + Copula 입니다 (ID 56)
+	if (word.endsWith("입니다") && word.length > 3) {
+		const stem = word.slice(0, -3);
+		const stemUnits = vocabByKo.get(stem) || [];
+		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		if (nounUnits.length > 0) {
+			const nUnit = nounUnits[0];
+			const copulaUnit = unitById.get(56);
+			return {
+				surface: word,
+				category: "noun_copula",
+				lexical: { text: stem, pos: nUnit[DATA_SCHEMA.PartofSpeech], unit: nUnit, gloss: nUnit[DATA_SCHEMA.English] },
+				grammar: [{ text: "입니다", pos: "Verb Ending", unit: copulaUnit, gloss: copulaUnit ? copulaUnit[DATA_SCHEMA.English] : "is/are (copula ID 56)" }]
+			};
+		}
+	}
+
+	// 0.2 Noun + Copula + -아/어서: 이어서 / 여서 (e.g. 대전이어서, 친구여서)
+	if (word.endsWith("이어서") && word.length > 3) {
+		const stem = word.slice(0, -3);
+		const stemUnits = vocabByKo.get(stem) || [];
+		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
+		return {
+			surface: word,
+			category: "noun_copula_connective",
+			lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : stem },
+			grammar: [
+				{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" },
+				{ text: "-아/어서", pos: "Verb Ending", unit: unitById.get(459), gloss: "cause / sequential (ID 459)" }
+			]
+		};
+	}
+	if (word.endsWith("여서") && word.length > 2) {
+		const stem = word.slice(0, -2);
+		const stemUnits = vocabByKo.get(stem) || [];
+		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
+		return {
+			surface: word,
+			category: "noun_copula_connective",
+			lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : stem },
+			grammar: [
+				{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" },
+				{ text: "-아/어서", pos: "Verb Ending", unit: unitById.get(459), gloss: "cause / sequential (ID 459)" }
+			]
+		};
+	}
+
+	// 1. Pronominal Irregular Subject Allomorphs (제+가 -> 제가, 내+가 -> 내가, 네+가 -> 네가)
+	if (word.endsWith("가") && word.length === 2) {
+		const stem = word[0];
+		const allo = index.pronounSandhiMap ? index.pronounSandhiMap.get(stem) : null;
+		if (allo) {
+			const baseUnit = unitById.get(allo.baseId);
+			const particleUnit = unitById.get(allo.particleId);
+			return {
+				surface: word,
+				category: "pronoun_phrase",
+				lexical: { text: allo.baseWord, pos: baseUnit ? baseUnit[DATA_SCHEMA.PartofSpeech] : "Pronoun", unit: baseUnit, gloss: baseUnit ? baseUnit[DATA_SCHEMA.English] : "" },
+				grammar: [{ text: allo.particleWord, pos: "Particle", unit: particleUnit, gloss: particleUnit ? particleUnit[DATA_SCHEMA.English] : "" }],
+				disambiguation: {
+					resolved: true,
+					target: `${allo.baseWord} (${baseUnit ? baseUnit[DATA_SCHEMA.PartofSpeech] : "Pronoun"} ID ${baseUnit ? baseUnit[DATA_SCHEMA.Id] : allo.baseId})`,
+					rule: `Pronominal subject allomorph '${stem}' + '${allo.particleWord}' derived from base pronoun '${allo.baseWord}'`
+				}
+			};
+		}
+	}
+
+	// 2. Exact match in vocabulary (Nouns, Adverbs, Determiners, Exclamations)
+	if (vocabByKo.has(word)) {
+		const candidates = vocabByKo.get(word);
+		const nonVerbs = candidates.filter(u => u[DATA_SCHEMA.PartofSpeech] !== 'Action Verb' && u[DATA_SCHEMA.PartofSpeech] !== 'Descriptive Verb');
+
+		if (nonVerbs.length > 0) {
+			const nextNounUnit = vocabByKo.has(nextWord) ? vocabByKo.get(nextWord)[0] : null;
+			const evalContext = {
+				tokenSurface: word,
+				attachedParticle: "",
+				attachedEnding: "",
+				prevWord,
+				nextWord,
+				nextUnit: nextNounUnit,
+				clausePredicate: sentenceContext.clausePredicate
+			};
+
+			const disambigRes = disambiguateCandidates(nonVerbs, evalContext, index);
+			const chosen = disambigRes ? disambigRes.chosenUnit : nonVerbs[0];
+
+			return {
+				surface: word,
+				category: "exact_lexical",
+				lexical: {
+					text: chosen[DATA_SCHEMA.Korean],
+					pos: chosen[DATA_SCHEMA.PartofSpeech],
+					unit: chosen,
+					gloss: chosen[DATA_SCHEMA.English]
+				},
+				grammar: [],
+				disambiguation: disambigRes && nonVerbs.length > 1 ? {
+					resolved: true,
+					target: `${chosen[DATA_SCHEMA.Korean]} (${chosen[DATA_SCHEMA.PartofSpeech]} ID ${chosen[DATA_SCHEMA.Id]})`,
+					rule: disambigRes.rule,
+					intentional_ambiguity: disambigRes.intentional_ambiguity
+				} : null
+			};
+		}
+	}
+
+	// 2.5 Noun + Plural suffix -들 (e.g. 친척들, 학생들, 친구들)
+	if (word.endsWith("들") && word.length > 1) {
+		const singularStem = word.slice(0, -1);
+		const sUnits = vocabByKo.has(singularStem) ? vocabByKo.get(singularStem).filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun') : [];
+		const nUnit = sUnits.length > 0 ? sUnits[0] : null;
+		return {
+			surface: word,
+			category: "noun_plural",
+			lexical: { text: singularStem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + singularStem + ")" },
+			grammar: [{ text: "들", pos: "Plural Suffix", unit: unitById.get(550), gloss: "plural suffix (ID 550)" }]
+		};
+	}
+
+	// 3. Number + Counter + Particle (e.g. 1년쯤, 2년 동안, 3시에)
+	const numCounterMatch = word.match(/^(\d+)([가-힣]+?)(쯤|에|부터|까지|은|는|이|가|을|를)?$/);
+	if (numCounterMatch) {
+		const numVal = parseInt(numCounterMatch[1], 10);
+		const counterText = numCounterMatch[2];
+		const particleText = numCounterMatch[3];
+		const counterUnits = vocabByKo.get(counterText) || [];
+		const counterUnit = counterUnits.length > 0 ? counterUnits[0] : null;
+
+		const gList = [];
+		if (particleText) {
+			const spec = PARTICLE_SPECS.find(p => p.text === particleText);
+			const pUnit = spec && spec.ids[0] ? unitById.get(spec.ids[0]) : null;
+			gList.push({
+				text: particleText,
+				pos: "Particle",
+				unit: pUnit,
+				missing: !pUnit,
+				gloss: pUnit ? pUnit[DATA_SCHEMA.English] : spec ? spec.desc : particleText
+			});
+		}
+
+		return {
+			surface: word,
+			category: "numeric_phrase",
+			lexical: {
+				text: `${numVal}${counterText}`,
+				pos: "Number+Counter",
+				number: { value: numVal, sinoUnit: unitById.get(236) },
+				counter: {
+					text: counterText,
+					unit: counterUnit,
+					missing: !counterUnit,
+					gloss: counterUnit ? counterUnit[DATA_SCHEMA.English] : "counter"
+				}
+			},
+			grammar: gList
+		};
+	}
+
+	// 4. Centralized Declarative Verb & Suffix Matching
+	const verbRes = matchVerbSuffix(word, prevWord, nextWord, index, evaluateSyntaxFrame);
+	if (verbRes) return verbRes;
+
+	// 5. Adnominal Participles: ~한, ~은, ~는, ~(으)ㄴ, ~(으)ㄹ
+	const adnominalRes = matchAdnominalEnding(word, index);
+	if (adnominalRes) return adnominalRes;
+
+	// 6. Noun + Attached Particle Cliticization
+	for (const spec of PARTICLE_SPECS) {
+		if (word.endsWith(spec.text) && word.length > spec.text.length) {
+			let stem = word.slice(0, -spec.text.length);
+			let isPlural = false;
+
+			// Handle plural suffix -들 (e.g. 친척들 + 과 -> 친척들과, 학생들 + 이 -> 학생들이)
+			if (stem.endsWith("들") && stem.length > 1) {
+				const singularStem = stem.slice(0, -1);
+				if (vocabByKo.has(singularStem)) {
+					stem = singularStem;
+					isPlural = true;
+				}
+			}
+
+			const lastChar = (isPlural ? "들" : stem).slice(-1);
+			if (!checkBatchimRequirement(lastChar, spec.batchimReq, hasBatchim, decomposeHangul)) {
+				continue;
+			}
+
+			let validNounUnits = [];
+			if (stem === "씨") {
+				const cUnit = unitById.get(23);
+				if (cUnit) validNounUnits = [cUnit];
+			} else {
+				const stemUnits = vocabByKo.get(stem) || [];
+				validNounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+			}
+
+			let stemUnit = validNounUnits.length > 0 ? validNounUnits[0] : null;
+			let chosenParticleUnit = null;
+			let disambigInfo = null;
+			let stemDisambigInfo = null;
+
+			// Disambiguate multi-candidate noun stem (e.g. 저 pronoun vs determiner in 저는)
+			if (validNounUnits.length > 1) {
+				const cleanPrev = prevWord ? prevWord.replace(/[^\w가-힣]+/g, '') : "";
+				const dPrev = cleanPrev ? decomposeHangul(cleanPrev.slice(-1)) : null;
+				const prevLooksAdnominal = cleanPrev && (
+					cleanPrev.endsWith("는") || cleanPrev.endsWith("은") || cleanPrev.endsWith("한") ||
+					(dPrev && (dPrev.final === 4 || dPrev.final === 8))
+				);
+				const evalStemContext = {
+					tokenSurface: stem,
+					attachedParticle: spec.text,
+					isPrecededByAdnominalVerb: !!prevLooksAdnominal,
+					prevWord,
+					nextWord
+				};
+				const stemRes = disambiguateCandidates(validNounUnits, evalStemContext, index);
+				if (stemRes) {
+					stemUnit = stemRes.chosenUnit;
+					stemDisambigInfo = {
+						resolved: true,
+						target: `${stemUnit[DATA_SCHEMA.Korean]} (${stemUnit[DATA_SCHEMA.PartofSpeech]} ID ${stemUnit[DATA_SCHEMA.Id]})`,
+						rule: stemRes.rule
+					};
+				}
+			}
+
+			if (spec.ids.length === 1) {
+				chosenParticleUnit = unitById.get(spec.ids[0]);
+			} else if (spec.ids.length > 1) {
+				const candidateParticleUnits = spec.ids.map(id => unitById.get(id)).filter(Boolean);
+				const evalContext = {
+					tokenSurface: word,
+					attachedParticle: spec.text,
+					nounStemUnit: stemUnit,
+					clausePredicate: sentenceContext.clausePredicate,
+					prevWord,
+					nextWord
+				};
+
+				const res = disambiguateCandidates(candidateParticleUnits, evalContext, index);
+				if (res) {
+					chosenParticleUnit = res.chosenUnit;
+					disambigInfo = {
+						resolved: true,
+						target: `${chosenParticleUnit[DATA_SCHEMA.Korean]} (ID ${chosenParticleUnit[DATA_SCHEMA.Id]})`,
+						rule: res.rule,
+						intentional_ambiguity: res.intentional_ambiguity
+					};
+				}
+			}
+
+			const finalDisambig = disambigInfo || stemDisambigInfo;
+			const grammarList = [];
+			if (isPlural) {
+				grammarList.push({
+					text: "들",
+					pos: "Plural Suffix",
+					unit: unitById.get(550),
+					missing: false,
+					gloss: "plural suffix (ID 550)"
+				});
+			}
+			grammarList.push({
+				text: spec.text,
+				pos: "Particle",
+				unit: chosenParticleUnit,
+				missing: !chosenParticleUnit,
+				gloss: chosenParticleUnit ? chosenParticleUnit[DATA_SCHEMA.English] : spec.desc
+			});
+
+			return {
+				surface: word,
+				category: "noun_particle",
+				lexical: {
+					text: stem,
+					pos: stemUnit ? stemUnit[DATA_SCHEMA.PartofSpeech] : "Noun",
+					unit: stemUnit,
+					missing: !stemUnit,
+					gloss: stemUnit ? stemUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")"
+				},
+				grammar: grammarList,
+				disambiguation: finalDisambig
+			};
+		}
+	}
+
+	// 7. Compound Noun Decomposition (e.g. 한국문화 -> 한국 + 문화)
+	for (let len = word.length - 1; len >= 2; len--) {
+		const prefix = word.slice(0, len);
+		const suffix = word.slice(len);
+		if (vocabByKo.has(prefix) && vocabByKo.has(suffix)) {
+			const pUnit = vocabByKo.get(prefix)[0];
+			const sUnit = vocabByKo.get(suffix)[0];
+			return {
+				surface: word,
+				category: "compound_noun",
+				lexical: {
+					text: word,
+					pos: "Compound Noun",
+					components: [
+						{ text: prefix, unit: pUnit, gloss: pUnit[DATA_SCHEMA.English] },
+						{ text: suffix, unit: sUnit, missing: !sUnit, gloss: sUnit[DATA_SCHEMA.English] }
+					]
+				},
+				grammar: []
+			};
+		}
+	}
+
+	// 8. Unknown Token
+	return {
+		surface: word,
+		category: "unknown",
+		lexical: { text: word, pos: "Unknown", missing: true, gloss: "unrecognized vocabulary" },
+		grammar: []
+	};
+}
+
+if (typeof window !== 'undefined') {
+	window.analyzeSingleToken = analyzeSingleToken;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+	module.exports = {
+		analyzeSingleToken
+	};
+}
