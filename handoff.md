@@ -88,6 +88,15 @@ kongbuhey/
   - The standard Korean speech synthesis voice is native and high quality, serving as the official voice for the application.
   - The English/European Latin transliteration engine (`toEnglishPhonemes`, `transliterateSyllable`) remains active in the codebase to provide English-readable pronunciation guides and romanized reading aids.
 
+### E. Declarative MWE Parsing Engine (`/*js:matcher*/` in `SyntaxFrame`)
+- **Zero Hardcoded Grammatical Units in Code**: `korean/analyzer/sentence_analyzer.js` and `token_analyzer.js` do not contain hardcoded grammar unit IDs or special-case procedural branch trees.
+- **`SyntaxFrame` Reverse Parsing Specification**: Multi-word expressions (auxiliaries, bound noun constructions, compound connectives) encapsulate their lexical match logic directly in their `SyntaxFrame` column via an embedded JavaScript closure starting with `/*js:matcher*/`.
+- **Dynamic Compilation & Fast Execution**:
+  - `korean/analyzer/indexer.js` scans language units at index initialization, compiles all `/*js:matcher*/` functions via `new Function('ctx', ...)`, and registers them in `index.mweRules`.
+  - The match context passed to each rule: `{ w1, w2, w3, cleanW2, cleanW3, prevW1, isAdnominalN, isAdnominalL, isInformal, rawWords, i, sentenceContext, index, unit }`.
+  - The matcher returns an AST specification: `{ span, pattern, lexicalType, stemSuffix, grammar, extraParticle, parseTrailingParticle, parseW2Grammar, disambiguation }` or `null`.
+  - `sentence_analyzer.js` delegates to `buildMweToken()` and `resolveAuxiliaryEnding()` to dynamically construct AST tokens for both browser and Node runtime.
+
 ---
 
 ## 4. Current Status & Verification
@@ -100,7 +109,8 @@ kongbuhey/
   - Stage 3: Homonym Dictionary Sync [ PASS ] (3,144 tokens)
   - Stage 4: Exhaustive Sentence Generation [ PASS ] (6,322 sentences, 0 errors)
   - Stage 5: Text Analyzer Passage Check [ PASS ] (studytext12, 21, 22, 31, 41, 42, 51: 0 gaps)
-  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 5,915 assertions passed)
+  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 5,920 assertions passed)
+- **Modular Analyzer Suite (`node test/analyzer_modular_test.js`)**: 9/9 tests passed, browser-clean (zero Node dependencies).
 
 ---
 
