@@ -113,6 +113,39 @@ function evaluateSyntaxFrame(unit, context = {}, index = null) {
 		return { matches: false, score: 0.0, reason: `Fails frame '${frame}': Requires following noun` };
 	}
 
+	// Pattern 1b: Standalone modifier preceding a Verb Phrase: _\\s+{VP} or ^_\\s+{VP}
+	if (frame.includes("{VP}") && !frame.includes("\\+")) {
+		const isStandalone = !attachedParticle && !attachedEnding;
+		const nextIsVerbUnit = nextUnit && (nextUnit[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || nextUnit[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb');
+		const nextStem = nextWord ? getStem(nextWord) : "";
+		const nextIsVerbStem = Boolean(nextWord && (
+			(index && index.actionVerbStems && (index.actionVerbStems.has(nextStem) || index.actionVerbStems.has(nextWord.slice(0, 1)))) ||
+			(index && index.stativeVerbStems && (index.stativeVerbStems.has(nextStem) || index.stativeVerbStems.has(nextWord.slice(0, 1)))) ||
+			(index && index.vocabByKo && (index.vocabByKo.has(nextWord) || index.vocabByKo.has(nextStem) || index.vocabByKo.has(nextWord.slice(0, 1))))
+		));
+		if (isStandalone && (nextIsVerbUnit || nextIsVerbStem || context.nextIsVerb)) {
+			return {
+				matches: true,
+				score: 1.0,
+				reason: `Satisfies frame '${frame}': Standalone adverb preceding verb phrase '${nextWord || ""}'`
+			};
+		}
+		return { matches: false, score: 0.1, reason: `Fails frame '${frame}': Requires following verb phrase` };
+	}
+
+	// Pattern 1c: Preceded by a Noun: {Noun}\\s+_
+	if (frame.includes("{Noun}\\s+_")) {
+		const prevIsNoun = prevUnit && (prevUnit[DATA_SCHEMA.PartofSpeech] === 'Noun' || prevUnit[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const prevLooksNoun = prevWord && /^[가-힣]+/.test(prevWord);
+		if (prevIsNoun || prevLooksNoun) {
+			return {
+				matches: true,
+				score: 1.0,
+				reason: `Satisfies frame '${frame}': Preceded by noun '${prevWord || (prevUnit ? prevUnit[DATA_SCHEMA.Korean] : "")}'`
+			};
+		}
+	}
+
 	// Pattern 2: Attaches directly to a Particle: _\+{Particle}
 	if (frame.includes("_\\+{Particle}")) {
 		if (attachedParticle) {

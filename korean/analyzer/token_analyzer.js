@@ -8,7 +8,7 @@
  * Platform: Node.js & Browser (Vanilla JS, zero dependencies).
  */
 
-const { DATA_SCHEMA, decomposeHangul, hasBatchim } =
+const { DATA_SCHEMA, decomposeHangul, hasBatchim, getStem } =
 	(typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 
 const { PARTICLE_SPECS, findExactParticle, checkBatchimRequirement } =
@@ -36,10 +36,25 @@ const { getIndex } =
 function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceContext = {}, explicitIndex = null) {
 	const word = rawWord.replace(/^[^\w가-힣]+|[^\w가-힣]+$/g, '');
 	if (!word) return null;
+	if (!/[가-힣]/.test(word)) return null; // Ignore pure ASCII metadata (emails, URLs)
 
 	const index = explicitIndex || getIndex();
 	const unitById = index.unitById;
 	const vocabByKo = index.vocabByKo;
+
+	// 0.0 Contracted bound noun 것 + case/topic particle: 건 (것은), 게 (것이), 걸 (것을)
+	if (word === "건" || word === "게" || word === "걸") {
+		const particleText = word === "건" ? "은" : word === "게" ? "이" : "을";
+		const pSpec = PARTICLE_SPECS.find(p => p.text === particleText);
+		const pUnit = pSpec && pSpec.ids[0] ? unitById.get(pSpec.ids[0]) : null;
+		const geodUnit = unitById.get(581);
+		return {
+			surface: word,
+			category: "contracted_bound_noun",
+			lexical: { text: "것", pos: "Noun", unit: geodUnit, gloss: "thing (bound noun ID 581)" },
+			grammar: [{ text: particleText, pos: "Particle", unit: pUnit, gloss: pUnit ? pUnit[DATA_SCHEMA.English] : particleText }]
+		};
+	}
 
 	// 0. Standalone particle (e.g. from punctuation or source spacing)
 	const exactSpec = findExactParticle(word);
@@ -64,16 +79,41 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 		const stem = word.slice(0, -3);
 		const stemUnits = vocabByKo.get(stem) || [];
 		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
-		if (nounUnits.length > 0) {
-			const nUnit = nounUnits[0];
-			const copulaUnit = unitById.get(56);
-			return {
-				surface: word,
-				category: "noun_copula",
-				lexical: { text: stem, pos: nUnit[DATA_SCHEMA.PartofSpeech], unit: nUnit, gloss: nUnit[DATA_SCHEMA.English] },
-				grammar: [{ text: "입니다", pos: "Verb Ending", unit: copulaUnit, gloss: copulaUnit ? copulaUnit[DATA_SCHEMA.English] : "is/are (copula ID 56)" }]
-			};
-		}
+		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
+		const copulaUnit = unitById.get(56);
+		return {
+			surface: word,
+			category: "noun_copula",
+			lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")" },
+			grammar: [{ text: "입니다", pos: "Verb Ending", unit: copulaUnit, gloss: copulaUnit ? copulaUnit[DATA_SCHEMA.English] : "is/are (copula ID 56)" }]
+		};
+	}
+
+	// 0.15 Noun + Copula Past / Conditional (e.g. 룸메이트였으면, 학생이었으면, 친구였어요)
+	const copulaPastMatch = word.match(/^(.+?)(이었으면|였으면|이었습니다|였습니다|이었어요|였어요)$/);
+	if (copulaPastMatch) {
+		const stem = copulaPastMatch[1];
+		const ending = copulaPastMatch[2];
+		const stemUnits = vocabByKo.get(stem) || [];
+		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
+
+		const isCond = ending.endsWith("면");
+		const isFormal = ending.endsWith("습니다");
+		const gList = [
+			{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" },
+			{ text: "-았/었-", pos: "Tense Infix", unit: unitById.get(335), gloss: "past tense (ID 335)" },
+			isCond ? { text: "-(으)면", pos: "Verb Ending", unit: unitById.get(619), gloss: "conditional 'if/when' (ID 619)" } :
+				isFormal ? { text: "-습니다", pos: "Verb Ending", unit: unitById.get(50), gloss: "formal declarative (ID 50)" } :
+					{ text: "-아요/어요", pos: "Verb Ending", unit: unitById.get(49), gloss: "polite informal (ID 49)" }
+		];
+
+		return {
+			surface: word,
+			category: "noun_copula_past",
+			lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : stem },
+			grammar: gList
+		};
 	}
 
 	// 0.2 Noun + Copula + -아/어서: 이어서 / 여서 (e.g. 대전이어서, 친구여서)
@@ -136,6 +176,12 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 
 		if (nonVerbs.length > 0) {
 			const nextNounUnit = vocabByKo.has(nextWord) ? vocabByKo.get(nextWord)[0] : null;
+			const nextStem = nextWord ? (getStem(nextWord) || nextWord.slice(0, 1)) : "";
+			const nextIsVerb = Boolean(nextWord && (
+				(vocabByKo.has(nextWord) && vocabByKo.get(nextWord).some(u => u[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) ||
+				(vocabByKo.has(nextStem) && vocabByKo.get(nextStem).some(u => u[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) ||
+				(nextWord.length > 1 && vocabByKo.has(nextWord.slice(0, 1)) && vocabByKo.get(nextWord.slice(0, 1)).some(u => u[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb'))
+			));
 			const evalContext = {
 				tokenSurface: word,
 				attachedParticle: "",
@@ -143,6 +189,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 				prevWord,
 				nextWord,
 				nextUnit: nextNounUnit,
+				nextIsVerb,
 				clausePredicate: sentenceContext.clausePredicate
 			};
 
@@ -256,7 +303,43 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 				if (cUnit) validNounUnits = [cUnit];
 			} else {
 				const stemUnits = vocabByKo.get(stem) || [];
-				validNounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+				validNounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' || u[DATA_SCHEMA.PartofSpeech] === 'Number' || u[DATA_SCHEMA.PartofSpeech] === 'Adverb');
+			}
+
+			// Check if unrecognized stem is a compound noun (e.g. 새집 + 에서 -> 새 + 집 + 에서)
+			if (validNounUnits.length === 0) {
+				for (let len = stem.length - 1; len >= 1; len--) {
+					const prefix = stem.slice(0, len);
+					const suffix = stem.slice(len);
+					if (vocabByKo.has(prefix) && vocabByKo.has(suffix)) {
+						const pUnits = vocabByKo.get(prefix) || [];
+						const sUnits = vocabByKo.get(suffix) || [];
+						const pUnit = pUnits.find(u => (u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Determiner') && u[DATA_SCHEMA.PartofSpeech] !== 'Exclamation');
+						const sUnit = sUnits.find(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun');
+						if (pUnit && sUnit) {
+							const pParticle = spec.ids.length > 0 ? unitById.get(spec.ids[0]) : null;
+							return {
+								surface: word,
+								category: "compound_noun",
+								lexical: {
+									text: stem,
+									pos: "Compound Noun",
+									components: [
+										{ text: prefix, unit: pUnit, gloss: pUnit[DATA_SCHEMA.English] },
+										{ text: suffix, unit: sUnit, missing: !sUnit, gloss: sUnit[DATA_SCHEMA.English] }
+									]
+								},
+								grammar: [{
+									text: spec.text,
+									pos: "Particle",
+									unit: pParticle,
+									missing: !pParticle,
+									gloss: pParticle ? pParticle[DATA_SCHEMA.English] : spec.desc
+								}]
+							};
+						}
+					}
+				}
 			}
 
 			let stemUnit = validNounUnits.length > 0 ? validNounUnits[0] : null;
@@ -350,26 +433,30 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 		}
 	}
 
-	// 7. Compound Noun Decomposition (e.g. 한국문화 -> 한국 + 문화)
-	for (let len = word.length - 1; len >= 2; len--) {
+	// 7. Compound Noun Decomposition (e.g. 한국문화 -> 한국 + 문화, 새집 -> 새 + 집)
+	for (let len = word.length - 1; len >= 1; len--) {
 		const prefix = word.slice(0, len);
 		const suffix = word.slice(len);
 		if (vocabByKo.has(prefix) && vocabByKo.has(suffix)) {
-			const pUnit = vocabByKo.get(prefix)[0];
-			const sUnit = vocabByKo.get(suffix)[0];
-			return {
-				surface: word,
-				category: "compound_noun",
-				lexical: {
-					text: word,
-					pos: "Compound Noun",
-					components: [
-						{ text: prefix, unit: pUnit, gloss: pUnit[DATA_SCHEMA.English] },
-						{ text: suffix, unit: sUnit, missing: !sUnit, gloss: sUnit[DATA_SCHEMA.English] }
-					]
-				},
-				grammar: []
-			};
+			const pUnits = vocabByKo.get(prefix) || [];
+			const sUnits = vocabByKo.get(suffix) || [];
+			const pUnit = pUnits.find(u => (u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Determiner') && u[DATA_SCHEMA.PartofSpeech] !== 'Exclamation');
+			const sUnit = sUnits.find(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun');
+			if (pUnit && sUnit) {
+				return {
+					surface: word,
+					category: "compound_noun",
+					lexical: {
+						text: word,
+						pos: "Compound Noun",
+						components: [
+							{ text: prefix, unit: pUnit, gloss: pUnit[DATA_SCHEMA.English] },
+							{ text: suffix, unit: sUnit, missing: !sUnit, gloss: sUnit[DATA_SCHEMA.English] }
+						]
+					},
+					grammar: []
+				};
+			}
 		}
 	}
 
