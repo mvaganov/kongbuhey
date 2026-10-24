@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Kongbuhey - English Voice Korean Speech Synthesis Testbed</title>
+	<style>
+		:root {
+			--bg-primary: #0b0f19;
+			--bg-card: rgba(18, 24, 38, 0.75);
+			--bg-card-border: rgba(255, 255, 255, 0.08);
+			--accent-blue: #3b82f6;
+			--accent-teal: #06b6d4;
+			--accent-purple: #8b5cf6;
+			--accent-emerald: #10b981;
+			--accent-amber: #f59e0b;
+			--text-primary: #f8fafc;
+			--text-secondary: #94a3b8;
+			--text-muted: #64748b;
+			--radius-lg: 16px;
+			--radius-md: 10px;
+			--transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			background-color: var(--bg-primary);
+			background-image: 
+				radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+				radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+			color: var(--text-primary);
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+			min-height: 100vh;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			padding: 2.5rem 1.5rem;
+		}
+
+		.container {
+			width: 100%;
+			max-width: 960px;
+			display: flex;
+			flex-direction: column;
+			gap: 1.75rem;
+		}
+
+		header {
+			text-align: center;
+			margin-bottom: 0.5rem;
+		}
+
+		header h1 {
+			font-size: 2.25rem;
+			font-weight: 800;
+			letter-spacing: -0.03em;
+			background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #38bdf8 100%);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			margin-bottom: 0.5rem;
+		}
+
+		header p {
+			color: var(--text-secondary);
+			font-size: 1.05rem;
+			max-width: 640px;
+			margin: 0 auto;
+			line-height: 1.5;
+		}
+
+		.badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.4rem;
+			background: rgba(59, 130, 246, 0.15);
+			border: 1px solid rgba(59, 130, 246, 0.3);
+			color: #93c5fd;
+			font-size: 0.8rem;
+			font-weight: 600;
+			padding: 0.25rem 0.75rem;
+			border-radius: 9999px;
+			margin-bottom: 1rem;
+		}
+
+		.card {
+			background: var(--bg-card);
+			backdrop-filter: blur(16px);
+			-webkit-backdrop-filter: blur(16px);
+			border: 1px solid var(--bg-card-border);
+			border-radius: var(--radius-lg);
+			padding: 1.75rem;
+			box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+			transition: var(--transition);
+		}
+
+		.card:hover {
+			border-color: rgba(255, 255, 255, 0.12);
+		}
+
+		.section-title {
+			font-size: 1rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+			color: var(--accent-teal);
+			margin-bottom: 1rem;
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+
+		/* Preset Selector */
+		.preset-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: 0.75rem;
+			margin-bottom: 1.25rem;
+		}
+
+		.preset-btn {
+			background: rgba(255, 255, 255, 0.04);
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			border-radius: var(--radius-md);
+			padding: 0.85rem 1rem;
+			text-align: left;
+			color: var(--text-primary);
+			cursor: pointer;
+			transition: var(--transition);
+			display: flex;
+			flex-direction: column;
+			gap: 0.3rem;
+		}
+
+		.preset-btn:hover {
+			background: rgba(59, 130, 246, 0.12);
+			border-color: var(--accent-blue);
+			transform: translateY(-2px);
+		}
+
+		.preset-btn.active {
+			background: rgba(59, 130, 246, 0.2);
+			border-color: #60a5fa;
+			box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+		}
+
+		.preset-tag {
+			font-size: 0.72rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			color: var(--accent-teal);
+		}
+
+		.preset-text {
+			font-size: 0.92rem;
+			font-weight: 500;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		/* Inputs */
+		.input-group {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			margin-bottom: 1.25rem;
+		}
+
+		label {
+			font-size: 0.88rem;
+			font-weight: 600;
+			color: var(--text-secondary);
+		}
+
+		textarea, select, input[type="text"] {
+			width: 100%;
+			background: rgba(11, 15, 25, 0.8);
+			border: 1px solid rgba(255, 255, 255, 0.12);
+			border-radius: var(--radius-md);
+			color: var(--text-primary);
+			padding: 0.85rem 1rem;
+			font-size: 1rem;
+			outline: none;
+			transition: var(--transition);
+		}
+
+		textarea:focus, select:focus, input[type="text"]:focus {
+			border-color: var(--accent-blue);
+			box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+		}
+
+		textarea {
+			resize: vertical;
+			min-height: 80px;
+			line-height: 1.6;
+			font-family: inherit;
+		}
+
+		/* Phonetic Pipeline Display */
+		.pipeline-display {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 1rem;
+			margin-bottom: 1.5rem;
+		}
+
+		@media (min-width: 768px) {
+			.pipeline-display {
+				grid-template-columns: 1fr 1fr;
+			}
+		}
+
+		.pipeline-box {
+			background: rgba(11, 15, 25, 0.6);
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			border-radius: var(--radius-md);
+			padding: 1rem 1.25rem;
+		}
+
+		.pipeline-box.highlight {
+			border-color: rgba(139, 92, 246, 0.4);
+			background: rgba(139, 92, 246, 0.06);
+		}
+
+		.pipeline-label {
+			font-size: 0.75rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			margin-bottom: 0.4rem;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+		}
+
+		.pipeline-label.hangul { color: var(--accent-teal); }
+		.pipeline-label.phonetic { color: var(--accent-purple); }
+
+		.pipeline-content {
+			font-size: 1.15rem;
+			line-height: 1.6;
+			word-break: break-word;
+		}
+
+		.pipeline-content.english-phonemes {
+			color: #c4b5fd;
+			font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+			font-size: 1.05rem;
+			letter-spacing: 0.02em;
+		}
+
+		/* Controls */
+		.controls-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+			gap: 1.25rem;
+			margin-bottom: 1.5rem;
+		}
+
+		.slider-group {
+			display: flex;
+			flex-direction: column;
+			gap: 0.4rem;
+		}
+
+		.slider-header {
+			display: flex;
+			justify-content: space-between;
+			font-size: 0.82rem;
+			color: var(--text-secondary);
+		}
+
+		input[type="range"] {
+			accent-color: var(--accent-blue);
+			cursor: pointer;
+		}
+
+		/* Actions */
+		.action-row {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1rem;
+			align-items: center;
+		}
+
+		.btn {
+			padding: 0.85rem 1.75rem;
+			border-radius: var(--radius-md);
+			font-size: 0.98rem;
+			font-weight: 700;
+			cursor: pointer;
+			border: none;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+			transition: var(--transition);
+		}
+
+		.btn-primary {
+			background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+			color: white;
+			box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+		}
+
+		.btn-primary:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+		}
+
+		.btn-secondary {
+			background: rgba(255, 255, 255, 0.08);
+			border: 1px solid rgba(255, 255, 255, 0.15);
+			color: var(--text-primary);
+		}
+
+		.btn-secondary:hover {
+			background: rgba(255, 255, 255, 0.14);
+		}
+
+		.btn-danger {
+			background: rgba(239, 68, 68, 0.15);
+			border: 1px solid rgba(239, 68, 68, 0.3);
+			color: #fca5a5;
+		}
+
+		.btn-danger:hover {
+			background: rgba(239, 68, 68, 0.25);
+		}
+
+		/* Visualizer */
+		.speaking-indicator {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			height: 20px;
+			margin-left: auto;
+			visibility: hidden;
+		}
+
+		.speaking-indicator.active {
+			visibility: visible;
+		}
+
+		.speaking-bar {
+			width: 3px;
+			background: var(--accent-teal);
+			border-radius: 2px;
+			animation: bounce 0.6s infinite alternate;
+		}
+
+		.speaking-bar:nth-child(2) { animation-delay: 0.15s; }
+		.speaking-bar:nth-child(3) { animation-delay: 0.3s; }
+		.speaking-bar:nth-child(4) { animation-delay: 0.45s; }
+
+		@keyframes bounce {
+			from { height: 4px; }
+			to { height: 18px; }
+		}
+
+		.voice-status {
+			font-size: 0.85rem;
+			color: var(--text-muted);
+			margin-top: 0.4rem;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<header>
+			<div class="badge">
+				<span>🔊 Web Speech API & Kongbuhey Phonetics</span>
+			</div>
+			<h1>Korean Speech via English Voices</h1>
+			<p>High-fidelity Korean pronunciation synthesized using browser English text-to-speech voices via phonetic transliteration and statutory Korean phonology exceptions.</p>
+		</header>
+
+		<!-- Preset Sentence Selector -->
+		<div class="card">
+			<div class="section-title">
+				<span>📑 Complex Sentence Presets (Showcasing Phonetic Rules)</span>
+			</div>
+			<div class="preset-grid" id="presetContainer">
+				<!-- Injected dynamically via JS -->
+			</div>
+
+			<div class="input-group">
+				<label for="koreanInput">Korean Text Input</label>
+				<textarea id="koreanInput" placeholder="Enter Korean sentence here..."></textarea>
+			</div>
+		</div>
+
+		<!-- Phonetic Transformation Pipeline -->
+		<div class="card">
+			<div class="section-title">
+				<span>⚡ Two-Stage Phonetic Transformation Pipeline</span>
+			</div>
+			<div class="pipeline-display">
+				<div class="pipeline-box">
+					<div class="pipeline-label hangul">
+						<span>Stage 1: Standard Phonetic Hangul</span>
+						<span style="font-size: 0.7rem; color: var(--text-muted);">국립국어원 표준발음법</span>
+					</div>
+					<div class="pipeline-content" id="standardPhoneticDisplay">-</div>
+				</div>
+
+				<div class="pipeline-box highlight">
+					<div class="pipeline-label phonetic">
+						<span>Stage 2: English TTS Phonetic Script</span>
+						<span style="font-size: 0.7rem; color: var(--accent-purple);">English Voice Transliteration</span>
+					</div>
+					<div class="pipeline-content english-phonemes" id="englishPhonemesDisplay">-</div>
+				</div>
+			</div>
+
+			<!-- Voice & Speech Parameters -->
+			<div class="section-title">
+				<span>🎙️ Voice Configuration & Synthesizer Controls</span>
+			</div>
+
+			<div class="input-group">
+				<label for="voiceSelect">Speech Synthesis Voice</label>
+				<select id="voiceSelect">
+					<option value="">Loading system voices...</option>
+				</select>
+				<div class="voice-status" id="voiceStatus">Detecting available voices...</div>
+			</div>
+
+			<div class="controls-grid">
+				<div class="slider-group">
+					<div class="slider-header">
+						<span>Speech Rate</span>
+						<span id="rateVal">0.9x</span>
+					</div>
+					<input type="range" id="rateSlider" min="0.5" max="1.5" step="0.05" value="0.9">
+				</div>
+
+				<div class="slider-group">
+					<div class="slider-header">
+						<span>Pitch</span>
+						<span id="pitchVal">1.0</span>
+					</div>
+					<input type="range" id="pitchSlider" min="0.5" max="1.5" step="0.05" value="1.0">
+				</div>
+
+				<div class="slider-group">
+					<div class="slider-header">
+						<span>Volume</span>
+						<span id="volumeVal">1.0</span>
+					</div>
+					<input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1.0">
+				</div>
+			</div>
+
+			<div class="action-row">
+				<button class="btn btn-primary" id="speakEnglishBtn">
+					<span>▶️ Speak via English Voice</span>
+				</button>
+
+				<button class="btn btn-secondary" id="speakNativeBtn">
+					<span>🇰🇷 Speak as Raw Korean</span>
+				</button>
+
+				<button class="btn btn-danger" id="stopBtn">
+					<span>⏹️ Stop</span>
+				</button>
+
+				<div class="speaking-indicator" id="speakingIndicator">
+					<div class="speaking-bar"></div>
+					<div class="speaking-bar"></div>
+					<div class="speaking-bar"></div>
+					<div class="speaking-bar"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		// =========================================================================
+		// 1. Korean Phonological Primitives & Statutory Exceptions Engine
+		// =========================================================================
+
+		const INITIAL_CONSONANTS = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+		const MEDIAL_VOWELS = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+		const FINAL_CONSONANTS = ['', 'ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+
+		function decomposeHangul(char) {
+			const code = char.charCodeAt(0);
+			if (code < 0xAC00 || code > 0xD7A3) return null;
+			const offset = code - 0xAC00;
+			const final = offset % 28;
+			const medial = Math.floor((offset / 28) % 21);
+			const initial = Math.floor(offset / (28 * 21));
+			return { initial, medial, final };
+		}
+
+		function composeHangul(initial, medial, final = 0) {
+			const code = 0xAC00 + (initial * 21 + medial) * 28 + final;
+			return String.fromCharCode(code);
+		}
+
+		// Statutory Exceptions Maps (국립국어원 표준발음법)
+		const SINO_NON_LATERALIZING_COMPOUNDS = new Set([
+			'생산량', '의견란', '임진란', '결단력', '상견례', '입원료', '횡단로', '이원론', '구근류'
+		]);
+
+		const SUBSTANTIVE_BOUNDARY_MAP = {
+			'옷 안': '오단',
+			'밭 아래': '바다래',
+			'늪 앞': '느밥',
+			'겉옷': '거돋',
+			'맛없다': '마덥따',
+			'맛없': '마덥',
+			'첫인상': '처딘상'
+		};
+
+		const DOUBLE_CODA_SIMPLIFY = {
+			3: 1,   // ㄳ -> ㄱ
+			5: 4,   // ㄵ -> ㄴ
+			7: 0,   // ㄶ -> handled by ㅎ
+			9: 1,   // ㄺ -> ㄱ (except before ㄱ in verbs)
+			10: 16, // ㄻ -> ㅁ
+			11: 8,  // ㄼ -> ㄹ (except 밟다 -> ㅂ)
+			12: 8,  // ㄽ -> ㄹ
+			13: 8,  // ㄾ -> ㄹ
+			14: 17, // ㄿ -> ㅂ
+			15: 0,  // ㅀ -> handled by ㅎ
+			18: 17  // ㅄ -> ㅂ
+		};
+
+		const DOUBLE_CODA_LIAISON = {
+			3: [1, 9],    // ㄳ -> ㄱ + ㅅ
+			5: [4, 12],   // ㄵ -> ㄴ + ㅈ
+			9: [8, 0],    // ㄺ -> ㄹ + ㄱ
+			10: [8, 6],   // ㄻ -> ㄹ + ㅁ
+			11: [8, 7],   // ㄼ -> ㄹ + ㅂ
+			12: [8, 9],   // ㄽ -> ㄹ + ㅅ
+			13: [8, 16],  // ㄾ -> ㄹ + ㅌ
+			14: [8, 17],  // ㄿ -> ㄹ + ㅍ
+			18: [17, 9]   // ㅄ -> ㅂ + ㅅ
+		};
+
+		const FINAL_TO_INITIAL = {
+			1: 0, 2: 1, 4: 2, 7: 3, 8: 5, 16: 6, 17: 7, 19: 9, 20: 10,
+			22: 12, 23: 14, 24: 15, 25: 16, 26: 17
+		};
+
+		const TENSIFY_INITIAL = { 0: 1, 3: 4, 7: 8, 9: 10, 12: 13 };
+		const NASAL_CODA = { 1: 21, 7: 4, 17: 16, 2: 21, 19: 4, 20: 4, 22: 4, 23: 4, 24: 21, 25: 4, 26: 16 };
+
+		function getStandardPronunciation(text) {
+			if (!text) return "";
+			let processed = text;
+
+			// Pass 0: Substantive morpheme boundaries & compound exceptions
+			for (const [raw, repl] of Object.entries(SUBSTANTIVE_BOUNDARY_MAP)) {
+				processed = processed.split(raw).join(repl);
+			}
+
+			// Pass 0.5: Sino-Korean non-lateralizing compounds
+			for (const word of SINO_NON_LATERALIZING_COMPOUNDS) {
+				if (processed.includes(word)) {
+					const chars = [];
+					for (let i = 0; i < word.length; i++) {
+						chars.push(decomposeHangul(word[i]));
+					}
+					// 생산량 -> 생산냥
+					for (let i = 0; i < chars.length - 1; i++) {
+						if (chars[i].final === 4 && chars[i+1].initial === 5) { // ㄴ + ㄹ
+							chars[i+1].initial = 2; // ㄴ
+						}
+					}
+					const res = chars.map(c => composeHangul(c.initial, c.medial, c.final)).join('');
+					processed = processed.split(word).join(res);
+				}
+			}
+
+			// Process words phonetically
+			return processed.replace(/([가-힣]+)/g, match => getWordPronunciation(match));
+		}
+
+		function getWordPronunciation(word) {
+			const H = [];
+			for (let i = 0; i < word.length; i++) {
+				const d = decomposeHangul(word[i]);
+				if (d) H.push(d);
+			}
+			if (H.length === 0) return word;
+
+			// Verb exception 밟- -> [밥]
+			for (let i = 0; i < H.length; i++) {
+				if (word[i] === '밟' && H[i].final === 11) {
+					const next = H[i + 1];
+					if (next && next.initial !== 11) { // before consonant
+						H[i].final = 17; // ㅂ
+					}
+				}
+			}
+
+			// Verb stem ㄺ before ㄱ -> [ㄹ] (맑게 -> [말께])
+			for (let i = 0; i < H.length - 1; i++) {
+				if (H[i].final === 9 && H[i + 1].initial === 0) { // ㄺ before ㄱ
+					H[i].final = 8; // ㄹ
+					H[i + 1].initial = 1; // ㄲ (tensification)
+				}
+			}
+
+			// Pass 1: Palatalization (ㄷ/ㅌ + 이/히 -> ㅈ/ㅊ)
+			for (let i = 0; i < H.length - 1; i++) {
+				const cur = H[i], next = H[i + 1];
+				if (next.initial === 11 && (next.medial === 20 || next.medial === 6)) { // 이 or 여
+					if (cur.final === 7) { cur.final = 0; next.initial = 12; } // ㄷ -> ㅈ
+					else if (cur.final === 25) { cur.final = 0; next.initial = 14; } // ㅌ -> ㅊ
+				}
+			}
+
+			// Pass 2: Liaison (연음)
+			for (let i = 0; i < H.length - 1; i++) {
+				const cur = H[i], next = H[i + 1];
+				if (cur.final > 0 && cur.final !== 21 && next.initial === 11) { // followed by ㅇ
+					if (FINAL_TO_INITIAL[cur.final] !== undefined) {
+						next.initial = FINAL_TO_INITIAL[cur.final];
+						cur.final = 0;
+					} else if (DOUBLE_CODA_LIAISON[cur.final]) {
+						[cur.final, next.initial] = DOUBLE_CODA_LIAISON[cur.final];
+					}
+				}
+			}
+
+			// Pass 3: Coda Simplification & Neutralization
+			for (let i = 0; i < H.length; i++) {
+				const cur = H[i];
+				if (cur.final > 0) {
+					if (DOUBLE_CODA_SIMPLIFY[cur.final]) cur.final = DOUBLE_CODA_SIMPLIFY[cur.final];
+					if (cur.final === 2 || cur.final === 24) cur.final = 1; // ㄲ, ㅋ -> ㄱ
+					else if ([19, 20, 22, 23, 25, 27].includes(cur.final)) cur.final = 7; // ㅅ, ㅆ, ㅈ, ㅊ, ㅌ, ㅎ -> ㄷ
+					else if (cur.final === 26) cur.final = 17; // ㅍ -> ㅂ
+				}
+			}
+
+			// Pass 4: Tensification (경음화)
+			for (let i = 0; i < H.length - 1; i++) {
+				const cur = H[i], next = H[i + 1];
+				if ((cur.final === 1 || cur.final === 7 || cur.final === 17) && TENSIFY_INITIAL[next.initial] !== undefined) {
+					next.initial = TENSIFY_INITIAL[next.initial];
+				}
+			}
+
+			// Pass 5: Nasalization (비음화)
+			for (let i = 0; i < H.length - 1; i++) {
+				const cur = H[i], next = H[i + 1];
+				if ((next.initial === 2 || next.initial === 6) && NASAL_CODA[cur.final]) { // before ㄴ, ㅁ
+					cur.final = NASAL_CODA[cur.final];
+				}
+			}
+
+			// Pass 6: Lateralization (유음화: ㄴ+ㄹ or ㄹ+ㄴ -> ㄹ+ㄹ)
+			for (let i = 0; i < H.length - 1; i++) {
+				const cur = H[i], next = H[i + 1];
+				if (cur.final === 4 && next.initial === 5) cur.final = 8;
+				else if (cur.final === 8 && next.initial === 2) next.initial = 5;
+			}
+
+			let result = '';
+			for (let i = 0; i < H.length; i++) {
+				result += composeHangul(H[i].initial, H[i].medial, H[i].final);
+			}
+			return result;
+		}
+
+		// =========================================================================
+		// 2. Korean-to-English Phoneme Transliteration Engine (for English TTS)
+		// =========================================================================
+
+		const ONSET_EN = {
+			0: 'g', 1: 'kk', 2: 'n', 3: 'd', 4: 'tt', 5: 'r', 6: 'm',
+			7: 'b', 8: 'pp', 9: 's', 10: 'ss', 11: '', 12: 'j', 13: 'jj',
+			14: 'ch', 15: 'k', 16: 't', 17: 'p', 18: 'h'
+		};
+
+		const NUCLEUS_EN = {
+			0: 'ah',  // ㅏ
+			1: 'ae',  // ㅐ
+			2: 'yah', // ㅑ
+			3: 'yeh', // ㅒ
+			4: 'uh',  // ㅓ (avoids English 'o'/'e' diphthongs)
+			5: 'eh',  // ㅔ
+			6: 'yuh', // ㅕ
+			7: 'yeh', // ㅖ
+			8: 'oh',  // ㅗ
+			9: 'wah', // ㅘ
+			10: 'weh',// ㅙ
+			11: 'weh',// ㅚ
+			12: 'yoh',// ㅛ
+			13: 'oo', // ㅜ
+			14: 'wuh',// ㅝ
+			15: 'weh',// ㅞ
+			16: 'wee',// ㅟ
+			17: 'yoo',// ㅠ
+			18: 'eu', // ㅡ
+			19: 'eui',// ㅢ
+			20: 'ee'  // ㅣ
+		};
+
+		const CODA_EN = {
+			0: '', 1: 'k', 2: 'k', 3: 'k', 4: 'n', 5: 'n', 6: 'n',
+			7: 't', 8: 'l', 9: 'k', 10: 'm', 11: 'p', 12: 'l', 13: 't',
+			14: 'p', 15: 'l', 16: 'm', 17: 'p', 18: 'p', 19: 't', 20: 't',
+			21: 'ng', 22: 't', 23: 't', 24: 'k', 25: 't', 26: 'p', 27: 't'
+		};
+
+		function convertToEnglishPhonemes(koreanText) {
+			const standardPhonetic = getStandardPronunciation(koreanText);
+			const words = standardPhonetic.split(/(\s+|[.,?!~]+)/);
+
+			const convertedWords = words.map(chunk => {
+				if (/^[\s.,?!~]+$/.test(chunk)) return chunk;
+				const syllables = [];
+				for (let i = 0; i < chunk.length; i++) {
+					const d = decomposeHangul(chunk[i]);
+					if (!d) {
+						syllables.push(chunk[i]);
+						continue;
+					}
+
+					let onset = ONSET_EN[d.initial];
+					// Palatalization: 's' before 'ee' or 'y' sounds like 'sh'
+					if (onset === 's' && (d.medial === 20 || [2,3,6,7,12,17].includes(d.medial))) {
+						onset = 'sh';
+					}
+
+					let nucleus = NUCLEUS_EN[d.medial];
+					let coda = CODA_EN[d.final];
+
+					// Syllable capitalization & pacing for English TTS
+					let syl = onset + nucleus + coda;
+					if (i === 0) syl = syl.charAt(0).toUpperCase() + syl.slice(1);
+					syllables.push(syl);
+				}
+				return syllables.join('-');
+			});
+
+			return convertedWords.join('');
+		}
+
+		// =========================================================================
+		// 3. UI Presets & Interactive Controller
+		// =========================================================================
+
+		const PRESETS = [
+			{
+				tag: "Core Politeness & Formal Register",
+				text: "안녕하십니까? 저는 한국어를 배우고 있는 학생입니다."
+			},
+			{
+				tag: "Clausal Connective & Reason",
+				text: "어제 비가 많이 와서 옷이 다 젖었지만 다행히 감기에는 안 걸렸습니다."
+			},
+			{
+				tag: "Substantive Boundary Exception",
+				text: "새 겉옷을 입고 맛없는 음식을 피해서 옷 안을 확인했습니다."
+			},
+			{
+				tag: "Sino-Korean Non-Lateralization",
+				text: "회사의 생산량 증가를 위해 상견례와 입원료 지원을 결정했습니다."
+			},
+			{
+				tag: "Double Coda Dissimilation ('밟-' & 'ㄺ')",
+				text: "눈길을 조심해서 밟고, 물이 맑게 흐르는 강가로 걸어갔습니다."
+			},
+			{
+				tag: "Mood Concord & Propositive",
+				text: "도서관에 사람이 너무 많으니까 우리 조용한 카페로 같이 갑시다!"
+			}
+		];
+
+		const koreanInput = document.getElementById('koreanInput');
+		const standardPhoneticDisplay = document.getElementById('standardPhoneticDisplay');
+		const englishPhonemesDisplay = document.getElementById('englishPhonemesDisplay');
+		const voiceSelect = document.getElementById('voiceSelect');
+		const voiceStatus = document.getElementById('voiceStatus');
+		const rateSlider = document.getElementById('rateSlider');
+		const rateVal = document.getElementById('rateVal');
+		const pitchSlider = document.getElementById('pitchSlider');
+		const pitchVal = document.getElementById('pitchVal');
+		const volumeSlider = document.getElementById('volumeSlider');
+		const volumeVal = document.getElementById('volumeVal');
+		const speakEnglishBtn = document.getElementById('speakEnglishBtn');
+		const speakNativeBtn = document.getElementById('speakNativeBtn');
+		const stopBtn = document.getElementById('stopBtn');
+		const speakingIndicator = document.getElementById('speakingIndicator');
+		const presetContainer = document.getElementById('presetContainer');
+
+		// Render Presets
+		PRESETS.forEach((preset, idx) => {
+			const btn = document.createElement('button');
+			btn.className = `preset-btn ${idx === 0 ? 'active' : ''}`;
+			btn.innerHTML = `
+				<span class="preset-tag">${preset.tag}</span>
+				<span class="preset-text">${preset.text}</span>
+			`;
+			btn.addEventListener('click', () => {
+				document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+				btn.classList.add('active');
+				koreanInput.value = preset.text;
+				updatePipelines();
+			});
+			presetContainer.appendChild(btn);
+		});
+
+		// Live Update
+		function updatePipelines() {
+			const text = koreanInput.value.trim();
+			if (!text) {
+				standardPhoneticDisplay.textContent = '-';
+				englishPhonemesDisplay.textContent = '-';
+				return;
+			}
+			const phonetic = getStandardPronunciation(text);
+			const englishPhonemes = convertToEnglishPhonemes(text);
+
+			standardPhoneticDisplay.textContent = phonetic;
+			englishPhonemesDisplay.textContent = englishPhonemes;
+		}
+
+		koreanInput.addEventListener('input', updatePipelines);
+
+		// Sliders
+		rateSlider.addEventListener('input', (e) => rateVal.textContent = e.target.value + 'x');
+		pitchSlider.addEventListener('input', (e) => pitchVal.textContent = e.target.value);
+		volumeSlider.addEventListener('input', (e) => volumeVal.textContent = e.target.value);
+
+		// Voice Management
+		let allVoices = [];
+		function populateVoiceList() {
+			allVoices = window.speechSynthesis.getVoices();
+			if (allVoices.length === 0) return;
+
+			voiceSelect.innerHTML = '';
+
+			const enVoices = allVoices.filter(v => v.lang.startsWith('en'));
+			const koVoices = allVoices.filter(v => v.lang.startsWith('ko'));
+			const otherVoices = allVoices.filter(v => !v.lang.startsWith('en') && !v.lang.startsWith('ko'));
+
+			function addGroup(label, list) {
+				if (list.length === 0) return;
+				const group = document.createElement('optgroup');
+				group.label = label;
+				list.forEach(v => {
+					const opt = document.createElement('option');
+					opt.value = v.name;
+					opt.textContent = `${v.name} (${v.lang})`;
+					group.appendChild(opt);
+				});
+				voiceSelect.appendChild(group);
+			}
+
+			addGroup("⭐ Recommended English Voices (for Phonetic Korean)", enVoices);
+			addGroup("🇰🇷 Native Korean Voices (Reference Comparison)", koVoices);
+			addGroup("🌐 Other Voices", otherVoices);
+
+			// Pick preferred default English voice
+			const preferredEn = enVoices.find(v => v.name.includes("Google") || v.name.includes("Natural") || v.name.includes("Samantha") || v.name.includes("Zira") || v.name.includes("David")) || enVoices[0];
+			if (preferredEn) voiceSelect.value = preferredEn.name;
+
+			voiceStatus.textContent = `Loaded ${allVoices.length} system voices (${enVoices.length} English voices available for TTS diversity).`;
+		}
+
+		populateVoiceList();
+		if (typeof window.speechSynthesis !== 'undefined') {
+			window.speechSynthesis.onvoiceschanged = populateVoiceList;
+		}
+
+		// Speaking Logic
+		function speakText(textToSpeak, isNative = false) {
+			window.speechSynthesis.cancel();
+			if (!textToSpeak) return;
+
+			const utterance = new SpeechSynthesisUtterance(textToSpeak);
+			utterance.rate = parseFloat(rateSlider.value);
+			utterance.pitch = parseFloat(pitchSlider.value);
+			utterance.volume = parseFloat(volumeSlider.value);
+
+			const selectedVoiceName = voiceSelect.value;
+			const voice = allVoices.find(v => v.name === selectedVoiceName);
+			if (voice) {
+				utterance.voice = voice;
+			}
+
+			utterance.onstart = () => {
+				speakingIndicator.classList.add('active');
+			};
+
+			utterance.onend = utterance.onerror = () => {
+				speakingIndicator.classList.remove('active');
+			};
+
+			window.speechSynthesis.speak(utterance);
+		}
+
+		speakEnglishBtn.addEventListener('click', () => {
+			const englishPhonemes = englishPhonemesDisplay.textContent;
+			if (englishPhonemes && englishPhonemes !== '-') {
+				speakText(englishPhonemes, false);
+			}
+		});
+
+		speakNativeBtn.addEventListener('click', () => {
+			const rawKorean = koreanInput.value.trim();
+			if (rawKorean) {
+				speakText(rawKorean, true);
+			}
+		});
+
+		stopBtn.addEventListener('click', () => {
+			window.speechSynthesis.cancel();
+			speakingIndicator.classList.remove('active');
+		});
+
+		// Init
+		koreanInput.value = PRESETS[0].text;
+		updatePipelines();
+	</script>
+</body>
+</html>
