@@ -18,7 +18,7 @@ const {
 	DATA_SCHEMA,
 	getWords,
 	hasTag
-} = require('./data.js');
+} = require('../data.js');
 
 const {
 	getNounCandidatesForVerb,
@@ -33,7 +33,7 @@ const {
 	parseAndValidateCollocationFilter,
 	DESCRIPTIVE_VERB_SPECS,
 	ACTION_VERB_SPECS
-} = require('./korean.js');
+} = require('../korean.js');
 
 const KoreanWord = DATA_SCHEMA.Korean;
 const EnglishDef = DATA_SCHEMA.English;

@@ -11,3 +11,4 @@ exhaustive_output_*.txt
 output.txt
 scratch/
 studytexts.js
+history/migrations/

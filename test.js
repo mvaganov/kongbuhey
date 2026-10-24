@@ -292,8 +292,8 @@ process.stdout.write(`[6/6] Semantic & Honorific Concord ....... `);
 try {
 	const child_process = require('child_process');
 	const suiteScripts = [
-		{ name: "Collocations (F1, F2)", path: path.resolve(__dirname, 'collocation_test.js') },
-		{ name: "Case Particles (F3)", path: path.resolve(__dirname, 'particle_concord_test.js') },
+		{ name: "Collocations (F1, F2)", path: path.resolve(__dirname, 'test', 'collocation_test.js') },
+		{ name: "Case Particles (F3)", path: path.resolve(__dirname, 'test', 'particle_concord_test.js') },
 		{ name: "Honorifics (F4)", path: path.resolve(__dirname, 'test', 'honorific_concord_test.js') },
 		{ name: "Temporal Concord (F5)", path: path.resolve(__dirname, 'test', 'temporal_concord_test.js') },
 		{ name: "Classifier Concord (F6)", path: path.resolve(__dirname, 'test', 'counter_concord_test.js') },
