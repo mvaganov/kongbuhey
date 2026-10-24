@@ -20,6 +20,7 @@ const analyzerExports = {
 	// Indexer
 	getIndex: indexer.getIndex,
 	resetIndexCache: indexer.resetIndexCache,
+	compileMweMatcher: indexer.compileMweMatcher,
 
 	// Particles
 	PARTICLE_SPECS: particles.PARTICLE_SPECS,
@@ -41,6 +42,7 @@ const analyzerExports = {
 	// Token & Sentence Analyzers
 	analyzeSingleToken: tokenAnalyzer.analyzeSingleToken,
 	analyzeSentence: sentenceAnalyzer.analyzeSentence,
+	tryMatchMultiWord: sentenceAnalyzer.tryMatchMultiWord,
 
 	// Passage Analyzer & Formatter
 	analyzePassage: passageAnalyzer.analyzePassage,

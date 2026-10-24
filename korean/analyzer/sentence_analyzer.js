@@ -68,16 +68,9 @@ function isInformalConnective(word) {
 }
 
 /**
- * Attempts to match multi-word expressions (auxiliary constructions & bound nouns)
- * starting at index i in rawWords.
- * 
- * @param {Array<string>} rawWords Sequence of whitespace-delimited words
- * @param {number} i Current index in rawWords
- * @param {Object} sentenceContext Context holding clausePredicate, etc.
- * @param {Object} index Fast-lookup index
- * @returns {Object|null} { consumed: number, token: Object } or null
+ * Builds a structured auxiliary construction token from a SyntaxFrame matcher result.
  */
-function tryMatchMultiWord(rawWords, i, sentenceContext, index) {
+function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 	const unitById = index.unitById;
 	const vocabByKo = index.vocabByKo;
 	const w1 = rawWords[i];
@@ -87,340 +80,165 @@ function tryMatchMultiWord(rawWords, i, sentenceContext, index) {
 	const cleanW3 = w3 ? w3.replace(/[^\w가-힣]+/g, '') : "";
 	const prevW1 = i > 0 ? rawWords[i - 1] : "";
 
-	// 1. Bound Grammar -(으)ㄴ 후에 (Grammar ID 710)
-	if (isAdnominalN(w1) && cleanW2 === "후에") {
-		const gUnit = unitById.get(710);
-		const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
-		const evalRes = evaluateSyntaxFrame(gUnit, { isPrecededByAdnominalVerb: true }, index);
-		return {
-			consumed: 2,
-			token: {
-				surface: `${w1} ${w2}`,
-				category: "auxiliary_construction",
-				pattern: "-(으)ㄴ 후에 (After doing)",
-				lexical: a1 ? a1.lexical : null,
-				grammar: [
-					{ text: "-(으)ㄴ 후에", pos: "Grammar Pattern", unit: gUnit, gloss: gUnit ? gUnit[DATA_SCHEMA.English] : "after doing" }
-				],
-				disambiguation: {
-					resolved: true,
-					target: "-(으)ㄴ 후에 (ID 710)",
-					rule: evalRes.reason
-				}
-			}
-		};
-	}
+	const span = match.span || 2;
+	const surface = match.surfaceOverride || (span === 3 ? `${w1} ${w2} ${w3}` : `${w1} ${w2}`);
 
-	// 2. Bound Grammar -(으)ㄴ 지 (Grammar ID 817)
-	if (isAdnominalN(w1) && cleanW2 === "지") {
-		const gUnit = unitById.get(817);
-		const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
-		const evalRes = evaluateSyntaxFrame(gUnit, { isPrecededByAdnominalVerb: true }, index);
-		return {
-			consumed: 2,
-			token: {
-				surface: `${w1} 지`,
-				category: "auxiliary_construction",
-				pattern: "-(으)ㄴ 지 (Time elapsed since doing)",
-				lexical: a1 ? a1.lexical : null,
-				grammar: [
-					{ text: "-(으)ㄴ 지", pos: "Grammar Pattern", unit: gUnit, gloss: gUnit ? gUnit[DATA_SCHEMA.English] : "time elapsed since" }
-				],
-				disambiguation: {
-					resolved: true,
-					target: "-(으)ㄴ 지 (ID 817)",
-					rule: evalRes.reason
-				}
-			}
-		};
-	}
-
-	// 3. -기 때문에 (Grammar ID 54)
-	if (w1.endsWith("기") && cleanW2 === "때문에") {
-		const gUnit = unitById.get(54);
-		const stem = w1.slice(0, -1);
+	// 1. Resolve Lexical Verb
+	let lexical = null;
+	if (match.lexicalType === "stem_da") {
+		const suffixLen = (match.stemSuffix || "다").length;
+		const stem = w1.slice(0, -suffixLen);
 		const baseVerb = stem + "다";
 		const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
-		return {
-			consumed: 2,
-			token: {
-				surface: `${w1} ${w2}`,
-				category: "auxiliary_construction",
-				pattern: "-기 때문에 (Because of / Since)",
-				lexical: {
-					text: baseVerb,
-					pos: vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : "Verb",
-					unit: vUnit,
-					missing: !vUnit,
-					gloss: vUnit ? vUnit[DATA_SCHEMA.English] : ""
-				},
-				grammar: [
-					{ text: "-기 때문에", pos: "Grammar Pattern", unit: gUnit, gloss: gUnit ? gUnit[DATA_SCHEMA.English] : "because of" }
-				]
-			}
+		lexical = {
+			text: baseVerb,
+			pos: vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : "Verb",
+			unit: vUnit,
+			missing: !vUnit,
+			gloss: vUnit ? vUnit[DATA_SCHEMA.English] : ""
 		};
-	}
-
-	// 4. -지 않다 (Grammar ID 274)
-	if (w1.endsWith("지") && cleanW2.startsWith("않")) {
-		const gUnit = unitById.get(274);
-		const stem = w1.slice(0, -1);
-		const baseVerb = stem + "다";
-		const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
-		const a2 = analyzeSingleToken(w2, w1, rawWords[i + 2] || "", sentenceContext, index);
-		return {
-			consumed: 2,
-			token: {
-				surface: `${w1} ${w2}`,
-				category: "auxiliary_construction",
-				pattern: "-지 않다 (Long Negation)",
-				lexical: {
-					text: baseVerb,
-					pos: vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : "Verb",
-					unit: vUnit,
-					missing: !vUnit,
-					gloss: vUnit ? vUnit[DATA_SCHEMA.English] : ""
-				},
-				grammar: [
-					{ text: "-지 않다", pos: "Grammar Pattern", unit: gUnit, gloss: gUnit ? gUnit[DATA_SCHEMA.English] : "to not do/be" },
-					...((a2 && a2.grammar) || [])
-				]
-			}
+	} else if (match.lexicalType === "self_unit") {
+		lexical = {
+			text: unit[DATA_SCHEMA.Korean],
+			pos: unit[DATA_SCHEMA.PartofSpeech],
+			unit: unit,
+			gloss: unit[DATA_SCHEMA.English]
 		};
-	}
-
-	// 5. -(으)ㄹ/ㄴ/는 것 같다 (Grammar ID 1638 + 581)
-	if ((cleanW2 === "것" || cleanW2 === "거") && cleanW3 && cleanW3.startsWith("같")) {
+	} else if (match.lexical !== undefined) {
+		lexical = match.lexical;
+	} else {
 		const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
-		const gatUnit = unitById.get(1638);
-		const geodUnit = unitById.get(581);
-		const endObj = resolveAuxiliaryEnding(cleanW3, unitById);
-		return {
-			consumed: 3,
-			token: {
-				surface: `${w1} ${w2} ${w3}`,
-				category: "auxiliary_construction",
-				pattern: "-(으)ㄹ 것 같다 (It seems like / looks like)",
-				lexical: a1 ? a1.lexical : null,
-				grammar: [
-					{ text: "것", pos: "Bound Noun", unit: geodUnit, gloss: "bound noun 'thing' (ID 581)" },
-					{ text: "같다", pos: "Descriptive Verb", unit: gatUnit, gloss: "similar, like (ID 1638)" },
-					...(endObj ? [endObj] : [])
-				]
-			}
-		};
+		lexical = a1 ? a1.lexical : null;
 	}
 
-	// 6. -는 중이다 (Grammar ID 931)
-	if ((w1.endsWith("는") || w1.endsWith("은")) && cleanW2.startsWith("중")) {
-		const gUnit = unitById.get(931);
-		const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
-		const endObj = resolveAuxiliaryEnding(cleanW2, unitById);
-		return {
-			consumed: 2,
-			token: {
-				surface: `${w1} ${w2}`,
-				category: "auxiliary_construction",
-				pattern: "-는 중이다 (In the middle of doing)",
-				lexical: a1 ? a1.lexical : null,
-				grammar: [
-					{ text: "-는 중이다", pos: "Grammar Pattern", unit: gUnit, gloss: gUnit ? gUnit[DATA_SCHEMA.English] : "in the middle of doing" },
-					...(endObj ? [endObj] : [])
-				]
-			}
-		};
-	}
-
-	// 7. -고 싶어하다 (ID 1625) vs. -고 싶다 (ID 417)
-	if (w1.endsWith("고")) {
-		if (cleanW2.startsWith("싶어했") || cleanW2.startsWith("싶어하")) {
-			const gUnit = unitById.get(1625);
-			const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
-			return {
-				consumed: 2,
-				token: {
-					surface: `${w1} ${w2}`,
-					category: "auxiliary_construction",
-					pattern: "-고 싶어하다 (Want to do - 3rd person)",
-					lexical: a1 ? a1.lexical : null,
-					grammar: [
-						{ text: "-고 싶어하다", pos: "Grammar Pattern", unit: gUnit, gloss: gUnit ? gUnit[DATA_SCHEMA.English] : "want to do" },
-						{ text: "-았/었-", pos: "Tense Infix", unit: unitById.get(335), gloss: "past tense (ID 335)" },
-						{ text: "-습니다", pos: "Verb Ending", unit: unitById.get(50), gloss: "formal declarative (ID 50)" }
-					],
-					disambiguation: {
-						resolved: true,
-						target: "-고 싶어하다 (ID 1625)",
-						rule: "Third-person psychological predicate frame '{VP}\\+고\\s+싶어하' matched auxiliary '싶어하다'"
-					}
-				}
-			};
+	// 2. Resolve Grammar Units
+	const grammarList = [];
+	if (match.grammar && Array.isArray(match.grammar)) {
+		for (const g of match.grammar) {
+			const resolvedUnit = g.unitId ? unitById.get(g.unitId) : (g.unit || unit);
+			grammarList.push({
+				text: g.text || unit[DATA_SCHEMA.Korean],
+				pos: g.pos || "Grammar Pattern",
+				unit: resolvedUnit,
+				gloss: g.gloss || (resolvedUnit ? resolvedUnit[DATA_SCHEMA.English] : "")
+			});
 		}
-		if (cleanW2.startsWith("싶")) {
-			const gUnit = unitById.get(417);
-			const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
-			const endObj = resolveAuxiliaryEnding(cleanW2, unitById);
-			return {
-				consumed: 2,
-				token: {
-					surface: `${w1} ${w2}`,
-					category: "auxiliary_construction",
-					pattern: "-고 싶다 (Want to do)",
-					lexical: a1 ? a1.lexical : null,
-					grammar: [
-						{ text: "~고 싶다", pos: "Grammar Pattern", unit: gUnit, gloss: gUnit ? gUnit[DATA_SCHEMA.English] : "want to" },
-						...(endObj ? [endObj] : [])
-					]
-				}
-			};
-		}
+	} else if (match.boundNounId) {
+		const geodUnit = unitById.get(match.boundNounId);
+		grammarList.push({
+			text: match.boundNounText || "것",
+			pos: "Bound Noun",
+			unit: geodUnit,
+			gloss: geodUnit ? geodUnit[DATA_SCHEMA.English] : "bound noun 'thing' (ID 581)"
+		});
+		grammarList.push({
+			text: unit[DATA_SCHEMA.Korean],
+			pos: unit[DATA_SCHEMA.PartofSpeech],
+			unit: unit,
+			gloss: unit[DATA_SCHEMA.English]
+		});
+	} else {
+		grammarList.push({
+			text: unit[DATA_SCHEMA.Korean],
+			pos: "Grammar Pattern",
+			unit: unit,
+			gloss: unit[DATA_SCHEMA.English]
+		});
 	}
 
-	// 8. -(으)려고 하다 (ID 816 + 158)
-	if ((w1.endsWith("려고") || w1.endsWith("으려고")) && (cleanW2.startsWith("합") || cleanW2.startsWith("하"))) {
-		const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
-		return {
-			consumed: 2,
-			token: {
-				surface: `${w1} ${w2}`,
-				category: "auxiliary_construction",
-				pattern: "-(으)려고 하다 (Intend to do)",
-				lexical: a1 ? a1.lexical : null,
-				grammar: [
-					{ text: "-(으)려고", pos: "Grammar Pattern", unit: unitById.get(816), gloss: "in order to (ID 816)" },
-					{ text: "하다", pos: "Auxiliary Verb", unit: unitById.get(158), gloss: "to do (auxiliary, ID 158)" },
-					{ text: "-ㅂ니다", pos: "Verb Ending", unit: unitById.get(50), gloss: "formal declarative (ID 50)" }
-				]
-			}
-		};
+	if (match.extraParticle) {
+		const pUnit = unitById.get(match.extraParticle.unitId);
+		grammarList.push({
+			text: match.extraParticle.text,
+			pos: "Particle",
+			unit: pUnit,
+			gloss: match.extraParticle.gloss || (pUnit ? pUnit[DATA_SCHEMA.English] : "")
+		});
 	}
 
-	// 9. -(으)ㄹ 수 있다 / 없다 (ID 522 / 523)
-	if ((cleanW2 === "수" || cleanW2 === "수도") && cleanW3 && (cleanW3.startsWith("있") || cleanW3.startsWith("없"))) {
-		const isNegative = cleanW3.startsWith("없");
-		const gUnit = unitById.get(isNegative ? 523 : 522);
-		const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
-		const endObj = resolveAuxiliaryEnding(cleanW3, unitById);
-		const gList = [
-			{ text: isNegative ? "-(으)ㄹ 수 없다" : "-(으)ㄹ 수 있다", pos: "Grammar Pattern", unit: gUnit, gloss: gUnit ? gUnit[DATA_SCHEMA.English] : (isNegative ? "cannot do" : "can do") }
-		];
-		if (cleanW2 === "수도") {
-			gList.push({ text: "도", pos: "Particle", unit: unitById.get(366), gloss: "also/too (ID 366)" });
-		}
-		if (endObj) gList.push(endObj);
-		return {
-			consumed: 3,
-			token: {
-				surface: `${w1} ${w2} ${w3}`,
-				category: "auxiliary_construction",
-				pattern: isNegative ? "-(으)ㄹ 수 없다 (Cannot do)" : "-(으)ㄹ 수 있다 (Can do)",
-				lexical: a1 ? a1.lexical : null,
-				grammar: gList
-			}
-		};
-	}
-
-	// 10. -(으)면 좋겠다 (Grammar ID 1646)
-	if ((w1.endsWith("면") || w1.endsWith("으면") || w1.endsWith("하면")) && cleanW2.startsWith("좋겠")) {
-		const gUnit = unitById.get(1646);
-		const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
-		const endObj = resolveAuxiliaryEnding(cleanW2, unitById);
-		return {
-			consumed: 2,
-			token: {
-				surface: `${w1} ${w2}`,
-				category: "auxiliary_construction",
-				pattern: "-(으)면 좋겠다 (I wish/hope that)",
-				lexical: a1 ? a1.lexical : null,
-				grammar: [
-					{ text: "-(으)면 좋겠다", pos: "Grammar Pattern", unit: gUnit, gloss: gUnit ? gUnit[DATA_SCHEMA.English] : "I wish that" },
-					...(endObj ? [endObj] : [])
-				]
-			}
-		};
-	}
-
-	// 11. -(으)ㄹ 때 (Grammar ID 855)
-	if (cleanW2.startsWith("때") && isAdnominalL(w1)) {
-		const gUnit = unitById.get(855);
-		const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
+	if (match.parseTrailingParticle) {
 		const particleMatch = cleanW2.match(/때(가|는|에|도)$/);
 		const pText = particleMatch ? particleMatch[1] : null;
 		const pSpec = pText ? PARTICLE_SPECS.find(p => p.text === pText) : null;
 		const pUnit = pSpec && pSpec.ids[0] ? unitById.get(pSpec.ids[0]) : null;
-		const gList = [
-			{ text: "-(으)ㄹ 때", pos: "Grammar Pattern", unit: gUnit, gloss: gUnit ? gUnit[DATA_SCHEMA.English] : "when doing" }
-		];
 		if (pUnit) {
-			gList.push({ text: pText, pos: "Particle", unit: pUnit, gloss: pUnit[DATA_SCHEMA.English] });
+			grammarList.push({ text: pText, pos: "Particle", unit: pUnit, gloss: pUnit[DATA_SCHEMA.English] });
 		}
-		return {
-			consumed: 2,
-			token: {
-				surface: `${w1} ${w2}`,
-				category: "auxiliary_construction",
-				pattern: "-(으)ㄹ 때 (When doing / during)",
-				lexical: a1 ? a1.lexical : null,
-				grammar: gList
-			}
-		};
 	}
 
-	// 12. 전화 드리다 (ID 599)
-	if (w1 === "전화" && cleanW2.startsWith("드리")) {
-		const vUnit = unitById.get(599);
-		const a2 = analyzeSingleToken(w2, w1, rawWords[i + 2] || "", sentenceContext, index);
-		return {
-			consumed: 2,
-			token: {
-				surface: `${w1} ${w2}`,
-				category: "auxiliary_construction",
-				pattern: "전화드리다 (To call - honorific)",
-				lexical: { text: "전화드리다", pos: "Action Verb", unit: vUnit, gloss: vUnit ? vUnit[DATA_SCHEMA.English] : "to call (honorific)" },
-				grammar: (a2 && a2.grammar) || []
-			}
-		};
+	if (match.auxEndingTokenIndex) {
+		const targetWord = match.auxEndingTokenIndex === 3 ? cleanW3 : cleanW2;
+		const endObj = resolveAuxiliaryEnding(targetWord, unitById);
+		if (endObj) grammarList.push(endObj);
 	}
 
-	// 13. -아/어 주다 / 드리다 (Benefactive Auxiliary ID 322 / 591)
-	if (isInformalConnective(w1) && (cleanW2.startsWith("주") || cleanW2.startsWith("줘") || cleanW2.startsWith("드리"))) {
-		const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
-		const isHonorific = cleanW2.startsWith("드리");
-		const auxVerb = isHonorific ? unitById.get(591) : unitById.get(322);
+	if (match.parseW2Grammar) {
 		const a2 = analyzeSingleToken(w2, w1, rawWords[i + 2] || "", sentenceContext, index);
-		return {
-			consumed: 2,
-			token: {
-				surface: `${w1} ${w2}`,
-				category: "auxiliary_construction",
-				pattern: isHonorific ? "-아/어 드리다 (Do for someone - honorific)" : "-아/어 주다 (Do for someone)",
-				lexical: a1 ? a1.lexical : null,
-				grammar: [
-					{ text: isHonorific ? "-아/어 드리다" : "-아/어 주다", pos: "Auxiliary Verb", unit: auxVerb, gloss: auxVerb ? auxVerb[DATA_SCHEMA.English] : "to give/do for" },
-					...((a2 && a2.grammar) || [])
-				]
-			}
-		};
+		if (a2 && a2.grammar && a2.grammar.length > 0) {
+			grammarList.push(...a2.grammar);
+		}
 	}
 
-	// 14. -아/어 보다 (Auxiliary Verb ID 879: Trial / Experience)
-	if (isInformalConnective(w1) && (cleanW2.startsWith("보") || cleanW2.startsWith("봐") || cleanW2 === "본" || cleanW2.startsWith("봤"))) {
-		const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
-		const auxVerb = unitById.get(879);
-		const a2 = analyzeSingleToken(w2, w1, rawWords[i + 2] || "", sentenceContext, index);
-		return {
-			consumed: 2,
-			token: {
-				surface: `${w1} ${w2}`,
-				category: "auxiliary_construction",
-				pattern: "-아/어 보다 (Try doing / experience)",
-				lexical: a1 ? a1.lexical : null,
-				grammar: [
-					{ text: "-아/어 보다", pos: "Auxiliary Verb", unit: auxVerb, gloss: auxVerb ? auxVerb[DATA_SCHEMA.English] : "to try doing / experience" },
-					...((a2 && a2.grammar) || [])
-				]
+	return {
+		consumed: span,
+		token: {
+			surface,
+			category: "auxiliary_construction",
+			pattern: match.pattern || `${unit[DATA_SCHEMA.Korean]} (${unit[DATA_SCHEMA.English]})`,
+			lexical,
+			grammar: grammarList,
+			disambiguation: match.disambiguation ? {
+				resolved: true,
+				target: match.disambiguation.target || `${unit[DATA_SCHEMA.Korean]} (ID ${unit[DATA_SCHEMA.Id]})`,
+				rule: match.disambiguation.rule || "SyntaxFrame matcher"
+			} : null
+		}
+	};
+}
+
+/**
+ * Attempts to match multi-word expressions (auxiliary constructions & bound nouns)
+ * starting at index i in rawWords, driven dynamically by compiled SyntaxFrame matchers.
+ * 
+ * @param {Array<string>} rawWords Sequence of whitespace-delimited words
+ * @param {number} i Current index in rawWords
+ * @param {Object} sentenceContext Context holding clausePredicate, etc.
+ * @param {Object} index Fast-lookup index
+ * @returns {Object|null} { consumed: number, token: Object } or null
+ */
+function tryMatchMultiWord(rawWords, i, sentenceContext, index) {
+	const w1 = rawWords[i];
+	const w2 = i < rawWords.length - 1 ? rawWords[i + 1] : "";
+	const cleanW2 = w2 ? w2.replace(/[^\w가-힣]+/g, '') : "";
+	const w3 = i < rawWords.length - 2 ? rawWords[i + 2] : "";
+	const cleanW3 = w3 ? w3.replace(/[^\w가-힣]+/g, '') : "";
+	const prevW1 = i > 0 ? rawWords[i - 1] : "";
+
+	const matchCtx = {
+		w1,
+		w2,
+		w3,
+		cleanW2,
+		cleanW3,
+		prevW1,
+		isAdnominalN: isAdnominalN(w1),
+		isAdnominalL: isAdnominalL(w1),
+		isInformal: isInformalConnective(w1),
+		rawWords,
+		i,
+		sentenceContext,
+		index
+	};
+
+	// Evaluate declarative SyntaxFrame matchers registered in index
+	if (index.mweRules && index.mweRules.length > 0) {
+		for (const rule of index.mweRules) {
+			matchCtx.unit = rule.unit;
+			const match = rule.matcherFn(matchCtx);
+			if (match) {
+				return buildMweToken(rule.unit, match, rawWords, i, sentenceContext, index);
 			}
-		};
+		}
 	}
 
 	return null;
