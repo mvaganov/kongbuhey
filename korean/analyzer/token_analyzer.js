@@ -89,6 +89,25 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 		};
 	}
 
+	// 0.12 Noun + Polite Informal Copula 이에요 / 예요 (ID 37)
+	const copulaPoliteMatch = word.match(/^(.+?)(이에요|예요)$/);
+	if (copulaPoliteMatch && copulaPoliteMatch[1].length >= 1) {
+		const stem = copulaPoliteMatch[1];
+		const ending = copulaPoliteMatch[2];
+		const stemUnits = vocabByKo.get(stem) || [];
+		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
+		if (nUnit || vocabByKo.has(stem)) {
+			const copulaUnit = unitById.get(37);
+			return {
+				surface: word,
+				category: "noun_copula",
+				lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")" },
+				grammar: [{ text: ending, pos: "Verb Ending", unit: copulaUnit, gloss: copulaUnit ? copulaUnit[DATA_SCHEMA.English] : "is/are (copula ID 37)" }]
+			};
+		}
+	}
+
 	// 0.15 Noun + Copula Past / Conditional (e.g. 룸메이트였으면, 학생이었으면, 친구였어요)
 	const copulaPastMatch = word.match(/^(.+?)(이었으면|였으면|이었습니다|였습니다|이었어요|였어요)$/);
 	if (copulaPastMatch) {
@@ -229,10 +248,10 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 		};
 	}
 
-	// 3. Number + Counter + Particle (e.g. 1년쯤, 2년 동안, 3시에)
-	const numCounterMatch = word.match(/^(\d+)([가-힣]+?)(쯤|에|부터|까지|은|는|이|가|을|를)?$/);
+	// 3. Number + Counter + Particle (e.g. 1년쯤, 2년 동안, 3시에, 6~7분)
+	const numCounterMatch = word.match(/^(\d+(?:[~-]\d+)?)([가-힣]+?)(쯤|에|부터|까지|은|는|이|가|을|를)?$/);
 	if (numCounterMatch) {
-		const numVal = parseInt(numCounterMatch[1], 10);
+		const numVal = numCounterMatch[1];
 		const counterText = numCounterMatch[2];
 		const particleText = numCounterMatch[3];
 		const counterUnits = vocabByKo.get(counterText) || [];
@@ -303,7 +322,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 				if (cUnit) validNounUnits = [cUnit];
 			} else {
 				const stemUnits = vocabByKo.get(stem) || [];
-				validNounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' || u[DATA_SCHEMA.PartofSpeech] === 'Number' || u[DATA_SCHEMA.PartofSpeech] === 'Adverb');
+				validNounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' || u[DATA_SCHEMA.PartofSpeech] === 'Number' || u[DATA_SCHEMA.PartofSpeech] === 'Adverb' || u[DATA_SCHEMA.PartofSpeech] === 'Bound Noun');
 			}
 
 			// Check if unrecognized stem is a compound noun (e.g. 새집 + 에서 -> 새 + 집 + 에서)

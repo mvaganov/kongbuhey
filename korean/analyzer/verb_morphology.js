@@ -55,6 +55,17 @@ const VERB_SUFFIX_RULES = [
 	{ suffix: "지요", stemType: "stem_da", grammar: [{ text: "-지요", pos: "Verb Ending", id: 1773, gloss: "confirmation ending (ID 1773)" }] },
 	{ suffix: "죠", stemType: "stem_da", grammar: [{ text: "-지요", pos: "Verb Ending", id: 1773, gloss: "confirmation ending (ID 1773)" }] },
 
+	// Suggestion / Interrogative endings (-(으)ㄹ까요? ID 1021)
+	{ suffix: "할까요", stemType: "hada", grammar: [{ text: "-(으)ㄹ까요?", pos: "Verb Ending", id: 1021, gloss: "shall we? (ID 1021)" }] },
+	{ suffix: "을까요", stemType: "stem_da", grammar: [{ text: "-(으)ㄹ까요?", pos: "Verb Ending", id: 1021, gloss: "shall we? (ID 1021)" }] },
+	{ suffix: "까요", stemType: "stem_l_kkayo", grammar: [{ text: "-(으)ㄹ까요?", pos: "Verb Ending", id: 1021, gloss: "shall we? (ID 1021)" }] },
+
+	// Present polite informal endings (-아요/어요 ID 49)
+	{ suffix: "있어요", stemType: "fixed_base", baseVerb: "있다", grammar: [{ text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "없어요", stemType: "fixed_base", baseVerb: "없다", grammar: [{ text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "어요", stemType: "stem_consonant_polite", grammar: [{ text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "아요", stemType: "stem_consonant_polite", grammar: [{ text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+
 	// Bare informal/connective endings on consonant stems (e.g. 먹어 -> 먹다, 받아 -> 받다)
 	{ suffix: "어", stemType: "stem_consonant_informal", grammar: [{ text: "-아/어", pos: "Verb Ending", id: 459, gloss: "informal / sequential (ID 459)" }] },
 	{ suffix: "아", stemType: "stem_consonant_informal", grammar: [{ text: "-아/어", pos: "Verb Ending", id: 459, gloss: "informal / sequential (ID 459)" }] },
@@ -206,7 +217,44 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 				const lastChar = stem.slice(-1);
 				const d = decomposeHangul(lastChar);
 				if (d && d.final === 20 && stem !== "있" && !stem.endsWith("있")) continue; // let past tense rules handle it
-				baseVerb = stem + "다";
+				let candidateVerb = stem + "다";
+				if (rule.suffix.includes("세요") && d && d.final === 0) {
+					// Check ㄹ-irregular drop (e.g. 썰다 -> 써세요, 만들다 -> 만드세요, 살다 -> 사세요)
+					const lChar = composeHangul(d.initial, d.medial, 8);
+					const lVerb = stem.slice(0, -1) + lChar + "다";
+					if (!vocabByKo.has(candidateVerb) && vocabByKo.has(lVerb)) {
+						candidateVerb = lVerb;
+					}
+				}
+				baseVerb = candidateVerb;
+			} else if (rule.stemType === 'stem_l_kkayo') {
+				if (word.length <= rule.suffix.length) continue;
+				const stemBefore = word.slice(0, -rule.suffix.length);
+				const prevChar = stemBefore.slice(-1);
+				const d = decomposeHangul(prevChar);
+				if (d && d.final === 8) { // ㄹ batchim (e.g. 볼까요 -> 보다, 갈까요 -> 가다)
+					const stripped = setFinal(prevChar, 0);
+					const stem = stemBefore.slice(0, -1) + stripped;
+					let candidateVerb = stem + "다";
+					if (!vocabByKo.has(candidateVerb)) {
+						const lVerb = stemBefore + "다";
+						if (vocabByKo.has(lVerb)) candidateVerb = lVerb;
+					}
+					baseVerb = candidateVerb;
+				} else {
+					continue;
+				}
+			} else if (rule.stemType === 'stem_consonant_polite') {
+				const stem = word.slice(0, -rule.suffix.length);
+				if (stem.length < 1) continue;
+				const lastChar = stem.slice(-1);
+				if (!hasBatchim(lastChar)) continue;
+				const baseCandidate = stem + "다";
+				if (vocabByKo.has(baseCandidate)) {
+					baseVerb = baseCandidate;
+				} else {
+					continue;
+				}
 			} else if (rule.stemType === 'stem_gi_da') {
 				if (word.length <= rule.suffix.length) continue;
 				baseVerb = word.slice(0, -rule.suffix.length) + "기다";
@@ -481,8 +529,14 @@ function matchAdnominalEnding(word, index) {
 		if (d && d.final === 4) { // ㄴ batchim (past adnominal -(으)ㄴ, e.g. 온, 간, 본, 산, 된)
 			const strippedChar = setFinal(word.slice(-1), 0);
 			const stem = word.slice(0, -1) + strippedChar;
-			const baseVerb = stem + "다";
-			const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
+			let baseVerb = stem + "다";
+			const vUnits = vocabByKo.get(baseVerb) || [];
+			let vUnit = vUnits.length > 0 ? vUnits[0] : null;
+			if (stem === "부지") {
+				baseVerb = "부치다";
+				const cookingUnit = (vocabByKo.get("부치다") || []).find(u => u[DATA_SCHEMA.Id] === 1658);
+				vUnit = cookingUnit || vUnit;
+			}
 			if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || vUnit[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) {
 				return {
 					surface: word,

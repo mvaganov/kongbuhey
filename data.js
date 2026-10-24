@@ -98,6 +98,8 @@
  *    disambiguate homonyms and recognize grammatical particles (e.g. differentiating -(으)로
  *    instrumental particle from noun homonyms, or adnominal endings from connectives).
  *    Strictly NEVER consulted during forward sentence generation.
+ *    Note: Regex for simple patterns. Can be JavaScript expression for complex grammars, like
+ *    `-기 때문에`, `-지 않다`, `-을 수 있다`, etc.
  */
 const DATA_SCHEMA = {
 	Id: 0,
@@ -1152,7 +1154,7 @@ const KR_EN_languageUnits = [
 	[876, "해산물", "seafood", "Noun", ["food", "ingredient", "seafood"], "", "", "class2031", 3, "", "", '{"domain":"food"}', ""],
 	[877, "-만에", "after, for the first time in (time duration)", "Grammar", ["particle", "temporal", "duration"], "", ["{Number:sinoNumber(1,10)}년만에 {VP_AVst}아/어요", "얼마만에 {VP_AVst}아/어요"], "class2031", 2, "", "", '{"logic":"duration","domain":"time"}', ""],
 	[878, "-어 보다 (attempt)", "try doing (attempt)", "Grammar", ["auxiliary_verb", "attempt"], "attempt", ["{VP_AVst}아/어 봐요", "{VP_AVst}아/어 보세요"], "class2031", 2, "", "", '{"logic":"attempt","domain":"action"}', ""],
-	[879, "-어 보다 (experience)", "have tried, experienced (experience)", "Grammar", ["auxiliary_verb", "experience", "aspect"], "experience", ["{VP_AVst}아/어 봤어요"], "class2031", 2, "", "", '{"logic":"experience","domain":"aspect"}', "/*js:matcher*/ ({ isInformal, cleanW2 }) => isInformal && (cleanW2.startsWith('보') || cleanW2.startsWith('봐') || cleanW2 === '본' || cleanW2.startsWith('봤')) ? { span: 2, pattern: '-아/어 보다 (Try doing / experience)', grammar: [{ text: '-아/어 보다', pos: 'Auxiliary Verb', gloss: 'to try doing / experience' }], parseW2Grammar: true } : null"],
+	[879, "-어 보다 (experience)", "have tried, experienced (experience)", "Grammar", ["auxiliary_verb", "experience", "aspect"], "experience", ["{VP_AVst}아/어 봤어요"], "class2031", 2, "", "", '{"logic":"experience","domain":"aspect"}', "/*js:matcher*/ ({ isInformal, cleanW2 }) => isInformal && (cleanW2.startsWith('보') || cleanW2.startsWith('볼') || cleanW2.startsWith('봐') || cleanW2 === '본' || cleanW2.startsWith('봤')) ? { span: 2, pattern: '-아/어 보다 (Try doing / experience)', grammar: [{ text: '-아/어 보다', pos: 'Auxiliary Verb', gloss: 'to try doing / experience' }], parseW2Grammar: true } : null"],
 	[880, "관광지", "tourist attraction, sight", "Noun", ["place", "tourism", "attraction"], "", "", "class2032", 2, "", "", '{"domain":"place"}', ""],
 	[881, "그립다", "to miss, long for", "Descriptive Verb", ["descriptive_person", "emotion", "descriptive_emotion"], "", "b_irregular", "class2032", 2, "", "", "{\"domain\":\"emotion\",\"req\":\"person\",\"polarity\":-1,\"collocation_filter\":\"/*js:filter*/ (n, hasTag) => (hasTag(n, 'person') || hasTag(n, 'place') || ['친구', '고향', '가족', '부모님'].includes(n[1])) && !hasTag(n, 'measureWord')\"}", ""],
 	[882, "기쁘다", "glad, happy", "Descriptive Verb", ["descriptive_person", "emotion", "descriptive_emotion"], "", "eu_irregular", "class2032", 2, "", "", "{\"domain\":\"emotion\",\"req\":\"person\",\"polarity\":1,\"collocation_filter\":\"/*js:filter*/ (n, hasTag) => (hasTag(n, 'person') || hasTag(n, 'emotion') || ['기분', '마음'].includes(n[1])) && !hasTag(n, 'measureWord')\"}", ""],
@@ -2059,7 +2061,16 @@ const KR_EN_languageUnits = [
 	[1783, "중", "middle, among, during", "Noun", ["position", "abstract", "spatialNoun"], "middle, among (cf. monk)", "", "studytext51", 1, "Universal", "", '{"domain":"position"}', ""],
 	[1784, "선택하다", "to choose, select, pick", "Action Verb", ["transitive_general", "action", "cognition"], "", "hada", "studytext51", 1, "", "", '{"domain":"action","req":"object"}', ""],
 	[1785, "시원하다", "to be cool, refreshing", "Descriptive Verb", ["descriptive_general", "feeling", "drink", "temperature"], "", "hada", "studytext51", 1, "", "", '{"domain":"state","attribute":"temperature","polarity":1}', ""],
-	[1786, "인기", "popularity", "Noun", ["concept", "social", "abstract"], "popularity (fame, popularity among people)", "", "studytext51", 1, "Universal", "", '{"domain":"concept"}', ""]
+	[1786, "인기", "popularity", "Noun", ["concept", "social", "abstract"], "popularity (fame, popularity among people)", "", "studytext51", 1, "Universal", "", '{"domain":"concept"}', ""],
+	[1787, "적", "experience, occasion (bound noun in -(으)ㄴ 적이 있다/없다)", "Noun", ["bound_noun", "time", "experience"], "bound noun for past experience", "", "studytext52", 1, "Universal", "", '{"domain":"aspect","type":"bound_noun"}', "{Verb}\\+-(으)ㄴ\\s+_"],
+	[1788, "잔치", "feast, banquet, party", "Noun", ["event", "culture", "food"], "feast, banquet", "", "studytext52", 2, "Universal", "", '{"domain":"culture","type":"event"}', "_\\+{Particle}"],
+	[1789, "당면", "glass noodles, cellophane noodles (sweet potato starch noodles)", "Noun", ["food", "ingredient"], "cellophane noodles", "", "studytext52", 2, "Universal", "", '{"domain":"food","type":"ingredient"}', "_\\+{Particle}"],
+	[1790, "시금치", "spinach", "Noun", ["food", "vegetable", "ingredient"], "spinach", "", "studytext52", 2, "Universal", "", '{"domain":"food","type":"vegetable"}', "_\\+{Particle}"],
+	[1791, "달걀", "egg, hen's egg", "Noun", ["food", "ingredient"], "chicken egg", "", "studytext52", 1, "Universal", "", '{"domain":"food","type":"ingredient"}', "_\\+{Particle}"],
+	[1792, "간장", "soy sauce", "Noun", ["food", "condiment", "ingredient"], "soy sauce", "", "studytext52", 2, "Universal", "", '{"domain":"food","type":"condiment"}', "_\\+{Particle}"],
+	[1793, "끓다", "to boil, bubble (intransitive)", "Action Verb", ["intransitive", "cooking", "water"], "to boil (intransitive)", "regular", "studytext52", 2, "Universal", "", '{"domain":"cooking","type":"intransitive","req":"liquid"}', "{Noun}\\+이/가\\s+_"],
+	[1794, "동안", "during, for, duration of time", "Noun", ["time", "duration", "bound_noun"], "period of time, duration", "", "studytext52", 1, "Universal", "", '{"domain":"time","type":"duration"}', "{Noun:time}\\s+_"],
+	[1795, "담다", "to put into, serve (onto a plate/bowl), fill", "Action Verb", ["transitive_food", "cooking", "action"], "to dish out, put into vessel", "regular", "studytext52", 2, "Universal", "", '{"domain":"cooking","type":"transitive","req":"food"}', "{Noun}\\+을/를\\s+{Noun:container}\\+에\\s+_"]
 ];
 
 // Build the initial cache from the hardcoded array
