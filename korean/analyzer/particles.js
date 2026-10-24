@@ -42,6 +42,7 @@ const PARTICLE_SPECS = Object.freeze([
 	{ text: "와", ids: [1624], desc: "와 (And / With)", batchimReq: false },
 	{ text: "도", ids: [366], desc: "도 (Also / Too)" },
 	{ text: "의", ids: [856, 857], desc: "의 (Possessive / Relation)" },
+	{ text: "보다", ids: [680], desc: "보다 (Comparative particle)" },
 	{ text: "쯤", ids: [653], desc: "쯤 (Approximation particle)" },
 	{ text: "만", ids: [365], desc: "만 (Only)" }
 ]);
