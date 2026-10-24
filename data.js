@@ -19,40 +19,85 @@
  */
 
 /**
- * DATA_SCHEMA - Column indices and specifications for KR_EN_languageUnits.
+ * ============================================================================
+ * ARCHITECTURE & DATA SCHEMA SPECIFICATION
+ * ============================================================================
  *
- * 0. Id (number): Unique sequential primary key (0..N).
- * 1. Korean (string): Surface form or dictionary lemma (with trailing -다 for verbs/adjectives).
- * 2. English (string): English definition and contextual gloss.
- * 3. PartofSpeech (string): Canonical category: "Noun", "Action Verb", "Descriptive Verb",
- *    "Adverb", "Grammar", "Pronoun", "Number", "Exclamation", "Determiner".
- * 4. SemanticTags (string[] / Set<string>):
- *    Lexical & selectional restriction tags (e.g. "transitive_food", "transitive_place",
- *    "descriptive_person", "clothing"). Used during forward sentence generation by
- *    ACTION_VERB_SPECS & DESCRIPTIVE_VERB_SPECS in korean.js to select grammatically
- *    and semantically compatible arguments (e.g. food objects with eating verbs).
- * 5. Disambiguation (string): Contextual discriminator for homonyms (e.g. "snow vs eye").
- * 6. Conjugation (string | string[]):
- *    For verbs/adjectives: Conjugation rule identifier (e.g. "regular", "p_irregular", "stem_vowel_a").
- *    For grammar: Forward expansion template formula(s) (e.g. ["{VP_AVst}으/니까 {Clause}"]).
- * 7. Source (string): Origin curriculum lesson tag (e.g. "SUOBI01", "class2012").
- * 8. PriorityScore (number): TOPIK pedagogical frequency/urgency tier (1 = absolute core, 5 = niche).
- * 9. FormalityLevel (string): Register: "informal_low", "polite", "formal_high", etc.
- * 10. HonorificRules (string): Sociolinguistic constraints and honorific alternatives.
- * 11. SemanticVector (JSON string):
- *     Discourse semantics, state transitions, and sentiment harmony:
- *     - Content Words: {"domain": "...", "polarity": -1|0|1, "req"?: "...", "prod"?: "...", "TODO"?: "..."}
- *       - domain: Semantic sphere (e.g. "food", "motion", "emotion", "state").
- *       - polarity: Sentiment/valence (-1 = negative/problematic, 0 = neutral, 1 = positive/beneficial).
- *       - req / prod: State machine transitions (e.g. 배우다: req "language" -> prod "knowledge").
- *       - TODO: Explanatory note for pending logical constraints to be implemented in generator.
- *     - Grammar Units: {"logic": "cause_effect" | "contrast" | "condition" | "parallel" | "declarative"}
- *       - Used by korean.js to enforce sentiment matching (cause_effect) or divergence (contrast).
- * 12. SyntaxFrame (string):
- *     A regex reverse-grammar-template and valency specification used exclusively for
- *     READING / PARSING text (e.g. in text_analyzer.js). Used to identify, decompose,
- *     and disambiguate language units in context. Strictly NOT used during phrase generation
- *     (phrase generation uses the forward Conjugation formulas).
+ * 1. Dual-Pipeline Architecture
+ * -----------------------------
+ * Kongbuhey operates two complementary linguistic pipelines:
+ *
+ *  [A] Forward Generation Pipeline (korean.js, exhaustive.js):
+ *      - Uses `Conjugation` formulas (e.g. ["{VP_AVst}으/니까 {Clause}"]) to recursively expand templates.
+ *      - Uses `SemanticTags` to select compatible arguments (e.g. food objects with eating verbs).
+ *      - Uses `SemanticVector` to enforce discourse logic and polarity matching (e.g. positive reason with positive outcome).
+ *      - Strictly DOES NOT use `SyntaxFrame`.
+ *
+ *  [B] Reverse Analysis & Ingestion Pipeline (text_analyzer.js):
+ *      - Takes natural Korean study texts and decomposes them using declarative suffix/particle tables sorted by syllable length.
+ *      - Uses `SyntaxFrame` (reverse regex grammar patterns) to disambiguate homonyms and structural roles based on surrounding tokens.
+ *      - Strictly DOES NOT use `Conjugation` expansion formulas.
+ *
+ * 2. DATA_SCHEMA Column Definitions & Primary Consumers
+ * -----------------------------------------------------
+ * Every row in KR_EN_languageUnits is an array formatted according to DATA_SCHEMA:
+ *
+ *  0. Id (number): Unique sequential integer primary key (0..N).
+ *     - Primary Consumer: All tooling, indexing, caching.
+ *  1. Korean (string): Surface form or dictionary lemma (with trailing -다 for verbs/adjectives).
+ *     - Primary Consumer: All tooling.
+ *  2. English (string): English definition, contextual gloss, and explanation.
+ *     - Primary Consumer: UI & Study texts.
+ *  3. PartofSpeech (string): Canonical category: "Noun", "Action Verb", "Descriptive Verb",
+ *     "Adverb", "Grammar", "Pronoun", "Number", "Exclamation", "Determiner".
+ *     - Primary Consumer: Filter & Cache engines.
+ *  4. SemanticTags (string[] / Set<string>): Lexical classification & selectional restriction tags
+ *     (e.g. "transitive_food", "transitive_place", "descriptive_person", "clothing").
+ *     - Primary Consumer: findNounForVerbTag in korean.js.
+ *  5. Disambiguation (string): Short human/LLM label to differentiate homonyms
+ *     (e.g. "snow vs eye", "person/hour counter").
+ *     - Primary Consumer: homonyms.js.
+ *  6. Conjugation (string | string[]): Conjugation rule identifier for verbs/adjectives
+ *     (e.g. "regular", "p_irregular", "stem_vowel_a") or forward template expansion formulas
+ *     for Grammar units (e.g. ["{VP_AVst}으/니까 {Clause}"]).
+ *     - Primary Consumer: korean.js, exhaustive.js.
+ *  7. Source (string): Curriculum origin lesson tag (e.g. "SUOBI01", "class2012").
+ *     - Primary Consumer: Curriculum filters.
+ *  8. PriorityScore (number): TOPIK pedagogical frequency/urgency tier (1 = core vocabulary, 5 = niche).
+ *     - Primary Consumer: Learning order & prioritization.
+ *  9. FormalityLevel (string): Speech register: "informal_low", "polite", "formal_high", etc.
+ *     - Primary Consumer: Morphology engine.
+ * 10. HonorificRules (string): Sociolinguistic constraints and honorific alternatives
+ *     (e.g. replace with 말씀하시다 for respected subjects).
+ *     - Primary Consumer: Honorific generation & concord tests.
+ * 11. SemanticVector (string (JSON)): Discourse semantics, causal state transitions, and sentiment harmony:
+ *     - Grammar units: {"logic": "cause_effect" | "contrast" | "condition" | "parallel" | "declarative"}
+ *     - Content words: {"domain": "...", "polarity": -1|0|1, "req"?: "...", "prod"?: "...", "TODO"?: "..."}
+ *     - Primary Consumer: expandSemanticVerb in korean.js.
+ * 12. SyntaxFrame (string): Regex reverse-grammar collocation template for parsing/reading text.
+ *     - Primary Consumer: text_analyzer.js (strictly not used during phrase generation).
+ *
+ * 3. Deep-Dive: SemanticVector vs. SemanticTags vs. SyntaxFrame
+ * ------------------------------------------------------------
+ *  - SemanticTags (Selectional Restrictions):
+ *    Determines which nouns pair with which verbs/adjectives. Declaratively matched in
+ *    ACTION_VERB_SPECS and DESCRIPTIVE_VERB_SPECS in korean.js.
+ *    Example: 사과 (tag: "food") paired with 먹다 (tag: "transitive_food") produces "사과를 먹다".
+ *
+ *  - SemanticVector (Discourse Flow & State Transitions):
+ *    Controls multi-clause coherence, cause-and-effect transitions, and sentiment consistency:
+ *    * cause_effect (-(으)니까, -아서/어서): Enforces verb.polarity === currentContext.polarity
+ *      (positive reason leads to positive outcome; negative problem leads to negative outcome).
+ *    * contrast (-는데, -지만): Enforces verb.polarity !== currentContext.polarity
+ *      (positive premise leads to negative turn).
+ *    * req / prod: Action chains (e.g. 배우다: req "language" -> prod "knowledge").
+ *    * TODO: Explanatory notes for pending logical constraints to be implemented in generator.
+ *
+ *  - SyntaxFrame (Reading / Parsing Only):
+ *    Collocation regex pattern used exclusively when READING text in text_analyzer.js to
+ *    disambiguate homonyms and recognize grammatical particles (e.g. differentiating -(으)로
+ *    instrumental particle from noun homonyms, or adnominal endings from connectives).
+ *    Strictly NEVER consulted during forward sentence generation.
  */
 const DATA_SCHEMA = {
 	Id: 0,
