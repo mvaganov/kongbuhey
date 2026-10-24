@@ -28,6 +28,8 @@ const PARTICLE_SPECS = Object.freeze([
 	{ text: "으로", ids: [1240, 1241, 1242], desc: "-(으)로 (Direction / Means / Status)", batchimReq: "consonant_not_l" },
 	{ text: "로", ids: [1240, 1241, 1242], desc: "-(으)로 (Direction / Means / Status)", batchimReq: "vowel_or_l" },
 	{ text: "이나", ids: [1333, 1334], desc: "이나 (Choice / Quantity)", batchimReq: true },
+	{ text: "나", ids: [1333, 1334], desc: "(이)나 (Choice / Quantity)", batchimReq: false },
+	{ text: "마다", ids: [1797], desc: "마다 (Each / Every)" },
 	{ text: "이랑", ids: [276], desc: "(이)랑 (And / With)", batchimReq: true },
 	{ text: "랑", ids: [276], desc: "(이)랑 (And / With)", batchimReq: false },
 	{ text: "하고", ids: [367], desc: "하고 (And / With)" },

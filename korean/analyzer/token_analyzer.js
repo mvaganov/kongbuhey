@@ -296,6 +296,25 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 	const adnominalRes = matchAdnominalEnding(word, index);
 	if (adnominalRes) return adnominalRes;
 
+	// 5.5 Prefix Negative Adverb 안 (e.g. 안사먹었는데 -> 안 + 사먹었는데)
+	if (word.startsWith("안") && word.length >= 3 && !vocabByKo.has(word)) {
+		const remainder = word.slice(1);
+		const innerRes = analyzeSingleToken(remainder, prevWord, nextWord, sentenceContext, explicitIndex);
+		if (innerRes && innerRes.category !== "unknown" && innerRes.lexical && (innerRes.lexical.pos === 'Action Verb' || innerRes.lexical.pos === 'Descriptive Verb')) {
+			const anUnit = unitById.get(251);
+			innerRes.surface = word;
+			innerRes.grammar = innerRes.grammar || [];
+			innerRes.grammar.unshift({
+				text: "안",
+				pos: "Negative Adverb",
+				unit: anUnit,
+				missing: !anUnit,
+				gloss: anUnit ? anUnit[DATA_SCHEMA.English] : "not (short negation ID 251)"
+			});
+			return innerRes;
+		}
+	}
+
 	// 6. Noun + Attached Particle Cliticization
 	for (const spec of PARTICLE_SPECS) {
 		if (word.endsWith(spec.text) && word.length > spec.text.length) {

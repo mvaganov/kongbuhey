@@ -67,6 +67,17 @@ function getIndex(languageUnits) {
 			if (sv.field) tags.add(sv.field);
 			if (sv.proximity) tags.add(sv.proximity);
 			if (sv.deictic_type) tags.add(sv.deictic_type);
+			if (Array.isArray(sv.aliases)) {
+				for (const a of sv.aliases) {
+					if (pos === 'Grammar') {
+						if (!grammarByKo.has(a)) grammarByKo.set(a, []);
+						grammarByKo.get(a).push(u);
+					} else {
+						if (!vocabByKo.has(a)) vocabByKo.set(a, []);
+						vocabByKo.get(a).push(u);
+					}
+				}
+			}
 		}
 		semanticTagsByUnitId.set(id, tags);
 
