@@ -54,7 +54,7 @@ const STUDYTEXTS_PATH = path.resolve(__dirname, 'studytexts.js');
 const { validateLanguageUnitSemanticSelection } = require('./select.js');
 
 // Known fully-ingested passages that must ALWAYS have 0 gaps (regression tests)
-const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", "studytext22"];
+const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", "studytext22", "studytext31"];
 
 function failFast(stageName, errorDetail) {
 	console.error(`\n======================================================`);
@@ -301,7 +301,9 @@ try {
 		{ name: "Mood & Negation Concord (F8)", path: path.resolve(__dirname, 'test', 'grammar_mood_test.js') },
 		{ name: "Adverbial Concord (F9)", path: path.resolve(__dirname, 'test', 'adverb_test.js') },
 		{ name: "Clausal Connective Concord (F11)", path: path.resolve(__dirname, 'test', 'clausal_connective_test.js') },
-		{ name: "Dynamic Semantic Sets", path: path.resolve(__dirname, 'test', 'dynamic_semantic_sets_test.js') }
+		{ name: "Dynamic Semantic Sets", path: path.resolve(__dirname, 'test', 'dynamic_semantic_sets_test.js') },
+		{ name: "Pronunciation Exceptions", path: path.resolve(__dirname, 'test', 'pronunciation_exceptions_test.js') },
+		{ name: "English Phonemes Transliteration", path: path.resolve(__dirname, 'test', 'english_phonemes_test.js') }
 	];
 
 	let totalAssertions = 0;

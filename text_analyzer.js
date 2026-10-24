@@ -71,6 +71,7 @@ const PARTICLE_SPECS = [
 	{ text: "에서는", ids: [199, 36], desc: "에서 + 는 (Location topic)" },
 	{ text: "에서도", ids: [199, 366], desc: "에서 + 도 (Location additive)" },
 	{ text: "에는", ids: [132, 36], desc: "에 + 는 (Time/Location topic)" },
+	{ text: "에도", ids: [132, 366], desc: "에 + 도 (Time/Location additive)" },
 	{ text: "에게는", ids: [618, 36], desc: "에게 + 는 (Dative topic)" },
 	{ text: "에서", ids: [199], desc: "에서 (Location of action / source)" },
 	{ text: "에게", ids: [618], desc: "에게 (Dative)" },
@@ -476,6 +477,11 @@ const VERB_SUFFIX_RULES = [
 	{ suffix: "웠어요", stemType: "stem_b_irregular", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
 	{ suffix: "웠지만", stemType: "stem_b_irregular", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
 
+	// Inchoative change of state endings (-아/어지다 + -ㅂ니다)
+	{ suffix: "아집니다", stemType: "stem_da", grammar: [{ text: "-어지다", pos: "Verb Ending", id: 801, gloss: "become / get (ID 801)" }, { text: "-ㅂ니다", pos: "Verb Ending", id: 50, gloss: "formal declarative (ID 50)" }] },
+	{ suffix: "어집니다", stemType: "stem_da", grammar: [{ text: "-어지다", pos: "Verb Ending", id: 801, gloss: "become / get (ID 801)" }, { text: "-ㅂ니다", pos: "Verb Ending", id: 50, gloss: "formal declarative (ID 50)" }] },
+	{ suffix: "해집니다", stemType: "hada", grammar: [{ text: "-어지다", pos: "Verb Ending", id: 801, gloss: "become / get (ID 801)" }, { text: "-ㅂ니다", pos: "Verb Ending", id: 50, gloss: "formal declarative (ID 50)" }] },
+
 	// 3-syllable endings
 	{ suffix: "으려고", stemType: "stem_da", grammar: [{ text: "-(으)려고", pos: "Verb Ending", id: 816, gloss: "intentive 'in order to' (ID 816)" }] },
 	{ suffix: "하려고", stemType: "hada", grammar: [{ text: "-(으)려고", pos: "Verb Ending", id: 816, gloss: "intentive 'in order to' (ID 816)" }] },
@@ -484,6 +490,9 @@ const VERB_SUFFIX_RULES = [
 	{ suffix: "하는데", stemType: "hada", grammar: [{ text: "-는데", pos: "Verb Ending", id: 620, gloss: "background/contrastive (ID 620)" }] },
 	{ suffix: "으면서", stemType: "stem_da", grammar: [{ text: "-(으)면서", pos: "Verb Ending", id: 711, gloss: "while doing (ID 711)" }] },
 	{ suffix: "으니까", stemType: "stem_da", grammar: [{ text: "-(으)니까", pos: "Verb Ending", id: 53, gloss: "since / because (ID 53)" }] },
+	{ suffix: "으러", stemType: "stem_da", grammar: [{ text: "-(으)러", pos: "Verb Ending", id: 485, gloss: "in order to (ID 485)" }] },
+	{ suffix: "하러", stemType: "hada", grammar: [{ text: "-(으)러", pos: "Verb Ending", id: 485, gloss: "in order to (ID 485)" }] },
+	{ suffix: "하거나", stemType: "hada", grammar: [{ text: "-거나", pos: "Verb Ending", id: 1291, gloss: "or (ID 1291)" }] },
 	{ suffix: "하겠습니다", stemType: "stem_da", grammar: [{ text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "-습니다", pos: "Verb Ending", id: 50, gloss: "formal declarative (ID 50)" }] },
 	{ suffix: "하십시오", stemType: "hada", grammar: [{ text: "-(으)십시오", pos: "Verb Ending", id: 1644, gloss: "formal imperative (ID 1644)" }] },
 	{ suffix: "십시오", stemType: "stem_da", grammar: [{ text: "-(으)십시오", pos: "Verb Ending", id: 1644, gloss: "formal imperative (ID 1644)" }] },
@@ -518,6 +527,9 @@ const VERB_SUFFIX_RULES = [
 	{ suffix: "려고", stemType: "stem_da", grammar: [{ text: "-(으)려고", pos: "Verb Ending", id: 816, gloss: "intentive 'in order to' (ID 816)" }] },
 	{ suffix: "지만", stemType: "stem_da", grammar: [{ text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
 	{ suffix: "은데", stemType: "stem_da", grammar: [{ text: "-는데", pos: "Verb Ending", id: 620, gloss: "background/contrastive (ID 620)" }] },
+	{ suffix: "거나", stemType: "stem_da", grammar: [{ text: "-거나", pos: "Verb Ending", id: 1291, gloss: "or (ID 1291)" }] },
+	{ suffix: "하게", stemType: "hada", grammar: [{ text: "-게", pos: "Adverbial Suffix", id: 800, gloss: "in a manner of (ID 800)" }] },
+	{ suffix: "러", stemType: "stem_da", grammar: [{ text: "-(으)러", pos: "Verb Ending", id: 485, gloss: "in order to (ID 485)" }] },
 
 	// Past contracted endings
 	{ suffix: "지만", stemType: "stem_past_contracted", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
@@ -526,7 +538,11 @@ const VERB_SUFFIX_RULES = [
 
 	// 1-syllable endings
 	{ suffix: "해", stemType: "hada_informal", grammar: [{ text: "-아/어", pos: "Verb Ending", id: 459, gloss: "informal / sequential (ID 459)" }] },
-	{ suffix: "실", stemType: "honorific_adnominal", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-(으)ㄹ", pos: "Adnominal Ending", id: 646, gloss: "future/prospective adnominal (ID 646)" }] },
+	{ suffix: "실", stemType: "honorific_adnominal", isAdnominal: true, grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-(으)ㄹ", pos: "Adnominal Ending", id: 646, gloss: "future/prospective adnominal (ID 646)" }] },
+	{ suffix: "신", stemType: "honorific_past_adnominal", isAdnominal: true, grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-(으)ㄴ", pos: "Adnominal Ending", id: 644, gloss: "past adnominal (ID 644)" }] },
+	{ suffix: "본", stemType: "trial_past_adnominal", isAdnominal: true, grammar: [{ text: "-어 보다 (experience)", pos: "Auxiliary Verb", id: 879, gloss: "experience (ID 879)" }, { text: "-(으)ㄴ", pos: "Adnominal Ending", id: 644, gloss: "past adnominal (ID 644)" }] },
+	{ suffix: "운", stemType: "stem_b_irregular", isAdnominal: true, grammar: [{ text: "-(으)ㄴ", pos: "Adnominal Ending", id: 644, gloss: "relative clause (adjective present) (ID 644)" }] },
+	{ suffix: "게", stemType: "stem_da", grammar: [{ text: "-게", pos: "Adverbial Suffix", id: 800, gloss: "in a manner of (ID 800)" }] },
 	{ suffix: "면", stemType: "stem_da", grammar: [{ text: "-(으)면", pos: "Verb Ending", id: 619, gloss: "conditional 'if/when' (ID 619)" }] },
 	{ suffix: "고", stemType: "stem_da", grammar: [{ text: "-고", pos: "Verb Ending", id: 336, gloss: "connective 'and' (ID 336)" }] }
 ].sort((a, b) => b.suffix.length - a.suffix.length);
@@ -535,7 +551,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "") {
 	for (const rule of VERB_SUFFIX_RULES) {
 		if (word.endsWith(rule.suffix)) {
 			let baseVerb = null;
-			let isAdnominal = false;
+			let isAdnominal = rule.isAdnominal || false;
 
 			if (rule.stemType === 'fixed_base') {
 				const root = word.slice(0, -rule.suffix.length);
@@ -557,6 +573,16 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "") {
 				const root = word.slice(0, -rule.suffix.length);
 				baseVerb = root ? root + "하다" : "하다";
 			} else if (rule.stemType === 'honorific_adnominal') {
+				if (word.length <= rule.suffix.length) continue;
+				const root = word.slice(0, -1);
+				baseVerb = root + "다";
+				isAdnominal = true;
+			} else if (rule.stemType === 'honorific_past_adnominal') {
+				if (word.length <= rule.suffix.length) continue;
+				const root = word.slice(0, -1);
+				baseVerb = root + "다";
+				isAdnominal = true;
+			} else if (rule.stemType === 'trial_past_adnominal') {
 				if (word.length <= rule.suffix.length) continue;
 				const root = word.slice(0, -1);
 				baseVerb = root + "다";
@@ -1014,8 +1040,14 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 				continue;
 			}
 
-			const stemUnits = vocabByKo.get(stem) || [];
-			const validNounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+			let validNounUnits = [];
+			if (stem === "씨") {
+				const cUnit = unitById.get(23);
+				if (cUnit) validNounUnits = [cUnit];
+			} else {
+				const stemUnits = vocabByKo.get(stem) || [];
+				validNounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+			}
 			let stemUnit = validNounUnits.length > 0 ? validNounUnits[0] : null;
 
 			let chosenParticleUnit = null;
@@ -1291,7 +1323,7 @@ function analyzeSentence(sentText, sentenceIndex = 1) {
 		}
 
 		// Multi-word pattern 5: -(으)ㄹ 수 있다 / 없다 (Grammar ID 522 / 523)
-		if (cleanW2 === "수" && i + 2 < rawWords.length) {
+		if ((cleanW2 === "수" || cleanW2 === "수도") && i + 2 < rawWords.length) {
 			const w3 = rawWords[i + 2];
 			const cleanW3 = w3.replace(/[^\w가-힣]+/g, '');
 			if (cleanW3.startsWith("있") || cleanW3.startsWith("없")) {
@@ -1300,20 +1332,27 @@ function analyzeSentence(sentText, sentenceIndex = 1) {
 				const a1 = analyzeSingleToken(w1, i > 0 ? rawWords[i - 1] : "", w2, sentenceContext);
 				let endingDesc = cleanW3.endsWith("는") ? "-는 (Adnominal Ending, ID 645)" :
 					cleanW3.endsWith("습니다") ? "-습니다 (Formal declarative, ID 50)" :
-					cleanW3.endsWith("어요") ? "-아/어요 (Polite informal, ID 49)" : cleanW3;
+					cleanW3.endsWith("어요") ? "-아/어요 (Polite informal, ID 49)" :
+					cleanW3.endsWith("고") ? "-고 (Connective, ID 336)" : cleanW3;
 				let endingUnit = cleanW3.endsWith("는") ? unitById.get(645) :
 					cleanW3.endsWith("습니다") ? unitById.get(50) :
-					cleanW3.endsWith("어요") ? unitById.get(49) : null;
+					cleanW3.endsWith("어요") ? unitById.get(49) :
+					cleanW3.endsWith("고") ? unitById.get(336) : null;
+
+				const gList = [
+					{ text: isNegative ? "-(으)ㄹ 수 없다" : "-(으)ㄹ 수 있다", pos: "Grammar Pattern", unit: gUnit, gloss: gUnit[DATA_SCHEMA.English] }
+				];
+				if (cleanW2 === "수도") {
+					gList.push({ text: "도", pos: "Particle", unit: unitById.get(366), gloss: "also/too (ID 366)" });
+				}
+				gList.push({ text: endingDesc.split(' ')[0], pos: "Verb Ending", unit: endingUnit, gloss: endingDesc });
 
 				tokens.push({
 					surface: `${w1} ${w2} ${w3}`,
 					category: "auxiliary_construction",
 					pattern: isNegative ? "-(으)ㄹ 수 없다 (Cannot do)" : "-(으)ㄹ 수 있다 (Can do)",
 					lexical: a1 ? a1.lexical : null,
-					grammar: [
-						{ text: isNegative ? "-(으)ㄹ 수 없다" : "-(으)ㄹ 수 있다", pos: "Grammar Pattern", unit: gUnit, gloss: gUnit[DATA_SCHEMA.English] },
-						{ text: endingDesc.split(' ')[0], pos: "Verb Ending", unit: endingUnit, gloss: endingDesc }
-					]
+					grammar: gList
 				});
 				i += 3;
 				continue;
@@ -1389,7 +1428,7 @@ function analyzeSentence(sentText, sentenceIndex = 1) {
 		}
 
 		// Multi-word pattern 9: -아/어 주다 / 드리다 (Benefactive Auxiliary)
-		if ((w1.endsWith("해") || w1.endsWith("아") || w1.endsWith("어")) && (cleanW2.startsWith("주") || cleanW2.startsWith("드리"))) {
+		if ((w1.endsWith("해") || w1.endsWith("아") || w1.endsWith("어")) && (cleanW2.startsWith("주") || cleanW2.startsWith("줘") || cleanW2.startsWith("드리"))) {
 			const a1 = analyzeSingleToken(w1, i > 0 ? rawWords[i - 1] : "", w2, sentenceContext);
 			const isHonorific = cleanW2.startsWith("드리");
 			const auxVerb = isHonorific ? unitById.get(591) : unitById.get(322); // 드리다 or 주다

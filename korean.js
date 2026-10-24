@@ -58,6 +58,8 @@ const grammarTags = require('./korean/constants/tags.js');
 // 2. Core Engines
 const numbers = require('./korean/core/numbers.js');
 const morphology = require('./korean/core/morphology.js');
+const phonetics = require('./korean/phonetics/pronunciation.js');
+const englishPhonemes = require('./korean/phonetics/english_phonemes.js');
 
 // 3. Declarative Specs & Evaluators
 const verbSpecs = require('./korean/specs/verb_argument_specs.js');
@@ -172,8 +174,13 @@ const exportedMembers = {
 	deduplicateTokenOptions: numbers.deduplicateTokenOptions,
 
 	// Morphology & Pronunciation
-	getPronunciationWord: morphology.getPronunciationWord,
-	getPronunciation: morphology.getPronunciation,
+	getPronunciationWord: phonetics.getPronunciationWord,
+	getPronunciation: phonetics.getPronunciation,
+	toEnglishPhonemes: englishPhonemes.toEnglishPhonemes,
+	transliterateSyllable: englishPhonemes.transliterateSyllable,
+	ONSET_EN: englishPhonemes.ONSET_EN,
+	NUCLEUS_EN: englishPhonemes.NUCLEUS_EN,
+	CODA_EN: englishPhonemes.CODA_EN,
 	applyMorphology: morphology.applyMorphology,
 	attachParticle: morphology.attachParticle,
 	getConjugatedStem: morphology.getConjugatedStem,
@@ -333,6 +340,15 @@ const exportedMembers = {
 	DESCRIPTIVE_VERB_SPECS: verbSpecs.DESCRIPTIVE_VERB_SPECS,
 	parseAndValidateCollocationFilter: filterEvaluator.parseAndValidateCollocationFilter,
 	compileCollocationFilter: filterEvaluator.compileCollocationFilter,
+	DOUBLE_CODA_VERB_EXCEPTIONS: pronunciationSpecs.DOUBLE_CODA_VERB_EXCEPTIONS,
+	SUBSTANTIVE_BOUNDARY_EXCEPTIONS: pronunciationSpecs.SUBSTANTIVE_BOUNDARY_EXCEPTIONS,
+	SINO_NON_LATERALIZING_COMPOUNDS: pronunciationSpecs.SINO_NON_LATERALIZING_COMPOUNDS,
+	PASSIVE_CAUSATIVE_GI_VERBS: pronunciationSpecs.PASSIVE_CAUSATIVE_GI_VERBS,
+	REDUPLICATED_HANJA_WORDS: pronunciationSpecs.REDUPLICATED_HANJA_WORDS,
+	SAISORI_COMPOUND_MAP: pronunciationSpecs.SAISORI_COMPOUND_MAP,
+	N_INSERTION_COMPOUNDS: pronunciationSpecs.N_INSERTION_COMPOUNDS,
+	NON_N_INSERTION_WORDS: pronunciationSpecs.NON_N_INSERTION_WORDS,
+	LETTER_NAME_EXCEPTIONS: pronunciationSpecs.LETTER_NAME_EXCEPTIONS,
 
 	// Templates & Generation
 	getTokenOptions: templateEngine.getTokenOptions,

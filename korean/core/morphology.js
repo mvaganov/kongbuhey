@@ -49,6 +49,9 @@ const { ACTION_VERB_SPECS, DESCRIPTIVE_VERB_SPECS } =
 const { parseAndValidateCollocationFilter } =
 	(typeof require !== 'undefined' ? require('../utils/filter_evaluator.js') : window);
 
+const { getPronunciationWord, getPronunciation } =
+	(typeof require !== 'undefined' ? require('../phonetics/pronunciation.js') : window);
+
 // Concord repair delegators (dynamically resolved or injected to avoid circular dependency)
 let concordRepairs = {
 	applyCounterConcord: (t) => {
@@ -89,147 +92,8 @@ function registerConcordRepairs(repairs) {
 
 // =========================================================================
 // Standard Korean Pronunciation (표준 발음법) Engine
+// (Delegated to specialized module korean/phonetics/pronunciation.js)
 // =========================================================================
-
-function getPronunciationWord(word) {
-	const chars = [];
-	const hangulIndices = [];
-	for (let i = 0; i < word.length; i++) {
-		const d = decomposeHangul(word[i]);
-		if (d) { chars.push(d); hangulIndices.push(chars.length - 1); }
-		else { chars.push(word[i]); }
-	}
-	if (hangulIndices.length === 0) return word;
-
-	const H = hangulIndices.map(idx => chars[idx]);
-	const originalSyllables = hangulIndices.map(idx => word[idx]);
-
-	// Pass 1: Consonant + ㅢ -> ㅣ
-	for (let i = 0; i < H.length; i++) {
-		if (H[i].initial !== 11 && H[i].medial === 19) H[i].medial = 20;
-	}
-
-	// Pass 2: Palatalization
-	for (let i = 0; i < H.length - 1; i++) {
-		const cur = H[i], next = H[i + 1];
-		if (next.initial === 11 && (next.medial === 20 || next.medial === 6)) {
-			if (cur.final === 7) { cur.final = 0; next.initial = 12; }
-			else if (cur.final === 25) { cur.final = 0; next.initial = 14; }
-			else if (cur.final === 13) { cur.final = 8; next.initial = 14; }
-		} else if (next.initial === 18 && (next.medial === 20 || next.medial === 6) && cur.final === 7) {
-			cur.final = 0; next.initial = 14;
-		}
-	}
-
-	// Pass 3: ㅎ assimilation & merging
-	for (let i = 0; i < H.length - 1; i++) {
-		const cur = H[i], next = H[i + 1];
-		if (cur.final === 27 || cur.final === 6 || cur.final === 15) {
-			const isH = cur.final === 27, isNh = cur.final === 6;
-			const baseFinal = isH ? 0 : (isNh ? 4 : 8);
-			if (next.initial === 11) {
-				cur.final = 0;
-				if (!isH) next.initial = isNh ? 2 : 5;
-			} else if (next.initial === 0) { cur.final = baseFinal; next.initial = 15; }
-			else if (next.initial === 3) { cur.final = baseFinal; next.initial = 16; }
-			else if (next.initial === 12) { cur.final = baseFinal; next.initial = 14; }
-			else if (next.initial === 9) { cur.final = baseFinal; next.initial = 10; }
-			else if (next.initial === 2) {
-				cur.final = isH ? 4 : baseFinal;
-				if (!isH && !isNh) next.initial = 5;
-			}
-		} else if (next.initial === 18 && H_ONSET_MAP[cur.final]) {
-			[cur.final, next.initial] = H_ONSET_MAP[cur.final];
-		}
-	}
-
-	// Pass 4: ㅅ/ㅆ coda before ㅅ onset
-	for (let i = 0; i < H.length - 1; i++) {
-		const cur = H[i], next = H[i + 1];
-		if ((cur.final === 19 || cur.final === 20) && next.initial === 9) {
-			cur.final = 0; next.initial = 10;
-		} else if (cur.final === 18 && next.initial === 9) {
-			cur.final = 17; next.initial = 10;
-		}
-	}
-
-	// Pass 5: Liaison
-	for (let i = 0; i < H.length - 1; i++) {
-		const cur = H[i], next = H[i + 1];
-		if (cur.final > 0 && cur.final !== 21 && next.initial === 11) {
-			if (FINAL_TO_INITIAL[cur.final] !== undefined) {
-				next.initial = FINAL_TO_INITIAL[cur.final];
-				cur.final = 0;
-			} else if (DOUBLE_CODA_LIAISON[cur.final]) {
-				[cur.final, next.initial] = DOUBLE_CODA_LIAISON[cur.final];
-			}
-		}
-	}
-
-	// Pass 6: Coda Simplification / Neutralization
-	for (let i = 0; i < H.length; i++) {
-		const cur = H[i], next = (i < H.length - 1) ? H[i + 1] : null;
-		if (cur.final > 0) {
-			if (DOUBLE_CODA_SIMPLIFY[cur.final]) {
-				cur.final = DOUBLE_CODA_SIMPLIFY[cur.final];
-			} else if (cur.final === 11) {
-				cur.final = originalSyllables[i] === '밟' ? 17 : 8;
-			} else if (cur.final === 9) {
-				cur.final = (next && next.initial === 0) ? 8 : 1;
-			}
-
-			if (cur.final === 2 || cur.final === 24) cur.final = 1;
-			else if ([19, 20, 22, 23, 25, 27].includes(cur.final)) cur.final = 7;
-			else if (cur.final === 26) cur.final = 17;
-		}
-	}
-
-	// Pass 7: Tensification
-	for (let i = 0; i < H.length - 1; i++) {
-		const cur = H[i], next = H[i + 1];
-		if (cur.final === 1 || cur.final === 7 || cur.final === 17) {
-			if (TENSIFY_INITIAL[next.initial] !== undefined) next.initial = TENSIFY_INITIAL[next.initial];
-		} else if ((cur.final === 4 || cur.final === 16) && NASAL_VERB_ROOTS.has(originalSyllables[i])) {
-			const nextOrig = decomposeHangul(originalSyllables[i + 1]);
-			if (nextOrig && nextOrig.initial !== 11 && TENSIFY_INITIAL[next.initial] !== undefined) {
-				next.initial = TENSIFY_INITIAL[next.initial];
-			}
-		} else if (cur.final === 8) {
-			if (next.initial === 0 && next.medial === 4) next.initial = 1;
-			else if (next.initial === 9 && next.medial === 13) next.initial = 10;
-			else if (next.initial === 12 && next.medial === 13) next.initial = 13;
-		}
-	}
-
-	// Pass 8: Nasalization
-	for (let i = 0; i < H.length - 1; i++) {
-		const cur = H[i], next = H[i + 1];
-		if (next.initial === 5) {
-			if (cur.final === 16 || cur.final === 21) next.initial = 2;
-			else if (NASAL_CODA[cur.final]) { cur.final = NASAL_CODA[cur.final]; next.initial = 2; }
-		}
-		if ((next.initial === 2 || next.initial === 6) && NASAL_CODA[cur.final]) {
-			cur.final = NASAL_CODA[cur.final];
-		}
-	}
-
-	// Pass 9: Lateralization
-	for (let i = 0; i < H.length - 1; i++) {
-		const cur = H[i], next = H[i + 1];
-		if (cur.final === 4 && next.initial === 5) cur.final = 8;
-		else if (cur.final === 8 && next.initial === 2) next.initial = 5;
-	}
-
-	for (let i = 0; i < hangulIndices.length; i++) {
-		chars[hangulIndices[i]] = composeHangul(H[i].initial, H[i].medial, H[i].final);
-	}
-	return chars.join('');
-}
-
-function getPronunciation(text) {
-	if (!text || typeof text !== 'string') return text;
-	return text.replace(/([가-힣]+)/g, m => getPronunciationWord(m));
-}
 
 // =========================================================================
 // Morphology & Phonological Attachment
