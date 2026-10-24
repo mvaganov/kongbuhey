@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-23T18:40:46.537Z",
-  "totalUnits": 1747,
-  "validVectorCount": 1747,
+  "generatedAt": "2026-10-24T06:48:40.752Z",
+  "totalUnits": 1759,
+  "validVectorCount": 1759,
   "partsOfSpeech": [
     "Action Verb",
     "Adverb",
@@ -14,13 +14,13 @@
     "Pronoun"
   ],
   "posCounts": {
-    "Noun": 909,
+    "Noun": 919,
     "Pronoun": 35,
     "Exclamation": 16,
     "Descriptive Verb": 124,
     "Grammar": 179,
     "Action Verb": 326,
-    "Adverb": 88,
+    "Adverb": 90,
     "Number": 66,
     "Determiner": 4
   },
@@ -144,6 +144,7 @@
     "conjecture",
     "conjunction",
     "connective",
+    "connective_adverb",
     "container",
     "contest",
     "continent",
@@ -227,6 +228,7 @@
     "exclamation",
     "exclamatory",
     "exclusive",
+    "exercise",
     "existence",
     "experience",
     "eyewear",
@@ -287,6 +289,7 @@
     "immediate_sequence",
     "imperative",
     "inability",
+    "inanimate",
     "inanimate_institution",
     "inchoative",
     "inclusive",
@@ -422,6 +425,7 @@
     "plan",
     "plant",
     "plural",
+    "point_in_time",
     "polite",
     "polite_informal",
     "position",
@@ -482,6 +486,7 @@
     "sentence_ending",
     "sequence",
     "sequential",
+    "service",
     "shape",
     "shop",
     "short_negation",
@@ -623,7 +628,7 @@
     "writingTool"
   ],
   "tagCounts": {
-    "person": 87,
+    "person": 88,
     "nationality": 2,
     "attribute": 15,
     "koreanRoot": 9,
@@ -633,7 +638,7 @@
     "greeting": 9,
     "descriptive_person": 36,
     "emotion": 26,
-    "place": 163,
+    "place": 168,
     "country": 13,
     "devtest": 49,
     "questionWord": 19,
@@ -658,9 +663,9 @@
     "food_adjective": 1,
     "descriptive_taste": 5,
     "intransitive_motion": 14,
-    "locative_goal": 18,
+    "locative_goal": 22,
     "motion_concord": 13,
-    "time": 122,
+    "time": 123,
     "temporal_present": 13,
     "no_time_particle": 21,
     "temporal_future": 13,
@@ -676,7 +681,7 @@
     "sequential": 3,
     "causal": 9,
     "clausal_connective": 17,
-    "adverb": 35,
+    "adverb": 37,
     "modifier": 6,
     "room": 10,
     "demonstrative": 24,
@@ -695,7 +700,7 @@
     "book": 6,
     "reading": 7,
     "existence": 2,
-    "locative_static": 11,
+    "locative_static": 15,
     "negation_suppletive": 2,
     "negation_suppletion": 2,
     "writingTool": 2,
@@ -705,7 +710,7 @@
     "inanimate_institution": 27,
     "position": 17,
     "plant": 4,
-    "nature": 29,
+    "nature": 31,
     "flower": 4,
     "shop": 5,
     "sports": 23,
@@ -716,7 +721,7 @@
     "quantity": 14,
     "descriptive_acoustic": 2,
     "size": 2,
-    "location": 4,
+    "location": 5,
     "language": 9,
     "transitive_general": 151,
     "transitive_language": 1,
@@ -730,7 +735,7 @@
     "transitive_writing": 1,
     "transitive_reading": 1,
     "transitive_clothing": 2,
-    "activity": 54,
+    "activity": 56,
     "entertainment": 10,
     "transitive_activity": 1,
     "wellness": 1,
@@ -742,7 +747,7 @@
     "residence": 2,
     "building": 3,
     "work": 6,
-    "city": 5,
+    "city": 6,
     "descriptive_place": 7,
     "descriptive_difficulty": 3,
     "descriptive_dimension_spatial": 2,
@@ -755,7 +760,7 @@
     "descriptive_cleanliness": 2,
     "descriptive_person_trait": 12,
     "location_action": 1,
-    "direction": 12,
+    "direction": 13,
     "number": 22,
     "attributive": 10,
     "time_amount": 1,
@@ -770,7 +775,7 @@
     "evening": 1,
     "sinoNumber": 29,
     "education": 17,
-    "communication": 36,
+    "communication": 37,
     "task": 3,
     "sinoMeasureWord": 16,
     "transitive_information": 1,
@@ -786,7 +791,7 @@
     "meat": 9,
     "koreanFood": 8,
     "transitive_food": 6,
-    "adverb_discourse": 10,
+    "adverb_discourse": 11,
     "discourse": 28,
     "conditional": 3,
     "fruit": 8,
@@ -799,7 +804,7 @@
     "descriptive_dimension_length": 2,
     "kitchen": 2,
     "transitive_drink": 2,
-    "adverb_manner": 25,
+    "adverb_manner": 26,
     "manner": 21,
     "social": 45,
     "accompaniment": 1,
@@ -815,7 +820,7 @@
     "celebration": 2,
     "holiday": 12,
     "weekday": 5,
-    "leisure": 18,
+    "leisure": 19,
     "hygiene": 6,
     "sequence": 3,
     "transitive_teeth": 1,
@@ -830,13 +835,13 @@
     "waterSports": 2,
     "winterSports": 3,
     "fitness": 1,
-    "transportation": 37,
-    "vehicle": 16,
+    "transportation": 38,
+    "vehicle": 17,
     "descriptive_price": 2,
     "descriptive_speed": 2,
     "transitive_sports": 2,
     "transitive_transportation": 2,
-    "outdoor": 1,
+    "outdoor": 2,
     "transitive_room": 1,
     "sideDish": 1,
     "family": 34,
@@ -849,10 +854,10 @@
     "volitional": 2,
     "temporal_past": 13,
     "time_modifier": 3,
-    "duration": 17,
+    "duration": 18,
     "music": 8,
     "document": 19,
-    "commercial": 13,
+    "commercial": 14,
     "adverb_time": 12,
     "medical": 5,
     "clothing": 38,
@@ -863,16 +868,16 @@
     "descriptive_emotion": 11,
     "interjection": 5,
     "history": 3,
-    "beverage": 4,
+    "beverage": 5,
     "promise": 2,
     "purpose": 2,
     "motion_purpose": 1,
     "school": 2,
-    "concept": 48,
+    "concept": 49,
     "academic": 40,
     "honorificVerb": 7,
     "snack": 2,
-    "hobby": 3,
+    "hobby": 4,
     "ability": 3,
     "inability": 3,
     "action_verb_only": 4,
@@ -881,7 +886,7 @@
     "economy": 5,
     "footwear": 8,
     "headwear": 6,
-    "tool": 3,
+    "tool": 4,
     "descriptive_dimension_weight": 2,
     "descriptive_dimension_thickness": 2,
     "superlative": 3,
@@ -954,7 +959,7 @@
     "island": 2,
     "rural": 1,
     "color": 12,
-    "mountain": 1,
+    "mountain": 2,
     "coast": 1,
     "ingredient": 4,
     "seafood": 1,
@@ -1021,7 +1026,7 @@
     "shape": 1,
     "order": 6,
     "appearance": 1,
-    "emphasis": 3,
+    "emphasis": 4,
     "grammar": 43,
     "pet": 2,
     "action": 4,
@@ -1078,7 +1083,7 @@
     "stationery": 3,
     "aviation": 3,
     "disjunctive": 1,
-    "place_indoor": 5,
+    "place_indoor": 6,
     "geography": 8,
     "temporal_relation": 16,
     "intransitive_social": 2,
@@ -1089,7 +1094,7 @@
     "anatomy": 5,
     "health": 37,
     "conflict": 1,
-    "place_outdoor": 1,
+    "place_outdoor": 4,
     "date": 1,
     "state": 7,
     "bound_noun": 8,
@@ -1124,7 +1129,7 @@
     "body": 1,
     "cosmetics": 2,
     "summer": 1,
-    "proper_noun": 9,
+    "proper_noun": 12,
     "concession": 1,
     "compromise": 1,
     "necessity": 1,
@@ -1190,7 +1195,7 @@
     "day": 1,
     "song": 1,
     "interest": 1,
-    "name": 5,
+    "name": 6,
     "formal_polite": 2,
     "exclamatory": 1,
     "sentence_ender": 1,
@@ -1218,7 +1223,12 @@
     "negative_outcome": 2,
     "same_subject": 1,
     "accidental": 1,
-    "formal_written": 1
+    "formal_written": 1,
+    "point_in_time": 1,
+    "service": 1,
+    "exercise": 1,
+    "inanimate": 1,
+    "connective_adverb": 1
   },
   "honorificRules": [
     "Action verbs only; identical subject required; negative outcome in second clause; no past tense in first clause",
@@ -1401,6 +1411,7 @@
       "target_pos",
       "tense",
       "traits",
+      "type",
       "value"
     ],
     "domains": [
@@ -1443,6 +1454,7 @@
       "economy",
       "education",
       "emotion",
+      "emphasis",
       "entertainment",
       "entity",
       "evaluation",
@@ -1452,6 +1464,7 @@
       "food",
       "frequency",
       "furniture",
+      "geography",
       "grammar",
       "health",
       "history",
@@ -1459,6 +1472,7 @@
       "hygiene",
       "identify",
       "information",
+      "institution",
       "intensity",
       "language",
       "leisure",
@@ -1493,6 +1507,7 @@
       "sequence",
       "simultaneous",
       "social",
+      "space",
       "spatial",
       "speech",
       "sport",
@@ -1505,13 +1520,27 @@
       "traffic",
       "transaction",
       "transformation",
+      "transport",
       "transportation",
       "travel",
       "utility",
       "weather",
       "workplace"
     ],
-    "types": [],
+    "types": [
+      "addition",
+      "beach",
+      "cafe",
+      "city",
+      "direction",
+      "duration",
+      "guidance",
+      "mountain",
+      "necessity",
+      "person_name",
+      "sports",
+      "vehicle"
+    ],
     "polarities": [
       -1,
       0,
@@ -1749,6 +1778,7 @@
         "economy",
         "education",
         "emotion",
+        "emphasis",
         "entertainment",
         "entity",
         "evaluation",
@@ -1758,6 +1788,7 @@
         "food",
         "frequency",
         "furniture",
+        "geography",
         "grammar",
         "health",
         "history",
@@ -1765,6 +1796,7 @@
         "hygiene",
         "identify",
         "information",
+        "institution",
         "intensity",
         "language",
         "leisure",
@@ -1799,6 +1831,7 @@
         "sequence",
         "simultaneous",
         "social",
+        "space",
         "spatial",
         "speech",
         "sport",
@@ -1811,6 +1844,7 @@
         "traffic",
         "transaction",
         "transformation",
+        "transport",
         "transportation",
         "travel",
         "utility",
@@ -2318,6 +2352,20 @@
         "paper",
         "pet"
       ],
+      "type": [
+        "addition",
+        "beach",
+        "cafe",
+        "city",
+        "direction",
+        "duration",
+        "guidance",
+        "mountain",
+        "necessity",
+        "person_name",
+        "sports",
+        "vehicle"
+      ],
       "value": [
         0,
         1,
@@ -2384,7 +2432,9 @@
         "traits": []
       },
       "social": {
-        "types": [],
+        "types": [
+          "person_name"
+        ],
         "actions": [],
         "traits": []
       },
@@ -2409,7 +2459,9 @@
         "traits": []
       },
       "time": {
-        "types": [],
+        "types": [
+          "duration"
+        ],
         "actions": [],
         "traits": []
       },
@@ -2454,7 +2506,10 @@
         "traits": []
       },
       "activity": {
-        "types": [],
+        "types": [
+          "guidance",
+          "sports"
+        ],
         "actions": [],
         "traits": []
       },
@@ -2499,7 +2554,9 @@
         "traits": []
       },
       "discourse": {
-        "types": [],
+        "types": [
+          "addition"
+        ],
         "actions": [],
         "traits": []
       },
@@ -2901,6 +2958,43 @@
       },
       "book": {
         "types": [],
+        "actions": [],
+        "traits": []
+      },
+      "geography": {
+        "types": [
+          "beach",
+          "city",
+          "mountain"
+        ],
+        "actions": [],
+        "traits": []
+      },
+      "space": {
+        "types": [
+          "direction"
+        ],
+        "actions": [],
+        "traits": []
+      },
+      "transport": {
+        "types": [
+          "vehicle"
+        ],
+        "actions": [],
+        "traits": []
+      },
+      "institution": {
+        "types": [
+          "cafe"
+        ],
+        "actions": [],
+        "traits": []
+      },
+      "emphasis": {
+        "types": [
+          "necessity"
+        ],
         "actions": [],
         "traits": []
       }

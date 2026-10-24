@@ -232,10 +232,12 @@
 			font-weight: 700;
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
-			margin-bottom: 0.4rem;
+			margin-bottom: 0.5rem;
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
+			flex-wrap: wrap;
+			gap: 0.5rem;
 		}
 
 		.pipeline-label.hangul { color: var(--accent-teal); }
@@ -245,13 +247,97 @@
 			font-size: 1.15rem;
 			line-height: 1.6;
 			word-break: break-word;
+			min-height: 80px;
+			display: flex;
+			align-items: center;
 		}
 
-		.pipeline-content.english-phonemes {
+		.pipeline-textarea {
+			width: 100%;
+			min-height: 85px;
+			background: rgba(11, 15, 25, 0.6);
+			border: 1px solid rgba(139, 92, 246, 0.35);
+			border-radius: var(--radius-md);
 			color: #c4b5fd;
 			font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 			font-size: 1.05rem;
 			letter-spacing: 0.02em;
+			padding: 0.75rem 0.9rem;
+			line-height: 1.6;
+			resize: vertical;
+			outline: none;
+			transition: var(--transition);
+		}
+
+		.pipeline-textarea:focus {
+			border-color: var(--accent-purple);
+			box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+			background: rgba(11, 15, 25, 0.85);
+		}
+
+		.pipeline-textarea.modified {
+			border-color: rgba(245, 158, 11, 0.6);
+			background: rgba(245, 158, 11, 0.05);
+			color: #fef08a;
+		}
+
+		.pipeline-textarea.modified:focus {
+			box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+		}
+
+		.status-pill {
+			font-size: 0.68rem;
+			font-weight: 700;
+			padding: 0.15rem 0.5rem;
+			border-radius: 9999px;
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.25rem;
+		}
+
+		.status-pill.auto {
+			background: rgba(139, 92, 246, 0.18);
+			border: 1px solid rgba(139, 92, 246, 0.35);
+			color: #d8b4fe;
+		}
+
+		.status-pill.custom {
+			background: rgba(245, 158, 11, 0.18);
+			border: 1px solid rgba(245, 158, 11, 0.4);
+			color: #fbbf24;
+		}
+
+		.btn-micro {
+			background: rgba(255, 255, 255, 0.08);
+			border: 1px solid rgba(255, 255, 255, 0.15);
+			color: var(--text-secondary);
+			padding: 0.25rem 0.6rem;
+			border-radius: 6px;
+			font-size: 0.75rem;
+			font-weight: 600;
+			cursor: pointer;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.3rem;
+			transition: var(--transition);
+		}
+
+		.btn-micro:hover {
+			background: rgba(255, 255, 255, 0.16);
+			color: var(--text-primary);
+		}
+
+		.btn-micro.active-revert {
+			background: rgba(245, 158, 11, 0.15);
+			border-color: rgba(245, 158, 11, 0.4);
+			color: #fbbf24;
+		}
+
+		.btn-micro.active-revert:hover {
+			background: rgba(245, 158, 11, 0.25);
+			color: #fef08a;
 		}
 
 		/* Controls */
@@ -310,6 +396,17 @@
 		.btn-primary:hover {
 			transform: translateY(-2px);
 			box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+		}
+
+		.btn-teal {
+			background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+			color: white;
+			box-shadow: 0 4px 14px rgba(6, 182, 212, 0.4);
+		}
+
+		.btn-teal:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 20px rgba(6, 182, 212, 0.5);
 		}
 
 		.btn-secondary {
@@ -402,18 +499,31 @@
 			<div class="pipeline-display">
 				<div class="pipeline-box">
 					<div class="pipeline-label hangul">
-						<span>Stage 1: Standard Phonetic Hangul</span>
-						<span style="font-size: 0.7rem; color: var(--text-muted);">국립국어원 표준발음법</span>
+						<div style="display: flex; align-items: center; gap: 0.5rem;">
+							<span>Stage 1: Standard Phonetic Hangul</span>
+							<span style="font-size: 0.7rem; color: var(--text-muted); font-weight: normal;">국립국어원 표준발음법</span>
+						</div>
+						<button id="copyStage1Btn" class="btn-micro" title="Copy Stage 1 phonetic Hangul">📋 Copy</button>
 					</div>
 					<div class="pipeline-content" id="standardPhoneticDisplay">-</div>
 				</div>
 
 				<div class="pipeline-box highlight">
 					<div class="pipeline-label phonetic">
-						<span>Stage 2: English TTS Phonetic Script</span>
-						<span style="font-size: 0.7rem; color: var(--accent-purple);">English Voice Transliteration</span>
+						<div style="display: flex; align-items: center; gap: 0.5rem;">
+							<span>Stage 2: English/European TTS Phonetic Script</span>
+							<span id="phonemeStatusBadge" class="status-pill auto">⚡ Auto</span>
+						</div>
+						<div style="display: flex; gap: 0.4rem; align-items: center;">
+							<button id="copyPhonemesBtn" class="btn-micro" title="Copy phonemes to clipboard">📋 Copy</button>
+							<button id="revertPhonemesBtn" class="btn-micro" title="Revert to auto-generated phonemes" style="display: none;">↺ Revert</button>
+						</div>
 					</div>
-					<div class="pipeline-content english-phonemes" id="englishPhonemesDisplay">-</div>
+					<textarea id="englishPhonemesInput" class="pipeline-textarea" placeholder="Phonetic transliteration will appear here..." spellcheck="false"></textarea>
+					<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem; display: flex; justify-content: space-between; align-items: center;">
+						<span>💡 Directly edit above to test custom spellings</span>
+						<span id="phonemeHintDisplay" style="color: var(--accent-purple);">Click Revert to restore auto</span>
+					</div>
 				</div>
 			</div>
 
@@ -428,6 +538,15 @@
 					<option value="">Loading system voices...</option>
 				</select>
 				<div class="voice-status" id="voiceStatus">Detecting available voices...</div>
+			</div>
+
+			<div class="input-group">
+				<label for="styleSelect">Transliteration Style (for Synthesis)</label>
+				<select id="styleSelect">
+					<option value="natural" selected>Natural Words (Recommended: Annyeong haseyo - Prevents Acronym Spelling & Stutters)</option>
+					<option value="hyphenated">Hyphenated Syllables (An-nyeong ha-se-yo)</option>
+					<option value="spaced">Spaced Syllables (An nyeong ha se yo)</option>
+				</select>
 			</div>
 
 			<div class="controls-grid">
@@ -459,6 +578,10 @@
 			<div class="action-row">
 				<button class="btn btn-primary" id="speakEnglishBtn">
 					<span>▶️ Speak via English Voice</span>
+				</button>
+
+				<button class="btn btn-teal" id="speakStage1Btn">
+					<span>⚡ Speak Stage 1</span>
 				</button>
 
 				<button class="btn btn-secondary" id="speakNativeBtn">
@@ -673,37 +796,14 @@
 		}
 
 		// =========================================================================
-		// 2. Korean-to-English Phoneme Transliteration Engine (for English TTS)
+		// =========================================================================
+		// 2. Korean-to-English Phoneme Transliteration Engine (for Speech Synthesis)
 		// =========================================================================
 
 		const ONSET_EN = {
-			0: 'g', 1: 'kk', 2: 'n', 3: 'd', 4: 'tt', 5: 'r', 6: 'm',
-			7: 'b', 8: 'pp', 9: 's', 10: 'ss', 11: '', 12: 'j', 13: 'jj',
+			0: 'g', 1: 'k', 2: 'n', 3: 'd', 4: 't', 5: 'r', 6: 'm',
+			7: 'b', 8: 'p', 9: 's', 10: 's', 11: '', 12: 'j', 13: 'j',
 			14: 'ch', 15: 'k', 16: 't', 17: 'p', 18: 'h'
-		};
-
-		const NUCLEUS_EN = {
-			0: 'ah',  // ㅏ
-			1: 'ae',  // ㅐ
-			2: 'yah', // ㅑ
-			3: 'yeh', // ㅒ
-			4: 'uh',  // ㅓ (avoids English 'o'/'e' diphthongs)
-			5: 'eh',  // ㅔ
-			6: 'yuh', // ㅕ
-			7: 'yeh', // ㅖ
-			8: 'oh',  // ㅗ
-			9: 'wah', // ㅘ
-			10: 'weh',// ㅙ
-			11: 'weh',// ㅚ
-			12: 'yoh',// ㅛ
-			13: 'oo', // ㅜ
-			14: 'wuh',// ㅝ
-			15: 'weh',// ㅞ
-			16: 'wee',// ㅟ
-			17: 'yoo',// ㅠ
-			18: 'eu', // ㅡ
-			19: 'eui',// ㅢ
-			20: 'ee'  // ㅣ
 		};
 
 		const CODA_EN = {
@@ -713,7 +813,63 @@
 			21: 'ng', 22: 't', 23: 't', 24: 'k', 25: 't', 26: 'p', 27: 't'
 		};
 
-		function convertToEnglishPhonemes(koreanText) {
+		function transliterateSyllable(char, prevChar = null) {
+			const d = decomposeHangul(char);
+			if (!d) return char;
+
+			let onset = ONSET_EN[d.initial];
+			let isPalatalizedS = false;
+
+			// Liquid Gemination: 'ㄹ + ㄹ' (coda ㄹ followed by onset ㄹ) is pronounced [lː], not [lr]
+			// Produces fluent 'll' (e.g. 빨리 -> Palli, 몰라 -> Molla, 연락 [열락] -> Yeollak)
+			if (d.initial === 5 && prevChar) {
+				const prevD = decomposeHangul(prevChar);
+				if (prevD && prevD.final === 8) {
+					onset = 'l';
+				}
+			}
+
+			// Palatalization: 's' before 'i' or 'y*' sounds like 'sh'
+			if (d.initial === 9 || d.initial === 10) {
+				if (d.medial === 20 || [2, 3, 6, 7, 12, 17].includes(d.medial)) {
+					onset = 'sh';
+					isPalatalizedS = true;
+				} else {
+					onset = 's';
+				}
+			}
+
+			let nucleus = '';
+			switch (d.medial) {
+				case 0: nucleus = 'a'; break;
+				case 1: nucleus = 'ae'; break;
+				case 2: nucleus = isPalatalizedS ? 'a' : 'ya'; break;
+				case 3: nucleus = isPalatalizedS ? 'e' : 'ye'; break;
+				case 4: nucleus = 'eo'; break;
+				case 5: nucleus = 'e'; break;
+				case 6: nucleus = isPalatalizedS ? 'eo' : 'yeo'; break;
+				case 7: nucleus = isPalatalizedS ? 'e' : 'ye'; break;
+				case 8: nucleus = 'o'; break;
+				case 9: nucleus = 'wa'; break;
+				case 10: nucleus = 'wae'; break;
+				case 11: nucleus = 'oe'; break;
+				case 12: nucleus = isPalatalizedS ? 'o' : 'yo'; break;
+				case 13: nucleus = 'u'; break;
+				case 14: nucleus = 'wo'; break;
+				case 15: nucleus = 'we'; break;
+				case 16: nucleus = 'wi'; break;
+				case 17: nucleus = isPalatalizedS ? 'u' : 'yu'; break;
+				case 18: nucleus = 'eu'; break;
+				case 19: nucleus = 'ui'; break;
+				case 20: nucleus = 'i'; break;
+				default: nucleus = 'a';
+			}
+
+			const coda = CODA_EN[d.final] || '';
+			return onset + nucleus + coda;
+		}
+
+		function convertToEnglishPhonemes(koreanText, style = 'natural') {
 			const standardPhonetic = getStandardPronunciation(koreanText);
 			const words = standardPhonetic.split(/(\s+|[.,?!~]+)/);
 
@@ -721,27 +877,22 @@
 				if (/^[\s.,?!~]+$/.test(chunk)) return chunk;
 				const syllables = [];
 				for (let i = 0; i < chunk.length; i++) {
-					const d = decomposeHangul(chunk[i]);
-					if (!d) {
-						syllables.push(chunk[i]);
-						continue;
-					}
-
-					let onset = ONSET_EN[d.initial];
-					// Palatalization: 's' before 'ee' or 'y' sounds like 'sh'
-					if (onset === 's' && (d.medial === 20 || [2,3,6,7,12,17].includes(d.medial))) {
-						onset = 'sh';
-					}
-
-					let nucleus = NUCLEUS_EN[d.medial];
-					let coda = CODA_EN[d.final];
-
-					// Syllable capitalization & pacing for English TTS
-					let syl = onset + nucleus + coda;
-					if (i === 0) syl = syl.charAt(0).toUpperCase() + syl.slice(1);
-					syllables.push(syl);
+					const prevCh = i > 0 ? chunk[i - 1] : null;
+					syllables.push(transliterateSyllable(chunk[i], prevCh));
 				}
-				return syllables.join('-');
+
+				if (syllables.length === 0) return chunk;
+
+				let wordResult = '';
+				if (style === 'hyphenated') {
+					wordResult = syllables.join('-');
+				} else if (style === 'spaced') {
+					wordResult = syllables.join(' ');
+				} else {
+					wordResult = syllables.join('');
+				}
+
+				return wordResult.charAt(0).toUpperCase() + wordResult.slice(1);
 			});
 
 			return convertedWords.join('');
@@ -780,8 +931,14 @@
 
 		const koreanInput = document.getElementById('koreanInput');
 		const standardPhoneticDisplay = document.getElementById('standardPhoneticDisplay');
-		const englishPhonemesDisplay = document.getElementById('englishPhonemesDisplay');
+		const copyStage1Btn = document.getElementById('copyStage1Btn');
+		const englishPhonemesInput = document.getElementById('englishPhonemesInput');
+		const revertPhonemesBtn = document.getElementById('revertPhonemesBtn');
+		const copyPhonemesBtn = document.getElementById('copyPhonemesBtn');
+		const phonemeStatusBadge = document.getElementById('phonemeStatusBadge');
+		const phonemeHintDisplay = document.getElementById('phonemeHintDisplay');
 		const voiceSelect = document.getElementById('voiceSelect');
+		const styleSelect = document.getElementById('styleSelect');
 		const voiceStatus = document.getElementById('voiceStatus');
 		const rateSlider = document.getElementById('rateSlider');
 		const rateVal = document.getElementById('rateVal');
@@ -790,10 +947,35 @@
 		const volumeSlider = document.getElementById('volumeSlider');
 		const volumeVal = document.getElementById('volumeVal');
 		const speakEnglishBtn = document.getElementById('speakEnglishBtn');
+		const speakStage1Btn = document.getElementById('speakStage1Btn');
 		const speakNativeBtn = document.getElementById('speakNativeBtn');
 		const stopBtn = document.getElementById('stopBtn');
 		const speakingIndicator = document.getElementById('speakingIndicator');
 		const presetContainer = document.getElementById('presetContainer');
+
+		let isCustomPhonemes = false;
+		let lastAutoPhonemes = '';
+
+		function setPhonemeStatus(custom) {
+			isCustomPhonemes = custom;
+			if (custom) {
+				phonemeStatusBadge.className = 'status-pill custom';
+				phonemeStatusBadge.textContent = '✏️ Custom';
+				revertPhonemesBtn.style.display = 'inline-flex';
+				revertPhonemesBtn.classList.add('active-revert');
+				englishPhonemesInput.classList.add('modified');
+				phonemeHintDisplay.textContent = 'Custom spelling active (↺ Revert to restore)';
+				phonemeHintDisplay.style.color = 'var(--accent-amber)';
+			} else {
+				phonemeStatusBadge.className = 'status-pill auto';
+				phonemeStatusBadge.textContent = '⚡ Auto';
+				revertPhonemesBtn.style.display = 'none';
+				revertPhonemesBtn.classList.remove('active-revert');
+				englishPhonemesInput.classList.remove('modified');
+				phonemeHintDisplay.textContent = 'Rule-based phonemes';
+				phonemeHintDisplay.style.color = 'var(--text-muted)';
+			}
+		}
 
 		// Render Presets
 		PRESETS.forEach((preset, idx) => {
@@ -807,27 +989,92 @@
 				document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
 				btn.classList.add('active');
 				koreanInput.value = preset.text;
-				updatePipelines();
+				updatePipelines(true);
 			});
 			presetContainer.appendChild(btn);
 		});
 
 		// Live Update
-		function updatePipelines() {
+		function updatePipelines(forceReset = false) {
 			const text = koreanInput.value.trim();
 			if (!text) {
 				standardPhoneticDisplay.textContent = '-';
-				englishPhonemesDisplay.textContent = '-';
+				if (!isCustomPhonemes || forceReset) {
+					englishPhonemesInput.value = '';
+					lastAutoPhonemes = '';
+					setPhonemeStatus(false);
+				}
 				return;
 			}
+			const style = styleSelect ? styleSelect.value : 'natural';
 			const phonetic = getStandardPronunciation(text);
-			const englishPhonemes = convertToEnglishPhonemes(text);
+			const generatedPhonemes = convertToEnglishPhonemes(text, style);
 
 			standardPhoneticDisplay.textContent = phonetic;
-			englishPhonemesDisplay.textContent = englishPhonemes;
+			lastAutoPhonemes = generatedPhonemes;
+
+			if (!isCustomPhonemes || forceReset) {
+				englishPhonemesInput.value = generatedPhonemes;
+				setPhonemeStatus(false);
+			}
 		}
 
-		koreanInput.addEventListener('input', updatePipelines);
+		// Track user manual edits to Stage 2
+		englishPhonemesInput.addEventListener('input', () => {
+			if (englishPhonemesInput.value !== lastAutoPhonemes) {
+				setPhonemeStatus(true);
+			} else {
+				setPhonemeStatus(false);
+			}
+		});
+
+		// Revert button restores auto-generated phonemes
+		revertPhonemesBtn.addEventListener('click', () => {
+			updatePipelines(true);
+		});
+
+		// Copy button (Stage 2)
+		copyPhonemesBtn.addEventListener('click', () => {
+			const val = englishPhonemesInput.value;
+			if (!val) return;
+			const onCopied = () => {
+				const orig = copyPhonemesBtn.textContent;
+				copyPhonemesBtn.textContent = '✅ Copied!';
+				setTimeout(() => copyPhonemesBtn.textContent = orig, 1500);
+			};
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(val).then(onCopied).catch(() => {
+					englishPhonemesInput.select();
+					document.execCommand('copy');
+					onCopied();
+				});
+			} else {
+				englishPhonemesInput.select();
+				document.execCommand('copy');
+				onCopied();
+			}
+		});
+
+		// Copy button (Stage 1)
+		if (copyStage1Btn) {
+			copyStage1Btn.addEventListener('click', () => {
+				const val = standardPhoneticDisplay.textContent.trim();
+				if (!val || val === '-') return;
+				const onCopied = () => {
+					const orig = copyStage1Btn.textContent;
+					copyStage1Btn.textContent = '✅ Copied!';
+					setTimeout(() => copyStage1Btn.textContent = orig, 1500);
+				};
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					navigator.clipboard.writeText(val).then(onCopied).catch(onCopied);
+				} else {
+					onCopied();
+				}
+			});
+		}
+
+		koreanInput.addEventListener('input', () => updatePipelines(true));
+		if (styleSelect) styleSelect.addEventListener('change', () => updatePipelines(true));
 
 		// Sliders
 		rateSlider.addEventListener('input', (e) => rateVal.textContent = e.target.value + 'x');
@@ -842,9 +1089,10 @@
 
 			voiceSelect.innerHTML = '';
 
+			const frPlVoices = allVoices.filter(v => v.lang.startsWith('fr') || v.lang.startsWith('pl'));
 			const enVoices = allVoices.filter(v => v.lang.startsWith('en'));
 			const koVoices = allVoices.filter(v => v.lang.startsWith('ko'));
-			const otherVoices = allVoices.filter(v => !v.lang.startsWith('en') && !v.lang.startsWith('ko'));
+			const otherVoices = allVoices.filter(v => !v.lang.startsWith('fr') && !v.lang.startsWith('pl') && !v.lang.startsWith('en') && !v.lang.startsWith('ko'));
 
 			function addGroup(label, list) {
 				if (list.length === 0) return;
@@ -859,15 +1107,18 @@
 				voiceSelect.appendChild(group);
 			}
 
-			addGroup("⭐ Recommended English Voices (for Phonetic Korean)", enVoices);
+			addGroup("🌟 Recommended European Voices (French & Polish - Exceptional Articulation)", frPlVoices);
+			addGroup("🇬🇧 / 🇺🇸 English Voices", enVoices);
 			addGroup("🇰🇷 Native Korean Voices (Reference Comparison)", koVoices);
-			addGroup("🌐 Other Voices", otherVoices);
+			addGroup("🌐 Other System Voices", otherVoices);
 
-			// Pick preferred default English voice
-			const preferredEn = enVoices.find(v => v.name.includes("Google") || v.name.includes("Natural") || v.name.includes("Samantha") || v.name.includes("Zira") || v.name.includes("David")) || enVoices[0];
-			if (preferredEn) voiceSelect.value = preferredEn.name;
+			// Pick preferred default: French/Polish if present, else English
+			const preferredVoice = frPlVoices[0] ||
+				enVoices.find(v => v.name.includes("Google") || v.name.includes("Natural") || v.name.includes("David") || v.name.includes("Zira")) ||
+				allVoices[0];
+			if (preferredVoice) voiceSelect.value = preferredVoice.name;
 
-			voiceStatus.textContent = `Loaded ${allVoices.length} system voices (${enVoices.length} English voices available for TTS diversity).`;
+			voiceStatus.textContent = `Loaded ${allVoices.length} voices (${frPlVoices.length} French/Polish, ${enVoices.length} English, ${koVoices.length} Korean).`;
 		}
 
 		populateVoiceList();
@@ -903,9 +1154,16 @@
 		}
 
 		speakEnglishBtn.addEventListener('click', () => {
-			const englishPhonemes = englishPhonemesDisplay.textContent;
+			const englishPhonemes = englishPhonemesInput.value.trim();
 			if (englishPhonemes && englishPhonemes !== '-') {
 				speakText(englishPhonemes, false);
+			}
+		});
+
+		speakStage1Btn.addEventListener('click', () => {
+			const stage1Text = standardPhoneticDisplay.textContent.trim();
+			if (stage1Text && stage1Text !== '-') {
+				speakText(stage1Text, false);
 			}
 		});
 
