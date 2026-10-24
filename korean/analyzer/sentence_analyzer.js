@@ -7,7 +7,7 @@
  * Platform: Node.js & Browser (Vanilla JS, zero dependencies).
  */
 
-const { DATA_SCHEMA, decomposeHangul } =
+const { DATA_SCHEMA, decomposeHangul, composeHangul } =
 	(typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 
 const { PARTICLE_SPECS } =
@@ -15,6 +15,9 @@ const { PARTICLE_SPECS } =
 
 const { evaluateSyntaxFrame } =
 	(typeof require !== 'undefined' ? require('./syntax_frame.js') : window);
+
+const { matchAdnominalEnding } =
+	(typeof require !== 'undefined' ? require('./verb_morphology.js') : window);
 
 const { analyzeSingleToken } =
 	(typeof require !== 'undefined' ? require('./token_analyzer.js') : window);
@@ -38,6 +41,15 @@ function resolveAuxiliaryEnding(cleanWord, unitById) {
 	}
 	if (cleanWord.endsWith("어서") || cleanWord.endsWith("아서")) {
 		return { text: "-아/어서", pos: "Verb Ending", unit: unitById.get(459), gloss: "-아/어서 (Cause/Sequential, ID 459)" };
+	}
+	if (cleanWord.endsWith("지요") || cleanWord.endsWith("죠")) {
+		return { text: "-지요", pos: "Verb Ending", unit: unitById.get(1773), gloss: "-지요 (Confirmation, ID 1773)" };
+	}
+	if (cleanWord.endsWith("세요") || cleanWord.endsWith("으세요")) {
+		return { text: "-(으)세요", pos: "Verb Ending", unit: unitById.get(416), gloss: "-(으)세요 (Polite imperative, ID 416)" };
+	}
+	if (cleanWord.endsWith("나요")) {
+		return { text: "-나요", pos: "Verb Ending", unit: unitById.get(930), gloss: "-나요 (Polite interrogative, ID 930)" };
 	}
 	if (cleanWord.endsWith("는")) {
 		return { text: "-는", pos: "Adnominal Ending", unit: unitById.get(645), gloss: "-는 (Adnominal Ending, ID 645)" };
@@ -97,6 +109,26 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 			missing: !vUnit,
 			gloss: vUnit ? vUnit[DATA_SCHEMA.English] : ""
 		};
+	} else if (match.lexicalType === "stem_b_irregular_or_da") {
+		let baseVerb = null;
+		if (w1.endsWith("워")) {
+			const stem = w1.slice(0, -1);
+			const d = decomposeHangul(stem.slice(-1));
+			if (d && d.final === 0) {
+				const bChar = composeHangul(d.initial, d.medial, 17);
+				baseVerb = stem.slice(0, -1) + bChar + "다";
+			}
+		} else if (w1.endsWith("아") || w1.endsWith("어")) {
+			baseVerb = w1.slice(0, -1) + "다";
+		}
+		const vUnit = baseVerb && vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
+		lexical = {
+			text: baseVerb || w1,
+			pos: vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : "Descriptive Verb",
+			unit: vUnit,
+			missing: !vUnit,
+			gloss: vUnit ? vUnit[DATA_SCHEMA.English] : ""
+		};
 	} else if (match.lexicalType === "self_unit") {
 		lexical = {
 			text: unit[DATA_SCHEMA.Korean],
@@ -106,6 +138,14 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 		};
 	} else if (match.lexical !== undefined) {
 		lexical = match.lexical;
+	} else if (match.isAdnominalL || match.lexicalType === "adnominal_l") {
+		const adm = matchAdnominalEnding ? matchAdnominalEnding(w1, index) : null;
+		if (adm && adm.lexical) {
+			lexical = adm.lexical;
+		} else {
+			const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
+			lexical = a1 ? a1.lexical : null;
+		}
 	} else {
 		const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
 		lexical = a1 ? a1.lexical : null;
