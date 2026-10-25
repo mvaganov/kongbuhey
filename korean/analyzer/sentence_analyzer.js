@@ -26,42 +26,38 @@ const { getIndex } =
 	(typeof require !== 'undefined' ? require('./indexer.js') : window);
 
 /**
- * Resolves common verbal/copula inflections on auxiliary tokens.
+ * Resolves verbal/copula inflections on auxiliary tokens using dynamic single-token
+ * morphology arbitration and the collection of language units tagged with 'verbal_ending'.
  */
-function resolveAuxiliaryEnding(cleanWord, unitById) {
-	if (!cleanWord) return null;
-	if (cleanWord.endsWith("습니다") || cleanWord.endsWith("ㅂ니다")) {
-		return { text: "-습니다", pos: "Verb Ending", unit: unitById.get(50), gloss: "-습니다 (Formal declarative, ID 50)" };
-	}
-	if (cleanWord.endsWith("아요") || cleanWord.endsWith("어요") || cleanWord.endsWith("에요") || cleanWord.endsWith("예요") || cleanWord.endsWith("이다")) {
-		return { text: "-아/어요", pos: "Verb Ending", unit: unitById.get(49), gloss: "-아/어요 (Polite informal, ID 49)" };
-	}
-	if (cleanWord.endsWith("으면") || cleanWord.endsWith("면")) {
-		return { text: "-(으)면", pos: "Verb Ending", unit: unitById.get(619), gloss: "-(으)면 (Conditional, ID 619)" };
-	}
-	if (cleanWord.endsWith("어서") || cleanWord.endsWith("아서")) {
-		return { text: "-아/어서", pos: "Verb Ending", unit: unitById.get(459), gloss: "-아/어서 (Cause/Sequential, ID 459)" };
-	}
-	if (cleanWord.endsWith("지요") || cleanWord.endsWith("죠")) {
-		return { text: "-지요", pos: "Verb Ending", unit: unitById.get(1773), gloss: "-지요 (Confirmation, ID 1773)" };
-	}
-	if (cleanWord.endsWith("세요") || cleanWord.endsWith("으세요")) {
-		return { text: "-(으)세요", pos: "Verb Ending", unit: unitById.get(416), gloss: "-(으)세요 (Polite imperative, ID 416)" };
-	}
-	if (cleanWord.endsWith("나요")) {
-		return { text: "-나요", pos: "Verb Ending", unit: unitById.get(930), gloss: "-나요 (Polite interrogative, ID 930)" };
-	}
-	if (cleanWord.endsWith("십시오") || cleanWord.endsWith("으십시오")) {
-		return { text: "-(으)십시오", pos: "Verb Ending", unit: unitById.get(1644), gloss: "-(으)십시오 (Formal imperative, ID 1644)" };
-	}
-	if (cleanWord.endsWith("는")) {
-		return { text: "-는", pos: "Adnominal Ending", unit: unitById.get(645), gloss: "-는 (Adnominal Ending, ID 645)" };
-	}
-	if (cleanWord.endsWith("고")) {
-		return { text: "-고", pos: "Connective", unit: unitById.get(336), gloss: "-고 (Connective, ID 336)" };
+function resolveAuxiliaryEnding(cleanWord, index) {
+	if (!cleanWord || !index) return null;
+	const analyzed = analyzeSingleToken(cleanWord, "", "", {}, index);
+	if (analyzed && analyzed.grammar && analyzed.grammar.length > 0) return analyzed.grammar;
+
+	if (Array.isArray(index.verbalEndingRules)) {
+		const lastChar = cleanWord.length >= 2 ? cleanWord.slice(-2, -1) : null;
+		const d = lastChar ? decomposeHangul(lastChar) : null;
+		for (const rule of index.verbalEndingRules) {
+			const matched = (rule.form === "ㅂ니다") ?
+				(cleanWord.endsWith("ㅂ니다") || (cleanWord.endsWith("니다") && d && d.final === 17)) :
+				cleanWord.endsWith(rule.form);
+			if (matched) {
+				const grammarList = [];
+				if (cleanWord.includes("았") || cleanWord.includes("었")) {
+					const pastCandidates = (index.grammarByKo && index.grammarByKo.get("~았/었어요")) || [];
+					const pastUnit = pastCandidates[0] || null;
+					if (pastUnit) {
+						grammarList.push({ text: "-았/었-", pos: "Tense Infix", unit: pastUnit, gloss: pastUnit[DATA_SCHEMA.English] || "past tense" });
+					}
+				}
+				grammarList.push({ text: rule.text, pos: rule.pos, unit: rule.unit, gloss: rule.gloss });
+				return grammarList;
+			}
+		}
 	}
 	return null;
 }
+
 
 function isAdnominalN(word) {
 	if (!word) return false;
@@ -340,8 +336,10 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 
 	if (match.auxEndingTokenIndex) {
 		const targetWord = match.auxEndingTokenIndex === 3 ? cleanW3 : cleanW2;
-		const endObj = resolveAuxiliaryEnding(targetWord, unitById);
-		if (endObj) grammarList.push(endObj);
+		const endObjs = resolveAuxiliaryEnding(targetWord, index);
+		if (endObjs && endObjs.length > 0) {
+			grammarList.push(...endObjs);
+		}
 	}
 
 	if (match.parseW2Grammar) {

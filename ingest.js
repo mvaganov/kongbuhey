@@ -31,7 +31,7 @@ const SCHEMA_ANALYSIS_PATH = path.resolve(__dirname, 'schema_analysis.js');
 const TEXT_ANALYZER_PATH = path.resolve(__dirname, 'text_analyzer.js');
 
 const studytexts = require(STUDYTEXTS_PATH);
-const { findExistingUnit, deduceExistingVerbStem, getSchemaSummary, updateSchemaSummary } = require(SCHEMA_ANALYSIS_PATH);
+const { findExistingUnit, deduceExistingVerbStem, generateVerbSuffixSnippet, getSchemaSummary, updateSchemaSummary } = require(SCHEMA_ANALYSIS_PATH);
 const textAnalyzer = require(TEXT_ANALYZER_PATH);
 
 function getIngestedPassages() {
@@ -134,6 +134,10 @@ async function main() {
 		console.log(`[MORPHOLOGY HINTS] Found ${morphologyHints.length} inflected forms of existing verbs:`);
 		for (const h of morphologyHints) {
 			console.log(`  * "${h.surface}" -> matches ${h.verbUnit[1]} (ID ${h.verbUnit[0]}) via ${h.suffix}`);
+			const snippet = generateVerbSuffixSnippet(h);
+			if (snippet) {
+				console.log(`    Suggested VERB_SUFFIX_RULES entry for verb_morphology.js:\n    ${snippet}\n`);
+			}
 		}
 		console.log(`Tip: If any of these should decompose cleanly, update korean/analyzer/verb_morphology.js or sentence_analyzer.js.`);
 		console.log(`------------------------------------------------------\n`);

@@ -134,15 +134,19 @@ function getIndex(languageUnits) {
 
 	// Fallback for standard pronominal allomorphs (저+가->제가, 나+가->내가, 너+가->네가)
 	if (!pronounSandhiMap.has("제")) {
-		pronounSandhiMap.set("제", { baseId: 2, baseWord: "저", particleId: 96, particleWord: "가", surfaceForm: "제가" });
+		const jeoCandidates = (vocabByKo.get("저") || []).filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const jeoUnit = jeoCandidates[0] || null;
+		pronounSandhiMap.set("제", { baseId: jeoUnit ? jeoUnit[DATA_SCHEMA.Id] : 2, baseWord: "저", particleId: 96, particleWord: "가", surfaceForm: "제가" });
 	}
 	if (!pronounSandhiMap.has("내")) {
-		const naUnit = unitById.get(1699);
-		pronounSandhiMap.set("내", { baseId: naUnit ? 1699 : 2, baseWord: naUnit ? "나" : "저", particleId: 96, particleWord: "가", surfaceForm: "내가" });
+		const naCandidates = (vocabByKo.get("나") || []).filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const naUnit = naCandidates[0] || null;
+		pronounSandhiMap.set("내", { baseId: naUnit ? naUnit[DATA_SCHEMA.Id] : 2, baseWord: naUnit ? "나" : "저", particleId: 96, particleWord: "가", surfaceForm: "내가" });
 	}
 	if (!pronounSandhiMap.has("네")) {
-		const neoUnit = unitById.get(1700);
-		pronounSandhiMap.set("네", { baseId: neoUnit ? 1700 : 2, baseWord: neoUnit ? "너" : "저", particleId: 96, particleWord: "가", surfaceForm: "네가" });
+		const neoCandidates = (vocabByKo.get("너") || []).filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const neoUnit = neoCandidates[0] || null;
+		pronounSandhiMap.set("네", { baseId: neoUnit ? neoUnit[DATA_SCHEMA.Id] : 2, baseWord: neoUnit ? "너" : "저", particleId: 96, particleWord: "가", surfaceForm: "네가" });
 	}
 
 	// 5. Embedded SyntaxFrame MWE Matchers (/*js:matcher*/)
@@ -158,6 +162,54 @@ function getIndex(languageUnits) {
 		}
 	}
 
+	// 6. Pre-compile verbal endings from units tagged with 'verbal_ending'
+	const verbalEndingRules = [];
+	for (const u of units) {
+		if (!u) continue;
+		const id = u[DATA_SCHEMA.Id];
+		const tags = semanticTagsByUnitId.get(id);
+		if (!tags || !tags.has('verbal_ending')) continue;
+
+		const sv = parseSemanticVector(u) || {};
+		let forms = Array.isArray(sv.surface_forms) ? [...sv.surface_forms] : [];
+		if (forms.length === 0) {
+			const cleanKo = (u[DATA_SCHEMA.Korean] || '').replace(/^[~-]/, '').replace(/\?$/, '').trim();
+			cleanKo.split('/').forEach(p => {
+				const trimmed = p.trim().replace(/^[~-]/, '');
+				if (trimmed.includes('(으)')) {
+					forms.push(trimmed.replace('(으)', '으'));
+					forms.push(trimmed.replace('(으)', ''));
+				} else {
+					forms.push(trimmed);
+				}
+			});
+		}
+
+		let canonicalText = (u[DATA_SCHEMA.Korean] || '').replace(/\?$/, '').trim();
+		if (canonicalText.includes(' / ')) {
+			canonicalText = canonicalText.split(' / ')[0].trim();
+		}
+		if (canonicalText.startsWith('~')) {
+			canonicalText = '-' + canonicalText.slice(1);
+		} else if (!canonicalText.startsWith('-')) {
+			canonicalText = '-' + canonicalText;
+		}
+
+		for (const form of forms) {
+			if (!form) continue;
+			verbalEndingRules.push({
+				form,
+				unit: u,
+				id,
+				text: canonicalText,
+				pos: u[DATA_SCHEMA.PartofSpeech] === 'Grammar' ? 'Verb Ending' : u[DATA_SCHEMA.PartofSpeech],
+				gloss: `${canonicalText} (${u[DATA_SCHEMA.English]}, ID ${id})`
+			});
+		}
+	}
+	// Sort by descending form length for greedy maximal munch matching
+	verbalEndingRules.sort((a, b) => b.form.length - a.form.length);
+
 	cachedIndex = {
 		unitById,
 		vocabByKo,
@@ -166,7 +218,8 @@ function getIndex(languageUnits) {
 		motionVerbStems,
 		stativeVerbStems,
 		pronounSandhiMap,
-		mweRules
+		mweRules,
+		verbalEndingRules
 	};
 	cachedUnitsRef = units;
 
