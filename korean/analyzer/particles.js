@@ -19,6 +19,7 @@ const PARTICLE_SPECS = Object.freeze([
 	{ text: "에게도", ids: [618, 366], desc: "에게 + 도 (Dative additive)" },
 	{ text: "한테는", ids: [618, 36], desc: "한테 + 는 (Dative informal topic)" },
 	{ text: "한테도", ids: [618, 366], desc: "한테 + 도 (Dative informal additive)" },
+	{ text: "만의", ids: [1402, 856], desc: "만 + 의 (Only + Possessive)" },
 
 	// Primary case & delimiter particles
 	{ text: "에서", ids: [199], desc: "에서 (Location of action / source)" },
@@ -33,8 +34,8 @@ const PARTICLE_SPECS = Object.freeze([
 	{ text: "이랑", ids: [276], desc: "(이)랑 (And / With)", batchimReq: true },
 	{ text: "랑", ids: [276], desc: "(이)랑 (And / With)", batchimReq: false },
 	{ text: "하고", ids: [367], desc: "하고 (And / With)" },
-	{ text: "부터", ids: [433], desc: "부터 (Starting point)" },
-	{ text: "까지", ids: [435], desc: "까지 (Ending point)" },
+	{ text: "부터", ids: [1312], desc: "부터 (Starting point)" },
+	{ text: "까지", ids: [1826], desc: "까지 (Ending point)" },
 	{ text: "은", ids: [36], desc: "은 / 는 (Topic)", batchimReq: true },
 	{ text: "는", ids: [36], desc: "은 / 는 (Topic)", batchimReq: false },
 	{ text: "이", ids: [96], desc: "이 / 가 (Subject)", batchimReq: true },
@@ -48,7 +49,7 @@ const PARTICLE_SPECS = Object.freeze([
 	{ text: "의", ids: [856, 857], desc: "의 (Possessive / Relation)" },
 	{ text: "보다", ids: [680], desc: "보다 (Comparative particle)" },
 	{ text: "쯤", ids: [653], desc: "쯤 (Approximation particle)" },
-	{ text: "만", ids: [365], desc: "만 (Only)" }
+	{ text: "만", ids: [1402], desc: "만 (Only)" }
 ]);
 
 /**
