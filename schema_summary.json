@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-24T18:25:29.083Z",
-  "totalUnits": 1823,
-  "validVectorCount": 1823,
+  "generatedAt": "2026-10-25T06:13:04.925Z",
+  "totalUnits": 1827,
+  "validVectorCount": 1827,
   "partsOfSpeech": [
     "Action Verb",
     "Adverb",
@@ -14,11 +14,11 @@
     "Pronoun"
   ],
   "posCounts": {
-    "Noun": 963,
+    "Noun": 966,
     "Pronoun": 36,
     "Exclamation": 16,
     "Descriptive Verb": 126,
-    "Grammar": 182,
+    "Grammar": 183,
     "Action Verb": 336,
     "Adverb": 92,
     "Number": 66,
@@ -57,6 +57,7 @@
     "adverb_place",
     "adverb_quantity",
     "adverb_time",
+    "adverbial_particle",
     "adverbializer",
     "age",
     "alcohol",
@@ -175,6 +176,7 @@
     "decor",
     "degree",
     "deictic",
+    "delimiter",
     "demonstrative",
     "descriptive_acoustic",
     "descriptive_cleanliness",
@@ -226,6 +228,7 @@
     "electronics",
     "emotion",
     "emphasis",
+    "endpoint",
     "entertainment",
     "environment",
     "equipment",
@@ -341,6 +344,7 @@
     "life_death",
     "lifestyle",
     "light",
+    "limit",
     "limitation",
     "linguistics",
     "liquid",
@@ -539,6 +543,7 @@
     "station",
     "stationery",
     "status",
+    "study",
     "subject",
     "subject_animate",
     "subject_honorific",
@@ -568,6 +573,7 @@
     "temporal_present",
     "temporal_relation",
     "temporal_sequence",
+    "text",
     "theater",
     "thing",
     "third_person",
@@ -665,7 +671,7 @@
     "profession": 21,
     "sinoRoot": 42,
     "elder_noun": 27,
-    "particle": 45,
+    "particle": 46,
     "topic": 2,
     "declarative": 23,
     "present": 17,
@@ -725,13 +731,13 @@
     "inanimate_institution": 27,
     "position": 18,
     "plant": 4,
-    "nature": 31,
+    "nature": 33,
     "flower": 4,
     "shop": 5,
     "sports": 23,
     "adverb_degree": 20,
     "degree": 31,
-    "weather": 25,
+    "weather": 27,
     "descriptive_weather": 8,
     "quantity": 16,
     "descriptive_acoustic": 2,
@@ -889,7 +895,7 @@
     "motion_purpose": 1,
     "school": 2,
     "concept": 54,
-    "academic": 40,
+    "academic": 41,
     "honorificVerb": 7,
     "snack": 2,
     "hobby": 4,
@@ -963,7 +969,7 @@
     "exclamation": 6,
     "government": 1,
     "honorific_person": 8,
-    "temporal": 9,
+    "temporal": 10,
     "relation": 1,
     "road": 3,
     "attraction": 2,
@@ -995,7 +1001,7 @@
     "appliance": 6,
     "furniture": 6,
     "sanitary": 1,
-    "spatial": 17,
+    "spatial": 18,
     "polite": 4,
     "progressive": 2,
     "condiment": 11,
@@ -1248,7 +1254,7 @@
     "domestic": 1,
     "confirmation": 1,
     "cultural": 1,
-    "noun": 12,
+    "noun": 15,
     "living": 1,
     "computer": 1,
     "action_verb": 3,
@@ -1258,13 +1264,20 @@
     "goods": 2,
     "discount": 1,
     "quality": 1,
-    "special": 1
+    "special": 1,
+    "study": 1,
+    "text": 1,
+    "delimiter": 1,
+    "endpoint": 1,
+    "limit": 1,
+    "adverbial_particle": 1
   },
   "honorificRules": [
     "Action verbs only; identical subject required; negative outcome in second clause; no past tense in first clause",
     "Action verbs only; no past tense in first clause; unexpected external event causing negative past outcome",
     "Addressed respectfully as 기사님",
     "Attached to names",
+    "Attaches to nominals denoting space, time, or extent",
     "Cannot be used toward elders",
     "Cannot be used with elders or formal superior subjects",
     "Cannot be used with elders or superiors",
@@ -1386,7 +1399,8 @@
     "Honorific form: -고 계시다": 1,
     "Action verbs only; identical subject required; negative outcome in second clause; no past tense in first clause": 1,
     "Action verbs only; no past tense in first clause; unexpected external event causing negative past outcome": 1,
-    "Formal written register; allows past tense in first clause; declarative only": 1
+    "Formal written register; allows past tense in first clause; declarative only": 1,
+    "Attaches to nominals denoting space, time, or extent": 1
   },
   "semanticVectors": {
     "keys": [
@@ -1438,6 +1452,7 @@
       "req",
       "same_subject",
       "sandhi",
+      "scope",
       "speech_act",
       "surface_forms",
       "target_pos",
@@ -1464,6 +1479,7 @@
       "beauty",
       "body",
       "book",
+      "case",
       "causal",
       "classification",
       "clothing",
@@ -1583,6 +1599,7 @@
       "direction",
       "duration",
       "event",
+      "exercise",
       "focus",
       "furniture",
       "goods",
@@ -1593,6 +1610,7 @@
       "manner",
       "meal",
       "mountain",
+      "natural_phenomenon",
       "necessity",
       "person",
       "person_name",
@@ -1628,7 +1646,8 @@
         "있다"
       ],
       "aliases": [
-        "남성록"
+        "남성록",
+        "회놈"
       ],
       "allomorph_pair": [
         "가",
@@ -1830,6 +1849,7 @@
         "beauty",
         "body",
         "book",
+        "case",
         "causal",
         "classification",
         "clothing",
@@ -2007,6 +2027,7 @@
         "duration_overlap",
         "elapsed_duration",
         "emotion_transitive",
+        "endpoint",
         "exclamatory_realization",
         "experience",
         "formal_imperative",
@@ -2379,6 +2400,9 @@
       "sandhi": [
         "[object Object]"
       ],
+      "scope": [
+        "limit"
+      ],
       "speech_act": [
         "command",
         "prohibition",
@@ -2456,6 +2480,7 @@
         "direction",
         "duration",
         "event",
+        "exercise",
         "focus",
         "furniture",
         "goods",
@@ -2466,6 +2491,7 @@
         "manner",
         "meal",
         "mountain",
+        "natural_phenomenon",
         "necessity",
         "person",
         "person_name",
@@ -2622,7 +2648,9 @@
         "traits": []
       },
       "weather": {
-        "types": [],
+        "types": [
+          "natural_phenomenon"
+        ],
         "actions": [],
         "traits": []
       },
@@ -2772,7 +2800,9 @@
         "traits": []
       },
       "academic": {
-        "types": [],
+        "types": [
+          "exercise"
+        ],
         "actions": [],
         "traits": []
       },
@@ -3198,6 +3228,11 @@
         "types": [
           "action"
         ],
+        "actions": [],
+        "traits": []
+      },
+      "case": {
+        "types": [],
         "actions": [],
         "traits": []
       }

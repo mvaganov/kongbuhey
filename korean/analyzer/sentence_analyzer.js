@@ -7,7 +7,7 @@
  * Platform: Node.js & Browser (Vanilla JS, zero dependencies).
  */
 
-const { DATA_SCHEMA, decomposeHangul, composeHangul } =
+const { DATA_SCHEMA, decomposeHangul, composeHangul, setFinal } =
 	(typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 
 const { PARTICLE_SPECS } =
@@ -97,10 +97,52 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 
 	// 1. Resolve Lexical Verb
 	let lexical = null;
+	let detectedPastInfix = null;
 	if (match.lexicalType === "stem_da") {
 		const suffixLen = (match.stemSuffix || "다").length;
 		const stem = w1.slice(0, -suffixLen);
-		const baseVerb = stem + "다";
+		let baseVerb = stem + "다";
+		if (!vocabByKo.has(baseVerb) && stem.length > 1) {
+			const lastChar = stem.slice(-1);
+			const d = decomposeHangul(lastChar);
+			if (d && d.final === 20) { // ㅆ batchim (past tense: 았 / 었)
+				const strippedChar = setFinal(lastChar, 0);
+				if (strippedChar === "아" || strippedChar === "어") {
+					const rootStem = stem.slice(0, -1);
+					const candVerb = rootStem + "다";
+					if (vocabByKo.has(candVerb)) {
+						baseVerb = candVerb;
+						detectedPastInfix = { text: "-았/었-", pos: "Tense Infix", unitId: 335, gloss: "past tense (ID 335)" };
+					}
+				}
+			}
+		}
+		const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
+		lexical = {
+			text: baseVerb,
+			pos: vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : "Verb",
+			unit: vUnit,
+			missing: !vUnit,
+			gloss: vUnit ? vUnit[DATA_SCHEMA.English] : ""
+		};
+	} else if (match.lexicalType === "stem_informal_or_da") {
+		const stemWithInf = w1.endsWith("도") ? w1.slice(0, -1) : w1;
+		let baseVerb = null;
+		if (stemWithInf.endsWith("해")) {
+			baseVerb = stemWithInf.slice(0, -1) + "하다";
+		} else if (stemWithInf.endsWith("어") || stemWithInf.endsWith("아")) {
+			const stripped = stemWithInf.slice(0, -1);
+			baseVerb = stripped + "다";
+		} else {
+			baseVerb = stemWithInf + "다";
+		}
+		if (!vocabByKo.has(baseVerb)) {
+			// Check single-syllable open / irregular (e.g. 써 -> 쓰다, 봐 -> 보다, 가 -> 가다, 와 -> 오다)
+			const a1 = analyzeSingleToken(stemWithInf, prevW1, w2, sentenceContext, index);
+			if (a1 && a1.lexical && a1.lexical.unit) {
+				baseVerb = a1.lexical.text;
+			}
+		}
 		const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
 		lexical = {
 			text: baseVerb,
@@ -183,6 +225,16 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 			pos: "Grammar Pattern",
 			unit: unit,
 			gloss: unit[DATA_SCHEMA.English]
+		});
+	}
+
+	if (detectedPastInfix) {
+		const pastUnit = unitById.get(detectedPastInfix.unitId);
+		grammarList.push({
+			text: detectedPastInfix.text,
+			pos: detectedPastInfix.pos,
+			unit: pastUnit,
+			gloss: detectedPastInfix.gloss
 		});
 	}
 
