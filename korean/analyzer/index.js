@@ -45,6 +45,9 @@ const analyzerExports = {
 	analyzeSingleToken: tokenAnalyzer.analyzeSingleToken,
 	analyzeSentence: sentenceAnalyzer.analyzeSentence,
 	tryMatchMultiWord: sentenceAnalyzer.tryMatchMultiWord,
+	isInformalConnective: sentenceAnalyzer.isInformalConnective,
+	buildInformalConnectives: indexer.buildInformalConnectives,
+	DEFAULT_INFORMAL_CONNECTIVES: indexer.DEFAULT_INFORMAL_CONNECTIVES,
 
 	// Passage Analyzer & Formatter
 	analyzePassage: passageAnalyzer.analyzePassage,
