@@ -18,8 +18,132 @@ if (typeof require !== 'undefined') {
 	dataModule = typeof window !== 'undefined' ? window : {};
 }
 
-const { DATA_SCHEMA, parseSemanticVector, getStem } =
+const { DATA_SCHEMA, parseSemanticVector, getStem, decomposeHangul, composeHangul } =
 	(typeof require !== 'undefined' ? require('../core/primitives.js') : window);
+
+/**
+ * Dynamically derives the informal connective ending (-아/어/여/해) and contracted
+ * trailing syllables for a dictionary verb (ending in 다).
+ * 
+ * @param {string} ko Korean dictionary verb form
+ * @returns {Array<string>} Derived informal ending syllables
+ */
+function deriveInformalConnectiveEndings(ko) {
+	if (typeof ko !== 'string' || !ko.endsWith('다') || ko.length < 2) return [];
+	if (ko.endsWith('하다')) return ['해'];
+	if (ko.endsWith('되다')) return ['돼'];
+	if (ko.endsWith('르다')) return ['라', '러'];
+
+	const clean = ko.replace(/\s+/g, '');
+	const stem = clean.slice(0, -1);
+	const lastChar = stem.slice(-1);
+	const d = decomposeHangul ? decomposeHangul(lastChar) : null;
+	if (!d) return [];
+
+	if (d.final !== 0) {
+		return ['아', '어'];
+	}
+
+	const initial = d.initial;
+	const medial = d.medial;
+
+	// ㅏ, ㅐ, ㅓ, ㅔ: open stem contracts with identical or neutral vowel
+	if (medial === 0 || medial === 1 || medial === 4 || medial === 5) {
+		return [lastChar];
+	}
+	// ㅗ + 아 -> ㅘ (오다 -> 와, 보다 -> 봐)
+	if (medial === 8) {
+		return [composeHangul(initial, 9, 0)];
+	}
+	// ㅜ + 어 -> ㅝ (주다 -> 줘, 두다 -> 둬, 꾸다 -> 꿔)
+	if (medial === 13) {
+		return [composeHangul(initial, 14, 0)];
+	}
+	// ㅣ + 어 -> ㅕ (마시다 -> 마셔, 드시다 -> 드셔)
+	if (medial === 20) {
+		const contracted = composeHangul(initial, 6, 0);
+		if (stem.length >= 2) {
+			const prevChar = stem.slice(-2, -1);
+			return [contracted, prevChar + contracted];
+		}
+		return [contracted];
+	}
+	// ㅡ + 어 -> ㅓ (크다 -> 커, 쓰다 -> 써, 뜨다 -> 떠)
+	if (medial === 18) {
+		return [composeHangul(initial, 4, 0)];
+	}
+
+	return ['아', '어'];
+}
+
+/**
+ * Dynamically infers and generates the set of informal connective morphemes from
+ * grammar units and verb morphology in the language units dataset.
+ * 
+ * @param {Array} [units] Optional units array (defaults to loaded KR_EN_languageUnits)
+ * @returns {Set<string>} Dynamic set of informal connective syllables
+ */
+function buildInformalConnectives(units) {
+	const list = units || (dataModule && dataModule.KR_EN_languageUnits) || [];
+	const endings = new Set();
+
+	for (const u of list) {
+		if (!u) continue;
+		const pos = u[DATA_SCHEMA.PartofSpeech];
+		const ko = u[DATA_SCHEMA.Korean];
+
+		// 1. Infer from Grammar units (verbal endings, clausal connectives)
+		if (pos === 'Grammar' && typeof ko === 'string') {
+			if (ko.includes('아/어') || ko.includes('아요') || ko.includes('어요')) {
+				endings.add('아');
+				endings.add('어');
+				if (ko.includes('해요') || ko.includes('해')) endings.add('해');
+				if (ko.includes('여서') || ko.includes('여')) endings.add('여');
+			}
+			const sv = parseSemanticVector(u);
+			if (sv && Array.isArray(sv.surface_forms)) {
+				for (const f of sv.surface_forms) {
+					if (typeof f === 'string') {
+						const cleanForm = f.replace(/[^가-힣]/g, '');
+						if (cleanForm.endsWith('어서') || cleanForm.endsWith('아서')) {
+							const stem = cleanForm.slice(0, -2);
+							if (stem) endings.add(stem);
+						} else if (cleanForm.endsWith('여서') || cleanForm.endsWith('해서')) {
+							const stem = cleanForm.slice(0, -2);
+							if (stem) endings.add(stem);
+						} else if (cleanForm.endsWith('어요') || cleanForm.endsWith('아요') || cleanForm.endsWith('해요')) {
+							const stem = cleanForm.slice(0, -1);
+							if (stem) endings.add(stem);
+						}
+					}
+				}
+			}
+		}
+
+		// 2. Generate from Action & Descriptive Verbs via phonological morphology
+		if ((pos === 'Action Verb' || pos === 'Descriptive Verb') && typeof ko === 'string' && ko.endsWith('다')) {
+			const derived = deriveInformalConnectiveEndings(ko);
+			for (const e of derived) {
+				endings.add(e);
+			}
+		}
+	}
+
+	// Always ensure core base vowels are present even if units array is empty
+	if (endings.size === 0) {
+		endings.add('아');
+		endings.add('어');
+		endings.add('해');
+		endings.add('여');
+	}
+
+	return endings;
+}
+
+/**
+ * Pre-compiled default informal connective endings derived dynamically from dataset.
+ */
+const DEFAULT_INFORMAL_CONNECTIVES = Object.freeze(buildInformalConnectives());
 
 let cachedIndex = null;
 let cachedUnitsRef = null;
@@ -43,6 +167,7 @@ function getIndex(languageUnits) {
 	const motionVerbStems = new Set();
 	const stativeVerbStems = new Set();
 	const pronounSandhiMap = new Map();
+	const informalConnectiveEndings = buildInformalConnectives(units);
 
 	for (const u of units) {
 		if (!u) continue;
@@ -101,6 +226,12 @@ function getIndex(languageUnits) {
 				}
 				if (pos === 'Descriptive Verb' || tags.has('stative') || tags.has('existence') || tags.has('locative_static')) {
 					stativeVerbStems.add(stem);
+				}
+
+				// Dynamically extract informal connective endings from verb morphology
+				const endings = deriveInformalConnectiveEndings(ko);
+				for (const ending of endings) {
+					informalConnectiveEndings.add(ending);
 				}
 			}
 		}
@@ -218,6 +349,7 @@ function getIndex(languageUnits) {
 		motionVerbStems,
 		stativeVerbStems,
 		pronounSandhiMap,
+		informalConnectiveEndings,
 		mweRules,
 		verbalEndingRules
 	};
@@ -255,12 +387,18 @@ if (typeof window !== 'undefined') {
 	window.getIndex = getIndex;
 	window.resetIndexCache = resetIndexCache;
 	window.compileMweMatcher = compileMweMatcher;
+	window.DEFAULT_INFORMAL_CONNECTIVES = DEFAULT_INFORMAL_CONNECTIVES;
+	window.buildInformalConnectives = buildInformalConnectives;
+	window.deriveInformalConnectiveEndings = deriveInformalConnectiveEndings;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = {
 		getIndex,
 		resetIndexCache,
-		compileMweMatcher
+		compileMweMatcher,
+		DEFAULT_INFORMAL_CONNECTIVES,
+		buildInformalConnectives,
+		deriveInformalConnectiveEndings
 	};
 }

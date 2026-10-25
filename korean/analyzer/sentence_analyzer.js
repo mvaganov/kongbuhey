@@ -22,7 +22,7 @@ const { matchAdnominalEnding } =
 const { analyzeSingleToken } =
 	(typeof require !== 'undefined' ? require('./token_analyzer.js') : window);
 
-const { getIndex } =
+const { getIndex, DEFAULT_INFORMAL_CONNECTIVES } =
 	(typeof require !== 'undefined' ? require('./indexer.js') : window);
 
 /**
@@ -71,12 +71,18 @@ function isAdnominalL(word) {
 	return word.endsWith("을") || (d && d.final === 8);
 }
 
-function isInformalConnective(word) {
+/**
+ * Fast O(1) set-based check verifying whether a word ends with a valid informal connective morpheme.
+ * Utilizes the dynamically populated informalConnectiveEndings Set initialized by indexer.js.
+ * 
+ * @param {string} word The word to evaluate
+ * @param {Object} [index] Optional fast lookup index containing pre-computed informalConnectiveEndings
+ * @returns {boolean} True if the word terminates in an informal connective morpheme
+ */
+function isInformalConnective(word, index = null) {
 	if (!word) return false;
-	return word.endsWith("해") || word.endsWith("아") || word.endsWith("어") ||
-		word.endsWith("여") || word.endsWith("와") || word.endsWith("가") ||
-		word.endsWith("써") || word.endsWith("줘") || word.endsWith("드셔") ||
-		word.endsWith("내") || word.endsWith("려") || word.endsWith("봐");
+	const set = (index && index.informalConnectiveEndings) || DEFAULT_INFORMAL_CONNECTIVES;
+	return set.has(word.slice(-1)) || (word.length >= 2 && set.has(word.slice(-2)));
 }
 
 /**
@@ -105,6 +111,9 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 		const suffixLen = (match.stemSuffix || "다").length;
 		const stem = targetWord.slice(0, -suffixLen);
 		let baseVerb = stem + "다";
+		if (!vocabByKo.has(baseVerb) && vocabByKo.has(stem + "하다")) {
+			baseVerb = stem + "하다";
+		}
 		if (!vocabByKo.has(baseVerb) && stem.length > 0) {
 			const lastChar = stem.slice(-1);
 			const d = decomposeHangul(lastChar);
@@ -393,9 +402,10 @@ function tryMatchMultiWord(rawWords, i, sentenceContext, index) {
 		prevW1,
 		isAdnominalN: isAdnominalN(w1),
 		isAdnominalL: isAdnominalL(w1),
-		isInformal: isInformalConnective(w1),
+		isInformal: isInformalConnective(w1, index),
 		checkAdnominalN: isAdnominalN,
 		checkAdnominalL: isAdnominalL,
+		checkInformal: (w) => isInformalConnective(w, index),
 		decomposeHangul,
 		rawWords,
 		i,
@@ -476,11 +486,13 @@ function analyzeSentence(sentText, sentenceIndex = 1, explicitIndex = null) {
 if (typeof window !== 'undefined') {
 	window.analyzeSentence = analyzeSentence;
 	window.tryMatchMultiWord = tryMatchMultiWord;
+	window.isInformalConnective = isInformalConnective;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = {
 		analyzeSentence,
-		tryMatchMultiWord
+		tryMatchMultiWord,
+		isInformalConnective
 	};
 }

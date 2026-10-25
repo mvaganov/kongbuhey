@@ -33,6 +33,9 @@ const VERB_SUFFIX_RULES = Object.freeze([
 	// ㅎ-irregular polite endings
 	{ suffix: "어때요", stemType: "fixed_base", baseVerb: "어떻다", grammar: [{ text: "-아/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
 	{ suffix: "어때", stemType: "fixed_base", baseVerb: "어떻다", grammar: [{ text: "-아/어", pos: "Verb Ending", id: 459, gloss: "informal (ID 459)" }] },
+	{ suffix: "봐", stemType: "fixed_base", baseVerb: "보다", grammar: [{ text: "-아/어", pos: "Verb Ending", id: 459, gloss: "informal / sequential (ID 459)" }] },
+	{ suffix: "사가지고", stemType: "fixed_base", baseVerb: "사다", grammar: [{ text: "-아/어 가지고", pos: "Grammar Pattern", id: 1140, gloss: "and then, having done (ID 1140)" }] },
+	{ suffix: "이니까", stemType: "copula_inikka", grammar: [{ text: "이다", pos: "Copula", id: 56, gloss: "copula 'be' (ID 56)" }, { text: "-(으)니까", pos: "Verb Ending", id: 53, gloss: "since / because (ID 53)" }] },
 	{ suffix: "그래요", stemType: "fixed_base", baseVerb: "그렇다", grammar: [{ text: "-아/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
 	{ suffix: "이래요", stemType: "fixed_base", baseVerb: "이렇다", grammar: [{ text: "-아/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
 	// Polite additive and connective -고 endings

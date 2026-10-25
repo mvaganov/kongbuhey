@@ -61,7 +61,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 					}
 				}
 				baseVerb = candidateVerb;
-			} else if (rule.stemType === 'copula_l_kkayo') {
+			} else if (rule.stemType === 'copula_l_kkayo' || rule.stemType === 'copula_inikka') {
 				if (word.length <= rule.suffix.length) continue;
 				const stem = word.slice(0, -rule.suffix.length);
 				const sUnits = vocabByKo.get(stem) || [];

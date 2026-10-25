@@ -203,6 +203,40 @@ check("analyzeSentence parses auxiliary and bound noun patterns via SyntaxFrame 
 	assert.ok(aux4.surface.includes("맵지 않아요"));
 });
 
+check("isInformalConnective checks against Set populated during initialization", () => {
+	const index = analyzer.getIndex();
+	assert.ok(index.informalConnectiveEndings instanceof Set, "informalConnectiveEndings must be a Set");
+	assert.ok(index.informalConnectiveEndings.size > 20, "informalConnectiveEndings must be dynamically populated with verb endings");
+
+	// Key informal connective endings derived from verbs or default baseline
+	assert.ok(index.informalConnectiveEndings.has("해"), "해 must be in informalConnectiveEndings");
+	assert.ok(index.informalConnectiveEndings.has("돼"), "돼 must be in informalConnectiveEndings");
+	assert.ok(index.informalConnectiveEndings.has("가"), "가 must be in informalConnectiveEndings");
+	assert.ok(index.informalConnectiveEndings.has("와"), "와 must be in informalConnectiveEndings");
+	assert.ok(index.informalConnectiveEndings.has("봐"), "봐 must be in informalConnectiveEndings");
+	assert.ok(index.informalConnectiveEndings.has("드셔"), "드셔 must be in informalConnectiveEndings");
+
+	// Evaluation with index
+	assert.strictEqual(analyzer.isInformalConnective("사", index), true);
+	assert.strictEqual(analyzer.isInformalConnective("가", index), true);
+	assert.strictEqual(analyzer.isInformalConnective("먹어", index), true);
+	assert.strictEqual(analyzer.isInformalConnective("공부해", index), true);
+	assert.strictEqual(analyzer.isInformalConnective("책상", index), false);
+	assert.strictEqual(analyzer.isInformalConnective("공부", index), false);
+
+	// Evaluation without index (graceful fallback to dynamically inferred DEFAULT_INFORMAL_CONNECTIVES)
+	assert.strictEqual(analyzer.isInformalConnective("해"), true);
+	assert.strictEqual(analyzer.isInformalConnective("가"), true);
+	assert.strictEqual(analyzer.isInformalConnective("책상"), false);
+
+	// Verify buildInformalConnectives dynamically infers 90+ endings from units and morphology
+	assert.strictEqual(typeof analyzer.buildInformalConnectives, "function", "buildInformalConnectives must be exported");
+	const inferredSet = analyzer.buildInformalConnectives();
+	assert.ok(inferredSet.size >= 90, `Expected at least 90 dynamically inferred endings, got ${inferredSet.size}`);
+	assert.ok(inferredSet.has("드셔"), "드셔 must be dynamically derived from 드시다");
+	assert.ok(inferredSet.has("마셔"), "마셔 must be dynamically derived from 마시다");
+});
+
 // -----------------------------------------------------------------------------
 // 7. Compound Particle Recognition & Decomposition
 // -----------------------------------------------------------------------------
@@ -324,11 +358,11 @@ check("detectProperNameCandidate extracts dialogue speakers and event associatio
 });
 
 check("scaffoldUnit automatically scaffolds proper names with taxonomy tags", () => {
-	const unit = scaffoldUnit("리타오", "studytext82", {
-		passageText: "오늘 리타오 집들이가 있는 거 알고 있지?"
+	const unit = scaffoldUnit("수현", "studytext99", {
+		passageText: "오늘 수현 집들이가 있는 거 알고 있지?"
 	});
 	assert.ok(unit, "scaffoldUnit must generate unit");
-	assert.strictEqual(unit.Korean, "리타오");
+	assert.strictEqual(unit.Korean, "수현");
 	assert.strictEqual(unit.PartofSpeech, "Noun");
 	assert.deepStrictEqual(unit.SemanticTags, ["name", "proper_noun"]);
 	const vector = JSON.parse(unit.SemanticVector);
