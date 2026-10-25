@@ -100,6 +100,36 @@ function getVowelHarmony(char) {
 	return (d.medial === 0 || d.medial === 2 || d.medial === 8) ? '아' : '어';
 }
 
+/**
+ * Checks whether a character's initial consonant and medial vowel match
+ * any of the specified base syllable patterns, ignoring the final consonant (batchim).
+ *
+ * Example:
+ *   matchesBaseSyllable('됩니다', '되') === true ('됩' has initial ㄷ, medial ㅚ)
+ *   matchesBaseSyllable('되다', '되') === true
+ *   matchesBaseSyllable('됐어요', '되', '돼') === true ('됐' has medial ㅙ)
+ *
+ * @param {string} char Syllable or word whose first character is checked
+ * @param {...string} baseChars One or more base syllables to match against (e.g. '되', '돼')
+ * @returns {boolean} True if initial and medial match any baseChar
+ */
+function matchesBaseSyllable(char, ...baseChars) {
+	if (!char || typeof char !== 'string') return false;
+	const d1 = decomposeHangul(char[0]);
+	if (!d1) return baseChars.includes(char[0]);
+	for (let i = 0; i < baseChars.length; i++) {
+		const base = baseChars[i];
+		if (!base || typeof base !== 'string') continue;
+		const d2 = decomposeHangul(base[0]);
+		if (!d2) {
+			if (char[0] === base[0]) return true;
+		} else if (d1.initial === d2.initial && d1.medial === d2.medial) {
+			return true;
+		}
+	}
+	return false;
+}
+
 const exportedPrimitives = {
 	DATA_SCHEMA,
 	hasTag,
@@ -113,7 +143,8 @@ const exportedPrimitives = {
 	hasBatchim,
 	hasRieulBatchim,
 	getStem,
-	getVowelHarmony
+	getVowelHarmony,
+	matchesBaseSyllable
 };
 
 if (typeof window !== 'undefined') {

@@ -174,12 +174,198 @@ function getSchemaSummary(summaryPath = DEFAULT_SUMMARY_PATH, dataPath = DEFAULT
 	return updateSchemaSummary(summaryPath, dataPath);
 }
 
+const { decomposeHangul, setFinal } = require('./korean/core/primitives.js');
+
+/**
+ * Checks if a Korean word or alias already exists in data.js.
+ */
+function findExistingUnit(korean, dataPath = DEFAULT_DATA_PATH) {
+	if (!korean || typeof korean !== 'string') return null;
+	const word = korean.trim();
+	if (!word) return null;
+
+	const { KR_EN_languageUnits, DATA_SCHEMA } = require(path.resolve(dataPath));
+	for (let i = 0; i < KR_EN_languageUnits.length; i++) {
+		const u = KR_EN_languageUnits[i];
+		if (!u) continue;
+		if (u[DATA_SCHEMA.Korean] === word) return u;
+
+		const svRaw = u[DATA_SCHEMA.SemanticVector];
+		if (svRaw && typeof svRaw === 'string' && svRaw.includes(word)) {
+			try {
+				const sv = JSON.parse(svRaw);
+				if (Array.isArray(sv.aliases) && sv.aliases.includes(word)) {
+					return u;
+				}
+			} catch (_) {}
+		}
+	}
+	return null;
+}
+
+/**
+ * Tests whether stripping common verb/adjective endings (-았/었-, -습니다, -아/어, -고, -니까)
+ * yields a stem that matches an existing Action Verb or Descriptive Verb in data.js.
+ */
+function deduceExistingVerbStem(surface, dataPath = DEFAULT_DATA_PATH) {
+	if (!surface || typeof surface !== 'string') return null;
+	const s = surface.trim();
+	if (s.length < 1) return null;
+
+	const { KR_EN_languageUnits, DATA_SCHEMA } = require(path.resolve(dataPath));
+	const verbMap = new Map();
+	for (const u of KR_EN_languageUnits) {
+		if (u && (u[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) {
+			verbMap.set(u[DATA_SCHEMA.Korean], u);
+		}
+	}
+
+	// 1. Direct stem match for open informal verbs (e.g. 나가 -> 나가다, 사 -> 사다, 보 -> 보다)
+	if (verbMap.has(s) || verbMap.has(s + "다")) {
+		const u = verbMap.get(s) || verbMap.get(s + "다");
+		return { matched: true, surface: s, verbUnit: u, suffix: "open stem informal (no suffix)" };
+	}
+	if (s === "해") {
+		const u = verbMap.get("하다");
+		if (u) return { matched: true, surface: s, verbUnit: u, suffix: "하다 informal (해)" };
+	}
+
+	// 2. Candidate suffix patterns to test
+	const candidates = [];
+
+	// 2a. Formal polite endings: ~습니다, ~ㅂ니다
+	if (s.endsWith("습니다") && s.length > 3) {
+		candidates.push({ stem: s.slice(0, -3), suffix: "습니다" });
+	} else if (s.endsWith("ㅂ니다") || (s.length >= 2 && s.endsWith("니다"))) {
+		const basePart = s.replace(/니다$/, '');
+		if (basePart.length >= 1) {
+			const lastChar = basePart.slice(-1);
+			const d = decomposeHangul(lastChar);
+			if (d && d.final === 17) { // ㅂ coda
+				const openChar = setFinal(lastChar, 0);
+				const stemPrefix = basePart.slice(0, -1);
+				candidates.push({ stem: stemPrefix + openChar, suffix: "ㅂ니다 (open stem)" });
+				candidates.push({ stem: stemPrefix + setFinal(lastChar, 8), suffix: "ㅂ니다 (ㄹ-drop stem)" });
+			}
+		}
+	}
+
+	// 2b. 르-irregular past: ~랐습니다, ~렀습니다, ~랐어요, ~렀어요, ~랐다, ~렀다 (골랐습니다 -> 고르다, 몰랐어요 -> 모르다)
+	const reuMatch = s.match(/(랐|렀)(습니다|어요|다|고|던|네)$/);
+	if (reuMatch) {
+		const prefix = s.slice(0, -reuMatch[0].length);
+		if (prefix.length >= 1) {
+			const lastPre = prefix.slice(-1);
+			const d = decomposeHangul(lastPre);
+			if (d && d.final === 8) { // ㄹ coda
+				const strippedRoot = prefix.slice(0, -1) + setFinal(lastPre, 0);
+				candidates.push({ stem: strippedRoot + "르", suffix: `르-irregular past (-${reuMatch[0]})` });
+			}
+		}
+	}
+
+	// 2c. Past tense endings: ~았습니다, ~었습니다, ~였습니다, ~았다, ~었다, ~였다, ~았어요, ~었어요, ~였어요, ~았고, ~었고
+	const pastMatch = s.match(/(았|었|였)(습니다|어요|다|고|던|네|더)$/);
+	if (pastMatch) {
+		const pastIdx = s.lastIndexOf(pastMatch[1]);
+		const stem = s.slice(0, pastIdx);
+		if (stem.length > 0) {
+			candidates.push({ stem: stem, suffix: `-았/었-${pastMatch[2]}` });
+		}
+	}
+
+	// 2d. ㅂ-irregular past/connective: ~웠다, ~웠어요, ~웠습니다, ~워지다, ~워지니까, ~워
+	const bIrregRegex = /워(지니까|져서|졌다|집니다|요|서|도)?$/;
+	if (bIrregRegex.test(s)) {
+		const basePrefix = s.replace(bIrregRegex, '');
+		if (basePrefix.length >= 1) {
+			const lastPre = basePrefix.slice(-1);
+			const d = decomposeHangul(lastPre);
+			if (d && d.final === 0) {
+				const bChar = setFinal(lastPre, 17); // ㅂ coda
+				candidates.push({ stem: basePrefix.slice(0, -1) + bChar, suffix: "ㅂ-irregular ~워-" });
+			}
+		}
+	}
+
+	// 2e. ㅡ-irregular informal / past: 써 -> 쓰다, 꺼 -> 끄다, 썼다 -> 쓰다
+	if (s === "써" || s === "써서" || s === "써도" || s === "썼다" || s === "썼습니다" || s === "썼어요") {
+		candidates.push({ stem: "쓰", suffix: "ㅡ-irregular (쓰다)" });
+	} else if (s === "꺼" || s === "꺼서" || s === "껐다") {
+		candidates.push({ stem: "끄", suffix: "ㅡ-irregular (끄다)" });
+	} else if (s === "커" || s === "커서" || s === "컸다") {
+		candidates.push({ stem: "크", suffix: "ㅡ-irregular (크다)" });
+	}
+
+	// 2f. Common connective / mood endings: ~고, ~지, ~지만, ~니까, ~으니까, ~으면, ~면, ~아, ~어, ~아서, ~어서
+	const connSuffixes = [
+		{ ending: "지만", name: "-지만" },
+		{ ending: "으니까", name: "-(으)니까", stripEu: true },
+		{ ending: "니까", name: "-니까" },
+		{ ending: "으면", name: "-(으)면", stripEu: true },
+		{ ending: "면", name: "-면" },
+		{ ending: "어서", name: "-아서/어서" },
+		{ ending: "아서", name: "-아서/어서" },
+		{ ending: "어도", name: "-아/어도" },
+		{ ending: "아도", name: "-아/어도" },
+		{ ending: "고", name: "-고" },
+		{ ending: "지", name: "-지" },
+		{ ending: "어", name: "informal -어" },
+		{ ending: "아", name: "informal -아" }
+	];
+
+	for (const cs of connSuffixes) {
+		if (s.endsWith(cs.ending) && s.length > cs.ending.length) {
+			let stem = s.slice(0, -cs.ending.length);
+			candidates.push({ stem, suffix: cs.name });
+			if (cs.stripEu && stem.endsWith("으")) {
+				candidates.push({ stem: stem.slice(0, -1), suffix: cs.name });
+			}
+		}
+	}
+
+	// Test candidates against existing verbs in verbMap
+	for (const c of candidates) {
+		const candVerb = c.stem + "다";
+		if (verbMap.has(candVerb)) {
+			const u = verbMap.get(candVerb);
+			return {
+				matched: true,
+				surface: s,
+				verbUnit: u,
+				candidateStem: c.stem,
+				suffix: c.suffix
+			};
+		}
+	}
+
+	return null;
+}
+
 /**
  * Generates an intelligent draft language unit skeleton using the schema taxonomy.
  */
 function scaffoldUnit(korean, source = "studytext", context = {}, summary = null) {
-	const tax = summary || getSchemaSummary();
 	const word = String(korean || "").trim();
+	if (!word) return null;
+
+	// Exact-match guard
+	if (!context.force) {
+		const existing = findExistingUnit(word);
+		if (existing) {
+			console.log(`[DEDUPLICATION] "${word}" already exists as unit ${existing[0]} (${existing[1]} - ${existing[2]}). Skipping scaffolding.`);
+			return null;
+		}
+
+		// Smart reverse-stem morphology deduction
+		const morph = deduceExistingVerbStem(word);
+		if (morph) {
+			console.log(`[MORPHOLOGY HINT] "${word}" matches existing verb ${morph.verbUnit[1]} (ID ${morph.verbUnit[0]}) via suffix "${morph.suffix}". Check verb_morphology.js before creating a new unit.`);
+			return null;
+		}
+	}
+
+	const tax = summary || getSchemaSummary();
 
 	let pos = "Noun";
 	let tags = ["general"];
@@ -286,5 +472,7 @@ module.exports = {
 	analyzeSchema,
 	updateSchemaSummary,
 	getSchemaSummary,
-	scaffoldUnit
+	scaffoldUnit,
+	findExistingUnit,
+	deduceExistingVerbStem
 };

@@ -278,9 +278,12 @@ if (requestedTags && requestedTags._ids && requestedTags._ids.size > 0) {
 }
 const templates = [];
 activeGrammarUnits.forEach(entry => {
-	entry[DATA_SCHEMA.Conjugation].forEach(formula => {
-		templates.push({ formula, grammarUnit: entry });
-	});
+	const conj = entry[DATA_SCHEMA.Conjugation];
+	if (Array.isArray(conj)) {
+		conj.forEach(formula => {
+			templates.push({ formula, grammarUnit: entry });
+		});
+	}
 });
 
 let outputStr = "";

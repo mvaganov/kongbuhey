@@ -147,6 +147,14 @@ const VERB_SUFFIX_RULES = [
 	{ suffix: "하러", stemType: "hada", grammar: [{ text: "-(으)러", pos: "Verb Ending", id: 485, gloss: "in order to (ID 485)" }] },
 	{ suffix: "하거나", stemType: "hada", grammar: [{ text: "-거나", pos: "Verb Ending", id: 1291, gloss: "or (ID 1291)" }] },
 	{ suffix: "하겠습니다", stemType: "stem_da", grammar: [{ text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "-습니다", pos: "Verb Ending", id: 50, gloss: "formal declarative (ID 50)" }] },
+	{ suffix: "겠습니다", stemType: "stem_da", grammar: [{ text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "-습니다", pos: "Verb Ending", id: 50, gloss: "formal declarative (ID 50)" }] },
+	{ suffix: "으시면", stemType: "stem_da", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-(으)면", pos: "Verb Ending", id: 619, gloss: "conditional 'if/when' (ID 619)" }] },
+	{ suffix: "하시면", stemType: "hada", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-(으)면", pos: "Verb Ending", id: 619, gloss: "conditional 'if/when' (ID 619)" }] },
+	{ suffix: "시면", stemType: "stem_da", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-(으)면", pos: "Verb Ending", id: 619, gloss: "conditional 'if/when' (ID 619)" }] },
+	{ suffix: "라요", stemType: "stem_reu_present", grammar: [{ text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "러요", stemType: "stem_reu_present", grammar: [{ text: "-아요/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "라서", stemType: "stem_reu_present", grammar: [{ text: "-아/어서", pos: "Verb Ending", id: 459, gloss: "cause / sequential (ID 459)" }] },
+	{ suffix: "려서", stemType: "stem_reu_present", grammar: [{ text: "-아/어서", pos: "Verb Ending", id: 459, gloss: "cause / sequential (ID 459)" }] },
 	{ suffix: "하십시오", stemType: "hada", grammar: [{ text: "-(으)십시오", pos: "Verb Ending", id: 1644, gloss: "formal imperative (ID 1644)" }] },
 	{ suffix: "십시오", stemType: "stem_da", grammar: [{ text: "-(으)십시오", pos: "Verb Ending", id: 1644, gloss: "formal imperative (ID 1644)" }] },
 	{ suffix: "습니다", stemType: "stem_da", grammar: [{ text: "-습니다", pos: "Verb Ending", id: 50, gloss: "formal declarative (ID 50)" }] },
@@ -199,6 +207,7 @@ const VERB_SUFFIX_RULES = [
 	// 1-syllable endings
 	{ suffix: "해", stemType: "hada_informal", grammar: [{ text: "-아/어", pos: "Verb Ending", id: 459, gloss: "informal / sequential (ID 459)" }] },
 	{ suffix: "실", stemType: "honorific_adnominal", isAdnominal: true, grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-(으)ㄹ", pos: "Adnominal Ending", id: 646, gloss: "future/prospective adnominal (ID 646)" }] },
+	{ suffix: "으신", stemType: "honorific_past_adnominal", isAdnominal: true, grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-(으)ㄴ", pos: "Adnominal Ending", id: 644, gloss: "past adnominal (ID 644)" }] },
 	{ suffix: "신", stemType: "honorific_past_adnominal", isAdnominal: true, grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-(으)ㄴ", pos: "Adnominal Ending", id: 644, gloss: "past adnominal (ID 644)" }] },
 	{ suffix: "본", stemType: "trial_past_adnominal", isAdnominal: true, grammar: [{ text: "-어 보다 (experience)", pos: "Auxiliary Verb", id: 879, gloss: "experience (ID 879)" }, { text: "-(으)ㄴ", pos: "Adnominal Ending", id: 644, gloss: "past adnominal (ID 644)" }] },
 	{ suffix: "운", stemType: "stem_b_irregular", isAdnominal: true, grammar: [{ text: "-(으)ㄴ", pos: "Adnominal Ending", id: 644, gloss: "relative clause (adjective present) (ID 644)" }] },
@@ -347,9 +356,15 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 				isAdnominal = true;
 			} else if (rule.stemType === 'honorific_past_adnominal') {
 				if (word.length <= rule.suffix.length) continue;
-				const root = word.slice(0, -1);
-				baseVerb = root + "다";
-				isAdnominal = true;
+				const root = word.slice(0, -rule.suffix.length);
+				let candVerb = root + "다";
+				if (!vocabByKo.has(candVerb) && root.endsWith("으")) {
+					candVerb = root.slice(0, -1) + "다";
+				}
+				if (vocabByKo.has(candVerb)) {
+					baseVerb = candVerb;
+					isAdnominal = true;
+				}
 			} else if (rule.stemType === 'trial_past_adnominal') {
 				if (word.length <= rule.suffix.length) continue;
 				const root = word.slice(0, -1);
@@ -419,6 +434,19 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 						baseVerb = candReu;
 					}
 				}
+			} else if (rule.stemType === 'stem_reu_present') {
+				const stem = word.slice(0, -rule.suffix.length);
+				if (stem.length >= 1) {
+					const lastChar = stem.slice(-1);
+					const d = decomposeHangul(lastChar);
+					if (d && d.final === 8) { // ㄹ batchim (몰라요 -> 모르다, 골라요 -> 고르다, 불러요 -> 부르다)
+						const strippedChar = setFinal(lastChar, 0);
+						const candReu = stem.slice(0, -1) + strippedChar + "르다";
+						if (vocabByKo.has(candReu)) {
+							baseVerb = candReu;
+						}
+					}
+				}
 			} else if (rule.stemType === 'stem_past_contracted') {
 				const stemWithFinal = word.slice(0, -rule.suffix.length);
 				if (stemWithFinal.length < 1) continue;
@@ -473,6 +501,10 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 				}
 
 				if (!vUnit && !baseVerb.endsWith("하다") && rule.suffix.length < 2) {
+					continue;
+				}
+
+				if ((rule.suffix.includes("시") || rule.suffix.includes("신")) && !vUnit) {
 					continue;
 				}
 
@@ -562,6 +594,17 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 		if (d && d.medial === 6 && d.final === 0) { // medial ㅕ without batchim (ㅣ + ㅓ -> ㅕ)
 			const iChar = composeHangul(d.initial, 20, 0);
 			const baseVerb = word.slice(0, -1) + iChar + "다";
+			const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
+			if (vUnit) {
+				return {
+					surface: word,
+					category: "conjugated_verb",
+					lexical: { text: baseVerb, pos: vUnit[DATA_SCHEMA.PartofSpeech], unit: vUnit, missing: false, gloss: vUnit[DATA_SCHEMA.English] },
+					grammar: [{ text: "-아/어", pos: "Verb Ending", unit: unitById.get(459), gloss: "informal / sequential (ID 459)" }]
+				};
+			}
+		} else if (d && d.medial === 1 && d.final === 0) { // medial ㅐ without batchim (보내 -> 보내다)
+			const baseVerb = word + "다";
 			const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
 			if (vUnit) {
 				return {
@@ -682,29 +725,44 @@ function matchAdnominalEnding(word, index) {
 				};
 			}
 		}
-		if (d && d.final === 8) { // ㄹ batchim (prospective/future adnominal -(으)ㄹ, e.g. 할, 갈, 놀, 지루할)
-			// Case A: Base stem already ends in ㄹ (놀다, 살다, 알다, 만들다)
+		if (d && d.final === 8) { // ㄹ batchim (prospective/future adnominal -(으)ㄹ, e.g. 할, 갈, 놀, 쓸, 지루할)
+			// Candidate 1: Base stem already ends in ㄹ (놀다, 살다, 알다, 만들다)
 			const lBaseVerb = word + "다";
-			const lUnit = vocabByKo.get(lBaseVerb) ? vocabByKo.get(lBaseVerb)[0] : null;
-			if (lUnit && (lUnit[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || lUnit[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) {
-				return {
-					surface: word,
-					category: "adnominal_modifier",
-					lexical: { text: lBaseVerb, pos: lUnit[DATA_SCHEMA.PartofSpeech], unit: lUnit, missing: false, gloss: lUnit[DATA_SCHEMA.English] },
-					grammar: [{ text: "-(으)ㄹ", pos: "Adnominal Ending", unit: unitById.get(646), gloss: "prospective adnominal (ID 646)" }]
-				};
-			}
+			const lUnits = vocabByKo.get(lBaseVerb) || [];
+			const lUnit = lUnits.find(u => u[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb') || null;
 
-			// Case B: Open stem + ㄹ (할 -> 하다, 갈 -> 가다, 지루할 -> 지루하다, 볼 -> 보다)
+			// Candidate 2: Open stem + ㄹ (할 -> 하다, 갈 -> 가다, 쓸 -> 쓰다, 볼 -> 보다)
 			const strippedChar = setFinal(word.slice(-1), 0);
 			const stem = word.slice(0, -1) + strippedChar;
-			const baseVerb = stem + "다";
-			const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
-			if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || vUnit[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) {
+			const openBaseVerb = stem + "다";
+			const openUnits = vocabByKo.get(openBaseVerb) || [];
+			const openUnit = openUnits.find(u => u[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb') || null;
+
+			let chosenVerb = null;
+			let chosenUnit = null;
+			if (lUnit && openUnit) {
+				const lScore = lUnit[DATA_SCHEMA.PriorityScore] ?? 99;
+				const openScore = openUnit[DATA_SCHEMA.PriorityScore] ?? 99;
+				if (openScore < lScore) {
+					chosenVerb = openBaseVerb;
+					chosenUnit = openUnit;
+				} else {
+					chosenVerb = lBaseVerb;
+					chosenUnit = lUnit;
+				}
+			} else if (lUnit) {
+				chosenVerb = lBaseVerb;
+				chosenUnit = lUnit;
+			} else if (openUnit) {
+				chosenVerb = openBaseVerb;
+				chosenUnit = openUnit;
+			}
+
+			if (chosenUnit) {
 				return {
 					surface: word,
 					category: "adnominal_modifier",
-					lexical: { text: baseVerb, pos: vUnit[DATA_SCHEMA.PartofSpeech], unit: vUnit, missing: false, gloss: vUnit[DATA_SCHEMA.English] },
+					lexical: { text: chosenVerb, pos: chosenUnit[DATA_SCHEMA.PartofSpeech], unit: chosenUnit, missing: false, gloss: chosenUnit[DATA_SCHEMA.English] },
 					grammar: [{ text: "-(으)ㄹ", pos: "Adnominal Ending", unit: unitById.get(646), gloss: "prospective adnominal (ID 646)" }]
 				};
 			}
@@ -716,13 +774,56 @@ function matchAdnominalEnding(word, index) {
 			let baseVerb = rawStem + "다";
 			if (rawStem === "들") baseVerb = "듣다"; // ㄷ-irregular
 			else if (rawStem === "걸") baseVerb = "걷다";
+
+			// Check past tense infix -았/었- before prospective adnominal -(으)ㄹ (e.g. 샀을, 먹었을, 갔을, 봤을, 했을)
+			let pastInfixUnit = null;
+			if (!vocabByKo.has(baseVerb) && rawStem !== "있" && !rawStem.endsWith("있")) {
+				const lastChar = rawStem.slice(-1);
+				const d = decomposeHangul(lastChar);
+				if (d && d.final === 20) { // ㅆ batchim
+					const strippedChar = setFinal(lastChar, 0);
+					if (strippedChar === "아" || strippedChar === "어") {
+						const candRoot = rawStem.slice(0, -1) + "다";
+						if (vocabByKo.has(candRoot)) {
+							baseVerb = candRoot;
+							pastInfixUnit = unitById.get(335);
+						}
+					} else if (d.medial === 0) { // ㅏ + ㅆ (contracted from ㅏ + 았, e.g. 샀을 -> 사다, 갔을 -> 가다)
+						const openChar = composeHangul(d.initial, 0, 0);
+						const candOpen = rawStem.slice(0, -1) + openChar + "다";
+						if (vocabByKo.has(candOpen)) {
+							baseVerb = candOpen;
+							pastInfixUnit = unitById.get(335);
+						}
+					} else if (d.medial === 8) { // ㅗ + ㅆ (e.g. 봤을 -> 보다, 왔을 -> 오다)
+						const openChar = composeHangul(d.initial, 8, 0);
+						const candOpen = rawStem.slice(0, -1) + openChar + "다";
+						if (vocabByKo.has(candOpen)) {
+							baseVerb = candOpen;
+							pastInfixUnit = unitById.get(335);
+						}
+					} else if (rawStem.endsWith("했")) { // 했을 -> 하다
+						const candHada = rawStem.slice(0, -1) + "하다";
+						if (vocabByKo.has(candHada)) {
+							baseVerb = candHada;
+							pastInfixUnit = unitById.get(335);
+						}
+					}
+				}
+			}
+
 			const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
 			if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || vUnit[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) {
+				const gList = [];
+				if (pastInfixUnit) {
+					gList.push({ text: "-았/었-", pos: "Tense Infix", unit: pastInfixUnit, gloss: pastInfixUnit[DATA_SCHEMA.English] });
+				}
+				gList.push({ text: "-(으)ㄹ", pos: "Adnominal Ending", unit: unitById.get(646), gloss: "prospective adnominal (ID 646)" });
 				return {
 					surface: word,
 					category: "adnominal_modifier",
 					lexical: { text: baseVerb, pos: vUnit[DATA_SCHEMA.PartofSpeech], unit: vUnit, missing: false, gloss: vUnit[DATA_SCHEMA.English] },
-					grammar: [{ text: "-(으)ㄹ", pos: "Adnominal Ending", unit: unitById.get(646), gloss: "prospective adnominal (ID 646)" }]
+					grammar: gList
 				};
 			}
 		}

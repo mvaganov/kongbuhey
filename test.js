@@ -3,12 +3,13 @@
  * test.js - Unified Test Runner for Kongbuhey
  *
  * Executes the complete validation pipeline with FAIL-FAST behavior:
- *   [1/6] Schema & Data Integrity       (data.js: sequential IDs, column lengths, valid JSON vectors)
- *   [2/6] Schema Taxonomy Sync          (schema_analysis.js: taxonomy validity & cache freshness)
- *   [3/6] Homonym Dictionary Sync       (homonyms.js: 0 broken phonetic links, vocabulary coverage)
- *   [4/6] Exhaustive Generation Check   (exhaustive.js: morphology, 100% unit coverage, 0 errors)
- *   [5/6] Text Analyzer Passage Check   (text_analyzer.js: 0 gaps on ingested study texts)
- *   [6/6] Semantic Rules & Honorifics   (collocation, particle concord, honorific suppletion suites)
+ *   [0/7] Code Quality & Static Hygiene (file size bounds, browser purity, FK integrity, 0 magic IDs)
+ *   [1/7] Schema & Data Integrity       (data.js: sequential IDs, column lengths, valid JSON vectors)
+ *   [2/7] Schema Taxonomy Sync          (schema_analysis.js: taxonomy validity & cache freshness)
+ *   [3/7] Homonym Dictionary Sync       (homonyms.js: 0 broken phonetic links, vocabulary coverage)
+ *   [4/7] Exhaustive Generation Check   (exhaustive.js: morphology, 100% unit coverage, 0 errors)
+ *   [5/7] Text Analyzer Passage Check   (text_analyzer.js: 0 gaps on ingested study texts)
+ *   [6/7] Semantic Rules & Honorifics   (collocation, particle concord, honorific suppletion suites)
  *
  * Usage:
  *   node test.js                 # Run all validation suites across full curriculum
@@ -23,12 +24,13 @@ USAGE:
   node test.js [source] [options]
 
 VALIDATION STAGES (Fails fast on any error):
-  [1/6] Schema & Data Integrity     Validates 12-col schema, sequential IDs (0..N-1), valid POS, priority scores (1-5), JSON vectors
-  [2/6] Schema Taxonomy Sync        Verifies schema_summary.json freshness against data.js (auto-syncs if needed)
-  [3/6] Homonym Dictionary Sync     Verifies HOMONYMS token count and ensures 0 broken phonetic (_neighbor) links
-  [4/6] Exhaustive Generation Check Runs exhaustive.js in isolated subprocess: 100% unit coverage, 0 morphology/LUT errors
-  [5/6] Text Analyzer Passage Check Regression check on ingested study texts (studytext12, studytext21): 0 curriculum gaps
-  [6/6] Semantic & Honorific Concord Validates verb-noun collocations, case particle specialization, and honorific concord
+  [0/7] Code Quality & Static Hygiene Enforces file size limits, browser purity (no Node fs/path in analyzer), FK integrity, 0 magic IDs
+  [1/7] Schema & Data Integrity     Validates 12-col schema, sequential IDs (0..N-1), valid POS, priority scores (1-5), JSON vectors
+  [2/7] Schema Taxonomy Sync        Verifies schema_summary.json freshness against data.js (auto-syncs if needed)
+  [3/7] Homonym Dictionary Sync     Verifies HOMONYMS token count and ensures 0 broken phonetic (_neighbor) links
+  [4/7] Exhaustive Generation Check Runs exhaustive.js in isolated subprocess: 100% unit coverage, 0 morphology/LUT errors
+  [5/7] Text Analyzer Passage Check Regression check on ingested study texts (studytext12, studytext21): 0 curriculum gaps
+  [6/7] Semantic & Honorific Concord Validates verb-noun collocations, case particle specialization, and honorific concord
 
 OPTIONS:
   <source>             Target curriculum source (e.g. studytext21, class2012) for scoped validation
@@ -54,7 +56,7 @@ const STUDYTEXTS_PATH = path.resolve(__dirname, 'studytexts.js');
 const { validateLanguageUnitSemanticSelection } = require('./select.js');
 
 // Known fully-ingested passages that must ALWAYS have 0 gaps (regression tests)
-const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", "studytext22", "studytext31", "studytext41", "studytext42", "studytext51", "studytext52", "studytext61", "studytext62", "studytext71"];
+const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", "studytext22", "studytext31", "studytext41", "studytext42", "studytext51", "studytext52", "studytext61", "studytext62", "studytext71", "studytext72"];
 
 function failFast(stageName, errorDetail) {
 	console.error(`\n======================================================`);
@@ -78,9 +80,112 @@ function runTests(options = {}) {
 	}
 
 // -----------------------------------------------------------------------------
-// [1/6] Schema & Data Integrity
+// [0/7] Code Quality & Static Hygiene
 // -----------------------------------------------------------------------------
-process.stdout.write(`[1/6] Schema & Data Integrity ............ `);
+process.stdout.write(`[0/7] Code Quality & Static Hygiene ...... `);
+try {
+	// 1. File Size & Line Bounds
+	const FILE_LIMITS = {
+		'korean/analyzer/verb_morphology.js': 850,
+		'korean/analyzer/token_analyzer.js': 600,
+		'korean/analyzer/sentence_analyzer.js': 500
+	};
+	for (const [relPath, maxLines] of Object.entries(FILE_LIMITS)) {
+		const fullP = path.resolve(__dirname, relPath);
+		if (fs.existsSync(fullP)) {
+			const lineCount = fs.readFileSync(fullP, 'utf8').split('\n').length;
+			if (lineCount > maxLines) {
+				failFast("Stage 0 (Code Quality & Static Hygiene)", `File '${relPath}' has exceeded line limit: ${lineCount} lines (limit: ${maxLines}). Split module to maintain code quality.`);
+			}
+		}
+	}
+
+	// 2. Browser Purity Check (Zero Node dependencies in runtime analyzer / core modules)
+	const browserDirs = [
+		path.resolve(__dirname, 'korean', 'analyzer'),
+		path.resolve(__dirname, 'korean', 'core')
+	];
+	const nodeForbidden = [/require\s*\(\s*['"]fs['"]\s*\)/, /require\s*\(\s*['"]path['"]\s*\)/, /require\s*\(\s*['"]child_process['"]\s*\)/, /process\.env/];
+	for (const dir of browserDirs) {
+		const files = fs.readdirSync(dir).filter(f => f.endsWith('.js'));
+		for (const f of files) {
+			const filePath = path.join(dir, f);
+			const content = fs.readFileSync(filePath, 'utf8');
+			for (const pat of nodeForbidden) {
+				if (pat.test(content)) {
+					failFast("Stage 0 (Code Quality & Static Hygiene)", `Browser purity violation in '${path.relative(__dirname, filePath)}': forbidden Node pattern '${pat}'. Browser modules must remain zero-dependency.`);
+				}
+			}
+		}
+	}
+
+	// 3. Foreign Key & Grammar Part-of-Speech Verification
+	delete require.cache[DATA_PATH];
+	const { KR_EN_languageUnits, DATA_SCHEMA } = require(DATA_PATH);
+	const { PARTICLE_SPECS } = require('./korean/analyzer/particles.js');
+	for (const spec of PARTICLE_SPECS) {
+		for (const id of spec.ids) {
+			const u = KR_EN_languageUnits[id];
+			if (!u) {
+				failFast("Stage 0 (Code Quality & Static Hygiene)", `Broken foreign key in PARTICLE_SPECS: ID ${id} for particle '${spec.text}' does not exist in data.js.`);
+			}
+			if (u[DATA_SCHEMA.PartofSpeech] !== 'Grammar') {
+				failFast("Stage 0 (Code Quality & Static Hygiene)", `Invalid POS in PARTICLE_SPECS: ID ${id} ('${u[DATA_SCHEMA.Korean]}') is '${u[DATA_SCHEMA.PartofSpeech]}' instead of 'Grammar' for particle '${spec.text}'.`);
+			}
+		}
+	}
+
+	// 4. Magic Unit ID Detection
+	const analyzerDir = path.resolve(__dirname, 'korean', 'analyzer');
+	const analyzerFiles = fs.readdirSync(analyzerDir).filter(f => f.endsWith('.js'));
+	for (const f of analyzerFiles) {
+		if (f === 'particles.js') continue; // particles.js defines the canonical declarative spec table
+		const filePath = path.join(analyzerDir, f);
+		const content = fs.readFileSync(filePath, 'utf8');
+		const magicMatch = content.match(/unitId\s*:\s*\d+/);
+		if (magicMatch) {
+			failFast("Stage 0 (Code Quality & Static Hygiene)", `Hardcoded magic unitId found in '${path.relative(__dirname, filePath)}': '${magicMatch[0]}'. Look up unit dynamically via index or express in data.js.`);
+		}
+	}
+
+	// 5. Schema & Formatting Cleanliness
+	for (let i = 0; i < KR_EN_languageUnits.length; i++) {
+		const u = KR_EN_languageUnits[i];
+		const ko = u[DATA_SCHEMA.Korean];
+		const en = u[DATA_SCHEMA.English];
+		if (typeof ko === 'string' && ko !== ko.trim()) {
+			failFast("Stage 0 (Code Quality & Static Hygiene)", `Trailing whitespace in data.js at ID ${i} Korean: '${ko}'.`);
+		}
+		if (typeof en === 'string' && en !== en.trim()) {
+			failFast("Stage 0 (Code Quality & Static Hygiene)", `Trailing whitespace in data.js at ID ${i} English: '${en}'.`);
+		}
+	}
+
+	// Verify no stray console.log in korean/ library
+	for (const dir of browserDirs) {
+		const files = fs.readdirSync(dir).filter(f => f.endsWith('.js'));
+		for (const f of files) {
+			const filePath = path.join(dir, f);
+			const content = fs.readFileSync(filePath, 'utf8');
+			const lines = content.split('\n');
+			for (let ln = 0; ln < lines.length; ln++) {
+				const line = lines[ln].trim();
+				if (!line.startsWith('//') && !line.startsWith('*') && line.includes('console.log(')) {
+					failFast("Stage 0 (Code Quality & Static Hygiene)", `Stray console.log in library file '${path.relative(__dirname, filePath)}' line ${ln + 1}.`);
+				}
+			}
+		}
+	}
+
+	console.log(`[ PASS ] (Limits, browser purity, FK integrity, 0 magic IDs)`);
+} catch (err) {
+	failFast("Stage 0 (Code Quality & Static Hygiene)", err.stack || err.message);
+}
+
+// -----------------------------------------------------------------------------
+// [1/7] Schema & Data Integrity
+// -----------------------------------------------------------------------------
+process.stdout.write(`[1/7] Schema & Data Integrity ............ `);
 try {
 	delete require.cache[DATA_PATH];
 	const { KR_EN_languageUnits, DATA_SCHEMA } = require(DATA_PATH);
@@ -159,9 +264,9 @@ try {
 }
 
 // -----------------------------------------------------------------------------
-// [2/6] Schema Taxonomy & Metadata Freshness
+// [2/7] Schema Taxonomy & Metadata Freshness
 // -----------------------------------------------------------------------------
-process.stdout.write(`[2/6] Schema Taxonomy Sync ............... `);
+process.stdout.write(`[2/7] Schema Taxonomy Sync ............... `);
 try {
 	delete require.cache[SCHEMA_ANALYSIS_PATH];
 	const schemaAnalysis = require(SCHEMA_ANALYSIS_PATH);
@@ -183,9 +288,9 @@ try {
 }
 
 // -----------------------------------------------------------------------------
-// [3/6] Homonym Dictionary Sync
+// [3/7] Homonym Dictionary Sync
 // -----------------------------------------------------------------------------
-process.stdout.write(`[3/6] Homonym Dictionary Sync ............ `);
+process.stdout.write(`[3/7] Homonym Dictionary Sync ............ `);
 try {
 	delete require.cache[HOMONYMS_PATH];
 	const { HOMONYMS } = require(HOMONYMS_PATH);
@@ -217,9 +322,9 @@ try {
 }
 
 // -----------------------------------------------------------------------------
-// [4/6] Exhaustive Generation & Morphology Verification
+// [4/7] Exhaustive Generation & Morphology Verification
 // -----------------------------------------------------------------------------
-process.stdout.write(`[4/6] Exhaustive Sentence Generation ..... `);
+process.stdout.write(`[4/7] Exhaustive Sentence Generation ..... `);
 try {
 	const child_process = require('child_process');
 
@@ -252,9 +357,9 @@ try {
 }
 
 // -----------------------------------------------------------------------------
-// [5/6] Text Analyzer Study Text Check
+// [5/7] Text Analyzer Study Text Check
 // -----------------------------------------------------------------------------
-process.stdout.write(`[5/6] Text Analyzer Passage Check ........ `);
+process.stdout.write(`[5/7] Text Analyzer Passage Check ........ `);
 try {
 	delete require.cache[TEXT_ANALYZER_PATH];
 	delete require.cache[STUDYTEXTS_PATH];
@@ -286,9 +391,9 @@ try {
 }
 
 // -----------------------------------------------------------------------------
-// [6/6] Semantic Rules, Particle & Honorific Concord Check
+// [6/7] Semantic Rules, Particle & Honorific Concord Check
 // -----------------------------------------------------------------------------
-process.stdout.write(`[6/6] Semantic & Honorific Concord ....... `);
+process.stdout.write(`[6/7] Semantic & Honorific Concord ....... `);
 try {
 	const child_process = require('child_process');
 	const suiteScripts = [
@@ -334,7 +439,7 @@ try {
 
 	const elapsedSec = ((Date.now() - startTime) / 1000).toFixed(2);
 	console.log(`------------------------------------------------------`);
-	console.log(`OVERALL STATUS: ALL 6 SUITES PASSED (Duration: ${elapsedSec}s)`);
+	console.log(`OVERALL STATUS: ALL 7 STAGES PASSED (Duration: ${elapsedSec}s)`);
 	console.log(`======================================================\n`);
 	return { success: true, duration: elapsedSec };
 }
