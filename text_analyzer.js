@@ -48,56 +48,54 @@ function analyzePassage(passageText, passageName = "Passage") {
 
 			const draftUnits = [];
 			for (const mv of result.missingVocab) {
-				if (scaffoldFn) {
-					draftUnits.push(scaffoldFn(mv.text, passageName, {
-						isDescriptive: mv.pos === 'Descriptive Verb',
-						isCounter: mv.pos && mv.pos.includes('Counter'),
-						disambiguation: mv.gloss || ""
-					}, schemaTax));
-				} else {
-					draftUnits.push({
-						Korean: mv.text,
-						English: mv.gloss || `<English definition of "${mv.text}">`,
-						PartofSpeech: mv.pos || "Noun",
-						SemanticTags: ["general"],
-						Disambiguation: "",
-						Conjugation: mv.text.endsWith("하다") ? "hada" : "",
-						Source: passageName,
-						PriorityScore: 1,
-						FormalityLevel: "Universal",
-						HonorificRules: "",
-						SemanticVector: JSON.stringify({ domain: "concept", type: "general" }),
-						SyntaxFrame: ""
-					});
-				}
+				const u = scaffoldFn ? scaffoldFn(mv.text, passageName, {
+					isDescriptive: mv.pos === 'Descriptive Verb',
+					isCounter: mv.pos && mv.pos.includes('Counter'),
+					disambiguation: mv.gloss || ""
+				}, schemaTax) : {
+					Korean: mv.text,
+					English: mv.gloss || `<English definition of "${mv.text}">`,
+					PartofSpeech: mv.pos || "Noun",
+					SemanticTags: ["general"],
+					Disambiguation: "",
+					Conjugation: mv.text.endsWith("하다") ? "hada" : "",
+					Source: passageName,
+					PriorityScore: 1,
+					FormalityLevel: "Universal",
+					HonorificRules: "",
+					SemanticVector: JSON.stringify({ domain: "concept", type: "general" }),
+					SyntaxFrame: ""
+				};
+				if (u) draftUnits.push(u);
 			}
 
 			for (const mg of result.missingGrammar) {
-				if (scaffoldFn) {
-					draftUnits.push(scaffoldFn(mg.text, passageName, {
-						isVerbEnding: true,
-						disambiguation: mg.gloss || ""
-					}, schemaTax));
-				} else {
-					draftUnits.push({
-						Korean: mg.text,
-						English: mg.gloss || `<English explanation of "${mg.text}">`,
-						PartofSpeech: "Grammar",
-						SemanticTags: ["grammar"],
-						Disambiguation: "",
-						Conjugation: ["{VP_AVst}"],
-						Source: passageName,
-						PriorityScore: 2,
-						FormalityLevel: "Universal",
-						HonorificRules: "",
-						SemanticVector: JSON.stringify({ domain: "grammar", type: "verb_ending" }),
-						SyntaxFrame: ""
-					});
-				}
+				const gu = scaffoldFn ? scaffoldFn(mg.text, passageName, {
+					isVerbEnding: true,
+					disambiguation: mg.gloss || ""
+				}, schemaTax) : {
+					Korean: mg.text,
+					English: mg.gloss || `<English explanation of "${mg.text}">`,
+					PartofSpeech: "Grammar",
+					SemanticTags: ["grammar"],
+					Disambiguation: "",
+					Conjugation: ["{VP_AVst}"],
+					Source: passageName,
+					PriorityScore: 2,
+					FormalityLevel: "Universal",
+					HonorificRules: "",
+					SemanticVector: JSON.stringify({ domain: "grammar", type: "verb_ending" }),
+					SyntaxFrame: ""
+				};
+				if (gu) draftUnits.push(gu);
 			}
 
-			fs.writeFileSync(fullDraftPath, JSON.stringify(draftUnits, null, 2), 'utf8');
-			result.draftFile = draftFile;
+			if (draftUnits.length > 0) {
+				fs.writeFileSync(fullDraftPath, JSON.stringify(draftUnits, null, 2), 'utf8');
+				result.draftFile = draftFile;
+			} else if (fs.existsSync(fullDraftPath)) {
+				try { fs.unlinkSync(fullDraftPath); } catch (_) {}
+			}
 		} catch (e) {
 			// Non-fatal if drafting fails
 		}

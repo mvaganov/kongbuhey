@@ -7,7 +7,7 @@
  * Platform: Node.js & Browser (Vanilla JS, zero dependencies).
  */
 
-const { DATA_SCHEMA, decomposeHangul, composeHangul, setFinal } =
+const { DATA_SCHEMA, decomposeHangul, composeHangul, setFinal, matchesBaseSyllable } =
 	(typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 
 const { PARTICLE_SPECS } =
@@ -51,6 +51,9 @@ function resolveAuxiliaryEnding(cleanWord, unitById) {
 	if (cleanWord.endsWith("나요")) {
 		return { text: "-나요", pos: "Verb Ending", unit: unitById.get(930), gloss: "-나요 (Polite interrogative, ID 930)" };
 	}
+	if (cleanWord.endsWith("십시오") || cleanWord.endsWith("으십시오")) {
+		return { text: "-(으)십시오", pos: "Verb Ending", unit: unitById.get(1644), gloss: "-(으)십시오 (Formal imperative, ID 1644)" };
+	}
 	if (cleanWord.endsWith("는")) {
 		return { text: "-는", pos: "Adnominal Ending", unit: unitById.get(645), gloss: "-는 (Adnominal Ending, ID 645)" };
 	}
@@ -76,7 +79,8 @@ function isInformalConnective(word) {
 	if (!word) return false;
 	return word.endsWith("해") || word.endsWith("아") || word.endsWith("어") ||
 		word.endsWith("여") || word.endsWith("와") || word.endsWith("가") ||
-		word.endsWith("써") || word.endsWith("줘") || word.endsWith("드셔");
+		word.endsWith("써") || word.endsWith("줘") || word.endsWith("드셔") ||
+		word.endsWith("내") || word.endsWith("려") || word.endsWith("봐");
 }
 
 /**
@@ -98,11 +102,14 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 	// 1. Resolve Lexical Verb
 	let lexical = null;
 	let detectedPastInfix = null;
+	let detectedInchoative = null;
+	let detectedCopula = null;
 	if (match.lexicalType === "stem_da") {
+		const targetWord = match.lexicalTokenIndex === 2 ? w2 : w1;
 		const suffixLen = (match.stemSuffix || "다").length;
-		const stem = w1.slice(0, -suffixLen);
+		const stem = targetWord.slice(0, -suffixLen);
 		let baseVerb = stem + "다";
-		if (!vocabByKo.has(baseVerb) && stem.length > 1) {
+		if (!vocabByKo.has(baseVerb) && stem.length > 0) {
 			const lastChar = stem.slice(-1);
 			const d = decomposeHangul(lastChar);
 			if (d && d.final === 20) { // ㅆ batchim (past tense: 았 / 었)
@@ -112,8 +119,60 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 					const candVerb = rootStem + "다";
 					if (vocabByKo.has(candVerb)) {
 						baseVerb = candVerb;
-						detectedPastInfix = { text: "-았/었-", pos: "Tense Infix", unitId: 335, gloss: "past tense (ID 335)" };
+						const pastCandidates = (index.grammarByKo && index.grammarByKo.get("~았/었어요")) || [];
+						const pastUnit = pastCandidates[0] || null;
+						detectedPastInfix = {
+							text: "-았/었-",
+							pos: "Tense Infix",
+							unitId: pastUnit ? pastUnit[DATA_SCHEMA.Id] : null,
+							gloss: pastUnit ? pastUnit[DATA_SCHEMA.English] : "past tense"
+						};
 					}
+				}
+			} else if (d && d.final === 4) { // ㄴ batchim (adnominal -ㄴ지 / -(으)ㄴ지, e.g. 튼튼한지 -> 튼튼하다)
+				const strippedChar = setFinal(lastChar, 0);
+				const candVerb = stem.slice(0, -1) + strippedChar + "다";
+				if (vocabByKo.has(candVerb)) {
+					baseVerb = candVerb;
+				}
+			} else if (stem.endsWith("워지")) { // inchoative -어지다 on ㅂ-irregular (e.g. 더러워지지 -> 더럽다 + -어지다)
+				const rootStem = stem.slice(0, -2);
+				const prevChar = rootStem.slice(-1);
+				const prevD = decomposeHangul(prevChar);
+				if (prevD && prevD.final === 0) {
+					const bChar = composeHangul(prevD.initial, prevD.medial, 17);
+					const candB = rootStem.slice(0, -1) + bChar + "다";
+					if (vocabByKo.has(candB)) {
+						baseVerb = candB;
+						const inchCandidates = (index.grammarByKo && index.grammarByKo.get("-어지다")) || [];
+						const inchUnit = inchCandidates[0] || null;
+						detectedInchoative = { text: "-어지다", pos: "Verb Ending", unitId: inchUnit ? inchUnit[DATA_SCHEMA.Id] : null, gloss: inchUnit ? inchUnit[DATA_SCHEMA.English] : "become / get" };
+					}
+				}
+			} else if (stem.endsWith("해지")) {
+				const candHada = stem.slice(0, -2) + "하다";
+				if (vocabByKo.has(candHada)) {
+					baseVerb = candHada;
+					const inchCandidates = (index.grammarByKo && index.grammarByKo.get("-어지다")) || [];
+					const inchUnit = inchCandidates[0] || null;
+					detectedInchoative = { text: "-어지다", pos: "Verb Ending", unitId: inchUnit ? inchUnit[DATA_SCHEMA.Id] : null, gloss: inchUnit ? inchUnit[DATA_SCHEMA.English] : "become / get" };
+				}
+			} else if (stem.endsWith("어지") || stem.endsWith("아지")) {
+				const candRoot = stem.slice(0, -2) + "다";
+				if (vocabByKo.has(candRoot)) {
+					baseVerb = candRoot;
+					const inchCandidates = (index.grammarByKo && index.grammarByKo.get("-어지다")) || [];
+					const inchUnit = inchCandidates[0] || null;
+					detectedInchoative = { text: "-어지다", pos: "Verb Ending", unitId: inchUnit ? inchUnit[DATA_SCHEMA.Id] : null, gloss: inchUnit ? inchUnit[DATA_SCHEMA.English] : "become / get" };
+				}
+			} else if (stem.endsWith("이") && stem.length > 1) { // copula -이다 on noun (e.g. 디자인이기 -> 디자인 + 이다)
+				const nounStem = stem.slice(0, -1);
+				const nUnits = (vocabByKo.get(nounStem) || []).filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+				if (nUnits.length > 0) {
+					baseVerb = nounStem;
+					const copCandidates = (index.grammarByKo && (index.grammarByKo.get("입니다") || index.grammarByKo.get("이다"))) || [];
+					const copUnit = copCandidates[0] || null;
+					detectedCopula = { text: "이다", pos: "Copula", unitId: copUnit ? copUnit[DATA_SCHEMA.Id] : null, gloss: copUnit ? copUnit[DATA_SCHEMA.English] : "copula 'be'" };
 				}
 			}
 		}
@@ -126,10 +185,13 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 			gloss: vUnit ? vUnit[DATA_SCHEMA.English] : ""
 		};
 	} else if (match.lexicalType === "stem_informal_or_da") {
-		const stemWithInf = w1.endsWith("도") ? w1.slice(0, -1) : w1;
+		const targetWord = match.lexicalTokenIndex === 2 ? w2 : w1;
+		const stemWithInf = targetWord.endsWith("도") ? targetWord.slice(0, -1) : targetWord;
 		let baseVerb = null;
 		if (stemWithInf.endsWith("해")) {
 			baseVerb = stemWithInf.slice(0, -1) + "하다";
+		} else if (stemWithInf.endsWith("려")) {
+			baseVerb = stemWithInf.slice(0, -1) + "리다";
 		} else if (stemWithInf.endsWith("어") || stemWithInf.endsWith("아")) {
 			const stripped = stemWithInf.slice(0, -1);
 			baseVerb = stripped + "다";
@@ -237,6 +299,24 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 			gloss: detectedPastInfix.gloss
 		});
 	}
+	if (detectedInchoative) {
+		const inchUnit = unitById.get(detectedInchoative.unitId);
+		grammarList.push({
+			text: detectedInchoative.text,
+			pos: detectedInchoative.pos,
+			unit: inchUnit,
+			gloss: detectedInchoative.gloss
+		});
+	}
+	if (detectedCopula) {
+		const copUnit = unitById.get(detectedCopula.unitId);
+		grammarList.push({
+			text: detectedCopula.text,
+			pos: detectedCopula.pos,
+			unit: copUnit,
+			gloss: detectedCopula.gloss
+		});
+	}
 
 	if (match.extraParticle) {
 		const pUnit = unitById.get(match.extraParticle.unitId);
@@ -316,10 +396,14 @@ function tryMatchMultiWord(rawWords, i, sentenceContext, index) {
 		isAdnominalN: isAdnominalN(w1),
 		isAdnominalL: isAdnominalL(w1),
 		isInformal: isInformalConnective(w1),
+		checkAdnominalN: isAdnominalN,
+		checkAdnominalL: isAdnominalL,
+		decomposeHangul,
 		rawWords,
 		i,
 		sentenceContext,
-		index
+		index,
+		matchesBaseSyllable
 	};
 
 	// Evaluate declarative SyntaxFrame matchers registered in index

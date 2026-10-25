@@ -15,14 +15,15 @@
 
 ```
 kongbuhey/
-├── data.js                     # Single point of truth: 12-element schema & 1,747 language units
+├── data.js                     # Single point of truth: 12-element schema & 1,827 language units
 ├── schema_summary.json         # High-speed cached taxonomies (POS, tags, domains, honorifics)
-├── schema_analysis.js          # Taxonomy extractor & draft unit scaffolder
+├── schema_analysis.js          # Taxonomy extractor & smart draft unit scaffolder (stem deduction & deduplication)
 ├── select.js                   # CLI/module: SQL-like query, update, insert & schema alteration
 ├── homonyms.js                 # Surface token resolver: direct units, LUT trees & confusable pairs
 ├── text_analyzer.js            # Passage analysis, morphological decomposition & curriculum gap detector
+├── ingest.js                   # Unified 1-command ingestion pipeline (decomposition, scaffold, insert, test)
 ├── generator.js & exhaustive.js# Combinatorial phrase generators & Cartesian validator
-├── test.js                     # 6-stage unified fast-failing master test suite
+├── test.js                     # 7-stage unified fast-failing master test suite (Stage 0: Static Hygiene & Linter)
 ├── tts_demo.html               # Interactive browser SpeechSynthesis testbed
 ├── korean.js                   # Public facade re-exporting core modules
 ├── korean/
@@ -52,15 +53,16 @@ kongbuhey/
 
 ### Key Modules Summary
 1. **`data.js`**: 12-column schema array (`[Id, Korean, English, POS, SemanticTags, Disambiguation, ConjugationRules, Source, PriorityScore, FormalityLevel, HonorificRules, SemanticVector]`).
-   - 1,747 units sequentially indexed 0..1746 with zero TODOs.
+   - 1,827 units sequentially indexed 0..1826 with zero TODOs.
    - Houses all vocabulary, counting classifiers, honorific titles, origin/goal/static locatives, humble verbs, and clausal connectives.
 2. **`korean.js` & `korean/`**:
    - `korean/phonetics/pronunciation.js`: Standard Korean Pronunciation (국립국어원 표준 발음법) implementing statutory exceptions (제10항/제11항 coda dissimilation, 제15항 substantive boundary liaison, 제16항 letter name liaison, 제20항 Sino-Korean non-lateralization, 제24항 passive/causative non-tensification, 제26항 reduplicated Hanja, 제28항 saisori, 제29항 compound [ㄴ] insertion).
    - `korean/phonetics/english_phonemes.js`: Transliterates Korean text into Latin phonetic script optimized for browser speech synthesizers (English, French, Polish).
    - `korean/core/morphology.js`: Robust agglutinative morphology engine resolving batchim allomorphs, vowel harmony, irregulars (ㄷ, ㅂ, ㅅ, 르, ㅡ, ㅎ, ㄹ), and copula contractions.
-3. **`select.js`**: Query, filter, update, and insert units using familiar SQL-like syntax without loading all 1,747 rows into LLM context.
+3. **`select.js`**: Query, filter, update, and insert units using familiar SQL-like syntax without loading all 1,827 rows into LLM context.
 4. **`text_analyzer.js` & `korean/analyzer/`**: Decomposes natural Korean passages into constituent learning units, resolving homonyms and identifying curriculum gaps. Refactored into a modular, zero-dependency engine optimized for both Node CLI and interactive web browser execution (<5ms per passage).
-5. **`tts_demo.html`**: Visual and auditory testbed for evaluating browser `window.speechSynthesis` voices with customizable styles (`natural`, `hyphenated`, `spaced`) and pitch/rate controls.
+5. **`ingest.js`**: Unified CLI pipeline automating passage decomposition, stem deduction hints, draft filtering, unit insertion, homonym synchronization, and test verification in one command.
+6. **`tts_demo.html`**: Visual and auditory testbed for evaluating browser `window.speechSynthesis` voices with customizable styles (`natural`, `hyphenated`, `spaced`) and pitch/rate controls.
 
 ---
 
@@ -100,42 +102,33 @@ kongbuhey/
 ---
 
 ## 4. Current Status & Verification
-- **Dataset**: 1,827 units (100% valid, 0 TODOs, sequential IDs 0..1826).
-- **Homonym Dictionary**: 3,206 tokens mapped, 0 broken links.
-- **Ingested Passages (Phase 1.5)**: `studytext12`, `studytext21`, `studytext22`, `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext71` (100% recognized, 0 curriculum gaps across 11 passages).
+- **Dataset**: 1,833 units (100% valid, 0 TODOs, sequential IDs 0..1832).
+- **Homonym Dictionary**: 3,216 tokens mapped, 0 broken links.
+- **Ingested Passages (Phase 1.5)**: `studytext12`, `studytext21`, `studytext22`, `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext71`, `studytext72` (100% recognized, 0 curriculum gaps across 12 passages).
 - **Master Test Suite (`node test.js`)**:
-  - Stage 1: Schema & Data Integrity [ PASS ] (1,827 units, sequential IDs 0..1826)
-  - Stage 2: Schema Taxonomy Sync [ PASS ] (9 POS, 622 tags, 120 domains)
-  - Stage 3: Homonym Dictionary Sync [ PASS ] (3,206 tokens)
-  - Stage 4: Exhaustive Sentence Generation [ PASS ] (7,497 sentences, 0 errors)
-  - Stage 5: Text Analyzer Passage Check [ PASS ] (11 passages: 0 gaps)
-  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 5,956 assertions passed)
+  - Stage 0: Code Quality & Static Hygiene [ PASS ] (Limits, browser purity, FK integrity, 0 magic IDs)
+  - Stage 1: Schema & Data Integrity [ PASS ] (1,833 units, sequential IDs 0..1832)
+  - Stage 2: Schema Taxonomy Sync [ PASS ] (9 POS, 624 tags, 120 domains)
+  - Stage 3: Homonym Dictionary Sync [ PASS ] (3,216 tokens)
+  - Stage 4: Exhaustive Sentence Generation [ PASS ] (7,504 sentences, 0 errors)
+  - Stage 5: Text Analyzer Passage Check [ PASS ] (12 passages: 0 gaps)
+  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 5,954 assertions passed)
 - **Modular Analyzer Suite (`node test/analyzer_modular_test.js`)**: 9/9 tests passed, browser-clean (zero Node dependencies).
 
 ---
 
 ## 5. Immediate Next Steps
 
-### 1. Ingest Next Study Text: `studytext72` (Phase 1.5)
-Target passage: `studytext72` (`식탁과 의자`)
-Follow the standardized small-batch ingestion workflow:
-1. Run passage decomposition:
-   ```bash
-   node text_analyzer.js studytext72
-   ```
-2. Review `scratch/new_units_studytext72.json` generated by `schema_analysis.scaffoldUnit()`. Refine definitions, POS, tags, and `SyntaxFrame`.
-3. Insert new units:
-   ```bash
-   node select.js INSERT FROMFILE scratch/new_units_studytext72.json --source studytext72
-   ```
-4. Update homonym index:
-   ```bash
-   node homonyms.js update --source studytext72
-   ```
-5. Run fast-failing verification:
-   ```bash
-   node test.js studytext72
-   ```
+### 1. Ingest Next Study Text: `studytext81` (Phase 1.5)
+Target passage: `studytext81` (`3학년 2반 친구들에게`)
+Execute with the unified single-command pipeline:
+```bash
+# Preview gaps and morphology hints without modifying data
+node ingest.js studytext81 --dry-run
+
+# Run full ingestion, confirmation, synchronization, and test suite in one pass
+node ingest.js studytext81
+```
 
 ### 2. Interactive Study & Flashcard Web App (Phase 2)
 - Build the core study UI (`index.html`, `index.css`) utilizing rich modern aesthetics (glassmorphism, clean typography, dark theme, fluid animations).

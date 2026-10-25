@@ -57,7 +57,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 	}
 
 	// 0. Standalone particle (e.g. from punctuation or source spacing)
-	const exactSpec = findExactParticle(word);
+	const exactSpec = (word !== "이" && word !== "하고") ? findExactParticle(word) : null;
 	if (exactSpec) {
 		const pUnit = exactSpec.ids.length > 0 ? unitById.get(exactSpec.ids[0]) : null;
 		return {
@@ -108,31 +108,82 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 		}
 	}
 
-	// 0.15 Noun + Copula Past / Conditional (e.g. 룸메이트였으면, 학생이었으면, 친구였어요)
-	const copulaPastMatch = word.match(/^(.+?)(이었으면|였으면|이었습니다|였습니다|이었어요|였어요)$/);
+	// 0.15 Noun + Copula Past / Conditional (e.g. 룸메이트였으면, 학생이었으면, 친구였어요, 25만원이었는데)
+	const copulaPastMatch = word.match(/^(.+?)(이었으면|였으면|이었습니다|였습니다|이었어요|였어요|이었는데|였는데)$/);
 	if (copulaPastMatch) {
 		const stem = copulaPastMatch[1];
 		const ending = copulaPastMatch[2];
 		const stemUnits = vocabByKo.get(stem) || [];
 		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		let nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
+		let isNumeric = false;
+		if (!nUnit) {
+			const numM = stem.match(/^(\d+(?:[~-]\d+)?)([가-힣]+)$/);
+			if (numM) {
+				isNumeric = true;
+				const cText = numM[2];
+				nUnit = (cText === "만원" || cText === "원") ? unitById.get(526) : (vocabByKo.get(cText) ? vocabByKo.get(cText)[0] : null);
+			}
+		}
+
+		if (nUnit || vocabByKo.has(stem) || isNumeric) {
+			const isCond = ending.endsWith("면");
+			const isFormal = ending.endsWith("습니다");
+			const isNeunde = ending.endsWith("는데");
+			const gList = [
+				{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" },
+				{ text: "-았/었-", pos: "Tense Infix", unit: unitById.get(335), gloss: "past tense (ID 335)" },
+				isCond ? { text: "-(으)면", pos: "Verb Ending", unit: unitById.get(619), gloss: "conditional 'if/when' (ID 619)" } :
+					isFormal ? { text: "-습니다", pos: "Verb Ending", unit: unitById.get(50), gloss: "formal declarative (ID 50)" } :
+						isNeunde ? { text: "-는데", pos: "Verb Ending", unit: unitById.get(620), gloss: "background/contrastive (ID 620)" } :
+							{ text: "-아요/어요", pos: "Verb Ending", unit: unitById.get(49), gloss: "polite informal (ID 49)" }
+			];
+
+			return {
+				surface: word,
+				category: "noun_copula_past",
+				lexical: { text: stem, pos: isNumeric ? "Number+Counter" : (nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun"), unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : stem },
+				grammar: gList
+			};
+		}
+	}
+
+	// 0.17 Noun + Copula Connective 이고 (e.g. 갈색이고, 학생이고)
+	if (word.endsWith("이고") && word.length > 2) {
+		const stem = word.slice(0, -2);
+		const stemUnits = vocabByKo.get(stem) || [];
+		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
 		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
+		if (nUnit || vocabByKo.has(stem)) {
+			return {
+				surface: word,
+				category: "noun_copula_connective",
+				lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")" },
+				grammar: [
+					{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" },
+					{ text: "-고", pos: "Verb Ending", unit: unitById.get(336), gloss: "connective 'and' (ID 336)" }
+				]
+			};
+		}
+	}
 
-		const isCond = ending.endsWith("면");
-		const isFormal = ending.endsWith("습니다");
-		const gList = [
-			{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" },
-			{ text: "-았/었-", pos: "Tense Infix", unit: unitById.get(335), gloss: "past tense (ID 335)" },
-			isCond ? { text: "-(으)면", pos: "Verb Ending", unit: unitById.get(619), gloss: "conditional 'if/when' (ID 619)" } :
-				isFormal ? { text: "-습니다", pos: "Verb Ending", unit: unitById.get(50), gloss: "formal declarative (ID 50)" } :
-					{ text: "-아요/어요", pos: "Verb Ending", unit: unitById.get(49), gloss: "polite informal (ID 49)" }
-		];
-
-		return {
-			surface: word,
-			category: "noun_copula_past",
-			lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : stem },
-			grammar: gList
-		};
+	// 0.18 Noun + Copula Background/Contrastive 인데 (e.g. 방석인데, 학생인데)
+	if (word.endsWith("인데") && word.length > 2) {
+		const stem = word.slice(0, -2);
+		const stemUnits = vocabByKo.get(stem) || [];
+		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
+		if (nUnit || vocabByKo.has(stem)) {
+			return {
+				surface: word,
+				category: "noun_copula_connective",
+				lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")" },
+				grammar: [
+					{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" },
+					{ text: "-는데", pos: "Verb Ending", unit: unitById.get(620), gloss: "background/contrastive (ID 620)" }
+				]
+			};
+		}
 	}
 
 	// 0.2 Noun + Copula + -아/어서: 이어서 / 여서 (e.g. 대전이어서, 친구여서)
@@ -255,7 +306,10 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 		const counterText = numCounterMatch[2];
 		const particleText = numCounterMatch[3];
 		const counterUnits = vocabByKo.get(counterText) || [];
-		const counterUnit = counterUnits.length > 0 ? counterUnits[0] : null;
+		let counterUnit = counterUnits.length > 0 ? counterUnits[0] : null;
+		if (!counterUnit && (counterText === "만원" || counterText.endsWith("원"))) {
+			counterUnit = unitById.get(526);
+		}
 
 		const gList = [];
 		if (particleText) {

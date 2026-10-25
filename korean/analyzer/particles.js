@@ -20,6 +20,7 @@ const PARTICLE_SPECS = Object.freeze([
 	{ text: "한테는", ids: [618, 36], desc: "한테 + 는 (Dative informal topic)" },
 	{ text: "한테도", ids: [618, 366], desc: "한테 + 도 (Dative informal additive)" },
 	{ text: "만의", ids: [1402, 856], desc: "만 + 의 (Only + Possessive)" },
+	{ text: "에나", ids: [132, 1333], desc: "에 + 나 (Location + inclusive delimiter)" },
 
 	// Primary case & delimiter particles
 	{ text: "에서", ids: [199], desc: "에서 (Location of action / source)" },

@@ -134,6 +134,7 @@ const exportedMembers = {
 	hasRieulBatchim: primitives.hasRieulBatchim,
 	getStem: primitives.getStem,
 	getVowelHarmony: primitives.getVowelHarmony,
+	matchesBaseSyllable: primitives.matchesBaseSyllable,
 
 	// State collections & Lifecycle
 	properNames: state.properNames,
