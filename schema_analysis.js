@@ -14,6 +14,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const { decomposeHangul, composeHangul, setFinal, hasBatchim } = require('./korean/core/primitives.js');
+const { recognizeCompoundParticle, decomposeCompoundParticle } = require('./korean/analyzer/particles.js');
 
 const DEFAULT_DATA_PATH = path.resolve(__dirname, 'data.js');
 const DEFAULT_SUMMARY_PATH = path.resolve(__dirname, 'schema_summary.json');
@@ -173,8 +175,6 @@ function getSchemaSummary(summaryPath = DEFAULT_SUMMARY_PATH, dataPath = DEFAULT
 	}
 	return updateSchemaSummary(summaryPath, dataPath);
 }
-
-const { decomposeHangul, setFinal } = require('./korean/core/primitives.js');
 
 /**
  * Checks if a Korean word or alias already exists in data.js.
@@ -360,7 +360,7 @@ function deduceExistingVerbStem(surface, dataPath = DEFAULT_DATA_PATH) {
 
 /**
  * Generates a ready-to-paste JavaScript rule snippet for VERB_SUFFIX_RULES
- * in korean/analyzer/verb_morphology.js based on a reverse-stem morphology match.
+ * in korean/analyzer/verb_suffix_rules.js based on a reverse-stem morphology match.
  */
 function generateVerbSuffixSnippet(morph) {
 	if (!morph || !morph.verbUnit) return null;
@@ -503,6 +503,117 @@ function generateVerbSuffixSnippet(morph) {
 }
 
 /**
+ * Detects whether an unparsed word or stem is likely a proper personal name
+ * based on morphological markers (vocatives, familiar diminutive -이) or passage context.
+ * 
+ * @param {string} word Korean word or candidate stem
+ * @param {string} [passageText] Raw passage string for contextual heuristics
+ * @param {Map|Set|Object} [vocabByKo] Optional vocab index to prevent hijacking common nouns
+ * @returns {Object|null} Proper name candidate object or null
+ */
+function detectProperNameCandidate(word, passageText = "", vocabByKo = null) {
+	if (!word || typeof word !== 'string') return null;
+	const clean = word.trim();
+	// Names must be 2 to 5 pure Hangul syllables
+	if (!/^[가-힣]{2,5}$/.test(clean)) return null;
+
+	// Exclude common discourse adverbs, conjunctions, and general words
+	const EXCLUDED_DISCOURSE = new Set(["근데", "그리고", "그래서", "그러면", "그런데", "하지만", "그래도", "이따가", "어떻게", "진짜로", "얼마나", "아무튼", "아마도", "다 같이", "오랜만"]);
+	if (EXCLUDED_DISCOURSE.has(clean)) return null;
+
+	// Guard: Do not classify common words as names if already existing in vocab
+	if (vocabByKo && (vocabByKo.has ? vocabByKo.has(clean) : Boolean(vocabByKo[clean]))) {
+		const existingUnits = vocabByKo.get ? vocabByKo.get(clean) : vocabByKo[clean];
+		const firstUnit = Array.isArray(existingUnits) ? existingUnits[0] : existingUnits;
+		if (firstUnit && firstUnit[4] && !firstUnit[4].includes("name")) {
+			return null;
+		}
+	}
+
+	// 1. Check vocative ending: [Stem]아 (batchim) or [Stem]야 (vowel)
+	if (clean.length >= 2) {
+		const lastChar = clean.slice(-1);
+		const prevChar = clean.slice(-2, -1);
+		const stem = clean.slice(0, -1);
+		if (lastChar === "아" && hasBatchim(prevChar) && !EXCLUDED_DISCOURSE.has(stem)) {
+			return {
+				isName: true,
+				baseName: stem,
+				surface: clean,
+				reason: `Vocative particle -아 attached to consonant stem "${stem}"`,
+				confidence: 0.95
+			};
+		}
+		if (lastChar === "야" && !hasBatchim(prevChar) && !EXCLUDED_DISCOURSE.has(stem)) {
+			return {
+				isName: true,
+				baseName: stem,
+				surface: clean,
+				reason: `Vocative particle -야 attached to open vowel stem "${stem}"`,
+				confidence: 0.95
+			};
+		}
+	}
+
+	// 2. Check familiar diminutive -이 + particle or standalone [Stem]이
+	if (clean.length >= 2 && clean.endsWith("이")) {
+		const stem = clean.slice(0, -1);
+		const lastChar = stem.slice(-1);
+		if (hasBatchim(lastChar) && !EXCLUDED_DISCOURSE.has(stem)) {
+			return {
+				isName: true,
+				baseName: stem,
+				surface: clean,
+				reason: `Familiar diminutive suffix -이 attached to consonant stem "${stem}"`,
+				confidence: 0.9
+			};
+		}
+	}
+
+	// 3. Contextual heuristic in passageText
+	if (passageText && typeof passageText === 'string') {
+		// Matches lines consisting purely of clean (dialogue/chat script turn)
+		// e.g. "흐엉\n", "에릭\n", "민준\n" or "오전9:40\n민준"
+		const speakerRegex = new RegExp(`(?:^|[\\r\\n]+)(?:\\d{1,4}[\\r\\n]+|오[전후]\\d+:\\d+[\\r\\n]+)?\\s*(${clean})\\s*(?:[\\r\\n]+|:)`, 'm');
+		if (speakerRegex.test(passageText)) {
+			return {
+				isName: true,
+				baseName: clean,
+				surface: clean,
+				reason: `Dialogue speaker header in script/chat passage`,
+				confidence: 0.9
+			};
+		}
+
+		// Matches "[clean] 씨" or "[clean] 님"
+		const titleRegex = new RegExp(`(?:^|[\\s\\r\\n])${clean}\\s*(?:씨|님)`, 'm');
+		if (titleRegex.test(passageText)) {
+			return {
+				isName: true,
+				baseName: clean,
+				surface: clean,
+				reason: `Precedes honorific title (씨/님) in passage`,
+				confidence: 0.95
+			};
+		}
+
+		// Matches "[clean] 집들이", "[clean]의 생일", "[clean] 생일"
+		const assocRegex = new RegExp(`(?:^|[\\s\\r\\n])${clean}(?:의)?\\s+(?:집들이|생일|결혼식|파티|송별회|동창회)`, 'm');
+		if (assocRegex.test(passageText)) {
+			return {
+				isName: true,
+				baseName: clean,
+				surface: clean,
+				reason: `Associated with personal celebration/event in passage`,
+				confidence: 0.85
+			};
+		}
+	}
+
+	return null;
+}
+
+/**
  * Generates an intelligent draft language unit skeleton using the schema taxonomy.
  */
 function scaffoldUnit(korean, source = "studytext", context = {}, summary = null) {
@@ -523,7 +634,7 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 			console.log(`[MORPHOLOGY HINT] "${word}" matches existing verb ${morph.verbUnit[1]} (ID ${morph.verbUnit[0]}) via suffix "${morph.suffix}".`);
 			const snippet = generateVerbSuffixSnippet(morph);
 			if (snippet) {
-				console.log(`  Suggested VERB_SUFFIX_RULES entry for verb_morphology.js:\n  ${snippet}`);
+				console.log(`  Suggested VERB_SUFFIX_RULES entry for verb_suffix_rules.js:\n  ${snippet}`);
 			}
 			return null;
 		}
@@ -537,6 +648,30 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 	let vector = { domain: "concept", type: "general" };
 	let syntaxFrame = "";
 	let english = `<English definition of "${word}">`;
+
+	// Proper name & diminutive heuristic
+	const nameCandidate = detectProperNameCandidate(word, context.passageText || context.passage || "");
+	if (context.isName || context.isProperNoun || nameCandidate) {
+		const baseName = nameCandidate ? nameCandidate.baseName : (context.baseName || word);
+		pos = "Noun";
+		tags = ["name", "proper_noun"];
+		vector = { domain: "person", type: "name" };
+		english = context.english || `<Person name "${baseName}">`;
+		return {
+			Korean: baseName,
+			English: english,
+			PartofSpeech: pos,
+			SemanticTags: tags,
+			Disambiguation: context.disambiguation || "",
+			Conjugation: "",
+			Source: source,
+			PriorityScore: context.priorityScore || 1,
+			FormalityLevel: "Universal",
+			HonorificRules: "",
+			SemanticVector: JSON.stringify(vector),
+			SyntaxFrame: ""
+		};
+	}
 
 	// Part of Speech inference from morphological markers or context
 	if (context.isVerbEnding || word.startsWith("-") || word.startsWith("~")) {
@@ -639,5 +774,8 @@ module.exports = {
 	scaffoldUnit,
 	findExistingUnit,
 	deduceExistingVerbStem,
-	generateVerbSuffixSnippet
+	generateVerbSuffixSnippet,
+	detectProperNameCandidate,
+	recognizeCompoundParticle,
+	decomposeCompoundParticle
 };

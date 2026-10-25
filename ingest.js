@@ -31,7 +31,16 @@ const SCHEMA_ANALYSIS_PATH = path.resolve(__dirname, 'schema_analysis.js');
 const TEXT_ANALYZER_PATH = path.resolve(__dirname, 'text_analyzer.js');
 
 const studytexts = require(STUDYTEXTS_PATH);
-const { findExistingUnit, deduceExistingVerbStem, generateVerbSuffixSnippet, getSchemaSummary, updateSchemaSummary } = require(SCHEMA_ANALYSIS_PATH);
+const {
+	findExistingUnit,
+	deduceExistingVerbStem,
+	generateVerbSuffixSnippet,
+	detectProperNameCandidate,
+	scaffoldUnit,
+	getSchemaSummary,
+	updateSchemaSummary
+} = require(SCHEMA_ANALYSIS_PATH);
+const { recognizeCompoundParticle, decomposeCompoundParticle } = require('./korean/analyzer/particles.js');
 const textAnalyzer = require(TEXT_ANALYZER_PATH);
 
 function getIngestedPassages() {
@@ -108,27 +117,59 @@ async function main() {
 	// Step 1: Run text analyzer
 	console.log(`[1/5] Running passage decomposition...`);
 	const report = textAnalyzer.analyzePassage(passageText, passageName);
+	const index = textAnalyzer.getIndex();
 
 	// Step 2: Filter gaps
 	const rawMissing = [...report.missingVocab, ...report.missingGrammar];
 	const morphologyHints = [];
+	const compoundParticleHints = [];
+	const properNameHints = [];
 	const trueMissing = [];
 
 	for (const m of rawMissing) {
-		const word = m.text.trim();
+		let word = m.text.trim();
 		const existing = findExistingUnit(word);
 		if (existing) {
 			continue;
 		}
+
+		// Check verb morphology hints
 		const morph = deduceExistingVerbStem(word);
 		if (morph) {
 			morphologyHints.push(morph);
 			continue;
 		}
-		trueMissing.push(m);
+
+		// Check compound particle recognition
+		const comp = recognizeCompoundParticle(word, index.vocabByKo, { allowUnknownStem: true });
+		if (comp) {
+			compoundParticleHints.push(comp);
+			if (comp.hasExistingStem) {
+				// Stem already exists in dictionary, so this is purely a compound particle gap
+				continue;
+			}
+			// Stem is unrepresented in dictionary, so isolate the stem for vocabulary scaffolding
+			word = comp.stem;
+			m.text = comp.stem;
+		}
+
+		// Check proper name & diminutive heuristic
+		const nameHint = detectProperNameCandidate(word, passageText, index.vocabByKo);
+		if (nameHint) {
+			properNameHints.push(nameHint);
+			m.isName = true;
+			m.baseName = nameHint.baseName;
+			m.nameReason = nameHint.reason;
+			m.text = nameHint.baseName;
+		}
+
+		// Deduplicate in trueMissing
+		if (!trueMissing.some(item => item.text === m.text)) {
+			trueMissing.push(m);
+		}
 	}
 
-	// Step 3: Report morphology hints if any
+	// Step 3: Report morphology, compound particle, and proper name hints if any
 	if (morphologyHints.length > 0) {
 		console.log(`\n------------------------------------------------------`);
 		console.log(`[MORPHOLOGY HINTS] Found ${morphologyHints.length} inflected forms of existing verbs:`);
@@ -136,18 +177,40 @@ async function main() {
 			console.log(`  * "${h.surface}" -> matches ${h.verbUnit[1]} (ID ${h.verbUnit[0]}) via ${h.suffix}`);
 			const snippet = generateVerbSuffixSnippet(h);
 			if (snippet) {
-				console.log(`    Suggested VERB_SUFFIX_RULES entry for verb_morphology.js:\n    ${snippet}\n`);
+				console.log(`    Suggested VERB_SUFFIX_RULES entry for verb_suffix_rules.js:\n    ${snippet}\n`);
 			}
 		}
-		console.log(`Tip: If any of these should decompose cleanly, update korean/analyzer/verb_morphology.js or sentence_analyzer.js.`);
+		console.log(`Tip: If any of these should decompose cleanly, update korean/analyzer/verb_suffix_rules.js or sentence_analyzer.js.`);
+		console.log(`------------------------------------------------------\n`);
+	}
+
+	if (compoundParticleHints.length > 0) {
+		console.log(`\n------------------------------------------------------`);
+		console.log(`[COMPOUND PARTICLE HINTS] Found ${compoundParticleHints.length} compound particle formations:`);
+		for (const cp of compoundParticleHints) {
+			console.log(`  * "${cp.word}" -> stem "${cp.stem}" + particle "${cp.compoundText}" (${cp.desc})`);
+			if (!cp.isExistingSpec) {
+				console.log(`    Suggested PARTICLE_SPECS entry for korean/analyzer/particles.js:\n    ${cp.suggestedSpec}\n`);
+			}
+		}
+		console.log(`Tip: Add new compound particles to korean/analyzer/particles.js.`);
+		console.log(`------------------------------------------------------\n`);
+	}
+
+	if (properNameHints.length > 0) {
+		console.log(`\n------------------------------------------------------`);
+		console.log(`[PROPER NAME HINTS] Found ${properNameHints.length} proper name candidates:`);
+		for (const pn of properNameHints) {
+			console.log(`  * "${pn.baseName}" (from "${pn.surface}") -> ${pn.reason}`);
+		}
 		console.log(`------------------------------------------------------\n`);
 	}
 
 	// Step 4: Handle truly missing vocabulary
 	if (trueMissing.length === 0) {
-		if (morphologyHints.length > 0) {
+		if (morphologyHints.length > 0 || compoundParticleHints.length > 0) {
 			console.log(`[INFO] No new dictionary vocabulary units are needed.`);
-			console.log(`The remaining unparsed tokens are inflections of existing verbs.`);
+			console.log(`The remaining unparsed tokens are inflections of existing verbs or compound particles.`);
 			if (isDryRun) process.exit(0);
 		} else {
 			console.log(`[SUCCESS] 0 curriculum gaps! All words are fully recognized.`);
@@ -166,7 +229,13 @@ async function main() {
 		const draftUnits = [];
 
 		for (const tm of trueMissing) {
-			const u = {
+			const scaffolded = scaffoldUnit(tm.baseName || tm.text, passageName, {
+				...tm,
+				passageText,
+				isName: tm.isName,
+				baseName: tm.baseName
+			});
+			const u = scaffolded || {
 				Korean: tm.text,
 				English: tm.gloss || `<English definition of "${tm.text}">`,
 				PartofSpeech: tm.pos || "Noun",
@@ -181,11 +250,11 @@ async function main() {
 				SyntaxFrame: ""
 			};
 			draftUnits.push(u);
-			console.log(`  - ${u.Korean.padEnd(16)} [${u.PartofSpeech.padEnd(16)}] ${u.English}`);
+			console.log(`  - ${u.Korean.padEnd(16)} [${u.PartofSpeech.padEnd(16)}] ${u.English} (Tags: ${u.SemanticTags.join(', ')})`);
 		}
 
 		if (isDryRun) {
-			console.log(`\n[DRY RUN COMPLETE] Found ${trueMissing.length} new units and ${morphologyHints.length} morphology hints.`);
+			console.log(`\n[DRY RUN COMPLETE] Found ${trueMissing.length} new units, ${morphologyHints.length} morphology hints, and ${compoundParticleHints.length} compound particle hints.`);
 			process.exit(0);
 		}
 

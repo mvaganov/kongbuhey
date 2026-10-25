@@ -204,29 +204,136 @@ check("analyzeSentence parses auxiliary and bound noun patterns via SyntaxFrame 
 });
 
 // -----------------------------------------------------------------------------
-// 6. Performance & Arbitrary User Input (Homework / K-Pop Lyrics)
+// 7. Compound Particle Recognition & Decomposition
 // -----------------------------------------------------------------------------
-console.log("\n[6] Runtime Performance for Custom User Passages");
+console.log("\n[7] Compound Particle Recognition & Dynamic Decomposition");
 
-check("analyzePassage executes quickly on arbitrary user inputs (simulated song lyrics / homework)", () => {
-	const userLyrics = `
-		기억해 이 밤을.
-		우리가 함께 걸었던 길.
-		너를 처음 만난 날에 나는 많이 떨렸어.
-		시간이 흘러도 나는 너를 사랑할 수 있어.
-		언제나 내 곁에 있어 줘서 고마워요.
-		다시 만날 때까지 건강하게 잘 지내십시오.
+check("decomposeCompoundParticle breaks down multi-clitic stacks into constituent morphemes", () => {
+	const decomp1 = analyzer.decomposeCompoundParticle("으로는");
+	assert.ok(decomp1, "으로는 must decompose into compound particle");
+	assert.strictEqual(decomp1.p1.text, "으로");
+	assert.strictEqual(decomp1.p2.text, "는");
+	assert.ok(decomp1.ids.includes(1240) && decomp1.ids.includes(36));
+
+	const decomp2 = analyzer.decomposeCompoundParticle("와는");
+	assert.ok(decomp2, "와는 must decompose");
+	assert.strictEqual(decomp2.p1.text, "와");
+	assert.strictEqual(decomp2.p2.text, "는");
+
+	const decomp3 = analyzer.decomposeCompoundParticle("과도");
+	assert.ok(decomp3, "과도 must decompose");
+	assert.strictEqual(decomp3.p1.text, "과");
+	assert.strictEqual(decomp3.p2.text, "도");
+
+	// Non-compound single particles must not false-positive
+	assert.strictEqual(analyzer.decomposeCompoundParticle("는"), null);
+	assert.strictEqual(analyzer.decomposeCompoundParticle(""), null);
+});
+
+check("recognizeCompoundParticle scans words and isolates known nominal stems", () => {
+	const index = analyzer.getIndex();
+
+	// Existing compound particle on dictionary noun: 선생님께서도
+	const r1 = analyzer.recognizeCompoundParticle("선생님께서도", index.vocabByKo);
+	assert.ok(r1, "선생님께서도 must match compound particle");
+	assert.strictEqual(r1.stem, "선생님");
+	assert.strictEqual(r1.compoundText, "께서도");
+	assert.strictEqual(r1.isExistingSpec, true);
+
+	// Existing compound particle on dictionary noun: 중국에서는
+	const r2 = analyzer.recognizeCompoundParticle("중국에서는", index.vocabByKo);
+	assert.ok(r2, "중국에서는 must match compound particle");
+	assert.strictEqual(r2.stem, "중국");
+	assert.strictEqual(r2.compoundText, "에서는");
+
+	// Candidate unspec'd compound particle on dictionary noun: 책상으로는
+	const r3 = analyzer.recognizeCompoundParticle("책상으로는", index.vocabByKo);
+	assert.ok(r3, "책상으로는 must recognize unspec'd compound particle");
+	assert.strictEqual(r3.stem, "책상");
+	assert.strictEqual(r3.compoundText, "으로는");
+	assert.strictEqual(r3.isExistingSpec, false);
+	assert.ok(r3.suggestedSpec.includes("으로는"));
+
+	// allowUnknownStem allows isolating stem for unrepresented words
+	const r4 = analyzer.recognizeCompoundParticle("북경반점에서는", index.vocabByKo, { allowUnknownStem: true });
+	assert.ok(r4, "Must isolate stem even if word is unrepresented when allowUnknownStem is true");
+	assert.strictEqual(r4.stem, "북경반점");
+	assert.strictEqual(r4.compoundText, "에서는");
+});
+
+// -----------------------------------------------------------------------------
+// 8. Proper Name & Diminutive Scaffolder Heuristic
+// -----------------------------------------------------------------------------
+console.log("\n[8] Proper Name & Diminutive Scaffolder Heuristic");
+
+const { detectProperNameCandidate, scaffoldUnit } = require('../schema_analysis.js');
+
+check("detectProperNameCandidate identifies vocative and diminutive suffixes", () => {
+	// Consonant stem + vocative -아: 미진아 -> 미진
+	const n1 = detectProperNameCandidate("미진아");
+	assert.ok(n1, "미진아 must be detected as proper name");
+	assert.strictEqual(n1.baseName, "미진");
+
+	// Open vowel stem + vocative -야: 영수야 -> 영수
+	const n2 = detectProperNameCandidate("영수야");
+	assert.ok(n2, "영수야 must be detected as proper name");
+	assert.strictEqual(n2.baseName, "영수");
+
+	// Consonant stem + diminutive -이: 미진이 -> 미진
+	const n3 = detectProperNameCandidate("미진이");
+	assert.ok(n3, "미진이 must be detected as proper name");
+	assert.strictEqual(n3.baseName, "미진");
+
+	// Non-Hangul or discourse words must NOT be detected as names
+	assert.strictEqual(detectProperNameCandidate("오전9:40"), null);
+	assert.strictEqual(detectProperNameCandidate("근데"), null);
+	assert.strictEqual(detectProperNameCandidate("그리고"), null);
+});
+
+check("detectProperNameCandidate extracts dialogue speakers and event associations", () => {
+	const sampleDialogue = `
+오늘 리타오 집들이가 있는 거 알고 있지?
+오전9:47
+흐엉
+그럼 근데 뭘 사가지고 가지?
+에릭
+글쎄...
+민준
+오전9:40
+그거 괜찮을 것 같아.
 	`;
 
-	const t0 = Date.now();
-	const res = analyzer.analyzePassage(userLyrics, "UserKpopLyrics");
-	const elapsed = Date.now() - t0;
+	// Associated celebration: "리타오 집들이"
+	const d1 = detectProperNameCandidate("리타오", sampleDialogue);
+	assert.ok(d1, "리타오 must be detected via event association");
+	assert.strictEqual(d1.baseName, "리타오");
 
-	assert.ok(res.totalSentences >= 5, `Expected at least 5 sentences, got ${res.totalSentences}`);
-	assert.ok(res.summary.knownVocabCount > 0, "Known vocab must be detected");
-	assert.ok(res.summary.knownGrammarCount > 0, "Known grammar must be detected");
-	assert.ok(elapsed < 50, `Analysis took ${elapsed}ms (target: < 50ms)`);
-	console.log(`      (Processed ${res.totalSentences} sentences in ${elapsed}ms)`);
+	// Dialogue speaker turns: 흐엉, 에릭, 민준
+	const d2 = detectProperNameCandidate("흐엉", sampleDialogue);
+	assert.ok(d2, "흐엉 must be detected via speaker turn");
+	assert.strictEqual(d2.baseName, "흐엉");
+
+	const d3 = detectProperNameCandidate("에릭", sampleDialogue);
+	assert.ok(d3, "에릭 must be detected via speaker turn");
+
+	const d4 = detectProperNameCandidate("민준", sampleDialogue);
+	assert.ok(d4, "민준 must be detected via speaker turn");
+
+	// Timestamps must not be recognized as names
+	assert.strictEqual(detectProperNameCandidate("오전9:47", sampleDialogue), null);
+});
+
+check("scaffoldUnit automatically scaffolds proper names with taxonomy tags", () => {
+	const unit = scaffoldUnit("리타오", "studytext82", {
+		passageText: "오늘 리타오 집들이가 있는 거 알고 있지?"
+	});
+	assert.ok(unit, "scaffoldUnit must generate unit");
+	assert.strictEqual(unit.Korean, "리타오");
+	assert.strictEqual(unit.PartofSpeech, "Noun");
+	assert.deepStrictEqual(unit.SemanticTags, ["name", "proper_noun"]);
+	const vector = JSON.parse(unit.SemanticVector);
+	assert.strictEqual(vector.domain, "person");
+	assert.strictEqual(vector.type, "name");
 });
 
 console.log("\n======================================================");

@@ -5,7 +5,7 @@
 
 ### Development Roadmap
 - **Phase 1 [COMPLETE]**: Core Morphology, Semantic Rule Matrix (Features F1–F11), Statutory Pronunciation Engine, and English/European-Readable Phoneme Transliteration.
-- **Phase 1.5 [ACTIVE]**: Curriculum study text ingestion from `studytexts.js` (`studytext12`, `studytext21`, `studytext22` completed; `studytext31` next).
+- **Phase 1.5 [ACTIVE]**: Curriculum study text ingestion from `studytexts.js` (13 passages completed through `studytext81`; `studytext82` next).
 - **Phase 2 [UPCOMING]**: Interactive Study & Flashcard UI with real-time passage decomposition, toggleable LUT tokens, and multi-voice TTS audio playback.
 - **Phase 3 [FUTURE]**: Adaptive Quiz UI and pedagogical spaced-repetition trainer.
 
@@ -15,7 +15,7 @@
 
 ```
 kongbuhey/
-├── data.js                     # Single point of truth: 12-element schema & 1,827 language units
+├── data.js                     # Single point of truth: 12-element schema & 1,845 language units
 ├── schema_summary.json         # High-speed cached taxonomies (POS, tags, domains, honorifics)
 ├── schema_analysis.js          # Taxonomy extractor & smart draft unit scaffolder (stem deduction & deduplication)
 ├── select.js                   # CLI/module: SQL-like query, update, insert & schema alteration
@@ -53,13 +53,13 @@ kongbuhey/
 
 ### Key Modules Summary
 1. **`data.js`**: 12-column schema array (`[Id, Korean, English, POS, SemanticTags, Disambiguation, ConjugationRules, Source, PriorityScore, FormalityLevel, HonorificRules, SemanticVector]`).
-   - 1,827 units sequentially indexed 0..1826 with zero TODOs.
+   - 1,845 units sequentially indexed 0..1844 with zero TODOs.
    - Houses all vocabulary, counting classifiers, honorific titles, origin/goal/static locatives, humble verbs, and clausal connectives.
 2. **`korean.js` & `korean/`**:
    - `korean/phonetics/pronunciation.js`: Standard Korean Pronunciation (국립국어원 표준 발음법) implementing statutory exceptions (제10항/제11항 coda dissimilation, 제15항 substantive boundary liaison, 제16항 letter name liaison, 제20항 Sino-Korean non-lateralization, 제24항 passive/causative non-tensification, 제26항 reduplicated Hanja, 제28항 saisori, 제29항 compound [ㄴ] insertion).
    - `korean/phonetics/english_phonemes.js`: Transliterates Korean text into Latin phonetic script optimized for browser speech synthesizers (English, French, Polish).
    - `korean/core/morphology.js`: Robust agglutinative morphology engine resolving batchim allomorphs, vowel harmony, irregulars (ㄷ, ㅂ, ㅅ, 르, ㅡ, ㅎ, ㄹ), and copula contractions.
-3. **`select.js`**: Query, filter, update, and insert units using familiar SQL-like syntax without loading all 1,827 rows into LLM context.
+3. **`select.js`**: Query, filter, update, and insert units using familiar SQL-like syntax without loading all 1,845 rows into LLM context.
 4. **`text_analyzer.js` & `korean/analyzer/`**: Decomposes natural Korean passages into constituent learning units, resolving homonyms and identifying curriculum gaps. Refactored into a modular, zero-dependency engine optimized for both Node CLI and interactive web browser execution (<5ms per passage).
 5. **`ingest.js`**: Unified CLI pipeline automating passage decomposition, stem deduction hints, draft filtering, unit insertion, homonym synchronization, and test verification in one command.
 6. **`tts_demo.html`**: Visual and auditory testbed for evaluating browser `window.speechSynthesis` voices with customizable styles (`natural`, `hyphenated`, `spaced`) and pitch/rate controls.
@@ -107,37 +107,38 @@ kongbuhey/
   - *What information, CLI utility, scaffolder diagnostic, or static lint rule would make this processing easier, faster, and more robust?*
 - **Scaffolder Auto-Snippet Generator**: `schema_analysis.js` and `ingest.js` export `generateVerbSuffixSnippet(morph)`. When reverse-stem deduction identifies an unparsed surface inflection of an existing dictionary verb, the tool immediately outputs a ready-to-paste `VERB_SUFFIX_RULES` JavaScript snippet with canonical morpheme IDs and deduced stem type.
 - **Reflective Summary Considerations**: When summarizing completed work, proactively evaluate whether any improvements can be made to the process or tooling in the current environment (e.g., expanding magic number linters, creating whitelist mechanisms, adding diagnostic hints), and share those considerations with the developer.
+- **Immediate Action on Process Improvements**: Tooling and process improvements do not need to be added as additional work items to `handoff.md` unless they are large enough to warrant a multi-run workflow. They are considered valuable enough by the developer that they will be addressed immediately, even expanding them into larger features that require more than one run if it makes sense.
 - **Psychological Safety & Collaboration**: Striving for process improvements is not a high-pressure metric evaluating agent quality; rather, continuous self-improvement and iterative tooling refinement are valued as an essential, intrinsic part of our work together.
 
 ---
 
 ## 4. Current Status & Verification
-- **Dataset**: 1,833 units (100% valid, 0 TODOs, sequential IDs 0..1832).
-- **Homonym Dictionary**: 3,216 tokens mapped, 0 broken links.
-- **Ingested Passages (Phase 1.5)**: `studytext12`, `studytext21`, `studytext22`, `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext71`, `studytext72` (100% recognized, 0 curriculum gaps across 12 passages).
+- **Dataset**: 1,845 units (100% valid, 0 TODOs, sequential IDs 0..1844).
+- **Homonym Dictionary**: 3,228 tokens mapped, 0 broken links.
+- **Ingested Passages (Phase 1.5)**: `studytext12`, `studytext21`, `studytext22`, `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext71`, `studytext72`, `studytext81` (100% recognized, 0 curriculum gaps across 13 passages).
 - **Master Test Suite (`node test.js`)**:
   - Stage 0: Code Quality & Static Hygiene [ PASS ] (Limits, browser purity, FK integrity, 0 magic IDs)
-  - Stage 1: Schema & Data Integrity [ PASS ] (1,833 units, sequential IDs 0..1832)
-  - Stage 2: Schema Taxonomy Sync [ PASS ] (9 POS, 624 tags, 120 domains)
-  - Stage 3: Homonym Dictionary Sync [ PASS ] (3,216 tokens)
-  - Stage 4: Exhaustive Sentence Generation [ PASS ] (7,504 sentences, 0 errors)
-  - Stage 5: Text Analyzer Passage Check [ PASS ] (12 passages: 0 gaps)
-  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 5,954 assertions passed)
-- **Modular Analyzer Suite (`node test/analyzer_modular_test.js`)**: 9/9 tests passed, browser-clean (zero Node dependencies).
+  - Stage 1: Schema & Data Integrity [ PASS ] (1,845 units, sequential IDs 0..1844)
+  - Stage 2: Schema Taxonomy Sync [ PASS ] (9 POS, 630 tags, 121 domains)
+  - Stage 3: Homonym Dictionary Sync [ PASS ] (3,228 tokens)
+  - Stage 4: Exhaustive Sentence Generation [ PASS ] (7,532 sentences, 0 errors)
+  - Stage 5: Text Analyzer Passage Check [ PASS ] (13 passages: 0 gaps)
+  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 5,959 assertions passed)
+- **Modular Analyzer Suite (`node test/analyzer_modular_test.js`)**: 13/13 tests passed, browser-clean (zero Node dependencies).
 
 ---
 
 ## 5. Immediate Next Steps
 
-### 1. Ingest Next Study Text: `studytext81` (Phase 1.5)
-Target passage: `studytext81` (`3학년 2반 친구들에게`)
+### 1. Ingest Next Study Text: `studytext82` (Phase 1.5)
+Target passage: `studytext82` (`오늘 리타오 집들이가 있는 거 알고 있지?`)
 Execute with the unified single-command pipeline:
 ```bash
 # Preview gaps and morphology hints without modifying data
-node ingest.js studytext81 --dry-run
+node ingest.js studytext82 --dry-run
 
 # Run full ingestion, confirmation, synchronization, and test suite in one pass
-node ingest.js studytext81
+node ingest.js studytext82
 ```
 
 ### 2. Interactive Study & Flashcard Web App (Phase 2)

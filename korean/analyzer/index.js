@@ -26,6 +26,8 @@ const analyzerExports = {
 	PARTICLE_SPECS: particles.PARTICLE_SPECS,
 	findExactParticle: particles.findExactParticle,
 	checkBatchimRequirement: particles.checkBatchimRequirement,
+	decomposeCompoundParticle: particles.decomposeCompoundParticle,
+	recognizeCompoundParticle: particles.recognizeCompoundParticle,
 
 	// Syntax Frame & Disambiguation
 	SEMANTIC_ONTOLOGY: syntaxFrame.SEMANTIC_ONTOLOGY,
