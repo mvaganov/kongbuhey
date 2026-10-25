@@ -140,6 +140,7 @@ if (require.main === module) {
 
 module.exports = {
 	analyzePassage,
+	getIndex: analyzer.getIndex,
 	analyzeSentence: analyzer.analyzeSentence,
 	analyzeSingleToken: analyzer.analyzeSingleToken,
 	evaluateSyntaxFrame: analyzer.evaluateSyntaxFrame,

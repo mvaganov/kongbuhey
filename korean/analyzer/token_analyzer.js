@@ -57,7 +57,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 	}
 
 	// 0. Standalone particle (e.g. from punctuation or source spacing)
-	const exactSpec = (word !== "이" && word !== "하고") ? findExactParticle(word) : null;
+	const exactSpec = (word !== "이" && word !== "하고" && word !== "와") ? findExactParticle(word) : null;
 	if (exactSpec) {
 		const pUnit = exactSpec.ids.length > 0 ? unitById.get(exactSpec.ids[0]) : null;
 		return {
@@ -88,7 +88,6 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			grammar: [{ text: "입니다", pos: "Verb Ending", unit: copulaUnit, gloss: copulaUnit ? copulaUnit[DATA_SCHEMA.English] : "is/are (copula ID 56)" }]
 		};
 	}
-
 	// 0.12 Noun + Polite Informal Copula 이에요 / 예요 (ID 37)
 	const copulaPoliteMatch = word.match(/^(.+?)(이에요|예요)$/);
 	if (copulaPoliteMatch && copulaPoliteMatch[1].length >= 1) {
@@ -107,7 +106,24 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			};
 		}
 	}
-
+	// 0.13 Noun + Plain Informal Copula 이야 / 야 (ID 1833)
+	const copulaPlainMatch = word.match(/^(.+?)(이야|야)$/);
+	if (copulaPlainMatch && copulaPlainMatch[1].length >= 1) {
+		const stem = copulaPlainMatch[1];
+		const ending = copulaPlainMatch[2];
+		const stemUnits = vocabByKo.get(stem) || [];
+		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' || u[DATA_SCHEMA.PartofSpeech] === 'Bound Noun');
+		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
+		if (nUnit || vocabByKo.has(stem)) {
+			const copulaUnit = unitById.get(1833);
+			return {
+				surface: word,
+				category: "noun_copula",
+				lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")" },
+				grammar: [{ text: ending, pos: "Verb Ending", unit: copulaUnit, gloss: copulaUnit ? copulaUnit[DATA_SCHEMA.English] : "is/are (plain copula ID 1833)" }]
+			};
+		}
+	}
 	// 0.15 Noun + Copula Past / Conditional (e.g. 룸메이트였으면, 학생이었으면, 친구였어요, 25만원이었는데)
 	const copulaPastMatch = word.match(/^(.+?)(이었으면|였으면|이었습니다|였습니다|이었어요|였어요|이었는데|였는데)$/);
 	if (copulaPastMatch) {
@@ -118,7 +134,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 		let nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
 		let isNumeric = false;
 		if (!nUnit) {
-			const numM = stem.match(/^(\d+(?:[~-]\d+)?)([가-힣]+)$/);
+			const numM = stem.match(/^(\d[\d\*]*(?:[~-]\d+)?)([가-힣]+)$/);
 			if (numM) {
 				isNumeric = true;
 				const cText = numM[2];
@@ -147,7 +163,6 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			};
 		}
 	}
-
 	// 0.17 Noun + Copula Connective 이고 (e.g. 갈색이고, 학생이고)
 	if (word.endsWith("이고") && word.length > 2) {
 		const stem = word.slice(0, -2);
@@ -166,7 +181,6 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			};
 		}
 	}
-
 	// 0.18 Noun + Copula Background/Contrastive 인데 (e.g. 방석인데, 학생인데)
 	if (word.endsWith("인데") && word.length > 2) {
 		const stem = word.slice(0, -2);
@@ -185,7 +199,6 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			};
 		}
 	}
-
 	// 0.2 Noun + Copula + -아/어서: 이어서 / 여서 (e.g. 대전이어서, 친구여서)
 	if (word.endsWith("이어서") && word.length > 3) {
 		const stem = word.slice(0, -3);
@@ -238,7 +251,6 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			};
 		}
 	}
-
 	// 2. Exact match in vocabulary (Nouns, Adverbs, Determiners, Exclamations)
 	if (vocabByKo.has(word)) {
 		const candidates = vocabByKo.get(word);
@@ -285,11 +297,10 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			};
 		}
 	}
-
 	// 2.5 Noun + Plural suffix -들 (e.g. 친척들, 학생들, 친구들)
 	if (word.endsWith("들") && word.length > 1) {
 		const singularStem = word.slice(0, -1);
-		const sUnits = vocabByKo.has(singularStem) ? vocabByKo.get(singularStem).filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun') : [];
+		const sUnits = vocabByKo.has(singularStem) ? vocabByKo.get(singularStem).filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' || u[DATA_SCHEMA.PartofSpeech] === 'Adverb') : [];
 		const nUnit = sUnits.length > 0 ? sUnits[0] : null;
 		return {
 			surface: word,
@@ -298,9 +309,8 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			grammar: [{ text: "들", pos: "Plural Suffix", unit: unitById.get(550), gloss: "plural suffix (ID 550)" }]
 		};
 	}
-
-	// 3. Number + Counter + Particle (e.g. 1년쯤, 2년 동안, 3시에, 6~7분)
-	const numCounterMatch = word.match(/^(\d+(?:[~-]\d+)?)([가-힣]+?)(쯤|에|부터|까지|은|는|이|가|을|를)?$/);
+	// 3. Number + Counter + Particle (e.g. 1년쯤, 2년 동안, 3시에, 6~7분, 20**년)
+	const numCounterMatch = word.match(/^(\d[\d\*]*(?:[~-]\d+)?)([가-힣]+?)(쯤|에|부터|까지|은|는|이|가|을|를)?$/);
 	if (numCounterMatch) {
 		const numVal = numCounterMatch[1];
 		const counterText = numCounterMatch[2];
@@ -341,15 +351,12 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			grammar: gList
 		};
 	}
-
 	// 4. Centralized Declarative Verb & Suffix Matching
 	const verbRes = matchVerbSuffix(word, prevWord, nextWord, index, evaluateSyntaxFrame);
 	if (verbRes) return verbRes;
-
 	// 5. Adnominal Participles: ~한, ~은, ~는, ~(으)ㄴ, ~(으)ㄹ
 	const adnominalRes = matchAdnominalEnding(word, index);
 	if (adnominalRes) return adnominalRes;
-
 	// 5.5 Prefix Negative Adverb 안 (e.g. 안사먹었는데 -> 안 + 사먹었는데)
 	if (word.startsWith("안") && word.length >= 3 && !vocabByKo.has(word)) {
 		const remainder = word.slice(1);
@@ -384,9 +391,28 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 				}
 			}
 
-			const lastChar = (isPlural ? "들" : stem).slice(-1);
+			// Handle familiar name suffix -이 on personal names ending in batchim (e.g. 미진이 + 는 -> 미진이는)
+			let isFamiliarName = false;
+			let baseNameStem = null;
+			if (stem.endsWith("이") && stem.length > 1) {
+				const baseName = stem.slice(0, -1);
+				const baseUnits = vocabByKo.get(baseName) || [];
+				const isName = baseUnits.some(u => {
+					const tagSet = index.semanticTagsByUnitId ? index.semanticTagsByUnitId.get(u[DATA_SCHEMA.Id]) : null;
+					return tagSet ? (tagSet.has("name") || tagSet.has("proper_noun")) : false;
+				});
+				if (isName && hasBatchim(baseName.slice(-1))) {
+					baseNameStem = baseName;
+					isFamiliarName = true;
+				}
+			}
+
+			const lastChar = (isPlural ? "들" : isFamiliarName ? "이" : stem).slice(-1);
 			if (!checkBatchimRequirement(lastChar, spec.batchimReq, hasBatchim, decomposeHangul)) {
 				continue;
+			}
+			if (isFamiliarName) {
+				stem = baseNameStem;
 			}
 
 			let validNounUnits = [];

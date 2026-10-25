@@ -56,7 +56,7 @@ const STUDYTEXTS_PATH = path.resolve(__dirname, 'studytexts.js');
 const { validateLanguageUnitSemanticSelection } = require('./select.js');
 
 // Known fully-ingested passages that must ALWAYS have 0 gaps (regression tests)
-const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", "studytext22", "studytext31", "studytext41", "studytext42", "studytext51", "studytext52", "studytext61", "studytext62", "studytext71", "studytext72"];
+const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", "studytext22", "studytext31", "studytext41", "studytext42", "studytext51", "studytext52", "studytext61", "studytext62", "studytext71", "studytext72", "studytext81"];
 
 function failFast(stageName, errorDetail) {
 	console.error(`\n======================================================`);
@@ -86,7 +86,8 @@ function runTests(options = {}) {
 	try {
 		// 1. File Size & Line Bounds
 		const FILE_LIMITS = {
-			'korean/analyzer/verb_morphology.js': 850,
+			'korean/analyzer/verb_morphology.js': 700,
+			'korean/analyzer/verb_suffix_rules.js': 500,
 			'korean/analyzer/token_analyzer.js': 600,
 			'korean/analyzer/sentence_analyzer.js': 500
 		};
@@ -131,6 +132,15 @@ function runTests(options = {}) {
 				}
 				if (u[DATA_SCHEMA.PartofSpeech] !== 'Grammar') {
 					failFast("Stage 0 (Code Quality & Static Hygiene)", `Invalid POS in PARTICLE_SPECS: ID ${id} ('${u[DATA_SCHEMA.Korean]}') is '${u[DATA_SCHEMA.PartofSpeech]}' instead of 'Grammar' for particle '${spec.text}'.`);
+				}
+			}
+		}
+		const { VERB_SUFFIX_RULES } = require('./korean/analyzer/verb_suffix_rules.js');
+		for (const rule of VERB_SUFFIX_RULES) {
+			for (const g of rule.grammar) {
+				const u = KR_EN_languageUnits[g.id];
+				if (!u) {
+					failFast("Stage 0 (Code Quality & Static Hygiene)", `Broken foreign key in VERB_SUFFIX_RULES: ID ${g.id} for suffix '${rule.suffix}' does not exist in data.js.`);
 				}
 			}
 		}

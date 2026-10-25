@@ -856,7 +856,7 @@ const KR_EN_languageUnits = [
 	[578, "화장품", "cosmetics", "Noun", ["object", "beauty"], "", "", "SUOBI14", 3, "", "", '{"domain":"object","polarity":0}', ""],
 	[579, "선물하다", "to give a gift", "Action Verb", ["transitive_general", "transitive_person", "social"], "", "hada", "SUOBI14", 3, "", "", '{"domain":"action","req":"person","prod":"gifted","polarity":1}', ""],
 	[580, "이따가", "later", "Adverb", ["adverb_time", "time", "temporal_future", "future", "no_time_particle"], "", "", "SUOBI14", 3, "", "", '{"domain":"time","tense":"future","no_time_particle":true}', ""],
-	[581, "것", "thing", "Noun", ["object", "boundNoun"], "", "", "SUOBI14", 3, "", "", '{"domain":"object"}', ""],
+	[581, "것", "thing", "Noun", ["object", "boundNoun"], "", "", "SUOBI14", 3, "", "", '{"domain":"object","aliases":["거"]}', ""],
 	[582, "꽃다발", "bouquet", "Noun", ["object", "nature", "social"], "", "", "SUOBI14", 3, "", "", '{"domain":"object","polarity":1}', ""],
 	[583, "넥타이", "tie", "Noun", ["object", "neckwear", "clothing", "fashion", "wearable"], "", "", "SUOBI14", 4, "", "", '{"domain":"object","polarity":0}', ""],
 	[584, "상품권", "gift certificate", "Noun", ["object", "document", "economy"], "", "", "SUOBI14", 3, "", "", '{"domain":"object","polarity":1}', ""],
@@ -1389,7 +1389,7 @@ const KR_EN_languageUnits = [
 	[1111, "환영회", "welcome party", "Noun", ["event", "social"], "", "", "class2081", 3, "", "", '{"domain":"event"}', ""],
 	[1112, "회비", "membership fee, dues", "Noun", ["concept", "economy"], "", "", "class2081", 3, "", "", '{"domain":"economy"}', ""],
 	[1113, "-아/어 (informal intimate)", "informal intimate sentence ending (panmal)", "Grammar", ["declarative", "informal"], "panmal informal", ["{VP_AVst}아/어", "{VP_DVst}아/어"], "class2081", 2, "Informal/Intimate", "", '{"logic":"informal_speech","domain":"aspect"}', ""],
-	[1114, "-(으)ㄹ까 하다", "thinking of doing, considering", "Grammar", ["auxiliary_verb", "intention"], "", ["{VP_AVst}으/ㄹ까 해요", "{Adv} {VP_AVst}으/ㄹ까 해요"], "class2081", 2, "", "", '{"logic":"intention","domain":"aspect"}', ""],
+	[1114, "-(으)ㄹ까 하다", "thinking of doing, considering", "Grammar", ["auxiliary_verb", "intention"], "", ["{VP_AVst}으/ㄹ까 해요", "{Adv} {VP_AVst}으/ㄹ까 해요"], "class2081", 2, "", "", '{"logic":"intention","domain":"aspect"}', "/*js:matcher*/ ({ w1, cleanW2, matchesBaseSyllable }) => (w1.endsWith('ㄹ까') || w1.endsWith('을까') || w1.endsWith('할까')) && matchesBaseSyllable(cleanW2, '하') ? { span: 2, pattern: '-(으)ㄹ까 하다 (Thinking of doing)', grammar: [{ text: '-(으)ㄹ까 하다', pos: 'Grammar Pattern', gloss: 'thinking of doing, considering' }], parseW2Grammar: true } : null"],
 	[1115, "꽃바구니", "flower basket", "Noun", ["object", "plant"], "", "", "class2082", 3, "", "", '{"domain":"object"}', ""],
 	[1116, "떡", "rice cake", "Noun", ["food", "traditional"], "", "", "class2082", 2, "", "", '{"domain":"food"}', ""],
 	[1117, "박수를 치다", "to clap, applaud", "Action Verb", ["intransitive_person"], "", "regular", "class2082", 2, "", "", '{"domain":"action","req":"person","prod":"applause"}', ""],
@@ -2107,7 +2107,19 @@ const KR_EN_languageUnits = [
 	[1829, "까만색", "black color, black", "Noun", ["color", "appearance", "visual"], "", "", "studytext72", 1, "Universal", "", '{"domain":"color"}', ""],
 	[1830, "파란색", "blue color, blue", "Noun", ["color", "appearance", "visual"], "", "", "studytext72", 1, "Universal", "", '{"domain":"color"}', ""],
 	[1831, "무늬", "pattern, design", "Noun", ["concept", "appearance", "visual", "design"], "", "", "studytext72", 1, "Universal", "", '{"domain":"concept"}', ""],
-	[1832, "체크무늬", "check pattern, plaid, checkered", "Noun", ["concept", "appearance", "visual", "design"], "", "", "studytext72", 1, "Universal", "", '{"domain":"concept"}', ""]
+	[1832, "체크무늬", "check pattern, plaid, checkered", "Noun", ["concept", "appearance", "visual", "design"], "", "", "studytext72", 1, "Universal", "", '{"domain":"concept"}', ""],
+	[1833, "이야 / 야", "informal plain 'to be' (copula)", "Grammar", ["grammar", "copula", "declarative", "informal", "present"], "Attached directly to nouns in informal plain speech (반말)", ["{N}이야", "{N}야"], "studytext81", 1, "Plain (해체)", "", '{"domain":"identify","logic":"declarative"}', ""],
+	[1834, "아 / 야", "informal vocative particle (used when calling a person's name)", "Grammar", ["grammar", "particle", "vocative", "informal"], "Vocative particle attached to person names in informal speech", ["{N:person}아", "{N:person}야"], "studytext81", 1, "Plain (해체)", "Cannot be used with elders or superiors", '{"domain":"grammar","type":"vocative"}', ""],
+	[1835, "안녕", "hi, hello, goodbye (informal greeting); peace, well-being", "Exclamation", ["greeting", "informal", "emotion"], "informal greeting among close friends / ban말", "", "studytext81", 1, "Plain (해체)", "Use 안녕하세요 with elders or unfamiliar people", '{"domain":"social","req":"person","polarity":1}', ""],
+	[1836, "얘들", "these kids, these children, these guys", "Noun", ["person", "pronoun", "plural", "informal"], "colloquial plural reference to familiar young people or peers", "", "studytext81", 1, "Plain (해체)", "Informal reference; do not use with superiors", '{"domain":"person","type":"group"}', ""],
+	[1837, "때문", "reason, cause, because of", "Noun", ["concept", "causal", "reason"], "reason or cause (used in noun 때문 or verb 기 때문에)", "", "studytext81", 1, "Universal", "", '{"domain":"causal"}', ""],
+	[1838, "이유", "reason, cause, motive", "Noun", ["concept", "causal", "cognition"], "reason, explanation or ground for something", "", "studytext81", 1, "Universal", "", '{"domain":"concept"}', ""],
+	[1839, "장소", "place, venue, location", "Noun", ["place", "location", "space"], "physical venue, place or site", "", "studytext81", 1, "Universal", "", '{"domain":"location"}', ""],
+	[1840, "외국", "foreign country, abroad, overseas", "Noun", ["place", "country", "location"], "foreign nation or country (outside Korea)", "", "studytext81", 1, "Universal", "", '{"domain":"location","type":"country"}', ""],
+	[1841, "혹시", "by any chance, perhaps, maybe", "Adverb", ["adverb", "modality", "interrogative", "politeness"], "adverb used to soften questions or inquiries ('by any chance')", "", "studytext81", 1, "Universal", "", '{"domain":"modality"}', ""],
+	[1842, "신촌", "Sinchon (university district in Seoul)", "Noun", ["place", "proper_noun", "location", "neighborhood"], "Sinchon area in Seoul", "", "studytext81", 1, "Universal", "", '{"domain":"location","type":"district"}', ""],
+	[1843, "미진", "Mijin (personal given name)", "Noun", ["person", "name", "proper_noun"], "Korean personal given name", "", "studytext81", 1, "Universal", "", '{"domain":"person","type":"name"}', ""],
+	[1844, "북경반점", "Beijing Restaurant (Chinese restaurant name)", "Noun", ["place", "proper_noun", "restaurant", "food"], "proper noun restaurant name", "", "studytext81", 1, "Universal", "", '{"domain":"location","type":"restaurant"}', ""]
 ];
 
 // Build the initial cache from the hardcoded array
