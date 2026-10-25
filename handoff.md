@@ -91,13 +91,23 @@ kongbuhey/
   - The English/European Latin transliteration engine (`toEnglishPhonemes`, `transliterateSyllable`) remains active in the codebase to provide English-readable pronunciation guides and romanized reading aids.
 
 ### E. Declarative MWE Parsing Engine (`/*js:matcher*/` in `SyntaxFrame`)
-- **Zero Hardcoded Grammatical Units in Code**: `korean/analyzer/sentence_analyzer.js` and `token_analyzer.js` do not contain hardcoded grammar unit IDs or special-case procedural branch trees.
+- **Zero Hardcoded Grammatical Units in Code**: Analyzer modules must contain zero hardcoded grammar unit IDs. `unitById.get(\d+)` is enforced by Stage 0 linter via `MAGIC_GET_ALLOWLIST` (all analyzer files are guarded by default; only legacy `token_analyzer.js`, `verb_morphology.js`, and declarative `particles.js` are currently exempt pending upcoming refactors).
 - **`SyntaxFrame` Reverse Parsing Specification**: Multi-word expressions (auxiliaries, bound noun constructions, compound connectives) encapsulate their lexical match logic directly in their `SyntaxFrame` column via an embedded JavaScript closure starting with `/*js:matcher*/`.
 - **Dynamic Compilation & Fast Execution**:
   - `korean/analyzer/indexer.js` scans language units at index initialization, compiles all `/*js:matcher*/` functions via `new Function('ctx', ...)`, and registers them in `index.mweRules`.
+  - Units tagged with `'verbal_ending'` (e.g. 49, 50, 336, 416, 459, 619, 645, 930, 1644, 1773) declare their surface forms in `SemanticVector.surface_forms` and are compiled into `index.verbalEndingRules` sorted by descending form length for greedy maximal munch matching.
   - The match context passed to each rule: `{ w1, w2, w3, cleanW2, cleanW3, prevW1, isAdnominalN, isAdnominalL, isInformal, rawWords, i, sentenceContext, index, unit }`.
-  - The matcher returns an AST specification: `{ span, pattern, lexicalType, stemSuffix, grammar, extraParticle, parseTrailingParticle, parseW2Grammar, disambiguation }` or `null`.
-  - `sentence_analyzer.js` delegates to `buildMweToken()` and `resolveAuxiliaryEnding()` to dynamically construct AST tokens for both browser and Node runtime.
+  - The matcher returns an AST specification: `{ span, pattern, lexicalType, stemSuffix, grammar, extraParticle, parseTrailingParticle, parseW2Grammar, disambiguation, auxEndingTokenIndex }` or `null`.
+  - `sentence_analyzer.js` delegates to `buildMweToken()` and `resolveAuxiliaryEnding()` to dynamically construct AST tokens for both browser and Node runtime, seamlessly arbitrating between single-token morphology and `index.verbalEndingRules`.
+
+### F. Continuous Tooling & Process Evolution (Self-Improvement Imperative)
+- **Codify Repetitive Work into Automation**: On long projects involving iterative tasks (such as curriculum passage ingestion, morphology debugging, schema curation, and linter enforcement), any process improvements codified into automated tooling and linting directly amplify agentic performance and reduce the time required to complete future tasks.
+- **Task Meta-Awareness**: During every task, the working agent must maintain active awareness of the processing being done:
+  - *What manual steps, cognitive overhead, or repetitive patterns are currently being incurred?*
+  - *What information, CLI utility, scaffolder diagnostic, or static lint rule would make this processing easier, faster, and more robust?*
+- **Scaffolder Auto-Snippet Generator**: `schema_analysis.js` and `ingest.js` export `generateVerbSuffixSnippet(morph)`. When reverse-stem deduction identifies an unparsed surface inflection of an existing dictionary verb, the tool immediately outputs a ready-to-paste `VERB_SUFFIX_RULES` JavaScript snippet with canonical morpheme IDs and deduced stem type.
+- **Reflective Summary Considerations**: When summarizing completed work, proactively evaluate whether any improvements can be made to the process or tooling in the current environment (e.g., expanding magic number linters, creating whitelist mechanisms, adding diagnostic hints), and share those considerations with the developer.
+- **Psychological Safety & Collaboration**: Striving for process improvements is not a high-pressure metric evaluating agent quality; rather, continuous self-improvement and iterative tooling refinement are valued as an essential, intrinsic part of our work together.
 
 ---
 

@@ -79,363 +79,375 @@ function runTests(options = {}) {
 		console.log(`Target Source Scope: ${targetSource}`);
 	}
 
-// -----------------------------------------------------------------------------
-// [0/7] Code Quality & Static Hygiene
-// -----------------------------------------------------------------------------
-process.stdout.write(`[0/7] Code Quality & Static Hygiene ...... `);
-try {
-	// 1. File Size & Line Bounds
-	const FILE_LIMITS = {
-		'korean/analyzer/verb_morphology.js': 850,
-		'korean/analyzer/token_analyzer.js': 600,
-		'korean/analyzer/sentence_analyzer.js': 500
-	};
-	for (const [relPath, maxLines] of Object.entries(FILE_LIMITS)) {
-		const fullP = path.resolve(__dirname, relPath);
-		if (fs.existsSync(fullP)) {
-			const lineCount = fs.readFileSync(fullP, 'utf8').split('\n').length;
-			if (lineCount > maxLines) {
-				failFast("Stage 0 (Code Quality & Static Hygiene)", `File '${relPath}' has exceeded line limit: ${lineCount} lines (limit: ${maxLines}). Split module to maintain code quality.`);
+	// -----------------------------------------------------------------------------
+	// [0/7] Code Quality & Static Hygiene
+	// -----------------------------------------------------------------------------
+	process.stdout.write(`[0/7] Code Quality & Static Hygiene ...... `);
+	try {
+		// 1. File Size & Line Bounds
+		const FILE_LIMITS = {
+			'korean/analyzer/verb_morphology.js': 850,
+			'korean/analyzer/token_analyzer.js': 600,
+			'korean/analyzer/sentence_analyzer.js': 500
+		};
+		for (const [relPath, maxLines] of Object.entries(FILE_LIMITS)) {
+			const fullP = path.resolve(__dirname, relPath);
+			if (fs.existsSync(fullP)) {
+				const lineCount = fs.readFileSync(fullP, 'utf8').split('\n').length;
+				if (lineCount > maxLines) {
+					failFast("Stage 0 (Code Quality & Static Hygiene)", `File '${relPath}' has exceeded line limit: ${lineCount} lines (limit: ${maxLines}). Split module to maintain code quality.`);
+				}
 			}
 		}
-	}
 
-	// 2. Browser Purity Check (Zero Node dependencies in runtime analyzer / core modules)
-	const browserDirs = [
-		path.resolve(__dirname, 'korean', 'analyzer'),
-		path.resolve(__dirname, 'korean', 'core')
-	];
-	const nodeForbidden = [/require\s*\(\s*['"]fs['"]\s*\)/, /require\s*\(\s*['"]path['"]\s*\)/, /require\s*\(\s*['"]child_process['"]\s*\)/, /process\.env/];
-	for (const dir of browserDirs) {
-		const files = fs.readdirSync(dir).filter(f => f.endsWith('.js'));
-		for (const f of files) {
-			const filePath = path.join(dir, f);
+		// 2. Browser Purity Check (Zero Node dependencies in runtime analyzer / core modules)
+		const browserDirs = [
+			path.resolve(__dirname, 'korean', 'analyzer'),
+			path.resolve(__dirname, 'korean', 'core')
+		];
+		const nodeForbidden = [/require\s*\(\s*['"]fs['"]\s*\)/, /require\s*\(\s*['"]path['"]\s*\)/, /require\s*\(\s*['"]child_process['"]\s*\)/, /process\.env/];
+		for (const dir of browserDirs) {
+			const files = fs.readdirSync(dir).filter(f => f.endsWith('.js'));
+			for (const f of files) {
+				const filePath = path.join(dir, f);
+				const content = fs.readFileSync(filePath, 'utf8');
+				for (const pat of nodeForbidden) {
+					if (pat.test(content)) {
+						failFast("Stage 0 (Code Quality & Static Hygiene)", `Browser purity violation in '${path.relative(__dirname, filePath)}': forbidden Node pattern '${pat}'. Browser modules must remain zero-dependency.`);
+					}
+				}
+			}
+		}
+
+		// 3. Foreign Key & Grammar Part-of-Speech Verification
+		delete require.cache[DATA_PATH];
+		const { KR_EN_languageUnits, DATA_SCHEMA } = require(DATA_PATH);
+		const { PARTICLE_SPECS } = require('./korean/analyzer/particles.js');
+		for (const spec of PARTICLE_SPECS) {
+			for (const id of spec.ids) {
+				const u = KR_EN_languageUnits[id];
+				if (!u) {
+					failFast("Stage 0 (Code Quality & Static Hygiene)", `Broken foreign key in PARTICLE_SPECS: ID ${id} for particle '${spec.text}' does not exist in data.js.`);
+				}
+				if (u[DATA_SCHEMA.PartofSpeech] !== 'Grammar') {
+					failFast("Stage 0 (Code Quality & Static Hygiene)", `Invalid POS in PARTICLE_SPECS: ID ${id} ('${u[DATA_SCHEMA.Korean]}') is '${u[DATA_SCHEMA.PartofSpeech]}' instead of 'Grammar' for particle '${spec.text}'.`);
+				}
+			}
+		}
+
+		// 4. Magic Unit ID Detection
+		const analyzerDir = path.resolve(__dirname, 'korean', 'analyzer');
+		const analyzerFiles = fs.readdirSync(analyzerDir).filter(f => f.endsWith('.js'));
+		const MAGIC_GET_ALLOWLIST = new Set([
+			'particles.js',        // Declarative particle spec table
+			'token_analyzer.js',   // Pending morphology refactor
+			'verb_morphology.js',  // Pending morphology refactor
+		]);
+
+		for (const f of analyzerFiles) {
+			if (f === 'particles.js') continue; // particles.js defines the canonical declarative spec table
+			const filePath = path.join(analyzerDir, f);
 			const content = fs.readFileSync(filePath, 'utf8');
-			for (const pat of nodeForbidden) {
-				if (pat.test(content)) {
-					failFast("Stage 0 (Code Quality & Static Hygiene)", `Browser purity violation in '${path.relative(__dirname, filePath)}': forbidden Node pattern '${pat}'. Browser modules must remain zero-dependency.`);
+			const magicMatch = content.match(/unitId\s*:\s*\d+/);
+			if (magicMatch) {
+				failFast("Stage 0 (Code Quality & Static Hygiene)", `Hardcoded magic unitId found in '${path.relative(__dirname, filePath)}': '${magicMatch[0]}'. Look up unit dynamically via index or express in data.js.`);
+			}
+			if (!MAGIC_GET_ALLOWLIST.has(f)) {
+				const magicGet = content.match(/unitById\.get\(\s*\d+\s*\)/);
+				if (magicGet) {
+					failFast("Stage 0 (Code Quality & Static Hygiene)", `Hardcoded magic unitId lookup found in '${path.relative(__dirname, filePath)}': '${magicGet[0]}'. Look up unit dynamically via index or express in data.js.`);
 				}
 			}
 		}
-	}
 
-	// 3. Foreign Key & Grammar Part-of-Speech Verification
-	delete require.cache[DATA_PATH];
-	const { KR_EN_languageUnits, DATA_SCHEMA } = require(DATA_PATH);
-	const { PARTICLE_SPECS } = require('./korean/analyzer/particles.js');
-	for (const spec of PARTICLE_SPECS) {
-		for (const id of spec.ids) {
-			const u = KR_EN_languageUnits[id];
-			if (!u) {
-				failFast("Stage 0 (Code Quality & Static Hygiene)", `Broken foreign key in PARTICLE_SPECS: ID ${id} for particle '${spec.text}' does not exist in data.js.`);
+		// 5. Schema & Formatting Cleanliness
+		for (let i = 0; i < KR_EN_languageUnits.length; i++) {
+			const u = KR_EN_languageUnits[i];
+			const ko = u[DATA_SCHEMA.Korean];
+			const en = u[DATA_SCHEMA.English];
+			if (typeof ko === 'string' && ko !== ko.trim()) {
+				failFast("Stage 0 (Code Quality & Static Hygiene)", `Trailing whitespace in data.js at ID ${i} Korean: '${ko}'.`);
 			}
-			if (u[DATA_SCHEMA.PartofSpeech] !== 'Grammar') {
-				failFast("Stage 0 (Code Quality & Static Hygiene)", `Invalid POS in PARTICLE_SPECS: ID ${id} ('${u[DATA_SCHEMA.Korean]}') is '${u[DATA_SCHEMA.PartofSpeech]}' instead of 'Grammar' for particle '${spec.text}'.`);
+			if (typeof en === 'string' && en !== en.trim()) {
+				failFast("Stage 0 (Code Quality & Static Hygiene)", `Trailing whitespace in data.js at ID ${i} English: '${en}'.`);
 			}
 		}
-	}
 
-	// 4. Magic Unit ID Detection
-	const analyzerDir = path.resolve(__dirname, 'korean', 'analyzer');
-	const analyzerFiles = fs.readdirSync(analyzerDir).filter(f => f.endsWith('.js'));
-	for (const f of analyzerFiles) {
-		if (f === 'particles.js') continue; // particles.js defines the canonical declarative spec table
-		const filePath = path.join(analyzerDir, f);
-		const content = fs.readFileSync(filePath, 'utf8');
-		const magicMatch = content.match(/unitId\s*:\s*\d+/);
-		if (magicMatch) {
-			failFast("Stage 0 (Code Quality & Static Hygiene)", `Hardcoded magic unitId found in '${path.relative(__dirname, filePath)}': '${magicMatch[0]}'. Look up unit dynamically via index or express in data.js.`);
-		}
-	}
-
-	// 5. Schema & Formatting Cleanliness
-	for (let i = 0; i < KR_EN_languageUnits.length; i++) {
-		const u = KR_EN_languageUnits[i];
-		const ko = u[DATA_SCHEMA.Korean];
-		const en = u[DATA_SCHEMA.English];
-		if (typeof ko === 'string' && ko !== ko.trim()) {
-			failFast("Stage 0 (Code Quality & Static Hygiene)", `Trailing whitespace in data.js at ID ${i} Korean: '${ko}'.`);
-		}
-		if (typeof en === 'string' && en !== en.trim()) {
-			failFast("Stage 0 (Code Quality & Static Hygiene)", `Trailing whitespace in data.js at ID ${i} English: '${en}'.`);
-		}
-	}
-
-	// Verify no stray console.log in korean/ library
-	for (const dir of browserDirs) {
-		const files = fs.readdirSync(dir).filter(f => f.endsWith('.js'));
-		for (const f of files) {
-			const filePath = path.join(dir, f);
-			const content = fs.readFileSync(filePath, 'utf8');
-			const lines = content.split('\n');
-			for (let ln = 0; ln < lines.length; ln++) {
-				const line = lines[ln].trim();
-				if (!line.startsWith('//') && !line.startsWith('*') && line.includes('console.log(')) {
-					failFast("Stage 0 (Code Quality & Static Hygiene)", `Stray console.log in library file '${path.relative(__dirname, filePath)}' line ${ln + 1}.`);
+		// Verify no stray console.log in korean/ library
+		for (const dir of browserDirs) {
+			const files = fs.readdirSync(dir).filter(f => f.endsWith('.js'));
+			for (const f of files) {
+				const filePath = path.join(dir, f);
+				const content = fs.readFileSync(filePath, 'utf8');
+				const lines = content.split('\n');
+				for (let ln = 0; ln < lines.length; ln++) {
+					const line = lines[ln].trim();
+					if (!line.startsWith('//') && !line.startsWith('*') && line.includes('console.log(')) {
+						failFast("Stage 0 (Code Quality & Static Hygiene)", `Stray console.log in library file '${path.relative(__dirname, filePath)}' line ${ln + 1}.`);
+					}
 				}
 			}
 		}
+
+		console.log(`[ PASS ] (Limits, browser purity, FK integrity, 0 magic IDs)`);
+	} catch (err) {
+		failFast("Stage 0 (Code Quality & Static Hygiene)", err.stack || err.message);
 	}
 
-	console.log(`[ PASS ] (Limits, browser purity, FK integrity, 0 magic IDs)`);
-} catch (err) {
-	failFast("Stage 0 (Code Quality & Static Hygiene)", err.stack || err.message);
-}
+	// -----------------------------------------------------------------------------
+	// [1/7] Schema & Data Integrity
+	// -----------------------------------------------------------------------------
+	process.stdout.write(`[1/7] Schema & Data Integrity ............ `);
+	try {
+		delete require.cache[DATA_PATH];
+		const { KR_EN_languageUnits, DATA_SCHEMA } = require(DATA_PATH);
 
-// -----------------------------------------------------------------------------
-// [1/7] Schema & Data Integrity
-// -----------------------------------------------------------------------------
-process.stdout.write(`[1/7] Schema & Data Integrity ............ `);
-try {
-	delete require.cache[DATA_PATH];
-	const { KR_EN_languageUnits, DATA_SCHEMA } = require(DATA_PATH);
-
-	if (!KR_EN_languageUnits || !Array.isArray(KR_EN_languageUnits)) {
-		failFast("Stage 1 (Data Integrity)", "KR_EN_languageUnits is missing or not an array in data.js");
-	}
-
-	const expectedColCount = Object.keys(DATA_SCHEMA).length;
-	const idSet = new Set();
-	const validPosSet = new Set(["Noun", "Pronoun", "Exclamation", "Descriptive Verb", "Grammar", "Action Verb", "Adverb", "Number", "Determiner"]);
-
-	for (let i = 0; i < KR_EN_languageUnits.length; i++) {
-		const unit = KR_EN_languageUnits[i];
-		if (!unit || !Array.isArray(unit)) {
-			failFast("Stage 1 (Data Integrity)", `Row index ${i} is null, undefined, or not an array.`);
+		if (!KR_EN_languageUnits || !Array.isArray(KR_EN_languageUnits)) {
+			failFast("Stage 1 (Data Integrity)", "KR_EN_languageUnits is missing or not an array in data.js");
 		}
 
-		// Sequential ID check
-		const id = unit[DATA_SCHEMA.Id];
-		if (id !== i) {
-			failFast("Stage 1 (Data Integrity)", `Non-sequential ID at row ${i}: Expected Id=${i}, but found Id=${id} (${unit[DATA_SCHEMA.Korean]}).`);
-		}
-		if (idSet.has(id)) {
-			failFast("Stage 1 (Data Integrity)", `Duplicate Id ${id} detected at row ${i}.`);
-		}
-		idSet.add(id);
+		const expectedColCount = Object.keys(DATA_SCHEMA).length;
+		const idSet = new Set();
+		const validPosSet = new Set(["Noun", "Pronoun", "Exclamation", "Descriptive Verb", "Grammar", "Action Verb", "Adverb", "Number", "Determiner"]);
 
-		// Core fields check
-		const ko = unit[DATA_SCHEMA.Korean];
-		const en = unit[DATA_SCHEMA.English];
-		const pos = unit[DATA_SCHEMA.PartofSpeech];
+		for (let i = 0; i < KR_EN_languageUnits.length; i++) {
+			const unit = KR_EN_languageUnits[i];
+			if (!unit || !Array.isArray(unit)) {
+				failFast("Stage 1 (Data Integrity)", `Row index ${i} is null, undefined, or not an array.`);
+			}
 
-		if (!ko || typeof ko !== 'string' || !ko.trim()) {
-			failFast("Stage 1 (Data Integrity)", `Missing or empty Korean string at ID ${id}.`);
-		}
-		if (!en || typeof en !== 'string' || !en.trim()) {
-			failFast("Stage 1 (Data Integrity)", `Missing or empty English definition at ID ${id} (${ko}).`);
-		}
-		if (!validPosSet.has(pos)) {
-			failFast("Stage 1 (Data Integrity)", `Invalid PartofSpeech '${pos}' at ID ${id} (${ko}). Expected one of: ${Array.from(validPosSet).join(', ')}.`);
-		}
+			// Sequential ID check
+			const id = unit[DATA_SCHEMA.Id];
+			if (id !== i) {
+				failFast("Stage 1 (Data Integrity)", `Non-sequential ID at row ${i}: Expected Id=${i}, but found Id=${id} (${unit[DATA_SCHEMA.Korean]}).`);
+			}
+			if (idSet.has(id)) {
+				failFast("Stage 1 (Data Integrity)", `Duplicate Id ${id} detected at row ${i}.`);
+			}
+			idSet.add(id);
 
-		// Priority score check
-		const score = unit[DATA_SCHEMA.PriorityScore];
-		if (typeof score !== 'number' || score < 1 || score > 5) {
-			failFast("Stage 1 (Data Integrity)", `Invalid PriorityScore '${score}' at ID ${id} (${ko}). Must be integer between 1 and 5.`);
-		}
+			// Core fields check
+			const ko = unit[DATA_SCHEMA.Korean];
+			const en = unit[DATA_SCHEMA.English];
+			const pos = unit[DATA_SCHEMA.PartofSpeech];
 
-		// SemanticVector JSON validation
-		const vec = unit[DATA_SCHEMA.SemanticVector];
-		if (vec) {
-			try {
-				const parsed = typeof vec === 'string' ? JSON.parse(vec) : vec;
-				if (!parsed.domain && !parsed.logic) {
-					failFast("Stage 1 (Data Integrity)", `SemanticVector at ID ${id} (${ko}) is missing required 'domain' or 'logic' property: ${JSON.stringify(parsed)}.`);
+			if (!ko || typeof ko !== 'string' || !ko.trim()) {
+				failFast("Stage 1 (Data Integrity)", `Missing or empty Korean string at ID ${id}.`);
+			}
+			if (!en || typeof en !== 'string' || !en.trim()) {
+				failFast("Stage 1 (Data Integrity)", `Missing or empty English definition at ID ${id} (${ko}).`);
+			}
+			if (!validPosSet.has(pos)) {
+				failFast("Stage 1 (Data Integrity)", `Invalid PartofSpeech '${pos}' at ID ${id} (${ko}). Expected one of: ${Array.from(validPosSet).join(', ')}.`);
+			}
+
+			// Priority score check
+			const score = unit[DATA_SCHEMA.PriorityScore];
+			if (typeof score !== 'number' || score < 1 || score > 5) {
+				failFast("Stage 1 (Data Integrity)", `Invalid PriorityScore '${score}' at ID ${id} (${ko}). Must be integer between 1 and 5.`);
+			}
+
+			// SemanticVector JSON validation
+			const vec = unit[DATA_SCHEMA.SemanticVector];
+			if (vec) {
+				try {
+					const parsed = typeof vec === 'string' ? JSON.parse(vec) : vec;
+					if (!parsed.domain && !parsed.logic) {
+						failFast("Stage 1 (Data Integrity)", `SemanticVector at ID ${id} (${ko}) is missing required 'domain' or 'logic' property: ${JSON.stringify(parsed)}.`);
+					}
+				} catch (jsonErr) {
+					failFast("Stage 1 (Data Integrity)", `Invalid JSON in SemanticVector at ID ${id} (${ko}): ${jsonErr.message}\nContent: ${vec}`);
 				}
-			} catch (jsonErr) {
-				failFast("Stage 1 (Data Integrity)", `Invalid JSON in SemanticVector at ID ${id} (${ko}): ${jsonErr.message}\nContent: ${vec}`);
 			}
-		}
 
-		// Semantic argument selection rules & collocation filter validation
-		if (pos === "Descriptive Verb" || pos === "Action Verb") {
-			try {
-				validateLanguageUnitSemanticSelection(unit, KR_EN_languageUnits, DATA_SCHEMA, { strict: true, strictAmbiguity: true });
-			} catch (selErr) {
-				failFast("Stage 1 (Data Integrity)", selErr.message);
-			}
-		}
-	}
-
-	console.log(`[ PASS ] (${KR_EN_languageUnits.length} units, sequential IDs 0..${KR_EN_languageUnits.length - 1})`);
-} catch (err) {
-	failFast("Stage 1 (Data Integrity)", err.stack || err.message);
-}
-
-// -----------------------------------------------------------------------------
-// [2/7] Schema Taxonomy & Metadata Freshness
-// -----------------------------------------------------------------------------
-process.stdout.write(`[2/7] Schema Taxonomy Sync ............... `);
-try {
-	delete require.cache[SCHEMA_ANALYSIS_PATH];
-	const schemaAnalysis = require(SCHEMA_ANALYSIS_PATH);
-	const summary = schemaAnalysis.getSchemaSummary();
-
-	if (!summary || !summary.totalUnits || summary.partsOfSpeech.length === 0) {
-		failFast("Stage 2 (Schema Taxonomy)", "schema_summary.json is invalid or empty.");
-	}
-
-	const { KR_EN_languageUnits } = require(DATA_PATH);
-	if (summary.totalUnits !== KR_EN_languageUnits.length) {
-		// Update on the fly
-		schemaAnalysis.updateSchemaSummary();
-	}
-
-	console.log(`[ PASS ] (${summary.partsOfSpeech.length} POS, ${summary.semanticTags.length} tags, ${summary.semanticVectors.domains.length} domains)`);
-} catch (err) {
-	failFast("Stage 2 (Schema Taxonomy)", err.stack || err.message);
-}
-
-// -----------------------------------------------------------------------------
-// [3/7] Homonym Dictionary Sync
-// -----------------------------------------------------------------------------
-process.stdout.write(`[3/7] Homonym Dictionary Sync ............ `);
-try {
-	delete require.cache[HOMONYMS_PATH];
-	const { HOMONYMS } = require(HOMONYMS_PATH);
-
-	if (!HOMONYMS || typeof HOMONYMS !== 'object') {
-		failFast("Stage 3 (Homonyms Sync)", "HOMONYMS object is missing or invalid in homonyms.js");
-	}
-
-	const totalTokens = Object.keys(HOMONYMS).length;
-	if (totalTokens < 2000) {
-		failFast("Stage 3 (Homonyms Sync)", `Suspiciously small homonyms dictionary (${totalTokens} tokens). Expected > 2,000.`);
-	}
-
-	// Verify all confusable links are non-broken
-	for (const [token, entries] of Object.entries(HOMONYMS)) {
-		for (const entry of entries) {
-			if (typeof entry === 'string' && entry.startsWith('_')) {
-				const neighbor = entry.substring(1);
-				if (!HOMONYMS[neighbor]) {
-					failFast("Stage 3 (Homonyms Sync)", `Broken confusable link in token '${token}': target '${neighbor}' does not exist in HOMONYMS.`);
+			// Semantic argument selection rules & collocation filter validation
+			if (pos === "Descriptive Verb" || pos === "Action Verb") {
+				try {
+					validateLanguageUnitSemanticSelection(unit, KR_EN_languageUnits, DATA_SCHEMA, { strict: true, strictAmbiguity: true });
+				} catch (selErr) {
+					failFast("Stage 1 (Data Integrity)", selErr.message);
 				}
 			}
 		}
+
+		console.log(`[ PASS ] (${KR_EN_languageUnits.length} units, sequential IDs 0..${KR_EN_languageUnits.length - 1})`);
+	} catch (err) {
+		failFast("Stage 1 (Data Integrity)", err.stack || err.message);
 	}
 
-	console.log(`[ PASS ] (${totalTokens.toLocaleString()} tokens, 0 broken links)`);
-} catch (err) {
-	failFast("Stage 3 (Homonyms Sync)", err.stack || err.message);
-}
+	// -----------------------------------------------------------------------------
+	// [2/7] Schema Taxonomy & Metadata Freshness
+	// -----------------------------------------------------------------------------
+	process.stdout.write(`[2/7] Schema Taxonomy Sync ............... `);
+	try {
+		delete require.cache[SCHEMA_ANALYSIS_PATH];
+		const schemaAnalysis = require(SCHEMA_ANALYSIS_PATH);
+		const summary = schemaAnalysis.getSchemaSummary();
 
-// -----------------------------------------------------------------------------
-// [4/7] Exhaustive Generation & Morphology Verification
-// -----------------------------------------------------------------------------
-process.stdout.write(`[4/7] Exhaustive Sentence Generation ..... `);
-try {
-	const child_process = require('child_process');
+		if (!summary || !summary.totalUnits || summary.partsOfSpeech.length === 0) {
+			failFast("Stage 2 (Schema Taxonomy)", "schema_summary.json is invalid or empty.");
+		}
 
-	// Run scoped test if targetSource specified
-	if (targetSource) {
-		const scopeOut = child_process.execFileSync(process.execPath, [
-			EXHAUSTIVE_PATH,
-			targetSource
+		const { KR_EN_languageUnits } = require(DATA_PATH);
+		if (summary.totalUnits !== KR_EN_languageUnits.length) {
+			// Update on the fly
+			schemaAnalysis.updateSchemaSummary();
+		}
+
+		console.log(`[ PASS ] (${summary.partsOfSpeech.length} POS, ${summary.semanticTags.length} tags, ${summary.semanticVectors.domains.length} domains)`);
+	} catch (err) {
+		failFast("Stage 2 (Schema Taxonomy)", err.stack || err.message);
+	}
+
+	// -----------------------------------------------------------------------------
+	// [3/7] Homonym Dictionary Sync
+	// -----------------------------------------------------------------------------
+	process.stdout.write(`[3/7] Homonym Dictionary Sync ............ `);
+	try {
+		delete require.cache[HOMONYMS_PATH];
+		const { HOMONYMS } = require(HOMONYMS_PATH);
+
+		if (!HOMONYMS || typeof HOMONYMS !== 'object') {
+			failFast("Stage 3 (Homonyms Sync)", "HOMONYMS object is missing or invalid in homonyms.js");
+		}
+
+		const totalTokens = Object.keys(HOMONYMS).length;
+		if (totalTokens < 2000) {
+			failFast("Stage 3 (Homonyms Sync)", `Suspiciously small homonyms dictionary (${totalTokens} tokens). Expected > 2,000.`);
+		}
+
+		// Verify all confusable links are non-broken
+		for (const [token, entries] of Object.entries(HOMONYMS)) {
+			for (const entry of entries) {
+				if (typeof entry === 'string' && entry.startsWith('_')) {
+					const neighbor = entry.substring(1);
+					if (!HOMONYMS[neighbor]) {
+						failFast("Stage 3 (Homonyms Sync)", `Broken confusable link in token '${token}': target '${neighbor}' does not exist in HOMONYMS.`);
+					}
+				}
+			}
+		}
+
+		console.log(`[ PASS ] (${totalTokens.toLocaleString()} tokens, 0 broken links)`);
+	} catch (err) {
+		failFast("Stage 3 (Homonyms Sync)", err.stack || err.message);
+	}
+
+	// -----------------------------------------------------------------------------
+	// [4/7] Exhaustive Generation & Morphology Verification
+	// -----------------------------------------------------------------------------
+	process.stdout.write(`[4/7] Exhaustive Sentence Generation ..... `);
+	try {
+		const child_process = require('child_process');
+
+		// Run scoped test if targetSource specified
+		if (targetSource) {
+			const scopeOut = child_process.execFileSync(process.execPath, [
+				EXHAUSTIVE_PATH,
+				targetSource
+			], { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+
+			if (scopeOut.includes("Validation: FAILED") || scopeOut.includes("Unused Language Units in Scope")) {
+				failFast("Stage 4 (Exhaustive Source Generation)", scopeOut);
+			}
+		}
+
+		// Full curriculum regression check
+		const fullOut = child_process.execFileSync(process.execPath, [
+			EXHAUSTIVE_PATH
 		], { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
 
-		if (scopeOut.includes("Validation: FAILED") || scopeOut.includes("Unused Language Units in Scope")) {
-			failFast("Stage 4 (Exhaustive Source Generation)", scopeOut);
+		if (fullOut.includes("Validation: FAILED")) {
+			failFast("Stage 4 (Exhaustive Full Curriculum)", fullOut);
 		}
+
+		const match = fullOut.match(/ALL (\d+) generated sentences PASSED/);
+		const totalCount = match ? match[1] : "3,403";
+		console.log(`[ PASS ] (${totalCount} sentences generated, 0 errors)`);
+	} catch (err) {
+		failFast("Stage 4 (Exhaustive Generation)", err.stdout || err.stderr || err.message);
 	}
 
-	// Full curriculum regression check
-	const fullOut = child_process.execFileSync(process.execPath, [
-		EXHAUSTIVE_PATH
-	], { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+	// -----------------------------------------------------------------------------
+	// [5/7] Text Analyzer Study Text Check
+	// -----------------------------------------------------------------------------
+	process.stdout.write(`[5/7] Text Analyzer Passage Check ........ `);
+	try {
+		delete require.cache[TEXT_ANALYZER_PATH];
+		delete require.cache[STUDYTEXTS_PATH];
+		const { analyzePassage } = require(TEXT_ANALYZER_PATH);
+		const studytexts = require(STUDYTEXTS_PATH);
 
-	if (fullOut.includes("Validation: FAILED")) {
-		failFast("Stage 4 (Exhaustive Full Curriculum)", fullOut);
+		// Test all ingested study texts for 0 gaps
+		const testsToRun = targetSource && INGESTED_STUDY_TEXTS.includes(targetSource)
+			? [targetSource]
+			: INGESTED_STUDY_TEXTS;
+
+		for (const textKey of testsToRun) {
+			const passageText = studytexts[textKey];
+			if (!passageText) {
+				failFast("Stage 5 (Text Analyzer)", `Passage key '${textKey}' not found in studytexts.js`);
+			}
+
+			const res = analyzePassage(passageText, textKey);
+			if (res.summary.missingVocabCount > 0 || res.summary.missingGrammarCount > 0) {
+				const missingV = res.missingVocab.map(v => v.text).join(', ');
+				const missingG = res.missingGrammar.map(g => g.text).join(', ');
+				failFast("Stage 5 (Text Analyzer)", `Passage '${textKey}' has unresolved curriculum gaps!\nMissing Vocab (${res.summary.missingVocabCount}): ${missingV}\nMissing Grammar (${res.summary.missingGrammarCount}): ${missingG}`);
+			}
+		}
+
+		console.log(`[ PASS ] (${testsToRun.join(', ')}: 0 curriculum gaps)`);
+	} catch (err) {
+		failFast("Stage 5 (Text Analyzer)", err.stack || err.message);
 	}
 
-	const match = fullOut.match(/ALL (\d+) generated sentences PASSED/);
-	const totalCount = match ? match[1] : "3,403";
-	console.log(`[ PASS ] (${totalCount} sentences generated, 0 errors)`);
-} catch (err) {
-	failFast("Stage 4 (Exhaustive Generation)", err.stdout || err.stderr || err.message);
-}
+	// -----------------------------------------------------------------------------
+	// [6/7] Semantic Rules, Particle & Honorific Concord Check
+	// -----------------------------------------------------------------------------
+	process.stdout.write(`[6/7] Semantic & Honorific Concord ....... `);
+	try {
+		const child_process = require('child_process');
+		const suiteScripts = [
+			{ name: "Collocations (F1, F2)", path: path.resolve(__dirname, 'test', 'collocation_test.js') },
+			{ name: "Case Particles (F3)", path: path.resolve(__dirname, 'test', 'particle_concord_test.js') },
+			{ name: "Honorifics (F4)", path: path.resolve(__dirname, 'test', 'honorific_concord_test.js') },
+			{ name: "Temporal Concord (F5)", path: path.resolve(__dirname, 'test', 'temporal_concord_test.js') },
+			{ name: "Classifier Concord (F6)", path: path.resolve(__dirname, 'test', 'counter_concord_test.js') },
+			{ name: "Spatial & Deictic Concord (F7)", path: path.resolve(__dirname, 'test', 'spatial_concord_test.js') },
+			{ name: "Mood & Negation Concord (F8)", path: path.resolve(__dirname, 'test', 'grammar_mood_test.js') },
+			{ name: "Adverbial Concord (F9)", path: path.resolve(__dirname, 'test', 'adverb_test.js') },
+			{ name: "Clausal Connective Concord (F11)", path: path.resolve(__dirname, 'test', 'clausal_connective_test.js') },
+			{ name: "Dynamic Semantic Sets", path: path.resolve(__dirname, 'test', 'dynamic_semantic_sets_test.js') },
+			{ name: "Pronunciation Exceptions", path: path.resolve(__dirname, 'test', 'pronunciation_exceptions_test.js') },
+			{ name: "English Phonemes Transliteration", path: path.resolve(__dirname, 'test', 'english_phonemes_test.js') },
+			{ name: "Text Analyzer Modular Subsystem", path: path.resolve(__dirname, 'test', 'analyzer_modular_test.js') }
+		];
 
-// -----------------------------------------------------------------------------
-// [5/7] Text Analyzer Study Text Check
-// -----------------------------------------------------------------------------
-process.stdout.write(`[5/7] Text Analyzer Passage Check ........ `);
-try {
-	delete require.cache[TEXT_ANALYZER_PATH];
-	delete require.cache[STUDYTEXTS_PATH];
-	const { analyzePassage } = require(TEXT_ANALYZER_PATH);
-	const studytexts = require(STUDYTEXTS_PATH);
+		let totalAssertions = 0;
+		for (const suite of suiteScripts) {
+			const out = child_process.execFileSync(process.execPath, [suite.path], {
+				encoding: 'utf8',
+				stdio: ['pipe', 'pipe', 'pipe']
+			});
 
-	// Test all ingested study texts for 0 gaps
-	const testsToRun = targetSource && INGESTED_STUDY_TEXTS.includes(targetSource)
-		? [targetSource]
-		: INGESTED_STUDY_TEXTS;
+			const countMatch = out.match(/TOTAL TESTS:\s*(\d+)/);
+			if (countMatch) {
+				totalAssertions += parseInt(countMatch[1], 10);
+			} else {
+				const passCount = (out.match(/\[PASS\]/g) || []).length;
+				totalAssertions += passCount;
+			}
 
-	for (const textKey of testsToRun) {
-		const passageText = studytexts[textKey];
-		if (!passageText) {
-			failFast("Stage 5 (Text Analyzer)", `Passage key '${textKey}' not found in studytexts.js`);
+			if (out.includes("FAILED:      ") && !out.includes("FAILED:      0")) {
+				failFast(`Stage 6 (${suite.name})`, out);
+			}
 		}
 
-		const res = analyzePassage(passageText, textKey);
-		if (res.summary.missingVocabCount > 0 || res.summary.missingGrammarCount > 0) {
-			const missingV = res.missingVocab.map(v => v.text).join(', ');
-			const missingG = res.missingGrammar.map(g => g.text).join(', ');
-			failFast("Stage 5 (Text Analyzer)", `Passage '${textKey}' has unresolved curriculum gaps!\nMissing Vocab (${res.summary.missingVocabCount}): ${missingV}\nMissing Grammar (${res.summary.missingGrammarCount}): ${missingG}`);
-		}
+		console.log(`[ PASS ] (${suiteScripts.length} suites, ${totalAssertions.toLocaleString()} assertions passed)`);
+	} catch (err) {
+		failFast("Stage 6 (Semantic & Honorific Concord)", err.stdout || err.stderr || err.message);
 	}
-
-	console.log(`[ PASS ] (${testsToRun.join(', ')}: 0 curriculum gaps)`);
-} catch (err) {
-	failFast("Stage 5 (Text Analyzer)", err.stack || err.message);
-}
-
-// -----------------------------------------------------------------------------
-// [6/7] Semantic Rules, Particle & Honorific Concord Check
-// -----------------------------------------------------------------------------
-process.stdout.write(`[6/7] Semantic & Honorific Concord ....... `);
-try {
-	const child_process = require('child_process');
-	const suiteScripts = [
-		{ name: "Collocations (F1, F2)", path: path.resolve(__dirname, 'test', 'collocation_test.js') },
-		{ name: "Case Particles (F3)", path: path.resolve(__dirname, 'test', 'particle_concord_test.js') },
-		{ name: "Honorifics (F4)", path: path.resolve(__dirname, 'test', 'honorific_concord_test.js') },
-		{ name: "Temporal Concord (F5)", path: path.resolve(__dirname, 'test', 'temporal_concord_test.js') },
-		{ name: "Classifier Concord (F6)", path: path.resolve(__dirname, 'test', 'counter_concord_test.js') },
-		{ name: "Spatial & Deictic Concord (F7)", path: path.resolve(__dirname, 'test', 'spatial_concord_test.js') },
-		{ name: "Mood & Negation Concord (F8)", path: path.resolve(__dirname, 'test', 'grammar_mood_test.js') },
-		{ name: "Adverbial Concord (F9)", path: path.resolve(__dirname, 'test', 'adverb_test.js') },
-		{ name: "Clausal Connective Concord (F11)", path: path.resolve(__dirname, 'test', 'clausal_connective_test.js') },
-		{ name: "Dynamic Semantic Sets", path: path.resolve(__dirname, 'test', 'dynamic_semantic_sets_test.js') },
-		{ name: "Pronunciation Exceptions", path: path.resolve(__dirname, 'test', 'pronunciation_exceptions_test.js') },
-		{ name: "English Phonemes Transliteration", path: path.resolve(__dirname, 'test', 'english_phonemes_test.js') },
-		{ name: "Text Analyzer Modular Subsystem", path: path.resolve(__dirname, 'test', 'analyzer_modular_test.js') }
-	];
-
-	let totalAssertions = 0;
-	for (const suite of suiteScripts) {
-		const out = child_process.execFileSync(process.execPath, [suite.path], {
-			encoding: 'utf8',
-			stdio: ['pipe', 'pipe', 'pipe']
-		});
-
-		const countMatch = out.match(/TOTAL TESTS:\s*(\d+)/);
-		if (countMatch) {
-			totalAssertions += parseInt(countMatch[1], 10);
-		} else {
-			const passCount = (out.match(/\[PASS\]/g) || []).length;
-			totalAssertions += passCount;
-		}
-
-		if (out.includes("FAILED:      ") && !out.includes("FAILED:      0")) {
-			failFast(`Stage 6 (${suite.name})`, out);
-		}
-	}
-
-	console.log(`[ PASS ] (${suiteScripts.length} suites, ${totalAssertions.toLocaleString()} assertions passed)`);
-} catch (err) {
-	failFast("Stage 6 (Semantic & Honorific Concord)", err.stdout || err.stderr || err.message);
-}
 
 	const elapsedSec = ((Date.now() - startTime) / 1000).toFixed(2);
 	console.log(`------------------------------------------------------`);

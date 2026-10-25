@@ -264,7 +264,23 @@ function deduceExistingVerbStem(surface, dataPath = DEFAULT_DATA_PATH) {
 		}
 	}
 
-	// 2c. Past tense endings: ~았습니다, ~었습니다, ~였습니다, ~았다, ~었다, ~였다, ~았어요, ~었어요, ~였어요, ~았고, ~었고
+	// 2c. Honorific inflections: ~하셔서, ~하셨어요, ~하셨습니다, ~하시면, ~하십니다, ~(으)셔서, ~(으)셨어요, ~(으)시면
+	const honMatch = s.match(/(하|으시|시|으셔|셔|으셨|셨)(습니다|습니까|어요|다|고|던|네|면|서|요)$/);
+	if (honMatch) {
+		const matchStr = honMatch[0];
+		if (matchStr.startsWith("하")) {
+			const prefix = s.slice(0, -matchStr.length);
+			candidates.push({ stem: prefix + "하", suffix: `honorific (-${matchStr})` });
+		} else {
+			const prefix = s.slice(0, -matchStr.length);
+			candidates.push({ stem: prefix, suffix: `honorific (-${matchStr})` });
+			if (matchStr.startsWith("으") && prefix.endsWith("으")) {
+				candidates.push({ stem: prefix.slice(0, -1), suffix: `honorific (-${matchStr})` });
+			}
+		}
+	}
+
+	// 2d. Past tense endings: ~았습니다, ~었습니다, ~였습니다, ~았다, ~었다, ~였다, ~았어요, ~었어요, ~였어요, ~았고, ~었고
 	const pastMatch = s.match(/(았|었|였)(습니다|어요|다|고|던|네|더)$/);
 	if (pastMatch) {
 		const pastIdx = s.lastIndexOf(pastMatch[1]);
@@ -337,9 +353,153 @@ function deduceExistingVerbStem(surface, dataPath = DEFAULT_DATA_PATH) {
 				suffix: c.suffix
 			};
 		}
-	}
+}
 
 	return null;
+}
+
+/**
+ * Generates a ready-to-paste JavaScript rule snippet for VERB_SUFFIX_RULES
+ * in korean/analyzer/verb_morphology.js based on a reverse-stem morphology match.
+ */
+function generateVerbSuffixSnippet(morph) {
+	if (!morph || !morph.verbUnit) return null;
+
+	const surface = morph.surface;
+	const baseVerb = morph.verbUnit[1];
+
+	// Catalog of standard morphology grammar objects with canonical IDs
+	const G = {
+		HONORIFIC: { text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" },
+		PAST: { text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" },
+		VOLITION: { text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" },
+		FORMAL_DEC: { text: "-습니다", pos: "Verb Ending", id: 50, gloss: "formal declarative (ID 50)" },
+		FORMAL_QUESTION: { text: "-ㅂ니까", pos: "Verb Ending", id: 50, gloss: "formal question (ID 50)" },
+		POLITE_INF: { text: "-아/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" },
+		CONDITIONAL: { text: "-(으)면", pos: "Verb Ending", id: 619, gloss: "conditional 'if/when' (ID 619)" },
+		CAUSE_SEQ: { text: "-아/어서", pos: "Verb Ending", id: 459, gloss: "cause / sequential (ID 459)" },
+		CONNECTIVE: { text: "-고", pos: "Verb Ending", id: 336, gloss: "connective 'and' (ID 336)" },
+		BUT: { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" },
+		NEUNDE: { text: "-는데", pos: "Verb Ending", id: 620, gloss: "background/contrastive (ID 620)" },
+		POLITE_IMP: { text: "-(으)세요", pos: "Verb Ending", id: 416, gloss: "polite honorific ending (ID 416)" },
+		FORMAL_IMP: { text: "-(으)십시오", pos: "Verb Ending", id: 1644, gloss: "formal imperative (ID 1644)" },
+		INTERROGATIVE: { text: "-나요", pos: "Verb Ending", id: 930, gloss: "polite interrogative (ID 930)" },
+		CONFIRMATION: { text: "-지요", pos: "Verb Ending", id: 1773, gloss: "confirmation ending (ID 1773)" },
+		SURPRISE: { text: "-네요", pos: "Verb Ending", id: 839, gloss: "realization/surprise (ID 839)" },
+		EXCLAMATORY: { text: "-군요", pos: "Verb Ending", id: 1645, gloss: "realization exclamatory (ID 1645)" },
+		REASON_NIKA: { text: "-(으)니까", pos: "Verb Ending", id: 53, gloss: "since / because (ID 53)" },
+		WHILE: { text: "-(으)면서", pos: "Verb Ending", id: 711, gloss: "while doing (ID 711)" },
+		INTENT: { text: "-(으)려고", pos: "Verb Ending", id: 816, gloss: "intentive 'in order to' (ID 816)" },
+		PURPOSE: { text: "-(으)러", pos: "Verb Ending", id: 485, gloss: "in order to (ID 485)" },
+	};
+
+	let stemType = "stem_da";
+	let suffix = "";
+	let baseVerbField = null;
+	const grammar = [];
+
+	const isHada = baseVerb.endsWith("하다");
+	const isReu = baseVerb.endsWith("르다");
+
+	if (isReu && (surface.includes("랐") || surface.includes("렀") || surface.includes("라") || surface.includes("러"))) {
+		if (surface.includes("랐") || surface.includes("렀")) {
+			stemType = "stem_reu_past";
+			grammar.push(G.PAST);
+			if (surface.endsWith("습니다")) { suffix = surface.includes("랐") ? "랐습니다" : "렀습니다"; grammar.push(G.FORMAL_DEC); }
+			else if (surface.endsWith("어요")) { suffix = surface.includes("랐") ? "랐어요" : "렀어요"; grammar.push(G.POLITE_INF); }
+			else if (surface.endsWith("다")) { suffix = surface.includes("랐") ? "랐다" : "렀다"; grammar.push(G.FORMAL_DEC); }
+			else { suffix = surface; stemType = "fixed_base"; baseVerbField = baseVerb; }
+		} else {
+			stemType = "stem_reu_present";
+			if (surface.endsWith("요")) { suffix = surface.includes("라") ? "라요" : "러요"; grammar.push(G.POLITE_INF); }
+			else if (surface.endsWith("서")) { suffix = surface.includes("라") ? "라서" : "려서"; grammar.push(G.CAUSE_SEQ); }
+			else { suffix = surface; stemType = "fixed_base"; baseVerbField = baseVerb; }
+		}
+	} else if (isHada && (surface.includes("하") || surface.includes("해") || surface.includes("했"))) {
+		stemType = "hada";
+		if (surface.includes("하")) {
+			suffix = surface.slice(surface.lastIndexOf("하"));
+		} else if (surface.includes("했")) {
+			suffix = surface.slice(surface.lastIndexOf("했"));
+		} else {
+			suffix = surface.slice(surface.lastIndexOf("해"));
+		}
+
+		if (suffix.includes("시") || suffix.includes("셔") || suffix.includes("세")) grammar.push(G.HONORIFIC);
+		if (suffix.includes("했") || suffix.includes("았") || suffix.includes("었")) grammar.push(G.PAST);
+		if (suffix.includes("겠")) grammar.push(G.VOLITION);
+
+		if (suffix.endsWith("습니다")) grammar.push(G.FORMAL_DEC);
+		else if (suffix.endsWith("습니까")) grammar.push(G.FORMAL_QUESTION);
+		else if (suffix.endsWith("어요") || suffix.endsWith("아요") || suffix.endsWith("해요")) grammar.push(G.POLITE_INF);
+		else if (suffix.endsWith("면")) grammar.push(G.CONDITIONAL);
+		else if (suffix.endsWith("서")) grammar.push(G.CAUSE_SEQ);
+		else if (suffix.endsWith("고")) grammar.push(G.CONNECTIVE);
+		else if (suffix.endsWith("지만")) grammar.push(G.BUT);
+		else if (suffix.endsWith("는데")) grammar.push(G.NEUNDE);
+		else if (suffix.endsWith("세요")) grammar.push(G.POLITE_IMP);
+		else if (suffix.endsWith("십시오")) grammar.push(G.FORMAL_IMP);
+		else if (suffix.endsWith("니까")) grammar.push(G.REASON_NIKA);
+		else if (suffix.endsWith("면서")) grammar.push(G.WHILE);
+	} else {
+		const stem = baseVerb.replace(/다$/, '');
+		if (surface === stem) {
+			suffix = surface;
+			stemType = "fixed_base";
+			baseVerbField = baseVerb;
+			grammar.push({ text: "-아/어", pos: "Verb Ending", id: 459, gloss: "informal (ID 459)" });
+		} else if (surface.startsWith(stem)) {
+			suffix = surface.slice(stem.length);
+			stemType = "stem_da";
+
+			if (surface.includes("셨")) {
+				grammar.push(G.HONORIFIC);
+				grammar.push(G.PAST);
+			} else {
+				if (suffix.includes("시") || suffix.includes("셔")) grammar.push(G.HONORIFIC);
+				if (suffix.includes("았") || suffix.includes("었")) grammar.push(G.PAST);
+			}
+			if (suffix.includes("겠")) grammar.push(G.VOLITION);
+
+			if (suffix.endsWith("습니다")) grammar.push(G.FORMAL_DEC);
+			else if (suffix.endsWith("습니까")) grammar.push(G.FORMAL_QUESTION);
+			else if (suffix.endsWith("어요") || suffix.endsWith("아요") || suffix.endsWith("요")) grammar.push(G.POLITE_INF);
+			else if (suffix.endsWith("면")) grammar.push(G.CONDITIONAL);
+			else if (suffix.endsWith("서")) grammar.push(G.CAUSE_SEQ);
+			else if (suffix.endsWith("고")) grammar.push(G.CONNECTIVE);
+			else if (suffix.endsWith("지만")) grammar.push(G.BUT);
+			else if (suffix.endsWith("는데") || suffix.endsWith("은데")) grammar.push(G.NEUNDE);
+			else if (suffix.endsWith("세요")) grammar.push(G.POLITE_IMP);
+			else if (suffix.endsWith("십시오")) grammar.push(G.FORMAL_IMP);
+			else if (suffix.endsWith("니까")) grammar.push(G.REASON_NIKA);
+			else if (suffix.endsWith("면서")) grammar.push(G.WHILE);
+			else if (suffix.endsWith("네요")) grammar.push(G.SURPRISE);
+			else if (suffix.endsWith("지요") || suffix.endsWith("죠")) grammar.push(G.CONFIRMATION);
+		} else {
+			suffix = surface;
+			stemType = "fixed_base";
+			baseVerbField = baseVerb;
+
+			if (surface.includes("셨")) {
+				grammar.push(G.HONORIFIC);
+				grammar.push(G.PAST);
+			} else if (surface.includes("았") || surface.includes("었") || surface.includes("였") || surface.includes("됐")) {
+				grammar.push(G.PAST);
+			}
+			if (surface.includes("겠")) grammar.push(G.VOLITION);
+			if (surface.endsWith("습니다")) grammar.push(G.FORMAL_DEC);
+			else if (surface.endsWith("어요") || surface.endsWith("아요") || surface.endsWith("요")) grammar.push(G.POLITE_INF);
+			else if (surface.endsWith("면")) grammar.push(G.CONDITIONAL);
+			else if (surface.endsWith("서")) grammar.push(G.CAUSE_SEQ);
+			else if (surface.endsWith("고")) grammar.push(G.CONNECTIVE);
+		}
+	}
+
+	let snippet = `{ suffix: "${suffix}", stemType: "${stemType}"`;
+	if (baseVerbField) snippet += `, baseVerb: "${baseVerbField}"`;
+	const grammarEntries = grammar.map(g => `{ text: "${g.text}", pos: "${g.pos}", id: ${g.id}, gloss: "${g.gloss}" }`);
+	snippet += `, grammar: [${grammarEntries.join(", ")}] }`;
+	return snippet;
 }
 
 /**
@@ -360,7 +520,11 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 		// Smart reverse-stem morphology deduction
 		const morph = deduceExistingVerbStem(word);
 		if (morph) {
-			console.log(`[MORPHOLOGY HINT] "${word}" matches existing verb ${morph.verbUnit[1]} (ID ${morph.verbUnit[0]}) via suffix "${morph.suffix}". Check verb_morphology.js before creating a new unit.`);
+			console.log(`[MORPHOLOGY HINT] "${word}" matches existing verb ${morph.verbUnit[1]} (ID ${morph.verbUnit[0]}) via suffix "${morph.suffix}".`);
+			const snippet = generateVerbSuffixSnippet(morph);
+			if (snippet) {
+				console.log(`  Suggested VERB_SUFFIX_RULES entry for verb_morphology.js:\n  ${snippet}`);
+			}
 			return null;
 		}
 	}
@@ -474,5 +638,6 @@ module.exports = {
 	getSchemaSummary,
 	scaffoldUnit,
 	findExistingUnit,
-	deduceExistingVerbStem
+	deduceExistingVerbStem,
+	generateVerbSuffixSnippet
 };
