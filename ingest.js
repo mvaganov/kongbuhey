@@ -54,7 +54,7 @@ function findNextUningestedPassage() {
 	const ingested = new Set(getIngestedPassages());
 	const allPassages = Object.keys(studytexts).filter(k => k.startsWith('studytext'));
 	for (const p of allPassages) {
-		if (!ingested.has(p)) return p;
+		if (!ingested.has(p) && studytexts[p] && studytexts[p].trim().length > 0) return p;
 	}
 	return null;
 }
