@@ -113,33 +113,39 @@ kongbuhey/
 ---
 
 ## 4. Current Status & Verification
-- **Dataset**: 1,869 units (100% valid, 0 TODOs, sequential IDs 0..1868).
-- **Homonym Dictionary**: 3,284 tokens mapped, 0 broken links.
-- **Ingested Passages (Phase 1.5)**: `studytext12`, `studytext21`, `studytext22`, `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101` (100% recognized, 0 curriculum gaps across 15 passages).
+- **Dataset**: 1,902 units (100% valid, 0 TODOs, sequential IDs 0..1901).
+- **Homonym Dictionary**: 3,344 tokens mapped, 0 broken links.
+- **Ingested Passages (Phase 1.5)**: `studytext12`, `studytext21`, `studytext22`, `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112` (100% recognized, 0 curriculum gaps across 18 passages).
 - **Master Test Suite (`node test.js`)**:
   - Stage 0: Code Quality & Static Hygiene [ PASS ] (Limits, browser purity, FK integrity, 0 magic IDs)
-  - Stage 1: Schema & Data Integrity [ PASS ] (1,869 units, sequential IDs 0..1868)
-  - Stage 2: Schema Taxonomy Sync [ PASS ] (9 POS, 646 tags, 122 domains)
-  - Stage 3: Homonym Dictionary Sync [ PASS ] (3,284 tokens)
+  - Stage 1: Schema & Data Integrity [ PASS ] (1,902 units, sequential IDs 0..1901)
+  - Stage 2: Schema Taxonomy Sync [ PASS ] (9 POS, 653 tags, 123 domains)
+  - Stage 3: Homonym Dictionary Sync [ PASS ] (3,344 tokens)
   - Stage 4: Exhaustive Sentence Generation [ PASS ] (7,555 sentences, 0 errors)
-  - Stage 5: Text Analyzer Passage Check [ PASS ] (15 passages: 0 gaps)
-  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 6,004 assertions passed)
+  - Stage 5: Text Analyzer Passage Check [ PASS ] (18 passages: 0 gaps)
+  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 6,036 assertions passed)
 - **Modular Analyzer Suite (`node test/analyzer_modular_test.js`)**: 14/14 tests passed, browser-clean (zero Node dependencies).
 
 ---
 
 ## 5. Immediate Next Steps
 
-### 1. Ingest Next Study Text: `studytext102` (Phase 1.5)
-Target passage: `studytext102` (`한국에 와서 처음으로 국립 중앙 박물관에 다녀왔다. 4호선 이촌역에서 내렸는데...`)
+### 1. Ingest Next Study Text: `studytext121` (Phase 1.5)
+Target passage: `studytext121` (`저는 이번에 한국 대학교에 입학한 학생입니다. 한국에 온 지 얼마 안 돼서 아직 한국 생활에 익숙하지 않습니다...`)
 Execute with the unified single-command pipeline:
 ```bash
 # Preview gaps and morphology hints without modifying data
-node ingest.js studytext102 --dry-run
+node ingest.js studytext121 --dry-run
 
 # Run full ingestion, confirmation, synchronization, and test suite in one pass
-node ingest.js studytext102
+node ingest.js studytext121
 ```
+
+> [!NOTE]
+> **Study Text Provenance & OCR Formatting Policy**:
+> Almost all study texts in [`studytexts.js`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/studytexts.js) are copy/pasted from OCR interpretations of printed textbook materials. Consequently, texts may contain strange formatting or erroneous tokens, with **whitespace having the highest likelihood of error** (e.g., intra-word splits from justified columns, or missing spaces before counter numbers).
+> - **Not a License for Broad Editing**: This context is an explanation of why text may appear irregularly formatted, **not a license to disregard or rewrite the study texts**.
+> - **Developer Notification Required**: In the future, targeted corrections to study texts in [`studytexts.js`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/studytexts.js) (such as fixing obvious OCR letter-spacing splits) are permitted when necessary, but **all such changes must be clearly identified and reported to the developer**.
 
 ### 2. Interactive Study & Flashcard Web App (Phase 2)
 - Build the core study UI (`index.html`, `index.css`) utilizing rich modern aesthetics (glassmorphism, clean typography, dark theme, fluid animations).

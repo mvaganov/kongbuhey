@@ -287,7 +287,7 @@ function buildUnitFromRecord(rec, resolvedSource, newId = 0, schemaCols = SCHEMA
 			return tagsArr;
 		}
 		if (col.name === 'PartofSpeech') {
-			return rec.PartofSpeech || "Noun";
+			return rec.PartofSpeech || rec.PartOfSpeech || rec.pos || "Noun";
 		}
 		return rec[col.name] !== undefined ? rec[col.name] : (col.type === 'number' ? 0 : "");
 	});
