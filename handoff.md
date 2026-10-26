@@ -5,7 +5,7 @@
 
 ### Development Roadmap
 - **Phase 1 [COMPLETE]**: Core Morphology, Semantic Rule Matrix (Features F1–F11), Statutory Pronunciation Engine, and English/European-Readable Phoneme Transliteration.
-- **Phase 1.5 [ACTIVE]**: Curriculum study text ingestion from `studytexts.js` (14 passages completed through `studytext82`; `studytext101` next).
+- **Phase 1.5 [ACTIVE]**: Curriculum study text ingestion from `studytexts.js` (21 passages completed through `studytext131`; `studytext132` next).
 - **Phase 2 [UPCOMING]**: Interactive Study & Flashcard UI with real-time passage decomposition, toggleable LUT tokens, and multi-voice TTS audio playback.
 - **Phase 3 [FUTURE]**: Adaptive Quiz UI and pedagogical spaced-repetition trainer.
 
@@ -113,32 +113,32 @@ kongbuhey/
 ---
 
 ## 4. Current Status & Verification
-- **Dataset**: 1,915 units (100% valid, 0 TODOs, sequential IDs 0..1914).
-- **Homonym Dictionary**: 3,364 tokens mapped, 0 broken links.
-- **Ingested Passages (Phase 1.5)**: `studytext12`, `studytext21`, `studytext22`, `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122` (100% recognized, 0 curriculum gaps across 20 passages).
+- **Dataset**: 1,928 units (100% valid, 0 TODOs, sequential IDs 0..1927).
+- **Homonym Dictionary**: 3,388 tokens mapped, 0 broken links.
+- **Ingested Passages (Phase 1.5)**: `studytext12`, `studytext21`, `studytext22`, `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`, `studytext131` (100% recognized, 0 curriculum gaps across 21 passages).
 - **Master Test Suite (`node test.js`)**:
   - Stage 0: Code Quality & Static Hygiene [ PASS ] (Limits, browser purity, FK integrity, 0 magic IDs)
-  - Stage 1: Schema & Data Integrity [ PASS ] (1,915 units, sequential IDs 0..1914)
-  - Stage 2: Schema Taxonomy Sync [ PASS ] (9 POS, 654 tags, 123 domains)
-  - Stage 3: Homonym Dictionary Sync [ PASS ] (3,364 tokens)
+  - Stage 1: Schema & Data Integrity [ PASS ] (1,928 units, sequential IDs 0..1927)
+  - Stage 2: Schema Taxonomy Sync [ PASS ] (9 POS, 656 tags, 123 domains)
+  - Stage 3: Homonym Dictionary Sync [ PASS ] (3,388 tokens)
   - Stage 4: Exhaustive Sentence Generation [ PASS ] (7,555 sentences, 0 errors)
-  - Stage 5: Text Analyzer Passage Check [ PASS ] (20 passages: 0 gaps)
-  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 6,045 assertions passed)
+  - Stage 5: Text Analyzer Passage Check [ PASS ] (21 passages: 0 gaps)
+  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 6,059 assertions passed)
 - **Modular Analyzer Suite (`node test/analyzer_modular_test.js`)**: 14/14 tests passed, browser-clean (zero Node dependencies).
 
 ---
 
 ## 5. Immediate Next Steps
 
-### 1. Ingest Next Study Text: `studytext131` (Phase 1.5)
-Target passage: `studytext131` (`요즘 '인터넷 전문 은행'을 이용하는 사람이 많아지고 있습니다. 그래서 오늘은 인터넷 전문 은행을 소개해 드리겠습니다...`)
+### 1. Ingest Next Study Text: `studytext132` (Phase 1.5)
+Target passage: `studytext132` (`우체국의 여러 가지 서비스 안내...`)
 Execute with the unified single-command pipeline:
 ```bash
 # Preview gaps and morphology hints without modifying data
-node ingest.js studytext131 --dry-run
+node ingest.js studytext132 --dry-run
 
 # Run full ingestion, confirmation, synchronization, and test suite in one pass
-node ingest.js studytext131
+node ingest.js studytext132
 ```
 
 > [!NOTE]

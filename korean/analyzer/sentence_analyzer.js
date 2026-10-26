@@ -197,9 +197,16 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 			baseVerb = stemWithInf.slice(0, -1) + "하다";
 		} else if (stemWithInf.endsWith("려")) {
 			baseVerb = stemWithInf.slice(0, -1) + "리다";
+		} else if (stemWithInf.endsWith("라") || stemWithInf.endsWith("러")) {
+			const prevChar = stemWithInf.length >= 2 ? stemWithInf.slice(-2, -1) : null;
+			const d = prevChar ? decomposeHangul(prevChar) : null;
+			if (d && d.final === 8) {
+				const candReu = stemWithInf.slice(0, -2) + setFinal(prevChar, 0) + "르다";
+				if (vocabByKo.has(candReu)) baseVerb = candReu;
+			}
+			if (!baseVerb) baseVerb = stemWithInf.slice(0, -1) + "다";
 		} else if (stemWithInf.endsWith("어") || stemWithInf.endsWith("아")) {
-			const stripped = stemWithInf.slice(0, -1);
-			baseVerb = stripped + "다";
+			baseVerb = stemWithInf.slice(0, -1) + "다";
 		} else {
 			baseVerb = stemWithInf + "다";
 		}
@@ -306,31 +313,16 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 	}
 	if (detectedInchoative) {
 		const inchUnit = unitById.get(detectedInchoative.unitId);
-		grammarList.push({
-			text: detectedInchoative.text,
-			pos: detectedInchoative.pos,
-			unit: inchUnit,
-			gloss: detectedInchoative.gloss
-		});
+		grammarList.push({ text: detectedInchoative.text, pos: detectedInchoative.pos, unit: inchUnit, gloss: detectedInchoative.gloss });
 	}
 	if (detectedCopula) {
 		const copUnit = unitById.get(detectedCopula.unitId);
-		grammarList.push({
-			text: detectedCopula.text,
-			pos: detectedCopula.pos,
-			unit: copUnit,
-			gloss: detectedCopula.gloss
-		});
+		grammarList.push({ text: detectedCopula.text, pos: detectedCopula.pos, unit: copUnit, gloss: detectedCopula.gloss });
 	}
 
 	if (match.extraParticle) {
 		const pUnit = unitById.get(match.extraParticle.unitId);
-		grammarList.push({
-			text: match.extraParticle.text,
-			pos: "Particle",
-			unit: pUnit,
-			gloss: match.extraParticle.gloss || (pUnit ? pUnit[DATA_SCHEMA.English] : "")
-		});
+		grammarList.push({ text: match.extraParticle.text, pos: "Particle", unit: pUnit, gloss: match.extraParticle.gloss || (pUnit ? pUnit[DATA_SCHEMA.English] : "") });
 	}
 
 	if (match.parseTrailingParticle) {

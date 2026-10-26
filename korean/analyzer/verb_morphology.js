@@ -44,6 +44,12 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 				const d = decomposeHangul(lastChar);
 				if (d && d.final === 20 && stem !== "있" && !stem.endsWith("있")) continue; // let past tense rules handle it
 				let candidateVerb = stem + "다";
+				if (rule.suffix === "고" && stem.endsWith("하")) {
+					const rootNoun = stem.slice(0, -1);
+					if (!vocabByKo.has(candidateVerb) && vocabByKo.has(rootNoun)) {
+						continue;
+					}
+				}
 				if ((rule.suffix.includes("세요") || rule.suffix.includes("는데") || rule.suffix.includes("니까") || rule.suffix === "면") && d && d.final === 0) {
 					// Check ㄹ-irregular drop (e.g. 썰다 -> 써세요, 팔다 -> 파는데/파니까, 만들다 -> 만드세요, 살다 -> 사세요)
 					const lChar = composeHangul(d.initial, d.medial, 8);
@@ -289,7 +295,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 					continue;
 				}
 
-				if (!vUnit && !baseVerb.endsWith("하다") && (rule.suffix.length < 2 || rule.suffix === "다가" || word.endsWith("에다가"))) {
+				if (!vUnit && !baseVerb.endsWith("하다") && (rule.suffix.length < 2 || rule.suffix === "다가" || rule.suffix === "어도" || rule.suffix === "아도" || rule.suffix === "라도" || rule.suffix === "러도" || word.endsWith("에다가"))) {
 					continue;
 				}
 

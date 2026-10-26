@@ -2189,7 +2189,20 @@ const KR_EN_languageUnits = [
 	[1911, "몸", "body, physique, physical health", "Noun", ["body", "health"], "body, physical form or health", "", "studytext122", 1, "", "", "", ""],
 	[1912, "요리하다", "to cook, prepare food, make a dish", "Action Verb", ["transitive_food", "action"], "to cook food, prepare culinary dishes", "", "studytext122", 1, "", "", "", ""],
 	[1913, "편", "counter for movies, videos, films, poems, literary pieces", "Noun", ["measureWord", "koreanMeasureWord", "counter"], "counter for films, videos, poems, episodes", "", "studytext122", 1, "", "", "", ""],
-	[1914, "대강당", "main auditorium, grand hall, assembly hall", "Noun", ["place", "school"], "main auditorium / grand hall", "", "studytext122", 1, "", "", "", ""]
+	[1914, "대강당", "main auditorium, grand hall, assembly hall", "Noun", ["place", "school"], "main auditorium / grand hall", "", "studytext122", 1, "", "", "", ""],
+	[1915, "인터넷", "internet", "Noun", ["general", "technology", "communication"], "", "", "studytext131", 1, "", "", "", ""],
+	[1916, "전문", "specialty, specialization, expertise", "Noun", ["general", "profession", "business"], "", "", "studytext131", 2, "", "", "", ""],
+	[1917, "앱", "app, mobile application", "Noun", ["general", "technology", "software"], "", "", "studytext131", 1, "", "", "", ""],
+	[1918, "다운로드", "download", "Noun", ["general", "technology", "computing"], "", "", "studytext131", 1, "", "", "", ""],
+	[1919, "다운로드하다", "to download", "Action Verb", ["action", "technology", "computing"], "", "", "studytext131", 1, "", "", "", ""],
+	[1920, "계좌", "bank account, account", "Noun", ["general", "finance", "banking"], "", "", "studytext131", 1, "", "", "", ""],
+	[1921, "똑같이", "identically, equally, the same way", "Adverb", ["adverb", "manner", "general"], "", "", "studytext131", 2, "", "", "", ""],
+	[1922, "체크", "check, debit, verification", "Noun", ["general", "finance", "banking"], "", "", "studytext131", 2, "", "", "", ""],
+	[1923, "대부분", "most, majority, mostly", "Noun", ["general", "quantity"], "", "", "studytext131", 1, "", "", "", ""],
+	[1924, "메시지", "message, text message", "Noun", ["general", "communication", "technology"], "", "", "studytext131", 1, "", "", "", ""],
+	[1925, "주고받다", "to exchange, send and receive, trade", "Action Verb", ["action", "communication", "social"], "", "", "studytext131", 1, "", "", "", ""],
+	[1926, "클릭하다", "to click", "Action Verb", ["action", "technology", "computing"], "", "", "studytext131", 1, "", "", "", ""],
+	[1927, "핸드폰", "cell phone, mobile phone", "Noun", ["general", "technology", "communication"], "", "", "studytext131", 1, "", "", "", ""]
 ];
 
 // Build the initial cache from the hardcoded array

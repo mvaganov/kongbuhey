@@ -34,7 +34,7 @@ const { getIndex } =
  * @returns {Object|null} Decomposed token structure or null
  */
 function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceContext = {}, explicitIndex = null) {
-	const word = rawWord.replace(/^[^\w가-힣]+|[^\w가-힣]+$/g, '');
+	const word = rawWord.replace(/['"‘’“”]/g, '').replace(/^[^\w가-힣]+|[^\w가-힣]+$/g, '');
 	if (!word) return null;
 	if (!/[가-힣]/.test(word)) return null; // Ignore pure ASCII metadata (emails, URLs)
 
@@ -108,7 +108,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 	}
 	// 0.13 Noun + Plain Informal Copula 이야 / 야 (ID 1833)
 	const copulaPlainMatch = word.match(/^(.+?)(이야|야)$/);
-	if (copulaPlainMatch && copulaPlainMatch[1].length >= 1) {
+	if (copulaPlainMatch && copulaPlainMatch[1].length >= 1 && copulaPlainMatch[1] !== "내") {
 		const stem = copulaPlainMatch[1];
 		const ending = copulaPlainMatch[2];
 		const stemUnits = vocabByKo.get(stem) || [];
