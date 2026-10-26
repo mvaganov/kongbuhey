@@ -114,7 +114,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 		const stemUnits = vocabByKo.get(stem) || [];
 		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' || u[DATA_SCHEMA.PartofSpeech] === 'Bound Noun');
 		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
-		if (nUnit || vocabByKo.has(stem)) {
+		if (nUnit || (ending === "이야" && vocabByKo.has(stem))) {
 			const copulaUnit = unitById.get(1833);
 			return {
 				surface: word,
@@ -181,9 +181,11 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			};
 		}
 	}
-	// 0.18 Noun + Copula Background/Contrastive 인데 (e.g. 방석인데, 학생인데)
-	if (word.endsWith("인데") && word.length > 2) {
-		const stem = word.slice(0, -2);
+	// 0.18 Noun + Copula Background/Contrastive 인데 / 인데요 (e.g. 방석인데, 프로그램인데요)
+	const indeM = word.match(/^(.+?)(인데요|인데)$/);
+	if (indeM && indeM[1].length >= 1) {
+		const stem = indeM[1];
+		const isYo = indeM[2] === "인데요";
 		const stemUnits = vocabByKo.get(stem) || [];
 		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
 		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
@@ -194,29 +196,15 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 				lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")" },
 				grammar: [
 					{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" },
-					{ text: "-는데", pos: "Verb Ending", unit: unitById.get(620), gloss: "background/contrastive (ID 620)" }
+					isYo ? { text: "-는데요", pos: "Verb Ending", unit: unitById.get(1292), gloss: "background / soft statement (ID 1292)" } : { text: "-는데", pos: "Verb Ending", unit: unitById.get(620), gloss: "background/contrastive (ID 620)" }
 				]
 			};
 		}
 	}
 	// 0.2 Noun + Copula + -아/어서: 이어서 / 여서 (e.g. 대전이어서, 친구여서)
-	if (word.endsWith("이어서") && word.length > 3) {
-		const stem = word.slice(0, -3);
-		const stemUnits = vocabByKo.get(stem) || [];
-		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
-		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
-		return {
-			surface: word,
-			category: "noun_copula_connective",
-			lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : stem },
-			grammar: [
-				{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" },
-				{ text: "-아/어서", pos: "Verb Ending", unit: unitById.get(459), gloss: "cause / sequential (ID 459)" }
-			]
-		};
-	}
-	if (word.endsWith("여서") && word.length > 2) {
-		const stem = word.slice(0, -2);
+	const eoseoM = word.match(/^(.+?)(이어서|여서)$/);
+	if (eoseoM && eoseoM[1].length >= 1) {
+		const stem = eoseoM[1];
 		const stemUnits = vocabByKo.get(stem) || [];
 		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
 		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
@@ -309,8 +297,8 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			grammar: [{ text: "들", pos: "Plural Suffix", unit: unitById.get(550), gloss: "plural suffix (ID 550)" }]
 		};
 	}
-	// 3. Number + Counter + Particle (e.g. 1년쯤, 2년 동안, 3시에, 6~7분, 20**년, 5호선으로)
-	const numCounterMatch = word.match(/^(\d[\d\*]*(?:[~-]\d+)?)([가-힣]+?)(으로|로|쯤|에|부터|까지|은|는|이|가|을|를|도|만|과|와)?$/);
+	// 3. Number + Counter + Particle (e.g. 1년쯤, 2년 동안, 3시에, 6~7분, 20**년, 5호선으로, 4개의)
+	const numCounterMatch = word.match(/^(\d[\d\*]*(?:[~-]\d+)?)([가-힣]+?)(의|으로|로|쯤|에|부터|까지|은|는|이|가|을|를|도|만|과|와)?$/);
 	if (numCounterMatch) {
 		const numVal = numCounterMatch[1];
 		const counterText = numCounterMatch[2];

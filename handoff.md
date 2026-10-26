@@ -113,32 +113,32 @@ kongbuhey/
 ---
 
 ## 4. Current Status & Verification
-- **Dataset**: 1,902 units (100% valid, 0 TODOs, sequential IDs 0..1901).
-- **Homonym Dictionary**: 3,344 tokens mapped, 0 broken links.
-- **Ingested Passages (Phase 1.5)**: `studytext12`, `studytext21`, `studytext22`, `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112` (100% recognized, 0 curriculum gaps across 18 passages).
+- **Dataset**: 1,915 units (100% valid, 0 TODOs, sequential IDs 0..1914).
+- **Homonym Dictionary**: 3,364 tokens mapped, 0 broken links.
+- **Ingested Passages (Phase 1.5)**: `studytext12`, `studytext21`, `studytext22`, `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122` (100% recognized, 0 curriculum gaps across 20 passages).
 - **Master Test Suite (`node test.js`)**:
   - Stage 0: Code Quality & Static Hygiene [ PASS ] (Limits, browser purity, FK integrity, 0 magic IDs)
-  - Stage 1: Schema & Data Integrity [ PASS ] (1,902 units, sequential IDs 0..1901)
-  - Stage 2: Schema Taxonomy Sync [ PASS ] (9 POS, 653 tags, 123 domains)
-  - Stage 3: Homonym Dictionary Sync [ PASS ] (3,344 tokens)
+  - Stage 1: Schema & Data Integrity [ PASS ] (1,915 units, sequential IDs 0..1914)
+  - Stage 2: Schema Taxonomy Sync [ PASS ] (9 POS, 654 tags, 123 domains)
+  - Stage 3: Homonym Dictionary Sync [ PASS ] (3,364 tokens)
   - Stage 4: Exhaustive Sentence Generation [ PASS ] (7,555 sentences, 0 errors)
-  - Stage 5: Text Analyzer Passage Check [ PASS ] (18 passages: 0 gaps)
-  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 6,036 assertions passed)
+  - Stage 5: Text Analyzer Passage Check [ PASS ] (20 passages: 0 gaps)
+  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 6,045 assertions passed)
 - **Modular Analyzer Suite (`node test/analyzer_modular_test.js`)**: 14/14 tests passed, browser-clean (zero Node dependencies).
 
 ---
 
 ## 5. Immediate Next Steps
 
-### 1. Ingest Next Study Text: `studytext121` (Phase 1.5)
-Target passage: `studytext121` (`저는 이번에 한국 대학교에 입학한 학생입니다. 한국에 온 지 얼마 안 돼서 아직 한국 생활에 익숙하지 않습니다...`)
+### 1. Ingest Next Study Text: `studytext131` (Phase 1.5)
+Target passage: `studytext131` (`요즘 '인터넷 전문 은행'을 이용하는 사람이 많아지고 있습니다. 그래서 오늘은 인터넷 전문 은행을 소개해 드리겠습니다...`)
 Execute with the unified single-command pipeline:
 ```bash
 # Preview gaps and morphology hints without modifying data
-node ingest.js studytext121 --dry-run
+node ingest.js studytext131 --dry-run
 
 # Run full ingestion, confirmation, synchronization, and test suite in one pass
-node ingest.js studytext121
+node ingest.js studytext131
 ```
 
 > [!NOTE]
