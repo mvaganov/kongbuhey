@@ -53,7 +53,9 @@ const PARTICLE_SPECS = Object.freeze([
 	{ text: "쯤", ids: [653], desc: "쯤 (Approximation particle)" },
 	{ text: "만", ids: [1402], desc: "만 (Only)" },
 	{ text: "아", ids: [1834], desc: "아 / 야 (Vocative)", batchimReq: true },
-	{ text: "야", ids: [1834], desc: "아 / 야 (Vocative)", batchimReq: false }
+	{ text: "야", ids: [1834], desc: "아 / 야 (Vocative)", batchimReq: false },
+	{ text: "이라고", ids: [1865], desc: "(이)라고 (Quotation)", batchimReq: true },
+	{ text: "라고", ids: [1865], desc: "(이)라고 (Quotation)", batchimReq: false }
 ]);
 
 /**

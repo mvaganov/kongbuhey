@@ -56,7 +56,7 @@ const STUDYTEXTS_PATH = path.resolve(__dirname, 'studytexts.js');
 const { validateLanguageUnitSemanticSelection } = require('./select.js');
 
 // Known fully-ingested passages that must ALWAYS have 0 gaps (regression tests)
-const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", "studytext22", "studytext31", "studytext41", "studytext42", "studytext51", "studytext52", "studytext61", "studytext62", "studytext71", "studytext72", "studytext81", "studytext82"];
+const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", "studytext22", "studytext31", "studytext41", "studytext42", "studytext51", "studytext52", "studytext61", "studytext62", "studytext71", "studytext72", "studytext81", "studytext82", "studytext101"];
 
 function failFast(stageName, errorDetail) {
 	console.error(`\n======================================================`);
