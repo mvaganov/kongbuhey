@@ -75,6 +75,11 @@ const VERB_SUFFIX_RULES = Object.freeze([
 	{ suffix: "할래", stemType: "hada", grammar: [{ text: "-(으)ㄹ래", pos: "Verb Ending", id: 1199, gloss: "intention / request (ID 1199)" }] },
 	{ suffix: "을래", stemType: "stem_da", grammar: [{ text: "-(으)ㄹ래", pos: "Verb Ending", id: 1199, gloss: "intention / request (ID 1199)" }] },
 	{ suffix: "ㄹ래", stemType: "stem_l_kkayo", grammar: [{ text: "-(으)ㄹ래", pos: "Verb Ending", id: 1199, gloss: "intention / request (ID 1199)" }] },
+	// Background / soft statement polite endings (-는데요 / -(으)ㄴ데요 ID 1292)
+	{ suffix: "는데요", stemType: "stem_da", grammar: [{ text: "-는데요", pos: "Verb Ending", id: 1292, gloss: "background / soft statement (ID 1292)" }] },
+	{ suffix: "은데요", stemType: "stem_da", grammar: [{ text: "-(으)ㄴ데요", pos: "Verb Ending", id: 1292, gloss: "background / soft statement (ID 1292)" }] },
+	{ suffix: "ㄴ데요", stemType: "stem_da", grammar: [{ text: "-(으)ㄴ데요", pos: "Verb Ending", id: 1292, gloss: "background / soft statement (ID 1292)" }] },
+	{ suffix: "한데요", stemType: "hada", grammar: [{ text: "-(으)ㄴ데요", pos: "Verb Ending", id: 1292, gloss: "background / soft statement (ID 1292)" }] },
 	// Clausal contrast / background endings (-(으)ㄴ데 ID 621)
 	{ suffix: "운데", stemType: "stem_b_irregular", grammar: [{ text: "-(으)ㄴ데", pos: "Verb Ending", id: 621, gloss: "clausal connective (ID 621)" }] },
 	{ suffix: "한데", stemType: "hada", grammar: [{ text: "-(으)ㄴ데", pos: "Verb Ending", id: 621, gloss: "clausal connective (ID 621)" }] },
@@ -136,6 +141,9 @@ const VERB_SUFFIX_RULES = Object.freeze([
 	{ suffix: "해야", stemType: "hada", grammar: [{ text: "-아/어야", pos: "Verb Ending", id: 574, gloss: "must / only if (ID 574)" }] },
 	{ suffix: "아야", stemType: "stem_da", grammar: [{ text: "-아/어야", pos: "Verb Ending", id: 574, gloss: "must / only if (ID 574)" }] },
 	{ suffix: "어야", stemType: "stem_da", grammar: [{ text: "-아/어야", pos: "Verb Ending", id: 574, gloss: "must / only if (ID 574)" }] },
+	{ suffix: "와야", stemType: "fixed_base", baseVerb: "오다", grammar: [{ text: "-아/어야", pos: "Verb Ending", id: 574, gloss: "must / only if (ID 574)" }] },
+	{ suffix: "봐야", stemType: "fixed_base", baseVerb: "보다", grammar: [{ text: "-아/어야", pos: "Verb Ending", id: 574, gloss: "must / only if (ID 574)" }] },
+	{ suffix: "가야", stemType: "fixed_base", baseVerb: "가다", grammar: [{ text: "-아/어야", pos: "Verb Ending", id: 574, gloss: "must / only if (ID 574)" }] },
 	// Bare informal/connective endings on consonant stems (e.g. 먹어 -> 먹다, 받아 -> 받다)
 	{ suffix: "어", stemType: "stem_consonant_informal", grammar: [{ text: "-아/어", pos: "Verb Ending", id: 459, gloss: "informal / sequential (ID 459)" }] },
 	{ suffix: "아", stemType: "stem_consonant_informal", grammar: [{ text: "-아/어", pos: "Verb Ending", id: 459, gloss: "informal / sequential (ID 459)" }] },
@@ -243,6 +251,7 @@ const VERB_SUFFIX_RULES = Object.freeze([
 	{ suffix: "하고", stemType: "hada_or_particle", grammar: [{ text: "-고", pos: "Verb Ending", id: 336, gloss: "connective 'and' (ID 336)" }] },
 	{ suffix: "해요", stemType: "hada", grammar: [{ text: "-아/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
 	{ suffix: "돼요", stemType: "fixed_base", baseVerb: "되다", grammar: [{ text: "-아/어요", pos: "Verb Ending", id: 49, gloss: "polite informal (ID 49)" }] },
+	{ suffix: "돼서", stemType: "fixed_base", baseVerb: "되다", grammar: [{ text: "-아/어서", pos: "Verb Ending", id: 459, gloss: "cause / sequential (ID 459)" }] },
 	{ suffix: "네요", stemType: "stem_da", grammar: [{ text: "-네요", pos: "Verb Ending", id: 839, gloss: "realization/surprise (ID 839)" }] },
 	{ suffix: "군요", stemType: "stem_da", grammar: [{ text: "-군요", pos: "Verb Ending", id: 1645, gloss: "realization exclamatory (ID 1645)" }] },
 	{ suffix: "는데", stemType: "stem_da", grammar: [{ text: "-는데", pos: "Verb Ending", id: 620, gloss: "background/contrastive (ID 620)" }] },

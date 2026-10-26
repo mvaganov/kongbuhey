@@ -221,7 +221,7 @@ function formatColumnValue(colName, val) {
 		return String(num);
 	}
 	if (canonical === 'PriorityScore') {
-		const num = typeof val === 'number' ? val : (Number(val) || 99);
+		const num = typeof val === 'number' ? val : (Number(val) || 99); // clearly erroneous value to force thoughtful priority consideration
 		return String(num);
 	}
 	if (canonical === 'SemanticTags') {
@@ -268,9 +268,10 @@ function buildUnitFromRecord(rec, resolvedSource, newId = 0, schemaCols = SCHEMA
 			return (rec.Source && rec.Source.trim()) || resolvedSource;
 		}
 		if (col.name === 'PriorityScore') {
-			return (rec.PriorityScore !== undefined && rec.PriorityScore !== null && rec.PriorityScore !== "" && !isNaN(rec.PriorityScore))
-				? Number(rec.PriorityScore)
-				: 99;
+			const score = rec.PriorityScore ?? rec.priorityScore ?? rec.FrequencyRank;
+			return (score !== undefined && score !== null && score !== "" && !isNaN(score))
+				? Number(score)
+				: 1;
 		}
 		if (col.name === 'SemanticTags') {
 			let tagsArr = [];
@@ -310,7 +311,7 @@ function getVerbSemanticConstraint(unit, schemaCols = SCHEMA_COLUMNS) {
 	const svVal = svIdx >= 0 ? unit[svIdx] : null;
 
 	let sv = {};
-	try { sv = typeof svVal === 'string' ? JSON.parse(svVal) : svVal; } catch (_) {}
+	try { sv = typeof svVal === 'string' ? JSON.parse(svVal) : svVal; } catch (_) { }
 
 	const pos = posIdx >= 0 ? unit[posIdx] : "Noun";
 	const tagsVal = tagsIdx >= 0 ? unit[tagsIdx] : [];
@@ -376,11 +377,12 @@ function detectUndifferentiatedHomonym(unit, schemaCols = SCHEMA_COLUMNS) {
 	const svVal = svIdx >= 0 ? unit[svIdx] : null;
 
 	let sv = {};
-	try { sv = typeof svVal === 'string' ? JSON.parse(svVal) : svVal; } catch (_) {}
+	try { sv = typeof svVal === 'string' ? JSON.parse(svVal) : svVal; } catch (_) { }
 
 	const selTags = tags.filter(t => t.startsWith('transitive_') || t.startsWith('descriptive_') || t.startsWith('intransitive_') || t.startsWith('dative_'));
 	const issues = [];
 
+	// TODO create some better data structure defining tag incompatability. a matrix, or a dictionary of sets, or something. this collection of specific bools and if-statement block has a code smell.
 	// 1. Cross-Domain Conflations in Tags
 	const hasWeather = tags.includes('weather') || (sv && sv.domain === 'weather');
 	const hasWearable = tags.includes('wearable') || tags.includes('clothing') || tags.includes('footwear') || tags.includes('handwear') || (sv && sv.domain === 'clothing');
@@ -422,9 +424,9 @@ function detectUndifferentiatedHomonym(unit, schemaCols = SCHEMA_COLUMNS) {
 	}
 
 	// 3. Mutually exclusive specific selection tags
-	const specificTrans = selTags.filter(t => 
-		t.includes('neckwear') || t.includes('handwear') || t.includes('footwear') || 
-		t.includes('headwear') || t.includes('watch') || t.includes('sports') || 
+	const specificTrans = selTags.filter(t =>
+		t.includes('neckwear') || t.includes('handwear') || t.includes('footwear') ||
+		t.includes('headwear') || t.includes('watch') || t.includes('sports') ||
 		t.includes('instrument')
 	);
 	if (specificTrans.length > 1) {
@@ -443,9 +445,9 @@ function detectUndifferentiatedHomonym(unit, schemaCols = SCHEMA_COLUMNS) {
 	if (distinctParens.length >= 2 && (specificTrans.length > 0 || (sv && sv.collocation_filter))) {
 		const isCrossDomainParen = (
 			(distinctParens.some(p => p.includes('weather') || p.includes('rain') || p.includes('fog')) &&
-			 distinctParens.some(p => p.includes('cloth') || p.includes('ring') || p.includes('glove') || p.includes('bag') || p.includes('bedding'))) ||
+				distinctParens.some(p => p.includes('cloth') || p.includes('ring') || p.includes('glove') || p.includes('bag') || p.includes('bedding'))) ||
 			(distinctParens.some(p => p.includes('sport') || p.includes('tennis')) &&
-			 distinctParens.some(p => p.includes('piano') || p.includes('instrument')))
+				distinctParens.some(p => p.includes('piano') || p.includes('instrument')))
 		);
 		if (isCrossDomainParen) {
 			issues.push(`Divergent domain senses in definition: ${distinctParens.join(' vs ')} with specific constraint`);

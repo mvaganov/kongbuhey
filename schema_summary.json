@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-26T14:17:54.277Z",
-  "totalUnits": 1902,
-  "validVectorCount": 1902,
+  "generatedAt": "2026-10-26T15:09:21.760Z",
+  "totalUnits": 1915,
+  "validVectorCount": 1906,
   "partsOfSpeech": [
     "Action Verb",
     "Adverb",
@@ -14,12 +14,12 @@
     "Pronoun"
   ],
   "posCounts": {
-    "Noun": 1014,
+    "Noun": 1025,
     "Pronoun": 36,
     "Exclamation": 18,
-    "Descriptive Verb": 129,
+    "Descriptive Verb": 130,
     "Grammar": 188,
-    "Action Verb": 350,
+    "Action Verb": 351,
     "Adverb": 95,
     "Number": 66,
     "Determiner": 6
@@ -571,6 +571,7 @@
     "state_change",
     "station",
     "stationery",
+    "stative_state",
     "status",
     "study",
     "subject",
@@ -690,7 +691,7 @@
     "greeting": 10,
     "descriptive_person": 37,
     "emotion": 32,
-    "place": 190,
+    "place": 191,
     "country": 14,
     "devtest": 49,
     "questionWord": 19,
@@ -717,7 +718,7 @@
     "intransitive_motion": 17,
     "locative_goal": 25,
     "motion_concord": 16,
-    "time": 126,
+    "time": 127,
     "temporal_present": 13,
     "no_time_particle": 21,
     "temporal_future": 13,
@@ -775,7 +776,7 @@
     "descriptive_acoustic": 2,
     "size": 2,
     "location": 10,
-    "language": 10,
+    "language": 11,
     "transitive_general": 160,
     "transitive_language": 1,
     "art": 10,
@@ -788,7 +789,7 @@
     "transitive_writing": 1,
     "transitive_reading": 1,
     "transitive_clothing": 2,
-    "activity": 60,
+    "activity": 64,
     "entertainment": 11,
     "transitive_activity": 1,
     "wellness": 1,
@@ -816,10 +817,10 @@
     "direction": 13,
     "number": 22,
     "attributive": 10,
-    "time_amount": 1,
-    "general": 3,
-    "measureWord": 39,
-    "koreanMeasureWord": 22,
+    "time_amount": 2,
+    "general": 4,
+    "measureWord": 40,
+    "koreanMeasureWord": 23,
     "koreanNumber": 48,
     "meal": 4,
     "noon": 1,
@@ -827,7 +828,7 @@
     "media": 22,
     "evening": 1,
     "sinoNumber": 29,
-    "education": 18,
+    "education": 21,
     "communication": 41,
     "task": 3,
     "sinoMeasureWord": 16,
@@ -843,7 +844,7 @@
     "Adv": 1,
     "meat": 11,
     "koreanFood": 8,
-    "transitive_food": 8,
+    "transitive_food": 9,
     "adverb_discourse": 11,
     "discourse": 29,
     "conditional": 3,
@@ -907,7 +908,7 @@
     "volitional": 2,
     "temporal_past": 13,
     "time_modifier": 3,
-    "duration": 19,
+    "duration": 20,
     "music": 9,
     "document": 20,
     "commercial": 14,
@@ -925,9 +926,9 @@
     "promise": 2,
     "purpose": 2,
     "motion_purpose": 1,
-    "school": 2,
-    "concept": 65,
-    "academic": 41,
+    "school": 4,
+    "concept": 68,
+    "academic": 44,
     "honorificVerb": 7,
     "snack": 2,
     "hobby": 4,
@@ -1083,7 +1084,7 @@
     "emphasis": 5,
     "grammar": 47,
     "pet": 2,
-    "action": 18,
+    "action": 19,
     "informal": 14,
     "wedding": 1,
     "ambiance": 1,
@@ -1095,7 +1096,7 @@
     "1st_person": 3,
     "plain_style": 3,
     "cardinal": 15,
-    "counter": 11,
+    "counter": 12,
     "state_change": 3,
     "command": 2,
     "transitive_wearable": 1,
@@ -1146,7 +1147,7 @@
     "adverb_place": 2,
     "transitive_social": 1,
     "anatomy": 5,
-    "health": 37,
+    "health": 38,
     "conflict": 1,
     "place_outdoor": 5,
     "date": 1,
@@ -1179,7 +1180,7 @@
     "linguistics": 3,
     "medicine": 7,
     "pharmacy": 6,
-    "body": 1,
+    "body": 2,
     "cosmetics": 2,
     "summer": 1,
     "proper_noun": 24,
@@ -1332,7 +1333,8 @@
     "etiquette": 1,
     "sound": 1,
     "identification": 1,
-    "official": 1
+    "official": 1,
+    "stative_state": 1
   },
   "honorificRules": [
     "Action verbs only; identical subject required; negative outcome in second clause; no past tense in first clause",
@@ -1682,6 +1684,7 @@
       "duration",
       "entrance",
       "event",
+      "exam",
       "exercise",
       "explanation",
       "facility",
@@ -1696,6 +1699,7 @@
       "ingredient",
       "intransitive",
       "kinship",
+      "major",
       "manner",
       "meal",
       "memory",
@@ -1729,7 +1733,8 @@
       "verb_ending",
       "vocative",
       "voice",
-      "voucher"
+      "voucher",
+      "writing"
     ],
     "polarities": [
       -1,
@@ -2646,6 +2651,7 @@
         "duration",
         "entrance",
         "event",
+        "exam",
         "exercise",
         "explanation",
         "facility",
@@ -2660,6 +2666,7 @@
         "ingredient",
         "intransitive",
         "kinship",
+        "major",
         "manner",
         "meal",
         "memory",
@@ -2693,7 +2700,8 @@
         "verb_ending",
         "vocative",
         "voice",
-        "voucher"
+        "voucher",
+        "writing"
       ],
       "value": [
         0,
@@ -2871,7 +2879,8 @@
       "activity": {
         "types": [
           "guidance",
-          "sports"
+          "sports",
+          "writing"
         ],
         "actions": [],
         "traits": []
@@ -3029,7 +3038,9 @@
       },
       "academic": {
         "types": [
-          "exercise"
+          "exam",
+          "exercise",
+          "major"
         ],
         "actions": [],
         "traits": []
