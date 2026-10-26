@@ -289,7 +289,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 					continue;
 				}
 
-				if (!vUnit && !baseVerb.endsWith("하다") && rule.suffix.length < 2) {
+				if (!vUnit && !baseVerb.endsWith("하다") && (rule.suffix.length < 2 || rule.suffix === "다가" || word.endsWith("에다가"))) {
 					continue;
 				}
 
@@ -482,7 +482,19 @@ function matchAdnominalEnding(word, index) {
 		const stem = word.slice(0, -1);
 		let baseVerb = stem + "다";
 		if (stem === "모르") baseVerb = "모르다";
-		const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
+		let vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
+		if (!vUnit && stem.length >= 1) {
+			const lastChar = stem.slice(-1);
+			const d = decomposeHangul(lastChar);
+			if (d && d.final === 0) {
+				const lChar = composeHangul(d.initial, d.medial, 8);
+				const lVerb = stem.slice(0, -1) + lChar + "다";
+				if (vocabByKo.has(lVerb)) {
+					baseVerb = lVerb;
+					vUnit = vocabByKo.get(lVerb)[0];
+				}
+			}
+		}
 		if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || vUnit[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) {
 			return {
 				surface: word,

@@ -21,6 +21,40 @@ const VERB_SUFFIX_RULES = Object.freeze([
 	{ suffix: "어야겠습니다", stemType: "stem_da", grammar: [{ text: "-아/어야 하다", pos: "Grammar Pattern", id: 574, gloss: "must/have to do (ID 574)" }, { text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "-습니다", pos: "Verb Ending", id: 50, gloss: "formal declarative (ID 50)" }] },
 	{ suffix: "하시는군요", stemType: "hada", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-는군요", pos: "Verb Ending", id: 1645, gloss: "realization exclamatory (ID 1645)" }] },
 	{ suffix: "하겠습니다", stemType: "hada", grammar: [{ text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "-습니다", pos: "Verb Ending", id: 50, gloss: "formal declarative (ID 50)" }] },
+	// Strong intention plain declarative (-아/어야겠다 ID 574, 838, 1156)
+	{ suffix: "해야겠다", stemType: "hada", grammar: [{ text: "-아/어야 하다", pos: "Grammar Pattern", id: 574, gloss: "must/have to do (ID 574)" }, { text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
+	{ suffix: "아야겠다", stemType: "stem_da", grammar: [{ text: "-아/어야 하다", pos: "Grammar Pattern", id: 574, gloss: "must/have to do (ID 574)" }, { text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
+	{ suffix: "어야겠다", stemType: "stem_da", grammar: [{ text: "-아/어야 하다", pos: "Grammar Pattern", id: 574, gloss: "must/have to do (ID 574)" }, { text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
+	{ suffix: "가야겠다", stemType: "fixed_base", baseVerb: "가다", grammar: [{ text: "-아/어야 하다", pos: "Grammar Pattern", id: 574, gloss: "must/have to do (ID 574)" }, { text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
+	{ suffix: "봐야겠다", stemType: "fixed_base", baseVerb: "보다", grammar: [{ text: "-아/어야 하다", pos: "Grammar Pattern", id: 574, gloss: "must/have to do (ID 574)" }, { text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
+	// Formal contrast endings (-습니다만 ID 50, 461)
+	{ suffix: "합니다만", stemType: "hada", grammar: [{ text: "-습니다", pos: "Verb Ending", id: 50, gloss: "formal declarative (ID 50)" }, { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
+	{ suffix: "습니다만", stemType: "stem_da", grammar: [{ text: "-습니다", pos: "Verb Ending", id: 50, gloss: "formal declarative (ID 50)" }, { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
+	{ suffix: "ㅂ니다만", stemType: "stem_b_nida", grammar: [{ text: "-습니다", pos: "Verb Ending", id: 50, gloss: "formal declarative (ID 50)" }, { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
+	// Intention condition endings (-(으)려면 ID 1259)
+	{ suffix: "으시려면", stemType: "stem_da", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-으려면", pos: "Verb Ending", id: 1259, gloss: "intention condition (ID 1259)" }] },
+	{ suffix: "하시려면", stemType: "hada", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-으려면", pos: "Verb Ending", id: 1259, gloss: "intention condition (ID 1259)" }] },
+	{ suffix: "시려면", stemType: "stem_da", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-으려면", pos: "Verb Ending", id: 1259, gloss: "intention condition (ID 1259)" }] },
+	{ suffix: "으려면", stemType: "stem_da", grammar: [{ text: "-으려면", pos: "Verb Ending", id: 1259, gloss: "intention condition (ID 1259)" }] },
+	{ suffix: "하려면", stemType: "hada", grammar: [{ text: "-으려면", pos: "Verb Ending", id: 1259, gloss: "intention condition (ID 1259)" }] },
+	{ suffix: "려면", stemType: "stem_da", grammar: [{ text: "-으려면", pos: "Verb Ending", id: 1259, gloss: "intention condition (ID 1259)" }] },
+	// Honorific present adnominal endings (-(으)시는 ID 678, 645)
+	{ suffix: "하시는", stemType: "hada", isAdnominal: true, grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-는", pos: "Adnominal Ending", id: 645, gloss: "present adnominal (ID 645)" }] },
+	{ suffix: "으시는", stemType: "stem_da", isAdnominal: true, grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-는", pos: "Adnominal Ending", id: 645, gloss: "present adnominal (ID 645)" }] },
+	{ suffix: "시는", stemType: "stem_da", isAdnominal: true, grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-는", pos: "Adnominal Ending", id: 645, gloss: "present adnominal (ID 645)" }] },
+	// Interrogative clause connective (-는지 ID 1211)
+	{ suffix: "하는지", stemType: "hada", grammar: [{ text: "-는지", pos: "Verb Ending", id: 1211, gloss: "interrogative connective (ID 1211)" }] },
+	{ suffix: "는지", stemType: "stem_da", grammar: [{ text: "-는지", pos: "Verb Ending", id: 1211, gloss: "interrogative connective (ID 1211)" }] },
+	// Plain past declarative endings (-았다 / -었다 ID 335, 1156)
+	{ suffix: "다녀왔다", stemType: "fixed_base", baseVerb: "다녀오다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
+	{ suffix: "들어갔다", stemType: "fixed_base", baseVerb: "들어가다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
+	{ suffix: "물어봤다", stemType: "fixed_base", baseVerb: "물어보다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
+	{ suffix: "왔다", stemType: "fixed_base", baseVerb: "오다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
+	{ suffix: "봤다", stemType: "fixed_base", baseVerb: "보다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
+	{ suffix: "갔다", stemType: "fixed_base", baseVerb: "가다", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
+	{ suffix: "했다", stemType: "hada", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
+	{ suffix: "았다", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
+	{ suffix: "었다", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
 	// Formal interrogative endings (~습니까 / ~ㅂ니까 ID 1855)
 	{ suffix: "합니까", stemType: "hada", grammar: [{ text: "~습니까 / ~ㅂ니까", pos: "Verb Ending", id: 1855, gloss: "formal interrogative (ID 1855)" }] },
 	{ suffix: "습니까", stemType: "stem_da", grammar: [{ text: "~습니까 / ~ㅂ니까", pos: "Verb Ending", id: 1855, gloss: "formal interrogative (ID 1855)" }] },
@@ -29,6 +63,13 @@ const VERB_SUFFIX_RULES = Object.freeze([
 	{ suffix: "했다가", stemType: "hada", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-었다가", pos: "Verb Ending", id: 1198, gloss: "completed action reversal (ID 1198)" }] },
 	{ suffix: "았다가", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-었다가", pos: "Verb Ending", id: 1198, gloss: "completed action reversal (ID 1198)" }] },
 	{ suffix: "었다가", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-었다가", pos: "Verb Ending", id: 1198, gloss: "completed action reversal (ID 1198)" }] },
+	// Interruption connective endings (-다가 ID 1239)
+	{ suffix: "하다가", stemType: "hada", grammar: [{ text: "-다가", pos: "Verb Ending", id: 1239, gloss: "interruption connective (ID 1239)" }] },
+	{ suffix: "다가", stemType: "stem_da", grammar: [{ text: "-다가", pos: "Verb Ending", id: 1239, gloss: "interruption connective (ID 1239)" }] },
+	// Formal propositive endings (-(으)ㅂ시다 ID 1736)
+	{ suffix: "합시다", stemType: "hada", grammar: [{ text: "-(으)ㅂ시다", pos: "Verb Ending", id: 1736, gloss: "formal propositive (ID 1736)" }] },
+	{ suffix: "읍시다", stemType: "stem_da", grammar: [{ text: "-(으)ㅂ시다", pos: "Verb Ending", id: 1736, gloss: "formal propositive (ID 1736)" }] },
+	{ suffix: "시다", stemType: "stem_b_nida", grammar: [{ text: "-(으)ㅂ시다", pos: "Verb Ending", id: 1736, gloss: "formal propositive (ID 1736)" }] },
 	// Intention / suggestion request endings (-(으)ㄹ래 ID 1199)
 	{ suffix: "줄래", stemType: "fixed_base", baseVerb: "주다", grammar: [{ text: "-(으)ㄹ래", pos: "Verb Ending", id: 1199, gloss: "intention / request (ID 1199)" }] },
 	{ suffix: "할래", stemType: "hada", grammar: [{ text: "-(으)ㄹ래", pos: "Verb Ending", id: 1199, gloss: "intention / request (ID 1199)" }] },

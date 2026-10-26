@@ -309,8 +309,8 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			grammar: [{ text: "들", pos: "Plural Suffix", unit: unitById.get(550), gloss: "plural suffix (ID 550)" }]
 		};
 	}
-	// 3. Number + Counter + Particle (e.g. 1년쯤, 2년 동안, 3시에, 6~7분, 20**년)
-	const numCounterMatch = word.match(/^(\d[\d\*]*(?:[~-]\d+)?)([가-힣]+?)(쯤|에|부터|까지|은|는|이|가|을|를)?$/);
+	// 3. Number + Counter + Particle (e.g. 1년쯤, 2년 동안, 3시에, 6~7분, 20**년, 5호선으로)
+	const numCounterMatch = word.match(/^(\d[\d\*]*(?:[~-]\d+)?)([가-힣]+?)(으로|로|쯤|에|부터|까지|은|는|이|가|을|를|도|만|과|와)?$/);
 	if (numCounterMatch) {
 		const numVal = numCounterMatch[1];
 		const counterText = numCounterMatch[2];

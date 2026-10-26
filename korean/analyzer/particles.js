@@ -22,11 +22,14 @@ const PARTICLE_SPECS = Object.freeze([
 	{ text: "만의", ids: [1402, 856], desc: "만 + 의 (Only + Possessive)", isCompound: true },
 	{ text: "에나", ids: [132, 1333], desc: "에 + 나 (Location + inclusive delimiter)", isCompound: true },
 	{ text: "께서도", ids: [648, 366], desc: "께서 + 도 (Honorific subject + also)", isCompound: true },
+	{ text: "께는", ids: [647, 36], desc: "께 + 는 (Dative honorific topic)", isCompound: true },
+	{ text: "께도", ids: [647, 366], desc: "께 + 도 (Dative honorific additive)", isCompound: true },
 
 	// Primary case & delimiter particles
 	{ text: "에서", ids: [199], desc: "에서 (Location of action / source)" },
 	{ text: "에게", ids: [618], desc: "에게 (Dative)" },
 	{ text: "한테", ids: [618], desc: "한테 (Dative informal)" },
+	{ text: "께", ids: [647], desc: "께 (Dative honorific)" },
 	{ text: "께서", ids: [648], desc: "께서 (Honorific subject marker)" },
 	{ text: "으로", ids: [1240, 1241, 1242], desc: "-(으)로 (Direction / Means / Status)", batchimReq: "consonant_not_l" },
 	{ text: "로", ids: [1240, 1241, 1242], desc: "-(으)로 (Direction / Means / Status)", batchimReq: "vowel_or_l" },
