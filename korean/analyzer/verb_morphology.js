@@ -159,7 +159,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 			} else if (rule.stemType === 'trial_past_adnominal') {
 				if (word.length <= rule.suffix.length) continue;
 				const root = word.slice(0, -1);
-				baseVerb = root + "다";
+				baseVerb = (root === "해" || root.endsWith("해")) ? root.slice(0, -1) + "하다" : root + "다";
 				isAdnominal = true;
 			} else if (rule.stemType === 'stem_b_irregular') {
 				const stemWithoutSuffix = word.slice(0, -rule.suffix.length);

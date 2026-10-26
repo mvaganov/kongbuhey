@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-25T16:08:40.236Z",
-  "totalUnits": 1855,
-  "validVectorCount": 1855,
+  "generatedAt": "2026-10-26T11:48:22.362Z",
+  "totalUnits": 1869,
+  "validVectorCount": 1869,
   "partsOfSpeech": [
     "Action Verb",
     "Adverb",
@@ -14,13 +14,13 @@
     "Pronoun"
   ],
   "posCounts": {
-    "Noun": 985,
+    "Noun": 989,
     "Pronoun": 36,
     "Exclamation": 18,
-    "Descriptive Verb": 127,
-    "Grammar": 186,
-    "Action Verb": 337,
-    "Adverb": 94,
+    "Descriptive Verb": 129,
+    "Grammar": 188,
+    "Action Verb": 342,
+    "Adverb": 95,
     "Number": 66,
     "Determiner": 6
   },
@@ -68,6 +68,7 @@
     "anatomy",
     "animal",
     "animate",
+    "apology",
     "appearance",
     "appliance",
     "approximation",
@@ -115,8 +116,10 @@
     "causal",
     "cause",
     "celebration",
+    "change",
     "choice",
     "chore",
+    "citation",
     "city",
     "classification",
     "clausal",
@@ -139,6 +142,7 @@
     "compromise",
     "computer",
     "concept",
+    "concern",
     "concession",
     "concessive",
     "condiment",
@@ -152,6 +156,7 @@
     "connective_adverb",
     "container",
     "contest",
+    "context",
     "continent",
     "continuity",
     "contrast",
@@ -208,6 +213,7 @@
     "devtest",
     "dimension",
     "dining",
+    "direct_quotation",
     "direction",
     "directional",
     "disaster",
@@ -239,6 +245,7 @@
     "evaluation",
     "evening",
     "event",
+    "exchange",
     "exclamation",
     "exclamatory",
     "exclusive",
@@ -325,6 +332,7 @@
     "internet",
     "interrogative",
     "interruption",
+    "intimacy",
     "intransitive",
     "intransitive_food",
     "intransitive_general",
@@ -473,6 +481,7 @@
     "propositive",
     "proximal",
     "psychological",
+    "psychological_predicate",
     "psychology",
     "purpose",
     "quality",
@@ -507,6 +516,7 @@
     "sea",
     "seafood",
     "season",
+    "seating",
     "security",
     "sensory",
     "sentence_ender",
@@ -527,6 +537,7 @@
     "skincare",
     "snack",
     "social",
+    "social_relation",
     "social_status",
     "society",
     "song",
@@ -670,24 +681,24 @@
     "humble": 6,
     "possessive": 3,
     "greeting": 10,
-    "descriptive_person": 36,
-    "emotion": 28,
-    "place": 178,
+    "descriptive_person": 37,
+    "emotion": 32,
+    "place": 179,
     "country": 14,
     "devtest": 49,
     "questionWord": 19,
     "determiner": 13,
     "deictic": 24,
-    "interrogative": 18,
+    "interrogative": 19,
     "properNoun": 3,
     "honorific": 34,
     "profession": 21,
     "sinoRoot": 42,
     "elder_noun": 27,
-    "particle": 47,
+    "particle": 48,
     "topic": 2,
     "declarative": 24,
-    "present": 18,
+    "present": 19,
     "food": 104,
     "food_bowl": 2,
     "drink": 12,
@@ -707,7 +718,7 @@
     "frequency": 16,
     "high": 2,
     "low": 1,
-    "verbal_ending": 10,
+    "verbal_ending": 11,
     "suggestion": 3,
     "propositive": 6,
     "speech_act": 12,
@@ -724,7 +735,7 @@
     "medial": 6,
     "proximal": 6,
     "plural": 3,
-    "object": 207,
+    "object": 208,
     "machine": 3,
     "electronics": 4,
     "watch": 2,
@@ -749,8 +760,8 @@
     "flower": 4,
     "shop": 5,
     "sports": 23,
-    "adverb_degree": 20,
-    "degree": 31,
+    "adverb_degree": 21,
+    "degree": 32,
     "weather": 27,
     "descriptive_weather": 8,
     "quantity": 16,
@@ -758,12 +769,12 @@
     "size": 2,
     "location": 8,
     "language": 9,
-    "transitive_general": 154,
+    "transitive_general": 159,
     "transitive_language": 1,
     "art": 9,
     "audio": 3,
     "cup": 2,
-    "dative_person": 18,
+    "dative_person": 19,
     "transitive_audio": 1,
     "transitive_person": 13,
     "transitive_visual": 2,
@@ -810,7 +821,7 @@
     "evening": 1,
     "sinoNumber": 29,
     "education": 17,
-    "communication": 37,
+    "communication": 39,
     "task": 3,
     "sinoMeasureWord": 16,
     "transitive_information": 1,
@@ -841,7 +852,7 @@
     "transitive_drink": 2,
     "adverb_manner": 27,
     "manner": 21,
-    "social": 49,
+    "social": 50,
     "accompaniment": 1,
     "alcohol": 1,
     "bottle": 1,
@@ -900,7 +911,7 @@
     "transitive_place": 4,
     "speed": 2,
     "contrast": 13,
-    "descriptive_emotion": 11,
+    "descriptive_emotion": 12,
     "interjection": 5,
     "history": 3,
     "beverage": 5,
@@ -925,7 +936,7 @@
     "descriptive_dimension_weight": 2,
     "descriptive_dimension_thickness": 2,
     "superlative": 3,
-    "spatialNoun": 11,
+    "spatialNoun": 12,
     "bakery": 2,
     "permission": 2,
     "prohibition": 7,
@@ -1021,7 +1032,7 @@
     "progressive": 2,
     "condiment": 11,
     "spicy": 2,
-    "abstract": 43,
+    "abstract": 46,
     "station": 6,
     "subway": 5,
     "sweet": 1,
@@ -1062,10 +1073,10 @@
     "shape": 2,
     "order": 6,
     "appearance": 6,
-    "emphasis": 4,
+    "emphasis": 5,
     "grammar": 47,
     "pet": 2,
-    "action": 15,
+    "action": 16,
     "informal": 14,
     "wedding": 1,
     "ambiance": 1,
@@ -1123,7 +1134,7 @@
     "geography": 8,
     "temporal_relation": 16,
     "intransitive_social": 2,
-    "quotation": 7,
+    "quotation": 8,
     "indirect": 6,
     "adverb_place": 2,
     "transitive_social": 1,
@@ -1132,13 +1143,13 @@
     "conflict": 1,
     "place_outdoor": 5,
     "date": 1,
-    "state": 8,
+    "state": 9,
     "bound_noun": 11,
     "dining": 2,
     "personal_info": 1,
     "culture": 21,
     "evaluation": 8,
-    "favor": 2,
+    "favor": 3,
     "speaker": 1,
     "third_person": 1,
     "passive": 1,
@@ -1231,7 +1242,7 @@
     "song": 1,
     "interest": 1,
     "name": 13,
-    "formal_polite": 2,
+    "formal_polite": 3,
     "exclamatory": 1,
     "sentence_ender": 1,
     "life": 1,
@@ -1242,7 +1253,7 @@
     "intransitive": 7,
     "posture": 1,
     "b_irregular": 1,
-    "speech": 1,
+    "speech": 3,
     "assistance": 1,
     "life_death": 2,
     "infix": 1,
@@ -1296,7 +1307,18 @@
     "possession": 1,
     "regular": 1,
     "daily_item": 2,
-    "loanword": 1
+    "loanword": 1,
+    "seating": 1,
+    "change": 1,
+    "exchange": 1,
+    "apology": 1,
+    "social_relation": 1,
+    "intimacy": 1,
+    "concern": 1,
+    "context": 1,
+    "direct_quotation": 1,
+    "citation": 1,
+    "psychological_predicate": 3
   },
   "honorificRules": [
     "Action verbs only; identical subject required; negative outcome in second clause; no past tense in first clause",
@@ -1313,6 +1335,7 @@
     "Copula verb",
     "First person only; cannot be used with 2nd/3rd person subjects",
     "Formal polite imperative",
+    "Formal polite interrogative sentence ending (hasipsio-che)",
     "Formal written register; allows past tense in first clause; declarative only",
     "Honorific equivalent is 말씀",
     "Honorific equivalent of 말",
@@ -1432,7 +1455,8 @@
     "Attaches to nominals denoting space, time, or extent": 1,
     "Use 안녕하세요 with elders or unfamiliar people": 1,
     "Informal reference; do not use with superiors": 1,
-    "Use 글쎄요 in polite speech": 1
+    "Use 글쎄요 in polite speech": 1,
+    "Formal polite interrogative sentence ending (hasipsio-che)": 1
   },
   "semanticVectors": {
     "keys": [
@@ -1460,6 +1484,8 @@
       "honorific_suppletion",
       "humble_suppletion",
       "infix",
+      "intensity",
+      "intimacy",
       "logic",
       "mood",
       "motion",
@@ -1485,6 +1511,7 @@
       "same_subject",
       "sandhi",
       "scope",
+      "social",
       "speech_act",
       "surface_forms",
       "target_pos",
@@ -1588,6 +1615,7 @@
       "profession",
       "purpose",
       "quantity",
+      "relationship",
       "reputation",
       "schedule",
       "scope",
@@ -1624,8 +1652,10 @@
       "beverage",
       "bound_noun",
       "cafe",
+      "circumstance",
       "city",
       "classification",
+      "concern",
       "condiment",
       "counter",
       "country",
@@ -1635,6 +1665,7 @@
       "duration",
       "event",
       "exercise",
+      "explanation",
       "focus",
       "furniture",
       "goods",
@@ -1653,8 +1684,10 @@
       "person_name",
       "place",
       "quality",
+      "quotation",
       "restaurant",
       "scope",
+      "seating",
       "sports",
       "status",
       "transitive",
@@ -1671,9 +1704,14 @@
     ],
     "keyValues": {
       "action": [
+        "change",
         "discount",
+        "find_difficult",
         "order",
-        "purchase"
+        "purchase",
+        "request",
+        "struggle",
+        "take_offense"
       ],
       "adverb_type": [
         "degree",
@@ -1695,6 +1733,7 @@
         "나",
         "는",
         "든지",
+        "라고",
         "라도",
         "라서",
         "랑",
@@ -1705,6 +1744,7 @@
         "이",
         "이나",
         "이든지",
+        "이라고",
         "이라도",
         "이라서",
         "이랑"
@@ -1966,6 +2006,7 @@
         "profession",
         "purpose",
         "quantity",
+        "relationship",
         "reputation",
         "schedule",
         "scope",
@@ -2030,6 +2071,12 @@
         "저희"
       ],
       "infix": [
+        true
+      ],
+      "intensity": [
+        2
+      ],
+      "intimacy": [
         true
       ],
       "logic": [
@@ -2413,6 +2460,7 @@
         "clothing",
         "drink",
         "electronics",
+        "favor",
         "food",
         "footwear",
         "headwear",
@@ -2444,6 +2492,9 @@
       ],
       "scope": [
         "limit"
+      ],
+      "social": [
+        "apology"
       ],
       "speech_act": [
         "command",
@@ -2481,8 +2532,10 @@
         "면",
         "면서",
         "므로",
+        "ㅂ니까",
         "ㅂ니다",
         "세요",
+        "습니까",
         "습니다",
         "십시오",
         "아/어서",
@@ -2506,6 +2559,7 @@
         "죠",
         "지만",
         "지요",
+        "합니까",
         "해서",
         "해요"
       ],
@@ -2534,8 +2588,10 @@
         "beverage",
         "bound_noun",
         "cafe",
+        "circumstance",
         "city",
         "classification",
+        "concern",
         "condiment",
         "counter",
         "country",
@@ -2545,6 +2601,7 @@
         "duration",
         "event",
         "exercise",
+        "explanation",
         "focus",
         "furniture",
         "goods",
@@ -2563,8 +2620,10 @@
         "person_name",
         "place",
         "quality",
+        "quotation",
         "restaurant",
         "scope",
+        "seating",
         "sports",
         "status",
         "transitive",
@@ -2628,12 +2687,16 @@
         "traits": []
       },
       "state": {
-        "types": [],
+        "types": [
+          "circumstance"
+        ],
         "actions": [],
         "traits": []
       },
       "place": {
-        "types": [],
+        "types": [
+          "seating"
+        ],
         "actions": [],
         "traits": []
       },
@@ -2687,7 +2750,9 @@
         "types": [
           "intransitive"
         ],
-        "actions": [],
+        "actions": [
+          "change"
+        ],
         "traits": []
       },
       "causal": {
@@ -2756,8 +2821,12 @@
         "traits": []
       },
       "communication": {
-        "types": [],
-        "actions": [],
+        "types": [
+          "explanation"
+        ],
+        "actions": [
+          "request"
+        ],
         "traits": []
       },
       "task": {
@@ -2771,8 +2840,14 @@
         "traits": []
       },
       "emotion": {
-        "types": [],
-        "actions": [],
+        "types": [
+          "concern"
+        ],
+        "actions": [
+          "find_difficult",
+          "struggle",
+          "take_offense"
+        ],
         "traits": []
       },
       "transportation": {
@@ -2823,6 +2898,7 @@
       },
       "grammar": {
         "types": [
+          "quotation",
           "verb_ending",
           "vocative"
         ],
@@ -3313,6 +3389,11 @@
         "traits": []
       },
       "modality": {
+        "types": [],
+        "actions": [],
+        "traits": []
+      },
+      "relationship": {
         "types": [],
         "actions": [],
         "traits": []
