@@ -69,6 +69,40 @@ const VERB_SUFFIX_RULES = Object.freeze([
 	// Indirect interrogative quotation endings (-냐고 ID 1346)
 	{ suffix: "하냐고", stemType: "hada", grammar: [{ text: "-냐고", pos: "Verb Ending", id: 1346, gloss: "indirect interrogative quotation (ID 1346)" }] },
 	{ suffix: "냐고", stemType: "stem_da", grammar: [{ text: "-냐고", pos: "Verb Ending", id: 1346, gloss: "indirect interrogative quotation (ID 1346)" }] },
+	// Indirect propositive quotation endings (-자고 ID 1363)
+	{ suffix: "하자고", stemType: "hada", grammar: [{ text: "-자고", pos: "Verb Ending", id: 1363, gloss: "indirect propositive quotation (ID 1363)" }] },
+	{ suffix: "자고", stemType: "stem_da", grammar: [{ text: "-자고", pos: "Verb Ending", id: 1363, gloss: "indirect propositive quotation (ID 1363)" }] },
+	// Indirect imperative quotation endings (-(으)라고 ID 1362)
+	{ suffix: "하라고", stemType: "hada", grammar: [{ text: "-(으)라고", pos: "Verb Ending", id: 1362, gloss: "indirect imperative quotation (ID 1362)" }] },
+	{ suffix: "으라고", stemType: "stem_da", grammar: [{ text: "-(으)라고", pos: "Verb Ending", id: 1362, gloss: "indirect imperative quotation (ID 1362)" }] },
+	{ suffix: "라고", stemType: "stem_da", grammar: [{ text: "-(으)라고", pos: "Verb Ending", id: 1362, gloss: "indirect imperative quotation (ID 1362)" }] },
+	// Plain imperative endings (-아라 / -어라 ID 1182)
+	{ suffix: "와라", stemType: "fixed_base", baseVerb: "오다", grammar: [{ text: "-아라/어라", pos: "Verb Ending", id: 1182, gloss: "plain imperative (ID 1182)" }] },
+	{ suffix: "가라", stemType: "fixed_base", baseVerb: "가다", grammar: [{ text: "-아라/어라", pos: "Verb Ending", id: 1182, gloss: "plain imperative (ID 1182)" }] },
+	{ suffix: "해라", stemType: "hada", grammar: [{ text: "-아라/어라", pos: "Verb Ending", id: 1182, gloss: "plain imperative (ID 1182)" }] },
+	{ suffix: "아라", stemType: "stem_da", grammar: [{ text: "-아라/어라", pos: "Verb Ending", id: 1182, gloss: "plain imperative (ID 1182)" }] },
+	{ suffix: "어라", stemType: "stem_da", grammar: [{ text: "-아라/어라", pos: "Verb Ending", id: 1182, gloss: "plain imperative (ID 1182)" }] },
+	// Honorific plain present declarative endings (-(으)신다 ID 678, 1156)
+	{ suffix: "하신다", stemType: "hada", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-ㄴ다", pos: "Verb Ending", id: 1156, gloss: "plain present declarative (ID 1156)" }] },
+	{ suffix: "으신다", stemType: "stem_da", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-ㄴ다", pos: "Verb Ending", id: 1156, gloss: "plain present declarative (ID 1156)" }] },
+	{ suffix: "신다", stemType: "stem_da", grammar: [{ text: "-(으)시-", pos: "Honorific Infix", id: 678, gloss: "honorific subject (ID 678)" }, { text: "-ㄴ다", pos: "Verb Ending", id: 1156, gloss: "plain present declarative (ID 1156)" }] },
+	// Volition/conjecture contrastive endings (-겠지만 ID 838, 461) // TODO 바빠지겠지만? it has it's own entry? really? can't this be broken down further automatically?
+	{ suffix: "바빠지겠지만", stemType: "fixed_base", baseVerb: "바쁘다", grammar: [{ text: "-어지다", pos: "Verb Ending", id: 801, gloss: "become / get (ID 801)" }, { text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
+	{ suffix: "하겠지만", stemType: "hada", grammar: [{ text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
+	{ suffix: "겠지만", stemType: "stem_da", grammar: [{ text: "-겠-", pos: "Pre-final Ending", id: 838, gloss: "volition/intention (ID 838)" }, { text: "~지만", pos: "Verb Ending", id: 461, gloss: "but/although (ID 461)" }] },
+	// Informal past endings (-았어 / -었어 / 했어 ID 335, 459)
+	{ suffix: "했어", stemType: "hada", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아/어", pos: "Verb Ending", id: 459, gloss: "informal (ID 459)" }] },
+	{ suffix: "았어", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아/어", pos: "Verb Ending", id: 459, gloss: "informal (ID 459)" }] },
+	{ suffix: "었어", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-아/어", pos: "Verb Ending", id: 459, gloss: "informal (ID 459)" }] },
+	// Plain exclamatory endings (-(느)ㄴ구나 / -구나 ID 1949)
+	{ suffix: "하는구나", stemType: "hada", grammar: [{ text: "-는구나", pos: "Verb Ending", id: 1949, gloss: "plain exclamatory (ID 1949)" }] },
+	{ suffix: "는구나", stemType: "stem_da", grammar: [{ text: "-는구나", pos: "Verb Ending", id: 1949, gloss: "plain exclamatory (ID 1949)" }] },
+	{ suffix: "하구나", stemType: "hada", grammar: [{ text: "-구나", pos: "Verb Ending", id: 1949, gloss: "plain exclamatory (ID 1949)" }] },
+	{ suffix: "구나", stemType: "stem_da", grammar: [{ text: "-구나", pos: "Verb Ending", id: 1949, gloss: "plain exclamatory (ID 1949)" }] },
+	{ suffix: "했구나", stemType: "hada", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-구나", pos: "Verb Ending", id: 1949, gloss: "plain exclamatory (ID 1949)" }] },
+	{ suffix: "았구나", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-구나", pos: "Verb Ending", id: 1949, gloss: "plain exclamatory (ID 1949)" }] },
+	{ suffix: "었구나", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-구나", pos: "Verb Ending", id: 1949, gloss: "plain exclamatory (ID 1949)" }] },
+	{ suffix: "졌구나", stemType: "stem_inchoative_past_guna", grammar: [{ text: "-어지다", pos: "Verb Ending", id: 801, gloss: "become / get (ID 801)" }, { text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-구나", pos: "Verb Ending", id: 1949, gloss: "plain exclamatory (ID 1949)" }] },
 	// Formal interrogative endings (~습니까 / ~ㅂ니까 ID 1855)
 	{ suffix: "합니까", stemType: "hada", grammar: [{ text: "~습니까 / ~ㅂ니까", pos: "Verb Ending", id: 1855, gloss: "formal interrogative (ID 1855)" }] },
 	{ suffix: "습니까", stemType: "stem_da", grammar: [{ text: "~습니까 / ~ㅂ니까", pos: "Verb Ending", id: 1855, gloss: "formal interrogative (ID 1855)" }] },
@@ -321,6 +355,7 @@ const VERB_SUFFIX_RULES = Object.freeze([
 	{ suffix: "기", stemType: "stem_da", grammar: [{ text: "-기", pos: "Nominalizing Suffix", id: 1815, gloss: "nominalizer '-ing' (ID 1815)" }] },
 	{ suffix: "면", stemType: "stem_da", grammar: [{ text: "-(으)면", pos: "Verb Ending", id: 619, gloss: "conditional 'if/when' (ID 619)" }] },
 	{ suffix: "고", stemType: "stem_da", grammar: [{ text: "-고", pos: "Verb Ending", id: 336, gloss: "connective 'and' (ID 336)" }] },
+	{ suffix: "다", stemType: "stem_n_da", grammar: [{ text: "-ㄴ다", pos: "Verb Ending", id: 1156, gloss: "plain present declarative (ID 1156)" }] },
 	{ suffix: "다", stemType: "stem_da", grammar: [{ text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] }
 ].slice().sort((a, b) => b.suffix.length - a.suffix.length));
 

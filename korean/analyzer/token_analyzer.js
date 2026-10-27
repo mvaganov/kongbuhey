@@ -225,6 +225,21 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			};
 		}
 	}
+	// 0.24 Noun/Pronoun + Copula Present Adnominal 인 (ID 56, 644, e.g. 중인, 학생인, 친구인)
+	if (word.endsWith("인") && word.length >= 2 && !vocabByKo.has(word)) {
+		const stem = word.slice(0, -1);
+		const stemUnits = vocabByKo.get(stem) || [];
+		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' || u[DATA_SCHEMA.PartofSpeech] === 'Bound Noun');
+		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
+		if (nUnit) {
+			return {
+				surface: word,
+				category: "noun_copula_adnominal",
+				lexical: { text: stem, pos: nUnit[DATA_SCHEMA.PartofSpeech], unit: nUnit, missing: false, gloss: nUnit[DATA_SCHEMA.English] },
+				grammar: [{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" }, { text: "-(으)ㄴ", pos: "Adnominal Ending", unit: unitById.get(644), gloss: "adnominal modifier (ID 644)" }]
+			};
+		}
+	}
 
 	// 1. Pronominal Irregular Subject Allomorphs (제+가 -> 제가, 내+가 -> 내가, 네+가 -> 네가)
 	if (word.endsWith("가") && word.length === 2) {
@@ -482,15 +497,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 				chosenParticleUnit = unitById.get(spec.ids[0]);
 			} else if (spec.ids.length > 1) {
 				const candidateParticleUnits = spec.ids.map(id => unitById.get(id)).filter(Boolean);
-				const evalContext = {
-					tokenSurface: word,
-					attachedParticle: spec.text,
-					nounStemUnit: stemUnit,
-					clausePredicate: sentenceContext.clausePredicate,
-					prevWord,
-					nextWord
-				};
-
+				const evalContext = { tokenSurface: word, attachedParticle: spec.text, nounStemUnit: stemUnit, clausePredicate: sentenceContext.clausePredicate, prevWord, nextWord };
 				const res = disambiguateCandidates(candidateParticleUnits, evalContext, index);
 				if (res) {
 					chosenParticleUnit = res.chosenUnit;
@@ -505,33 +512,13 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 
 			const finalDisambig = disambigInfo || stemDisambigInfo;
 			const grammarList = [];
-			if (isPlural) {
-				grammarList.push({
-					text: "들",
-					pos: "Plural Suffix",
-					unit: unitById.get(550),
-					missing: false,
-					gloss: "plural suffix (ID 550)"
-				});
-			}
-			grammarList.push({
-				text: spec.text,
-				pos: "Particle",
-				unit: chosenParticleUnit,
-				missing: !chosenParticleUnit,
-				gloss: chosenParticleUnit ? chosenParticleUnit[DATA_SCHEMA.English] : spec.desc
-			});
+			if (isPlural) grammarList.push({ text: "들", pos: "Plural Suffix", unit: unitById.get(550), missing: false, gloss: "plural suffix (ID 550)" });
+			grammarList.push({ text: spec.text, pos: "Particle", unit: chosenParticleUnit, missing: !chosenParticleUnit, gloss: chosenParticleUnit ? chosenParticleUnit[DATA_SCHEMA.English] : spec.desc });
 
 			return {
 				surface: word,
 				category: "noun_particle",
-				lexical: {
-					text: stem,
-					pos: stemUnit ? stemUnit[DATA_SCHEMA.PartofSpeech] : "Noun",
-					unit: stemUnit,
-					missing: !stemUnit,
-					gloss: stemUnit ? stemUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")"
-				},
+				lexical: { text: stem, pos: stemUnit ? stemUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: stemUnit, missing: !stemUnit, gloss: stemUnit ? stemUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")" },
 				grammar: grammarList,
 				disambiguation: finalDisambig
 			};

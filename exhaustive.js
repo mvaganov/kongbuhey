@@ -229,7 +229,8 @@ function runSemanticTests(currentGrammarUnits) {
 		console.log("\n--- Source Grammar Semantic Generation ---");
 		resultLog += "\n--- Source Grammar Semantic Generation ---\n";
 		currentGrammarUnits.forEach(gu => {
-			const formulas = gu[DATA_SCHEMA.Conjugation];
+			const rawFormulas = gu[DATA_SCHEMA.Conjugation];
+			const formulas = Array.isArray(rawFormulas) ? rawFormulas : (rawFormulas ? [rawFormulas] : []);
 			formulas.forEach(formula => {
 				const sv = parseSemanticVector(gu);
 				const header = `\n--- [Template] ${gu[KoreanWord]} (${formula}) ---`;
