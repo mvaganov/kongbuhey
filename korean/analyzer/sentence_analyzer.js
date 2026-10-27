@@ -80,7 +80,7 @@ function isAdnominalL(word) {
  * @returns {boolean} True if the word terminates in an informal connective morpheme
  */
 function isInformalConnective(word, index = null) {
-	if (!word) return false;
+	if (!word || /^[\d,]/.test(word)) return false;
 	const set = (index && index.informalConnectiveEndings) || DEFAULT_INFORMAL_CONNECTIVES;
 	return set.has(word.slice(-1)) || (word.length >= 2 && set.has(word.slice(-2)));
 }

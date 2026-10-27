@@ -1154,7 +1154,7 @@ const KR_EN_languageUnits = [
 	[876, "해산물", "seafood", "Noun", ["food", "ingredient", "seafood"], "", "", "class2031", 3, "", "", '{"domain":"food"}', ""],
 	[877, "-만에", "after, for the first time in (time duration)", "Grammar", ["particle", "temporal", "duration"], "", ["{Number:sinoNumber(1,10)}년만에 {VP_AVst}아/어요", "얼마만에 {VP_AVst}아/어요"], "class2031", 2, "", "", '{"logic":"duration","domain":"time"}', ""],
 	[878, "-어 보다 (attempt)", "try doing (attempt)", "Grammar", ["auxiliary_verb", "attempt"], "attempt", ["{VP_AVst}아/어 봐요", "{VP_AVst}아/어 보세요"], "class2031", 2, "", "", '{"logic":"attempt","domain":"action"}', ""],
-	[879, "-어 보다 (experience)", "have tried, experienced (experience)", "Grammar", ["auxiliary_verb", "experience", "aspect"], "experience", ["{VP_AVst}아/어 봤어요"], "class2031", 2, "", "", '{"logic":"experience","domain":"aspect"}', "/*js:matcher*/ ({ isInformal, cleanW2, cleanW3 }) => isInformal && !(cleanW2 === '볼' && cleanW3 === '수') && (cleanW2.startsWith('보') || cleanW2.startsWith('볼') || cleanW2.startsWith('봐') || cleanW2 === '본' || cleanW2.startsWith('봤')) ? { span: 2, pattern: '-아/어 보다 (Try doing / experience)', grammar: [{ text: '-아/어 보다', pos: 'Auxiliary Verb', gloss: 'to try doing / experience' }], parseW2Grammar: true } : null"],
+	[879, "-어 보다 (experience)", "have tried, experienced (experience)", "Grammar", ["auxiliary_verb", "experience", "aspect"], "experience", ["{VP_AVst}아/어 봤어요"], "class2031", 2, "", "", '{"logic":"experience","domain":"aspect"}', "/*js:matcher*/ ({ isInformal, cleanW2, cleanW3 }) => isInformal && !cleanW2.startsWith('보내') && !cleanW2.startsWith('보이') && !(cleanW2 === '볼' && cleanW3 === '수') && (cleanW2.startsWith('보') || cleanW2.startsWith('볼') || cleanW2.startsWith('봐') || cleanW2 === '본' || cleanW2.startsWith('봤')) ? { span: 2, pattern: '-아/어 보다 (Try doing / experience)', grammar: [{ text: '-아/어 보다', pos: 'Auxiliary Verb', gloss: 'to try doing / experience' }], parseW2Grammar: true } : null"],
 	[880, "관광지", "tourist attraction, sight", "Noun", ["place", "tourism", "attraction"], "", "", "class2032", 2, "", "", '{"domain":"place"}', ""],
 	[881, "그립다", "to miss, long for", "Descriptive Verb", ["descriptive_person", "emotion", "descriptive_emotion"], "", "b_irregular", "class2032", 2, "", "", "{\"domain\":\"emotion\",\"req\":\"person\",\"polarity\":-1,\"collocation_filter\":\"/*js:filter*/ (n, hasTag) => (hasTag(n, 'person') || hasTag(n, 'place') || ['친구', '고향', '가족', '부모님'].includes(n[1])) && !hasTag(n, 'measureWord')\"}", ""],
 	[882, "기쁘다", "glad, happy", "Descriptive Verb", ["descriptive_person", "emotion", "descriptive_emotion"], "", "eu_irregular", "class2032", 2, "", "", "{\"domain\":\"emotion\",\"req\":\"person\",\"polarity\":1,\"collocation_filter\":\"/*js:filter*/ (n, hasTag) => (hasTag(n, 'person') || hasTag(n, 'emotion') || ['기분', '마음'].includes(n[1])) && !hasTag(n, 'measureWord')\"}", ""],
@@ -2202,7 +2202,28 @@ const KR_EN_languageUnits = [
 	[1924, "메시지", "message, text message", "Noun", ["general", "communication", "technology"], "", "", "studytext131", 1, "", "", "", ""],
 	[1925, "주고받다", "to exchange, send and receive, trade", "Action Verb", ["action", "communication", "social"], "", "", "studytext131", 1, "", "", "", ""],
 	[1926, "클릭하다", "to click", "Action Verb", ["action", "technology", "computing"], "", "", "studytext131", 1, "", "", "", ""],
-	[1927, "핸드폰", "cell phone, mobile phone", "Noun", ["general", "technology", "communication"], "", "", "studytext131", 1, "", "", "", ""]
+	[1927, "핸드폰", "cell phone, mobile phone", "Noun", ["general", "technology", "communication"], "", "", "studytext131", 1, "", "", "", ""],
+	[1928, "축하", "celebration, congratulation", "Noun", ["general", "social"], "", "", "studytext132", 1, "", "", "", ""],
+	[1929, "인사", "greeting, regards, salutation", "Noun", ["general", "social", "communication"], "", "", "studytext132", 1, "", "", "", ""],
+	[1930, "배달", "delivery", "Noun", ["general", "service", "commerce"], "", "", "studytext132", 1, "", "", "", ""],
+	[1931, "배달하다", "to deliver", "Action Verb", ["action", "service", "commerce"], "", "", "studytext132", 1, "", "", "", ""],
+	[1932, "원하다", "to want, desire, wish", "Action Verb", ["action", "psychological", "desire"], "", "", "studytext132", 1, "", "", "", ""],
+	[1933, "신선식품", "fresh food, perishable food products", "Noun", ["food", "grocery"], "", "", "studytext132", 2, "", "", "", ""],
+	[1934, "곡류", "grains, cereals", "Noun", ["food", "agriculture"], "", "", "studytext132", 2, "", "", "", ""],
+	[1935, "등", "etc., and the like, and so on", "Noun", ["general", "boundNoun"], "", "", "studytext132", 1, "", "", "", ""],
+	[1936, "휴대", "carrying, carrying on one's person, portability", "Noun", ["general"], "", "", "studytext132", 2, "", "", "", ""],
+	[1937, "가격", "price, cost", "Noun", ["finance", "commerce"], "", "", "studytext132", 1, "", "", "", ""],
+	[1938, "%", "percent, percentage", "Noun", ["measureWord", "koreanMeasureWord", "counter", "general"], "", "", "studytext132", 1, "", "", "", ""],
+	[1939, "노인", "elderly person, senior citizen", "Noun", ["person", "age", "social", "subject_animate"], "", "", "studytext141", 1, "", "", "", ""],
+	[1940, "통화", "phone call, phone conversation", "Noun", ["general", "communication", "technology"], "", "", "studytext141", 1, "", "", "", ""],
+	[1941, "녹음", "audio recording", "Noun", ["general", "media", "technology"], "", "", "studytext141", 2, "", "", "", ""],
+	[1942, "계산", "calculation, paying the bill", "Noun", ["general", "finance", "commerce"], "", "", "studytext141", 1, "", "", "", ""],
+	[1943, "점", "point, aspect, feature", "Noun", ["general", "abstract"], "", "", "studytext141", 1, "", "", "", ""],
+	[1944, "쇼핑", "shopping", "Noun", ["general", "commerce", "leisure"], "", "", "studytext141", 1, "", "", "", ""],
+	[1945, "뱅킹", "banking (e.g. internet banking)", "Noun", ["general", "finance", "technology"], "", "", "studytext141", 2, "", "", "", ""],
+	[1946, "블로그", "blog", "Noun", ["general", "internet", "media"], "", "", "studytext141", 2, "", "", "", ""],
+	[1947, "검색", "search, online search", "Noun", ["general", "internet", "technology"], "", "", "studytext141", 1, "", "", "", ""],
+	[1948, "글씨", "letter, handwriting, script, font", "Noun", ["general", "writing", "language"], "", "", "studytext141", 1, "", "", "", ""]
 ];
 
 // Build the initial cache from the hardcoded array
