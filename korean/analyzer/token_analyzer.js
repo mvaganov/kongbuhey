@@ -174,10 +174,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 				surface: word,
 				category: "noun_copula_connective",
 				lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")" },
-				grammar: [
-					{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" },
-					{ text: "-고", pos: "Verb Ending", unit: unitById.get(336), gloss: "connective 'and' (ID 336)" }
-				]
+				grammar: [{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" }, { text: "-고", pos: "Verb Ending", unit: unitById.get(336), gloss: "connective 'and' (ID 336)" }]
 			};
 		}
 	}
@@ -194,10 +191,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 				surface: word,
 				category: "noun_copula_connective",
 				lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")" },
-				grammar: [
-					{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" },
-					isYo ? { text: "-는데요", pos: "Verb Ending", unit: unitById.get(1292), gloss: "background / soft statement (ID 1292)" } : { text: "-는데", pos: "Verb Ending", unit: unitById.get(620), gloss: "background/contrastive (ID 620)" }
-				]
+				grammar: [{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" }, isYo ? { text: "-는데요", pos: "Verb Ending", unit: unitById.get(1292), gloss: "background / soft statement (ID 1292)" } : { text: "-는데", pos: "Verb Ending", unit: unitById.get(620), gloss: "background/contrastive (ID 620)" }]
 			};
 		}
 	}
@@ -212,11 +206,24 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			surface: word,
 			category: "noun_copula_connective",
 			lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : stem },
-			grammar: [
-				{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" },
-				{ text: "-아/어서", pos: "Verb Ending", unit: unitById.get(459), gloss: "cause / sequential (ID 459)" }
-			]
+			grammar: [{ text: "이다", pos: "Copula", unit: unitById.get(56), gloss: "copula 'be' (ID 56)" }, { text: "-아/어서", pos: "Verb Ending", unit: unitById.get(459), gloss: "cause / sequential (ID 459)" }]
 		};
+	}
+	// 0.22 Noun/Pronoun + Copula Indirect Question (이)냐고 (ID 1346, e.g. 뭐냐고)
+	const nyagoM = word.match(/^(.+?)(이냐고|냐고)$/);
+	if (nyagoM && nyagoM[1].length >= 1) {
+		const stem = nyagoM[1];
+		const stemUnits = vocabByKo.get(stem) || [];
+		const nounUnits = stemUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const nUnit = nounUnits.length > 0 ? nounUnits[0] : null;
+		if (nUnit || vocabByKo.has(stem)) {
+			return {
+				surface: word,
+				category: "noun_copula_quotation",
+				lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun", unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : stem },
+				grammar: [{ text: "(이)냐고", pos: "Verb Ending", unit: unitById.get(1346), gloss: "indirect question quotation (ID 1346)" }]
+			};
+		}
 	}
 
 	// 1. Pronominal Irregular Subject Allomorphs (제+가 -> 제가, 내+가 -> 내가, 네+가 -> 네가)
@@ -252,29 +259,14 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 				(vocabByKo.has(nextStem) && vocabByKo.get(nextStem).some(u => u[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) ||
 				(nextWord.length > 1 && vocabByKo.has(nextWord.slice(0, 1)) && vocabByKo.get(nextWord.slice(0, 1)).some(u => u[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb'))
 			));
-			const evalContext = {
-				tokenSurface: word,
-				attachedParticle: "",
-				attachedEnding: "",
-				prevWord,
-				nextWord,
-				nextUnit: nextNounUnit,
-				nextIsVerb,
-				clausePredicate: sentenceContext.clausePredicate
-			};
-
+			const evalContext = { tokenSurface: word, attachedParticle: "", attachedEnding: "", prevWord, nextWord, nextUnit: nextNounUnit, nextIsVerb, clausePredicate: sentenceContext.clausePredicate };
 			const disambigRes = disambiguateCandidates(nonVerbs, evalContext, index);
 			const chosen = disambigRes ? disambigRes.chosenUnit : nonVerbs[0];
 
 			return {
 				surface: word,
 				category: "exact_lexical",
-				lexical: {
-					text: chosen[DATA_SCHEMA.Korean],
-					pos: chosen[DATA_SCHEMA.PartofSpeech],
-					unit: chosen,
-					gloss: chosen[DATA_SCHEMA.English]
-				},
+				lexical: { text: chosen[DATA_SCHEMA.Korean], pos: chosen[DATA_SCHEMA.PartofSpeech], unit: chosen, gloss: chosen[DATA_SCHEMA.English] },
 				grammar: [],
 				disambiguation: disambigRes && nonVerbs.length > 1 ? {
 					resolved: true,
@@ -286,7 +278,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 		}
 	}
 	// 2.5 Noun + Plural suffix -들 (e.g. 친척들, 학생들, 친구들)
-	if (word.endsWith("들") && word.length > 1) {
+	if (word.endsWith("들") && word.length > 1 && !vocabByKo.has(word + "다")) {
 		const singularStem = word.slice(0, -1);
 		const sUnits = vocabByKo.has(singularStem) ? vocabByKo.get(singularStem).filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' || u[DATA_SCHEMA.PartofSpeech] === 'Adverb') : [];
 		const nUnit = sUnits.length > 0 ? sUnits[0] : null;
@@ -298,7 +290,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 		};
 	}
 	// 3. Number + Counter + Particle (e.g. 1년쯤, 2년 동안, 3시에, 6~7분, 20**년, 5호선으로, 4개의)
-	const numCounterMatch = word.match(/^(\d[\d\*]*(?:[~-]\d+)?)([가-힣]+?)(의|으로|로|쯤|에|부터|까지|은|는|이|가|을|를|도|만|과|와)?$/);
+	const numCounterMatch = word.match(/^(\d[\d,\*]*(?:[~-]\d+)?)(%|[가-힣]+?)(에게서|에게는|에게도|에게나|에게만|에게|한테서|한테는|한테도|한테나|한테만|한테|에서는|에서도|에서|으로|부터|까지|이나|의|로|쯤|에|은|는|이|가|을|를|도|만|과|와|나)?$/);
 	if (numCounterMatch) {
 		const numVal = numCounterMatch[1];
 		const counterText = numCounterMatch[2];
@@ -312,14 +304,21 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 		const gList = [];
 		if (particleText) {
 			const spec = PARTICLE_SPECS.find(p => p.text === particleText);
-			const pUnit = spec && spec.ids[0] ? unitById.get(spec.ids[0]) : null;
-			gList.push({
-				text: particleText,
-				pos: "Particle",
-				unit: pUnit,
-				missing: !pUnit,
-				gloss: pUnit ? pUnit[DATA_SCHEMA.English] : spec ? spec.desc : particleText
-			});
+			if (spec && spec.ids && spec.ids.length > 1) {
+				for (const id of spec.ids) {
+					const u = unitById.get(id);
+					if (u) gList.push({ text: u[DATA_SCHEMA.Korean], pos: "Particle", unit: u, missing: false, gloss: u[DATA_SCHEMA.English] });
+				}
+			} else {
+				const pUnit = spec && spec.ids[0] ? unitById.get(spec.ids[0]) : null;
+				gList.push({
+					text: particleText,
+					pos: "Particle",
+					unit: pUnit,
+					missing: !pUnit,
+					gloss: pUnit ? pUnit[DATA_SCHEMA.English] : spec ? spec.desc : particleText
+				});
+			}
 		}
 
 		return {

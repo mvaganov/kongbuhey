@@ -55,6 +55,20 @@ const VERB_SUFFIX_RULES = Object.freeze([
 	{ suffix: "했다", stemType: "hada", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
 	{ suffix: "았다", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
 	{ suffix: "었다", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] },
+	// Plain present declarative endings (-(느)ㄴ다 ID 1156)
+	{ suffix: "한다", stemType: "hada", grammar: [{ text: "-ㄴ다", pos: "Verb Ending", id: 1156, gloss: "plain present declarative (ID 1156)" }] },
+	{ suffix: "는다", stemType: "stem_da", grammar: [{ text: "-는다", pos: "Verb Ending", id: 1156, gloss: "plain present declarative (ID 1156)" }] },
+	// Indirect declarative quotation endings (-는다고 / -다고 ID 1347)
+	{ suffix: "했다고", stemType: "hada", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다고", pos: "Verb Ending", id: 1347, gloss: "indirect declarative quotation (ID 1347)" }] },
+	{ suffix: "았다고", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다고", pos: "Verb Ending", id: 1347, gloss: "indirect declarative quotation (ID 1347)" }] },
+	{ suffix: "었다고", stemType: "stem_da", grammar: [{ text: "-았/었-", pos: "Tense Infix", id: 335, gloss: "past tense (ID 335)" }, { text: "-다고", pos: "Verb Ending", id: 1347, gloss: "indirect declarative quotation (ID 1347)" }] },
+	{ suffix: "는다고", stemType: "stem_da", grammar: [{ text: "-는다고", pos: "Verb Ending", id: 1347, gloss: "indirect declarative quotation (ID 1347)" }] },
+	{ suffix: "한다고", stemType: "hada", grammar: [{ text: "-ㄴ다고", pos: "Verb Ending", id: 1347, gloss: "indirect declarative quotation (ID 1347)" }] },
+	{ suffix: "하다고", stemType: "hada", grammar: [{ text: "-다고", pos: "Verb Ending", id: 1347, gloss: "indirect declarative quotation (ID 1347)" }] },
+	{ suffix: "다고", stemType: "stem_da", grammar: [{ text: "-다고", pos: "Verb Ending", id: 1347, gloss: "indirect declarative quotation (ID 1347)" }] },
+	// Indirect interrogative quotation endings (-냐고 ID 1346)
+	{ suffix: "하냐고", stemType: "hada", grammar: [{ text: "-냐고", pos: "Verb Ending", id: 1346, gloss: "indirect interrogative quotation (ID 1346)" }] },
+	{ suffix: "냐고", stemType: "stem_da", grammar: [{ text: "-냐고", pos: "Verb Ending", id: 1346, gloss: "indirect interrogative quotation (ID 1346)" }] },
 	// Formal interrogative endings (~습니까 / ~ㅂ니까 ID 1855)
 	{ suffix: "합니까", stemType: "hada", grammar: [{ text: "~습니까 / ~ㅂ니까", pos: "Verb Ending", id: 1855, gloss: "formal interrogative (ID 1855)" }] },
 	{ suffix: "습니까", stemType: "stem_da", grammar: [{ text: "~습니까 / ~ㅂ니까", pos: "Verb Ending", id: 1855, gloss: "formal interrogative (ID 1855)" }] },
@@ -306,7 +320,8 @@ const VERB_SUFFIX_RULES = Object.freeze([
 	{ suffix: "게", stemType: "stem_da", grammar: [{ text: "-게", pos: "Adverbial Suffix", id: 800, gloss: "in a manner of (ID 800)" }] },
 	{ suffix: "기", stemType: "stem_da", grammar: [{ text: "-기", pos: "Nominalizing Suffix", id: 1815, gloss: "nominalizer '-ing' (ID 1815)" }] },
 	{ suffix: "면", stemType: "stem_da", grammar: [{ text: "-(으)면", pos: "Verb Ending", id: 619, gloss: "conditional 'if/when' (ID 619)" }] },
-	{ suffix: "고", stemType: "stem_da", grammar: [{ text: "-고", pos: "Verb Ending", id: 336, gloss: "connective 'and' (ID 336)" }] }
+	{ suffix: "고", stemType: "stem_da", grammar: [{ text: "-고", pos: "Verb Ending", id: 336, gloss: "connective 'and' (ID 336)" }] },
+	{ suffix: "다", stemType: "stem_da", grammar: [{ text: "-다", pos: "Verb Ending", id: 1156, gloss: "plain declarative (ID 1156)" }] }
 ].slice().sort((a, b) => b.suffix.length - a.suffix.length));
 
 if (typeof window !== 'undefined') {

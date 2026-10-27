@@ -19,6 +19,7 @@ const PARTICLE_SPECS = Object.freeze([
 	{ text: "에게도", ids: [618, 366], desc: "에게 + 도 (Dative additive)", isCompound: true },
 	{ text: "한테는", ids: [618, 36], desc: "한테 + 는 (Dative informal topic)", isCompound: true },
 	{ text: "한테도", ids: [618, 366], desc: "한테 + 도 (Dative informal additive)", isCompound: true },
+	{ text: "에게나", ids: [618, 1333], desc: "에게 + 나 (Dative quantity/choice)", isCompound: true },
 	{ text: "만의", ids: [1402, 856], desc: "만 + 의 (Only + Possessive)", isCompound: true },
 	{ text: "에나", ids: [132, 1333], desc: "에 + 나 (Location + inclusive delimiter)", isCompound: true },
 	{ text: "께서도", ids: [648, 366], desc: "께서 + 도 (Honorific subject + also)", isCompound: true },

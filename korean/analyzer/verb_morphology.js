@@ -295,7 +295,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 					continue;
 				}
 
-				if (!vUnit && !baseVerb.endsWith("하다") && (rule.suffix.length < 2 || rule.suffix === "다가" || rule.suffix === "어도" || rule.suffix === "아도" || rule.suffix === "라도" || rule.suffix === "러도" || word.endsWith("에다가"))) {
+				if (!vUnit && !baseVerb.endsWith("하다") && (rule.suffix.length < 2 || rule.suffix === "다가" || rule.suffix === "어도" || rule.suffix === "아도" || rule.suffix === "라도" || rule.suffix === "러도" || rule.suffix === "다고" || rule.suffix === "냐고" || rule.suffix === "는다" || word.endsWith("에다가"))) {
 					continue;
 				}
 
