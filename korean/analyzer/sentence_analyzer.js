@@ -80,7 +80,7 @@ function isAdnominalL(word) {
  * @returns {boolean} True if the word terminates in an informal connective morpheme
  */
 function isInformalConnective(word, index = null) {
-	if (!word || /^[\d,]/.test(word)) return false;
+	if (!word || /^[\d,]/.test(word) || word.endsWith("에서") || word.endsWith("에게서")) return false;
 	const set = (index && index.informalConnectiveEndings) || DEFAULT_INFORMAL_CONNECTIVES;
 	return set.has(word.slice(-1)) || (word.length >= 2 && set.has(word.slice(-2)));
 }
@@ -106,6 +106,7 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 	let detectedPastInfix = null;
 	let detectedInchoative = null;
 	let detectedCopula = null;
+	let detectedW1Grammar = null;
 	if (match.lexicalType === "stem_da") {
 		const targetWord = match.lexicalTokenIndex === 2 ? w2 : w1;
 		const suffixLen = (match.stemSuffix || "다").length;
@@ -218,13 +219,7 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 			}
 		}
 		const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
-		lexical = {
-			text: baseVerb,
-			pos: vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : "Verb",
-			unit: vUnit,
-			missing: !vUnit,
-			gloss: vUnit ? vUnit[DATA_SCHEMA.English] : ""
-		};
+		lexical = { text: baseVerb, pos: vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : "Verb", unit: vUnit, missing: !vUnit, gloss: vUnit ? vUnit[DATA_SCHEMA.English] : "" };
 	} else if (match.lexicalType === "stem_b_irregular_or_da") {
 		let baseVerb = null;
 		if (w1.endsWith("워")) {
@@ -238,20 +233,9 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 			baseVerb = w1.slice(0, -1) + "다";
 		}
 		const vUnit = baseVerb && vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
-		lexical = {
-			text: baseVerb || w1,
-			pos: vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : "Descriptive Verb",
-			unit: vUnit,
-			missing: !vUnit,
-			gloss: vUnit ? vUnit[DATA_SCHEMA.English] : ""
-		};
+		lexical = { text: baseVerb || w1, pos: vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : "Descriptive Verb", unit: vUnit, missing: !vUnit, gloss: vUnit ? vUnit[DATA_SCHEMA.English] : "" };
 	} else if (match.lexicalType === "self_unit") {
-		lexical = {
-			text: unit[DATA_SCHEMA.Korean],
-			pos: unit[DATA_SCHEMA.PartofSpeech],
-			unit: unit,
-			gloss: unit[DATA_SCHEMA.English]
-		};
+		lexical = { text: unit[DATA_SCHEMA.Korean], pos: unit[DATA_SCHEMA.PartofSpeech], unit, gloss: unit[DATA_SCHEMA.English] };
 	} else if (match.lexical !== undefined) {
 		lexical = match.lexical;
 	} else if (match.isAdnominalL || match.lexicalType === "adnominal_l") {
@@ -265,6 +249,7 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 	} else {
 		const a1 = analyzeSingleToken(w1, prevW1, w2, sentenceContext, index);
 		lexical = a1 ? a1.lexical : null;
+		if (a1 && a1.grammar && a1.grammar.length > 0) detectedW1Grammar = a1.grammar;
 	}
 
 	// 2. Resolve Grammar Units
@@ -304,12 +289,7 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 
 	if (detectedPastInfix) {
 		const pastUnit = unitById.get(detectedPastInfix.unitId);
-		grammarList.push({
-			text: detectedPastInfix.text,
-			pos: detectedPastInfix.pos,
-			unit: pastUnit,
-			gloss: detectedPastInfix.gloss
-		});
+		grammarList.push({ text: detectedPastInfix.text, pos: detectedPastInfix.pos, unit: pastUnit, gloss: detectedPastInfix.gloss });
 	}
 	if (detectedInchoative) {
 		const inchUnit = unitById.get(detectedInchoative.unitId);
@@ -319,6 +299,7 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 		const copUnit = unitById.get(detectedCopula.unitId);
 		grammarList.push({ text: detectedCopula.text, pos: detectedCopula.pos, unit: copUnit, gloss: detectedCopula.gloss });
 	}
+	if (detectedW1Grammar) grammarList.unshift(...detectedW1Grammar);
 
 	if (match.extraParticle) {
 		const pUnit = unitById.get(match.extraParticle.unitId);

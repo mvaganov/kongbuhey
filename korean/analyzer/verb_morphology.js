@@ -62,9 +62,10 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 					// Check 르-irregular drop (e.g. 고르다 -> 골랐습니다, 모르다 -> 몰랐습니다, 다르다 -> 달랐습니다)
 					const strippedChar = setFinal(lastChar, 0);
 					const reuVerb = stem.slice(0, -1) + strippedChar + "르다";
-					if (!vocabByKo.has(candidateVerb) && vocabByKo.has(reuVerb)) {
-						candidateVerb = reuVerb;
-					}
+					if (!vocabByKo.has(candidateVerb) && vocabByKo.has(reuVerb)) candidateVerb = reuVerb;
+					// Check ㄷ-irregular (e.g. 묻다 -> 물었다, 듣다 -> 들었다, 걷다 -> 걸었다)
+					const dVerb = stem.slice(0, -1) + composeHangul(d.initial, d.medial, 7) + "다";
+					if (!vocabByKo.has(candidateVerb) && vocabByKo.has(dVerb)) candidateVerb = dVerb;
 				}
 				baseVerb = candidateVerb;
 			} else if (rule.stemType === 'copula_l_kkayo' || rule.stemType === 'copula_inikka') {
@@ -102,9 +103,9 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 						}
 					}
 				}
-			} else if (rule.stemType === 'stem_inchoative_past_cond') {
+			} else if (rule.stemType === 'stem_inchoative_past_cond' || rule.stemType === 'stem_inchoative_past_guna') {
 				if (word.length <= rule.suffix.length) continue;
-				const stemBefore = word.slice(0, -rule.suffix.length); // e.g. '많아'
+				const stemBefore = word.slice(0, -rule.suffix.length); // e.g. '길어', '많아'
 				if (stemBefore.endsWith("아") || stemBefore.endsWith("어")) {
 					const rootStem = stemBefore.slice(0, -1);
 					const candVerb = rootStem + "다";
@@ -209,6 +210,20 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 				} else {
 					continue;
 				}
+			} else if (rule.stemType === 'stem_n_da') {
+				if (word.length <= rule.suffix.length) continue;
+				const stemWithN = word.slice(0, -rule.suffix.length);
+				const lastChar = stemWithN.slice(-1);
+				const d = decomposeHangul(lastChar);
+				if (d && d.final === 4) { // ㄴ batchim (온다 -> 오다, 된다 -> 되다, 간다 -> 가다, 산다 -> 살다)
+					const openVerb = stemWithN.slice(0, -1) + setFinal(lastChar, 0) + "다";
+					const lVerb = stemWithN.slice(0, -1) + composeHangul(d.initial, d.medial, 8) + "다";
+					if (vocabByKo.has(openVerb)) baseVerb = openVerb;
+					else if (vocabByKo.has(lVerb)) baseVerb = lVerb;
+					else continue;
+				} else {
+					continue;
+				}
 			} else if (rule.stemType === 'stem_eu_irregular') {
 				const lastChar = word.slice(-1);
 				const d = decomposeHangul(lastChar);
@@ -295,7 +310,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 					continue;
 				}
 
-				if (!vUnit && !baseVerb.endsWith("하다") && (rule.suffix.length < 2 || rule.suffix === "다가" || rule.suffix === "어도" || rule.suffix === "아도" || rule.suffix === "라도" || rule.suffix === "러도" || rule.suffix === "다고" || rule.suffix === "냐고" || rule.suffix === "는다" || word.endsWith("에다가"))) {
+				if (!vUnit && !baseVerb.endsWith("하다") && (rule.suffix.length < 2 || rule.suffix === "다가" || rule.suffix === "어도" || rule.suffix === "아도" || rule.suffix === "라도" || rule.suffix === "러도" || rule.suffix === "다고" || rule.suffix === "냐고" || rule.suffix === "자고" || rule.suffix === "라고" || rule.suffix === "아라" || rule.suffix === "어라" || rule.suffix === "구나" || rule.suffix === "았어" || rule.suffix === "었어" || rule.suffix === "는다" || word.endsWith("에다가"))) {
 					continue;
 				}
 

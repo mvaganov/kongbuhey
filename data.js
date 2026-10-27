@@ -1154,7 +1154,7 @@ const KR_EN_languageUnits = [
 	[876, "해산물", "seafood", "Noun", ["food", "ingredient", "seafood"], "", "", "class2031", 3, "", "", '{"domain":"food"}', ""],
 	[877, "-만에", "after, for the first time in (time duration)", "Grammar", ["particle", "temporal", "duration"], "", ["{Number:sinoNumber(1,10)}년만에 {VP_AVst}아/어요", "얼마만에 {VP_AVst}아/어요"], "class2031", 2, "", "", '{"logic":"duration","domain":"time"}', ""],
 	[878, "-어 보다 (attempt)", "try doing (attempt)", "Grammar", ["auxiliary_verb", "attempt"], "attempt", ["{VP_AVst}아/어 봐요", "{VP_AVst}아/어 보세요"], "class2031", 2, "", "", '{"logic":"attempt","domain":"action"}', ""],
-	[879, "-어 보다 (experience)", "have tried, experienced (experience)", "Grammar", ["auxiliary_verb", "experience", "aspect"], "experience", ["{VP_AVst}아/어 봤어요"], "class2031", 2, "", "", '{"logic":"experience","domain":"aspect"}', "/*js:matcher*/ ({ isInformal, cleanW2, cleanW3 }) => isInformal && !cleanW2.startsWith('보내') && !cleanW2.startsWith('보이') && !(cleanW2 === '볼' && cleanW3 === '수') && (cleanW2.startsWith('보') || cleanW2.startsWith('볼') || cleanW2.startsWith('봐') || cleanW2 === '본' || cleanW2.startsWith('봤')) ? { span: 2, pattern: '-아/어 보다 (Try doing / experience)', grammar: [{ text: '-아/어 보다', pos: 'Auxiliary Verb', gloss: 'to try doing / experience' }], parseW2Grammar: true } : null"],
+	[879, "-어 보다 (experience)", "have tried, experienced (experience)", "Grammar", ["auxiliary_verb", "experience", "aspect"], "experience", ["{VP_AVst}아/어 봤어요"], "class2031", 2, "", "", '{"logic":"experience","domain":"aspect"}', "/*js:matcher*/ ({ isInformal, cleanW2, cleanW3 }) => { if (!isInformal || cleanW2.startsWith('보내') || cleanW2.startsWith('보이') || (cleanW2 === '볼' && cleanW3 === '수')) return null; if (cleanW2 === '보고' && cleanW3 && cleanW3.startsWith('싶')) return { span: 3, pattern: '-아/어 보다 (Try doing / experience)', grammar: [{ text: '-아/어 보다', pos: 'Auxiliary Verb', unitId: 879, gloss: 'to try doing / experience' }, { text: '~고 싶다', pos: 'Grammar Pattern', unitId: 417, gloss: 'want to' }], auxEndingTokenIndex: 3 }; if (cleanW2.startsWith('보') || cleanW2.startsWith('볼') || cleanW2.startsWith('봐') || cleanW2 === '본' || cleanW2.startsWith('봤')) return { span: 2, pattern: '-아/어 보다 (Try doing / experience)', grammar: [{ text: '-아/어 보다', pos: 'Auxiliary Verb', gloss: 'to try doing / experience' }], parseW2Grammar: true }; return null; }"],
 	[880, "관광지", "tourist attraction, sight", "Noun", ["place", "tourism", "attraction"], "", "", "class2032", 2, "", "", '{"domain":"place"}', ""],
 	[881, "그립다", "to miss, long for", "Descriptive Verb", ["descriptive_person", "emotion", "descriptive_emotion"], "", "b_irregular", "class2032", 2, "", "", "{\"domain\":\"emotion\",\"req\":\"person\",\"polarity\":-1,\"collocation_filter\":\"/*js:filter*/ (n, hasTag) => (hasTag(n, 'person') || hasTag(n, 'place') || ['친구', '고향', '가족', '부모님'].includes(n[1])) && !hasTag(n, 'measureWord')\"}", ""],
 	[882, "기쁘다", "glad, happy", "Descriptive Verb", ["descriptive_person", "emotion", "descriptive_emotion"], "", "eu_irregular", "class2032", 2, "", "", "{\"domain\":\"emotion\",\"req\":\"person\",\"polarity\":1,\"collocation_filter\":\"/*js:filter*/ (n, hasTag) => (hasTag(n, 'person') || hasTag(n, 'emotion') || ['기분', '마음'].includes(n[1])) && !hasTag(n, 'measureWord')\"}", ""],
@@ -2223,7 +2223,24 @@ const KR_EN_languageUnits = [
 	[1945, "뱅킹", "banking (e.g. internet banking)", "Noun", ["general", "finance", "technology"], "", "", "studytext141", 2, "", "", "", ""],
 	[1946, "블로그", "blog", "Noun", ["general", "internet", "media"], "", "", "studytext141", 2, "", "", "", ""],
 	[1947, "검색", "search, online search", "Noun", ["general", "internet", "technology"], "", "", "studytext141", 1, "", "", "", ""],
-	[1948, "글씨", "letter, handwriting, script, font", "Noun", ["general", "writing", "language"], "", "", "studytext141", 1, "", "", "", ""]
+	[1948, "글씨", "letter, handwriting, script, font", "Noun", ["general", "writing", "language"], "", "", "studytext141", 1, "", "", "", ""],
+	[1949, "-(느)ㄴ구나 / -구나", "plain exclamatory ending expressing realization/discovery ('I see that..., oh so...')", "Grammar", ["grammar", "exclamatory"], "", ["{VP_AVst}는구나", "{VP_DVst}구나"], "studytext142", 2, "", "", "", ""],
+	[1950, "하늘", "sky, heaven", "Noun", ["general", "nature", "space", "name"], "", "", "studytext142", 1, "", "", "", ""],
+	[1951, "엄마", "mom, mommy, mother", "Noun", ["family", "person", "subject_animate"], "", "", "studytext142", 1, "", "", "", ""],
+	[1952, "만두", "dumpling, mandu", "Noun", ["food", "grocery"], "", "", "studytext142", 1, "", "", "", ""],
+	[1953, "다함께", "all together, all in one group", "Adverb", ["general", "manner"], "", "", "studytext142", 1, "", "", "", ""],
+	[1954, "그러니까", "so, therefore, that's why", "Adverb", ["general", "connective"], "", "", "studytext142", 1, "", "", "", ""],
+	[1955, "기뻐하다", "to rejoice, be glad, be pleased (3rd person)", "Action Verb", ["action", "psychological", "emotion"], "", "", "studytext142", 2, "", "", "", ""],
+	[1956, "간단하다", "to be simple, brief, uncomplicated", "Descriptive Verb", ["descriptive_general"], "", "", "studytext142", 1, "", "", "", ""],
+	[1957, "방문", "visit", "Noun", ["general", "action"], "visit (cf. room door)", "", "studytext151", 2, "", "", '{"domain":"action"}', ""],
+	[1958, "안내하다", "to guide, escort, show around", "Action Verb", ["action", "social"], "", "regular_hada", "studytext151", 2, "", "", '{"domain":"social","req":"person","prod":"guidance","polarity":1}', ""],
+	[1959, "맛보다", "to taste, sample food", "Action Verb", ["action", "food"], "", "regular_wa", "studytext151", 2, "", "", '{"domain":"consume","req":"food","prod":"taste_experience","polarity":1}', ""],
+	[1960, "맛집", "famous restaurant, renowned eatery", "Noun", ["food", "place", "facility", "restaurant"], "famous restaurant (popular eatery)", "", "studytext151", 2, "", "", '{"domain":"place","facility_type":"restaurant"}', ""],
+	[1961, "알리다", "to inform, let know, announce", "Action Verb", ["action", "communication"], "", "regular", "studytext151", 2, "", "", '{"domain":"communication","req":"information","prod":"awareness","polarity":1}', ""],
+	[1962, "그중", "among them, of them", "Noun", ["general"], "among them, out of those", "", "studytext151", 2, "", "", '{"domain":"deixis"}', ""],
+	[1963, "예약", "reservation, booking", "Noun", ["general"], "", "", "studytext151", 2, "", "", '{"domain":"action"}', ""],
+	[1964, "양식", "Western food, Western cuisine", "Noun", ["food"], "Western food (cf. style/mode)", "", "studytext151", 2, "", "", '{"domain":"food","polarity":1}', ""],
+	[1965, "뷔페", "buffet, buffet restaurant", "Noun", ["food", "place", "facility", "restaurant"], "", "", "studytext151", 2, "", "", '{"domain":"place","facility_type":"restaurant"}', ""]
 ];
 
 // Build the initial cache from the hardcoded array

@@ -39,6 +39,8 @@ const PARTICLE_SPECS = Object.freeze([
 	{ text: "마다", ids: [1797], desc: "마다 (Each / Every)" },
 	{ text: "이랑", ids: [276], desc: "(이)랑 (And / With)", batchimReq: true },
 	{ text: "랑", ids: [276], desc: "(이)랑 (And / With)", batchimReq: false },
+	{ text: "이라서", ids: [1385], desc: "이라서 (Cause/reason for noun)", batchimReq: true },
+	{ text: "라서", ids: [1385], desc: "(이)라서 (Cause/reason for noun)", batchimReq: false },
 	{ text: "하고", ids: [367], desc: "하고 (And / With)" },
 	{ text: "부터", ids: [1312], desc: "부터 (Starting point)" },
 	{ text: "까지", ids: [1826], desc: "까지 (Ending point)" },
