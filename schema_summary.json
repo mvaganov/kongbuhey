@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-27T15:00:12.548Z",
-  "totalUnits": 1966,
-  "validVectorCount": 1915,
+  "generatedAt": "2026-10-28T13:47:30.571Z",
+  "totalUnits": 2006,
+  "validVectorCount": 1955,
   "partsOfSpeech": [
     "Action Verb",
     "Adverb",
@@ -14,15 +14,15 @@
     "Pronoun"
   ],
   "posCounts": {
-    "Noun": 1062,
+    "Noun": 1085,
     "Pronoun": 36,
     "Exclamation": 18,
-    "Descriptive Verb": 131,
-    "Grammar": 189,
-    "Action Verb": 360,
+    "Descriptive Verb": 134,
+    "Grammar": 191,
+    "Action Verb": 370,
     "Adverb": 98,
     "Number": 66,
-    "Determiner": 6
+    "Determiner": 8
   },
   "semanticTags": [
     "1st_person",
@@ -126,6 +126,7 @@
     "classification",
     "clausal",
     "clausal_connective",
+    "clause",
     "cleaning",
     "climate",
     "clothing",
@@ -163,6 +164,7 @@
     "continent",
     "continuity",
     "contrast",
+    "conversation",
     "cooking",
     "cookware",
     "copula",
@@ -174,6 +176,7 @@
     "culture",
     "cup",
     "currency",
+    "daily",
     "daily_item",
     "date",
     "dative",
@@ -188,6 +191,7 @@
     "deictic",
     "delimiter",
     "demonstrative",
+    "description",
     "descriptive_acoustic",
     "descriptive_cleanliness",
     "descriptive_difficulty",
@@ -255,6 +259,7 @@
     "exclusive",
     "exercise",
     "existence",
+    "existential",
     "experience",
     "eyewear",
     "facility",
@@ -382,6 +387,7 @@
     "mail",
     "male",
     "manner",
+    "manual",
     "market",
     "meal",
     "measureWord",
@@ -392,6 +398,7 @@
     "medical",
     "medicine",
     "menswear",
+    "mental",
     "merchandise",
     "method",
     "modality",
@@ -475,6 +482,7 @@
     "posture",
     "power",
     "predicate",
+    "preference",
     "prerequisite",
     "present",
     "profession",
@@ -675,6 +683,7 @@
     "weekday",
     "weekend",
     "wellness",
+    "westernFood",
     "winter",
     "winterSports",
     "womenswear",
@@ -685,7 +694,7 @@
     "writingTool"
   ],
   "tagCounts": {
-    "person": 103,
+    "person": 104,
     "nationality": 2,
     "attribute": 15,
     "koreanRoot": 9,
@@ -694,8 +703,8 @@
     "possessive": 3,
     "greeting": 10,
     "descriptive_person": 37,
-    "emotion": 33,
-    "place": 193,
+    "emotion": 36,
+    "place": 200,
     "country": 14,
     "devtest": 49,
     "questionWord": 19,
@@ -703,7 +712,7 @@
     "deictic": 24,
     "interrogative": 19,
     "properNoun": 3,
-    "honorific": 34,
+    "honorific": 35,
     "profession": 22,
     "sinoRoot": 42,
     "elder_noun": 27,
@@ -711,9 +720,9 @@
     "topic": 2,
     "declarative": 24,
     "present": 19,
-    "food": 111,
+    "food": 114,
     "food_bowl": 2,
-    "drink": 12,
+    "drink": 14,
     "descriptive_general": 88,
     "descriptive_dimension_scale": 2,
     "descriptive_food": 6,
@@ -722,7 +731,7 @@
     "intransitive_motion": 17,
     "locative_goal": 25,
     "motion_concord": 16,
-    "time": 127,
+    "time": 128,
     "temporal_present": 13,
     "no_time_particle": 21,
     "temporal_future": 13,
@@ -740,9 +749,9 @@
     "causal": 11,
     "clausal_connective": 18,
     "adverb": 41,
-    "modifier": 7,
+    "modifier": 8,
     "room": 12,
-    "demonstrative": 24,
+    "demonstrative": 25,
     "thing": 4,
     "medial": 6,
     "proximal": 6,
@@ -776,10 +785,10 @@
     "degree": 32,
     "weather": 28,
     "descriptive_weather": 8,
-    "quantity": 17,
+    "quantity": 18,
     "descriptive_acoustic": 2,
     "size": 2,
-    "location": 10,
+    "location": 16,
     "language": 12,
     "transitive_general": 160,
     "transitive_language": 1,
@@ -805,7 +814,7 @@
     "residence": 4,
     "building": 3,
     "work": 6,
-    "city": 8,
+    "city": 9,
     "descriptive_place": 7,
     "descriptive_difficulty": 3,
     "descriptive_dimension_spatial": 2,
@@ -819,10 +828,10 @@
     "descriptive_person_trait": 12,
     "location_action": 1,
     "direction": 13,
-    "number": 22,
+    "number": 23,
     "attributive": 10,
     "time_amount": 2,
-    "general": 35,
+    "general": 42,
     "measureWord": 41,
     "koreanMeasureWord": 24,
     "koreanNumber": 48,
@@ -833,7 +842,7 @@
     "evening": 1,
     "sinoNumber": 29,
     "education": 21,
-    "communication": 48,
+    "communication": 49,
     "task": 3,
     "sinoMeasureWord": 16,
     "transitive_information": 1,
@@ -864,7 +873,7 @@
     "transitive_drink": 2,
     "adverb_manner": 27,
     "manner": 23,
-    "social": 56,
+    "social": 57,
     "accompaniment": 1,
     "alcohol": 1,
     "bottle": 1,
@@ -917,7 +926,7 @@
     "document": 20,
     "commercial": 14,
     "adverb_time": 12,
-    "medical": 5,
+    "medical": 10,
     "clothing": 38,
     "accommodation": 7,
     "transitive_place": 4,
@@ -926,7 +935,7 @@
     "descriptive_emotion": 12,
     "interjection": 5,
     "history": 3,
-    "beverage": 5,
+    "beverage": 7,
     "promise": 2,
     "purpose": 2,
     "motion_purpose": 1,
@@ -992,11 +1001,11 @@
     "nominalizer": 2,
     "gerund": 2,
     "aspect": 16,
-    "cognition": 21,
+    "cognition": 22,
     "eyewear": 1,
     "transitive_footwear": 1,
     "transitive_headwear": 2,
-    "finance": 25,
+    "finance": 27,
     "adverbializer": 1,
     "inchoative": 1,
     "novelty": 1,
@@ -1028,8 +1037,8 @@
     "npi": 2,
     "reputation": 2,
     "intransitive_person": 6,
-    "connective": 27,
-    "business": 4,
+    "connective": 28,
+    "business": 6,
     "neighborhood": 4,
     "restaurant": 4,
     "information": 3,
@@ -1039,12 +1048,12 @@
     "appliance": 7,
     "furniture": 6,
     "sanitary": 1,
-    "spatial": 18,
+    "spatial": 20,
     "polite": 4,
     "progressive": 2,
     "condiment": 11,
     "spicy": 2,
-    "abstract": 49,
+    "abstract": 50,
     "station": 8,
     "subway": 7,
     "sweet": 1,
@@ -1066,7 +1075,7 @@
     "toiletry": 5,
     "commodity": 6,
     "bedding": 1,
-    "commerce": 34,
+    "commerce": 38,
     "accessory": 9,
     "jewelry": 4,
     "menswear": 1,
@@ -1086,9 +1095,9 @@
     "order": 6,
     "appearance": 6,
     "emphasis": 5,
-    "grammar": 48,
+    "grammar": 50,
     "pet": 2,
-    "action": 29,
+    "action": 38,
     "informal": 14,
     "wedding": 1,
     "ambiance": 1,
@@ -1120,7 +1129,7 @@
     "administration": 11,
     "schedule": 4,
     "internet": 9,
-    "technology": 17,
+    "technology": 18,
     "clausal": 2,
     "alternative": 3,
     "sentence_ending": 6,
@@ -1128,7 +1137,7 @@
     "banking": 12,
     "housing": 1,
     "kinship": 3,
-    "subject_animate": 11,
+    "subject_animate": 12,
     "security": 1,
     "transitive_bodyPart": 1,
     "starting_point": 1,
@@ -1137,7 +1146,7 @@
     "measurement": 13,
     "dimension": 8,
     "descriptive_dimension_height": 2,
-    "movement": 13,
+    "movement": 15,
     "number_unit": 3,
     "stationery": 3,
     "aviation": 3,
@@ -1151,11 +1160,11 @@
     "adverb_place": 2,
     "transitive_social": 1,
     "anatomy": 5,
-    "health": 38,
+    "health": 45,
     "conflict": 1,
     "place_outdoor": 5,
     "date": 1,
-    "state": 9,
+    "state": 10,
     "bound_noun": 11,
     "dining": 2,
     "personal_info": 1,
@@ -1182,12 +1191,12 @@
     "body_fluid": 1,
     "addition": 1,
     "linguistics": 3,
-    "medicine": 7,
+    "medicine": 8,
     "pharmacy": 6,
-    "body": 2,
+    "body": 6,
     "cosmetics": 2,
     "summer": 1,
-    "proper_noun": 24,
+    "proper_noun": 31,
     "concession": 1,
     "compromise": 1,
     "necessity": 1,
@@ -1248,12 +1257,12 @@
     "broadcast": 1,
     "proficiency": 1,
     "comitative": 1,
-    "auxiliary": 2,
+    "auxiliary": 3,
     "predicate": 1,
     "day": 1,
     "song": 1,
     "interest": 1,
-    "name": 14,
+    "name": 16,
     "formal_polite": 3,
     "exclamatory": 2,
     "sentence_ender": 1,
@@ -1265,7 +1274,7 @@
     "intransitive": 7,
     "posture": 1,
     "b_irregular": 1,
-    "speech": 5,
+    "speech": 6,
     "assistance": 1,
     "life_death": 2,
     "infix": 1,
@@ -1287,7 +1296,7 @@
     "exercise": 1,
     "inanimate": 1,
     "connective_adverb": 1,
-    "home": 2,
+    "home": 4,
     "domestic": 1,
     "confirmation": 1,
     "cultural": 1,
@@ -1295,7 +1304,7 @@
     "living": 1,
     "computer": 1,
     "action_verb": 3,
-    "people": 2,
+    "people": 3,
     "suffix": 1,
     "classification": 1,
     "goods": 2,
@@ -1342,7 +1351,16 @@
     "software": 1,
     "computing": 3,
     "grocery": 2,
-    "agriculture": 1
+    "agriculture": 1,
+    "westernFood": 1,
+    "description": 2,
+    "clause": 1,
+    "mental": 2,
+    "conversation": 1,
+    "preference": 2,
+    "daily": 1,
+    "manual": 1,
+    "existential": 1
   },
   "honorificRules": [
     "Action verbs only; identical subject required; negative outcome in second clause; no past tense in first clause",
@@ -1411,7 +1429,9 @@
     "Used with close peers or younger people",
     "Used with peers, children, or in writing",
     "Used with respected elders and superiors",
-    "Usually addressed with honorific 님 (부장님)"
+    "Usually addressed with honorific 님 (부장님)",
+    "{\"subject\":678,\"seniority\":\"senior\"}",
+    "{\"subject\":678}"
   ],
   "honorificCounts": {
     "Replace with 성함 for respected subjects": 1,
@@ -1480,7 +1500,9 @@
     "Use 안녕하세요 with elders or unfamiliar people": 1,
     "Informal reference; do not use with superiors": 1,
     "Use 글쎄요 in polite speech": 1,
-    "Formal polite interrogative sentence ending (hasipsio-che)": 1
+    "Formal polite interrogative sentence ending (hasipsio-che)": 1,
+    "{\"subject\":678}": 10,
+    "{\"subject\":678,\"seniority\":\"senior\"}": 1
   },
   "semanticVectors": {
     "keys": [
@@ -1491,6 +1513,7 @@
       "allomorph_pair",
       "allomorph_patterns",
       "attribute",
+      "beverage_type",
       "classifier_spec",
       "clause1_pos",
       "clause1_tense_allowed",
@@ -1504,6 +1527,7 @@
       "direction",
       "domain",
       "facility_type",
+      "food_type",
       "forbidden_negative_root",
       "honorific",
       "honorific_suppletion",
@@ -1533,6 +1557,7 @@
       "proximity",
       "register",
       "req",
+      "role",
       "same_subject",
       "sandhi",
       "scope",
@@ -1568,6 +1593,7 @@
       "case",
       "causal",
       "classification",
+      "clausal",
       "clothing",
       "cognition",
       "color",
@@ -1581,8 +1607,10 @@
       "cooking",
       "counter",
       "culture",
+      "daily",
       "degree",
       "deixis",
+      "demonstrative",
       "device",
       "dimension",
       "direction",
@@ -1622,6 +1650,7 @@
       "location",
       "manner",
       "media",
+      "medical",
       "modality",
       "motion",
       "movement",
@@ -1631,6 +1660,7 @@
       "object",
       "occupation",
       "order",
+      "organization",
       "people",
       "perception",
       "person",
@@ -1675,15 +1705,19 @@
       "abstract",
       "action",
       "addition",
+      "address",
       "beach",
       "beverage",
       "bound_noun",
+      "brand",
       "cafe",
       "card",
+      "cart",
       "circumstance",
       "city",
       "classification",
       "concern",
+      "concrete",
       "condiment",
       "counter",
       "country",
@@ -1697,6 +1731,7 @@
       "exercise",
       "explanation",
       "facility",
+      "fee",
       "focus",
       "foreign",
       "furniture",
@@ -1712,13 +1747,17 @@
       "manner",
       "meal",
       "memory",
+      "modifier",
       "mountain",
       "name",
       "national",
       "natural_phenomenon",
       "necessity",
+      "neighborhood",
       "operation",
+      "order",
       "organization",
+      "payment",
       "performance",
       "person",
       "person_name",
@@ -1748,7 +1787,8 @@
     "polarities": [
       -1,
       0,
-      1
+      1,
+      "negative"
     ],
     "keyValues": {
       "action": [
@@ -1823,6 +1863,9 @@
       "attribute": [
         "sky",
         "temperature"
+      ],
+      "beverage_type": [
+        "soda"
       ],
       "classifier_spec": [
         "{\"tags\":[\"age\"],\"fallbackTag\":\"age\",\"priority\":95}",
@@ -1982,6 +2025,7 @@
         "case",
         "causal",
         "classification",
+        "clausal",
         "clothing",
         "cognition",
         "color",
@@ -1995,8 +2039,10 @@
         "cooking",
         "counter",
         "culture",
+        "daily",
         "degree",
         "deixis",
+        "demonstrative",
         "device",
         "dimension",
         "direction",
@@ -2036,6 +2082,7 @@
         "location",
         "manner",
         "media",
+        "medical",
         "modality",
         "motion",
         "movement",
@@ -2045,6 +2092,7 @@
         "object",
         "occupation",
         "order",
+        "organization",
         "people",
         "perception",
         "person",
@@ -2088,10 +2136,14 @@
       "facility_type": [
         "restaurant"
       ],
+      "food_type": [
+        "noodle"
+      ],
       "forbidden_negative_root": [
         true
       ],
       "honorific": [
+        "senior",
         true
       ],
       "honorific_suppletion": [
@@ -2250,6 +2302,7 @@
         "time_expression",
         "time_marker",
         "topic",
+        "uncertainty",
         "universal"
       ],
       "mood": [
@@ -2322,7 +2375,8 @@
       "polarity": [
         -1,
         0,
-        1
+        1,
+        "negative"
       ],
       "polarity_requirement": [
         -1
@@ -2538,11 +2592,15 @@
         "person",
         "place",
         "racketSports",
+        "subject",
         "ticket",
         "transportation",
         "umbrella",
         "vehicle",
         "weather"
+      ],
+      "role": [
+        "customer"
       ],
       "same_subject": [
         false,
@@ -2648,15 +2706,19 @@
         "abstract",
         "action",
         "addition",
+        "address",
         "beach",
         "beverage",
         "bound_noun",
+        "brand",
         "cafe",
         "card",
+        "cart",
         "circumstance",
         "city",
         "classification",
         "concern",
+        "concrete",
         "condiment",
         "counter",
         "country",
@@ -2670,6 +2732,7 @@
         "exercise",
         "explanation",
         "facility",
+        "fee",
         "focus",
         "foreign",
         "furniture",
@@ -2685,13 +2748,17 @@
         "manner",
         "meal",
         "memory",
+        "modifier",
         "mountain",
         "name",
         "national",
         "natural_phenomenon",
         "necessity",
+        "neighborhood",
         "operation",
+        "order",
         "organization",
+        "payment",
         "performance",
         "person",
         "person_name",
@@ -2907,7 +2974,8 @@
       },
       "quantity": {
         "types": [
-          "determiner"
+          "determiner",
+          "modifier"
         ],
         "actions": [],
         "traits": []
@@ -2919,6 +2987,7 @@
       },
       "communication": {
         "types": [
+          "concrete",
           "explanation"
         ],
         "actions": [
@@ -2970,7 +3039,9 @@
         "traits": []
       },
       "body": {
-        "types": [],
+        "types": [
+          "concrete"
+        ],
         "actions": [],
         "traits": []
       },
@@ -3126,7 +3197,9 @@
         "traits": []
       },
       "order": {
-        "types": [],
+        "types": [
+          "abstract"
+        ],
         "actions": [],
         "traits": []
       },
@@ -3146,15 +3219,19 @@
         "traits": []
       },
       "spatial": {
-        "types": [],
+        "types": [
+          "concrete"
+        ],
         "actions": [],
         "traits": []
       },
       "location": {
         "types": [
+          "address",
           "city",
           "country",
           "district",
+          "neighborhood",
           "restaurant",
           "road",
           "station"
@@ -3260,7 +3337,9 @@
         "traits": []
       },
       "finance": {
-        "types": [],
+        "types": [
+          "payment"
+        ],
         "actions": [],
         "traits": []
       },
@@ -3473,7 +3552,10 @@
       "commerce": {
         "types": [
           "action",
+          "cart",
+          "fee",
           "goods",
+          "order",
           "place",
           "scope",
           "voucher"
@@ -3517,6 +3599,40 @@
       "audio": {
         "types": [
           "voice"
+        ],
+        "actions": [],
+        "traits": []
+      },
+      "organization": {
+        "types": [
+          "brand"
+        ],
+        "actions": [],
+        "traits": []
+      },
+      "medical": {
+        "types": [
+          "concrete",
+          "person"
+        ],
+        "actions": [],
+        "traits": []
+      },
+      "clausal": {
+        "types": [],
+        "actions": [],
+        "traits": []
+      },
+      "daily": {
+        "types": [
+          "abstract"
+        ],
+        "actions": [],
+        "traits": []
+      },
+      "demonstrative": {
+        "types": [
+          "modifier"
         ],
         "actions": [],
         "traits": []
