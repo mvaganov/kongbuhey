@@ -445,7 +445,7 @@ function analyzeSentence(sentText, sentenceIndex = 1, explicitIndex = null) {
 		const prev = i > 0 ? rawWords[i - 1] : "";
 		const next = i < rawWords.length - 1 ? rawWords[i + 1] : "";
 		const res = analyzeSingleToken(rawWords[i], prev, next, sentenceContext, index);
-		tokens.push(res);
+		if (res) tokens.push(res);
 		i++;
 	}
 

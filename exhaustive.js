@@ -224,6 +224,17 @@ function runSemanticTests(currentGrammarUnits) {
 		});
 	}
 
+	// Exercise in-scope Determiner units if present
+	const inScopeDeterminers = getFilteredWords("Determiner");
+	if (inScopeDeterminers.length > 0) {
+		const detOptions = generateTemplateTokenOptions("{Determiner} {Noun}", 0);
+		detOptions.forEach(opt => {
+			if (opt.units) opt.units.forEach(u => markUnitUsed(u));
+			const resolved = applyMorphology(opt.text);
+			validateSentence(resolved, "Determiner phrase");
+		});
+	}
+
 	// Also run contextual semantic samples on current source grammar templates
 	if (currentGrammarUnits && currentGrammarUnits.length > 0) {
 		console.log("\n--- Source Grammar Semantic Generation ---");

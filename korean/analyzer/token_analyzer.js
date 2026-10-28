@@ -34,7 +34,7 @@ const { getIndex } =
  * @returns {Object|null} Decomposed token structure or null
  */
 function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceContext = {}, explicitIndex = null) {
-	const word = rawWord.replace(/['"‘’“”]/g, '').replace(/^[^\w가-힣]+|[^\w가-힣]+$/g, '');
+	const word = rawWord.replace(/['"‘’“”()[\]{}]/g, '').replace(/^[^\w가-힣]+|[^\w가-힣]+$/g, '');
 	if (!word) return null;
 	if (!/[가-힣]/.test(word)) return null; // Ignore pure ASCII metadata (emails, URLs)
 

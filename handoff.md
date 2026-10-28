@@ -5,8 +5,8 @@
 
 ### Development Roadmap
 - **Phase 1 [COMPLETE]**: Core Morphology, Semantic Rule Matrix (Features F1–F11), Statutory Pronunciation Engine, and English/European-Readable Phoneme Transliteration.
-- **Phase 1.5 [ACTIVE]**: Curriculum study text ingestion from `studytexts.js` (25 passages completed through `studytext151`; `studytext152` next).
-- **Phase 2 [UPCOMING]**: Interactive Study & Flashcard UI with real-time passage decomposition, toggleable LUT tokens, and multi-voice TTS audio playback.
+- **Phase 1.5 [COMPLETE]**: Curriculum study text ingestion from `studytexts.js` (All 28 passages completed through `studytext162`; 0 curriculum gaps across entire corpus).
+- **Phase 2 [ACTIVE / UPCOMING]**: Interactive Study & Flashcard UI with real-time passage decomposition, toggleable LUT tokens, and multi-voice TTS audio playback.
 - **Phase 3 [FUTURE]**: Adaptive Quiz UI and pedagogical spaced-repetition trainer.
 
 ---
@@ -15,7 +15,7 @@
 
 ```
 kongbuhey/
-├── data.js                     # Single point of truth: 12-element schema & 1,855 language units
+├── data.js                     # Single point of truth: 12-element schema & 2,006 language units
 ├── schema_summary.json         # High-speed cached taxonomies (POS, tags, domains, honorifics)
 ├── schema_analysis.js          # Taxonomy extractor & smart draft unit scaffolder (stem deduction & deduplication)
 ├── select.js                   # CLI/module: SQL-like query, update, insert & schema alteration
@@ -47,19 +47,19 @@ kongbuhey/
 │       ├── verb_argument_specs.js # Declarative valency and case particles
 │       ├── pronunciation_rules.js # Statutory exception maps, saisori, Sino-Korean compounds
 │       └── honorific_specs.js  # Seniority, titles, suppletive verbs/nouns
-├── test/                       # 13 isolated test suites (concord, phonetics, clausal, analyzer)
+├── test/                       # 14 isolated test suites (concord, phonetics, clausal, analyzer)
 └── history/                    # Historical documentation, previous handoffs, migration scripts
 ```
 
 ### Key Modules Summary
 1. **`data.js`**: 12-column schema array (`[Id, Korean, English, POS, SemanticTags, Disambiguation, ConjugationRules, Source, PriorityScore, FormalityLevel, HonorificRules, SemanticVector]`).
-   - 1,845 units sequentially indexed 0..1844 with zero TODOs.
+   - 2,006 units sequentially indexed 0..2005 with zero TODOs.
    - Houses all vocabulary, counting classifiers, honorific titles, origin/goal/static locatives, humble verbs, and clausal connectives.
 2. **`korean.js` & `korean/`**:
    - `korean/phonetics/pronunciation.js`: Standard Korean Pronunciation (국립국어원 표준 발음법) implementing statutory exceptions (제10항/제11항 coda dissimilation, 제15항 substantive boundary liaison, 제16항 letter name liaison, 제20항 Sino-Korean non-lateralization, 제24항 passive/causative non-tensification, 제26항 reduplicated Hanja, 제28항 saisori, 제29항 compound [ㄴ] insertion).
    - `korean/phonetics/english_phonemes.js`: Transliterates Korean text into Latin phonetic script optimized for browser speech synthesizers (English, French, Polish).
    - `korean/core/morphology.js`: Robust agglutinative morphology engine resolving batchim allomorphs, vowel harmony, irregulars (ㄷ, ㅂ, ㅅ, 르, ㅡ, ㅎ, ㄹ), and copula contractions.
-3. **`select.js`**: Query, filter, update, and insert units using familiar SQL-like syntax without loading all 1,845 rows into LLM context.
+3. **`select.js`**: Query, filter, update, and insert units using familiar SQL-like syntax without loading all 2,006 rows into LLM context.
 4. **`text_analyzer.js` & `korean/analyzer/`**: Decomposes natural Korean passages into constituent learning units, resolving homonyms and identifying curriculum gaps. Refactored into a modular, zero-dependency engine optimized for both Node CLI and interactive web browser execution (<5ms per passage).
 5. **`ingest.js`**: Unified CLI pipeline automating passage decomposition, stem deduction hints, draft filtering, unit insertion, homonym synchronization, and test verification in one command.
 6. **`tts_demo.html`**: Visual and auditory testbed for evaluating browser `window.speechSynthesis` voices with customizable styles (`natural`, `hyphenated`, `spaced`) and pitch/rate controls.
@@ -113,41 +113,29 @@ kongbuhey/
 ---
 
 ## 4. Current Status & Verification
-- **Dataset**: 1,966 units (100% valid, 0 TODOs, sequential IDs 0..1965).
-- **Homonym Dictionary**: 3,454 tokens mapped, 0 broken links.
-- **Ingested Passages (Phase 1.5)**: `studytext12`, `studytext21`, `studytext22`, `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`, `studytext131`, `studytext132`, `studytext141`, `studytext142`, `studytext151` (100% recognized, 0 curriculum gaps across 25 passages).
+- **Dataset**: 2,006 units (100% valid, 0 TODOs, sequential IDs 0..2005).
+- **Homonym Dictionary**: 3,539 tokens mapped, 0 broken links.
+- **Ingested Passages (Phase 1.5 - COMPLETE)**: `studytext12`, `studytext21`, `studytext22`, `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`, `studytext131`, `studytext132`, `studytext141`, `studytext142`, `studytext151`, `studytext152`, `studytext161`, `studytext162` (100% recognized, 0 curriculum gaps across all 28 passages).
 - **Master Test Suite (`node test.js`)**:
   - Stage 0: Code Quality & Static Hygiene [ PASS ] (Limits, browser purity, FK integrity, 0 magic IDs)
-  - Stage 1: Schema & Data Integrity [ PASS ] (1,966 units, sequential IDs 0..1965)
-  - Stage 2: Schema Taxonomy Sync [ PASS ] (9 POS, 658 tags, 123 domains)
-  - Stage 3: Homonym Dictionary Sync [ PASS ] (3,454 tokens)
-  - Stage 4: Exhaustive Sentence Generation [ PASS ] (7,569 sentences, 0 errors)
-  - Stage 5: Text Analyzer Passage Check [ PASS ] (25 passages: 0 gaps)
-  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 6,106 assertions passed)
+  - Stage 1: Schema & Data Integrity [ PASS ] (2,006 units, sequential IDs 0..2005)
+  - Stage 2: Schema Taxonomy Sync [ PASS ] (9 POS, 667 tags, 128 domains)
+  - Stage 3: Homonym Dictionary Sync [ PASS ] (3,539 tokens)
+  - Stage 4: Exhaustive Sentence Generation [ PASS ] (3,403 sentences, 0 errors)
+  - Stage 5: Text Analyzer Passage Check [ PASS ] (28 passages: 0 gaps)
+  - Stage 6: Semantic & Honorific Concord [ PASS ] (13 suites, 6,166 assertions passed)
 - **Modular Analyzer Suite (`node test/analyzer_modular_test.js`)**: 14/14 tests passed, browser-clean (zero Node dependencies).
 
 ---
 
-## 5. Immediate Next Steps
+## 5. Next Steps
 
-### 1. Ingest Next Study Text: `studytext152` (Phase 1.5)
-Target passage: `studytext152` (`헤이 피자 / 전화 / 배달 시간 매일 오전 11:00-오후 11:00...`)
-Execute with the unified single-command pipeline:
-```bash
-# Preview gaps and morphology hints without modifying data
-node ingest.js studytext152 --dry-run
-
-# Run full ingestion, confirmation, synchronization, and test suite in one pass
-node ingest.js studytext152
-```
-
-> [!NOTE]
-> **Study Text Provenance & OCR Formatting Policy**:
-> Almost all study texts in [`studytexts.js`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/studytexts.js) are copy/pasted from OCR interpretations of printed textbook materials. Consequently, texts may contain strange formatting or erroneous tokens, with **whitespace having the highest likelihood of error** (e.g., intra-word splits from justified columns, or missing spaces before counter numbers).
-> - **Not a License for Broad Editing**: This context is an explanation of why text may appear irregularly formatted, **not a license to disregard or rewrite the study texts**.
-> - **Developer Notification Required**: In the future, targeted corrections to study texts in [`studytexts.js`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/studytexts.js) (such as fixing obvious OCR letter-spacing splits) are permitted when necessary, but **all such changes must be clearly identified and reported to the developer**.
-
-### 2. Interactive Study & Flashcard Web App (Phase 2)
-- Build the core study UI (`index.html`, `index.css`) utilizing rich modern aesthetics (glassmorphism, clean typography, dark theme, fluid animations).
-- Provide live sentence generation, self-scoring flashcards, toggleable LUT tokens, and native Korean TTS audio playback.
+### Interactive Study & Flashcard Web App (Phase 2)
+1. **Interactive Study Web Interface (`index.html`, `index.css`, `app.js`)**:
+   - Modern, aesthetic client-side single-page app (dark theme, glassmorphism, responsive).
+   - Real-time passage decomposition viewer showing sentence trees, vocabulary cards, grammar rules, and particle breakdowns.
+   - Flashcard study mode with confidence scoring, spaced repetition, and vocabulary search.
+   - Built-in Korean SpeechSynthesis (`window.speechSynthesis`) integration with audio playback.
+2. **Additional Curricula / Study Texts**:
+   - If further study texts (e.g. `studytext171`+) are introduced to `studytexts.js`, ingest via `node ingest.js <source>`.
 
