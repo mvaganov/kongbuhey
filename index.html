@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Kongbuhey (공부해) — Language Units Spreadsheet & Study Manager</title>
+	<link rel="stylesheet" href="index.css">
+</head>
+<body>
+	<!-- Top SPA Navigation & Status Header -->
+	<header class="app-header">
+		<div class="brand-group">
+			<div class="brand-logo">공</div>
+			<div>
+				<h1 class="brand-title">Kongbuhey <span class="brand-ko">공부해</span></h1>
+				<p class="brand-subtitle">Local-First Korean Language Units Manager &amp; Practice Set Builder</p>
+			</div>
+		</div>
+
+		<!-- SPA View Switcher (No page reloads; keeps data.js in memory) -->
+		<nav class="spa-nav" role="tablist" aria-label="Application Views">
+			<button type="button" class="spa-tab active" data-view="spreadsheet" role="tab" aria-selected="true">
+				<span>📊 Language Units Spreadsheet</span>
+			</button>
+			<button type="button" class="spa-tab" data-view="practice" role="tab" aria-selected="false">
+				<span>🗂️ Practice Set &amp; Flashcard Queue</span>
+				<span id="nav-inset-badge" class="tab-badge">0</span>
+			</button>
+		</nav>
+
+		<!-- Live Telemetry & DB Status -->
+		<div class="status-cluster">
+			<div class="stat-pill" title="Total Language Units loaded from data.js">
+				<span class="stat-label">Total Units</span>
+				<span id="stat-total-units" class="stat-value">0</span>
+			</div>
+			<div class="stat-pill stat-pill-emerald" title="Units with InSet = true">
+				<span class="stat-label">In Practice Set</span>
+				<span id="stat-inset-units" class="stat-value">0</span>
+			</div>
+			<div class="stat-pill" title="Browser IndexedDB Persistence Status">
+				<span id="db-status-dot" class="status-dot status-online"></span>
+				<span id="db-status-text" class="stat-label">DB Synced</span>
+			</div>
+		</div>
+	</header>
+
+	<!-- ===================================================================== -->
+	<!-- VIEW 1: VIRTUALIZED LANGUAGE UNITS SPREADSHEET                        -->
+	<!-- ===================================================================== -->
+	<main id="view-spreadsheet" class="spa-view active">
+		<!-- Control Toolbar -->
+		<section class="sheet-toolbar">
+			<div class="toolbar-row">
+				<!-- Search & Filters -->
+				<div class="filter-group">
+					<div class="search-box">
+						<span class="search-icon">🔍</span>
+						<input type="search" id="filter-search" placeholder="Search Korean, English, tags, notes, ID..." autocomplete="off">
+					</div>
+
+					<select id="filter-pos" class="toolbar-select" title="Filter by Part of Speech">
+						<option value="">All Parts of Speech</option>
+					</select>
+
+					<select id="filter-source" class="toolbar-select" title="Filter by Curriculum Source">
+						<option value="">All Sources</option>
+					</select>
+
+					<select id="filter-inset" class="toolbar-select" title="Filter by Practice Set Selection (InSet)">
+						<option value="all">All Units (InSet &amp; Unselected)</option>
+						<option value="inSet">★ In Practice Set Only (InSet = true)</option>
+						<option value="notInSet">Unselected Only (InSet = false)</option>
+					</select>
+
+					<button type="button" id="btn-clear-filters" class="btn btn-ghost" title="Clear search and filter criteria">
+						Clear Filters
+					</button>
+				</div>
+
+				<!-- Practice Set Bulk Actions -->
+				<div class="action-group">
+					<button type="button" id="btn-select-filtered" class="btn btn-emerald" title="Set InSet = true for all currently filtered rows">
+						✓ Add Filtered to Set
+					</button>
+					<button type="button" id="btn-unselect-filtered" class="btn btn-secondary" title="Set InSet = false for all currently filtered rows">
+						✕ Remove Filtered from Set
+					</button>
+				</div>
+			</div>
+
+			<div class="toolbar-row toolbar-row-secondary">
+				<!-- Column Color Key & Row Stats -->
+				<div class="legend-group">
+					<span class="legend-item">
+						<span class="legend-swatch swatch-default"></span>
+						<span><strong>Default Columns</strong> (<code>data.js</code> · Editable, Non-Deletable)</span>
+					</span>
+					<span class="legend-item">
+						<span class="legend-swatch swatch-custom"></span>
+						<span><strong>Additional Columns</strong> (Browser DB · Creatable, Editable, Deletable)</span>
+					</span>
+					<span class="showing-counter">
+						Showing <strong id="stat-filtered-count">0</strong> rows · <strong id="stat-visible-cols">0</strong>/<span id="stat-total-cols">0</span> columns
+					</span>
+				</div>
+
+				<!-- Column & View Settings Controls -->
+				<div class="view-controls-group">
+					<button type="button" id="btn-add-column" class="btn btn-primary">
+						+ New Column
+					</button>
+					<button type="button" id="btn-manage-columns" class="btn btn-secondary">
+						⚙ Columns &amp; Order
+					</button>
+					<button type="button" id="btn-reset-visibility" class="btn btn-secondary" title="Show all hidden columns">
+						👁 Reset Visibility
+					</button>
+					<button type="button" id="btn-reset-sort" class="btn btn-secondary" title="Reset column sorting and restore default row order (Id 0..N)">
+						⇅ Reset Sort &amp; Row Order
+					</button>
+					<button type="button" id="btn-reset-all-view" class="btn btn-ghost" title="Reset column widths, order, visibility, and row order to defaults">
+						↺ Reset View
+					</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- Virtualized Spreadsheet Mount Container -->
+		<section id="spreadsheet-container" class="spreadsheet-container" aria-label="Language Units Spreadsheet"></section>
+	</main>
+
+	<!-- ===================================================================== -->
+	<!-- VIEW 2: PRACTICE SET & FLASHCARD QUEUE PREVIEW                        -->
+	<!-- ===================================================================== -->
+	<main id="view-practice" class="spa-view">
+		<div class="practice-layout">
+			<section class="practice-header-card">
+				<div>
+					<h2>Practice Set &amp; Flashcard Evaluation Queue</h2>
+					<p>
+						Displays language units marked <code>InSet = true</code> in the spreadsheet, prioritized by
+						<code>LongTermRecognition</code>, <code>RecognitionScore</code>, <code>TimeStampLastSeen</code>, and <code>TimeStampLastCorrect</code>.
+					</p>
+				</div>
+				<div class="practice-header-actions">
+					<button type="button" id="btn-practice-back-to-sheet" class="btn btn-secondary">
+						← Back to Spreadsheet
+					</button>
+				</div>
+			</section>
+
+			<!-- Interactive Flashcard Tester Card -->
+			<section id="flashcard-stage" class="flashcard-stage">
+				<!-- Populated dynamically by app.js -->
+			</section>
+
+			<!-- Sorted Queue Table -->
+			<section class="practice-queue-card">
+				<h3>Prioritized Flashcard Queue (<span id="practice-queue-count">0</span> Units)</h3>
+				<div class="practice-queue-table-wrap">
+					<table class="practice-queue-table">
+						<thead>
+							<tr>
+								<th>Queue #</th>
+								<th>ID</th>
+								<th>Korean</th>
+								<th>English</th>
+								<th>POS</th>
+								<th>RecognitionScore</th>
+								<th>LongTermRecognition</th>
+								<th>Last Correct</th>
+								<th>Last Seen</th>
+								<th>Notes</th>
+								<th>Quick Action</th>
+							</tr>
+						</thead>
+						<tbody id="practice-queue-tbody"></tbody>
+					</table>
+				</div>
+			</section>
+		</div>
+	</main>
+
+	<!-- ===================================================================== -->
+	<!-- MODAL 1: CREATE / EDIT ADDITIONAL COLUMN                              -->
+	<!-- ===================================================================== -->
+	<div id="modal-column-form" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-col-title">
+		<div class="modal-card">
+			<div class="modal-header">
+				<h2 id="modal-col-title">Create Additional Column</h2>
+				<button type="button" id="btn-close-col-modal" class="modal-close-btn" aria-label="Close">×</button>
+			</div>
+			<form id="form-custom-column" class="modal-body">
+				<input type="hidden" id="col-original-key" value="">
+
+				<div class="form-field">
+					<label for="col-input-key">Column Name (Key)</label>
+					<input type="text" id="col-input-key" required placeholder="e.g. DifficultyRating, StudyGroup, AudioVerified">
+				</div>
+
+				<div class="form-field">
+					<label for="col-input-type">Data Type</label>
+					<select id="col-input-type">
+						<option value="string">string (Text)</option>
+						<option value="int">int (Integer Number)</option>
+						<option value="float">float (Decimal Number)</option>
+						<option value="boolean">boolean (True / False Checkbox)</option>
+						<option value="unixTime">unixTime (Unix Timestamp Seconds)</option>
+						<option value="enum">enum (Fixed Set of Options)</option>
+					</select>
+				</div>
+
+				<div id="field-enum-options" class="form-field hidden">
+					<label for="col-input-enum">Enum Options (comma-separated)</label>
+					<input type="text" id="col-input-enum" placeholder="e.g. unknown, recognized, definitionKnown, knownByDefinition">
+				</div>
+
+				<div class="form-field">
+					<label for="col-input-default">Default Value</label>
+					<input type="text" id="col-input-default" placeholder="Default value for units without an entry">
+				</div>
+
+				<div class="form-field">
+					<label for="col-input-desc">Description (Optional)</label>
+					<input type="text" id="col-input-desc" placeholder="Purpose of this column">
+				</div>
+
+				<div id="col-form-error" class="form-error hidden"></div>
+
+				<div class="modal-footer">
+					<button type="button" id="btn-cancel-col-modal" class="btn btn-ghost">Cancel</button>
+					<button type="submit" id="btn-submit-col-modal" class="btn btn-primary">Save Column</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- ===================================================================== -->
+	<!-- MODAL 2: COLUMN VISIBILITY, ORDER & SCHEMA MANAGER                    -->
+	<!-- ===================================================================== -->
+	<div id="modal-columns-manager" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-mgr-title">
+		<div class="modal-card modal-card-wide">
+			<div class="modal-header">
+				<h2 id="modal-mgr-title">Manage Columns (Visibility, Order &amp; Custom Schema)</h2>
+				<button type="button" id="btn-close-mgr-modal" class="modal-close-btn" aria-label="Close">×</button>
+			</div>
+			<div class="modal-body">
+				<div class="mgr-toolbar">
+					<button type="button" id="btn-mgr-show-all" class="btn btn-secondary">Show All Columns</button>
+					<button type="button" id="btn-mgr-restore-initial" class="btn btn-secondary" title="Ensure all 6 initial flashcard columns exist">Restore Initial Flashcard Columns</button>
+					<button type="button" id="btn-mgr-new-col" class="btn btn-primary">+ Create New Column</button>
+				</div>
+				<div id="columns-manager-list" class="columns-manager-list"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" id="btn-done-mgr-modal" class="btn btn-primary">Done</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- ===================================================================== -->
+	<!-- MODAL 3: MOVE ROW TO POSITION                                         -->
+	<!-- ===================================================================== -->
+	<div id="modal-move-row" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-row-title">
+		<div class="modal-card">
+			<div class="modal-header">
+				<h2 id="modal-row-title">Move Row Position</h2>
+				<button type="button" id="btn-close-row-modal" class="modal-close-btn" aria-label="Close">×</button>
+			</div>
+			<form id="form-move-row" class="modal-body">
+				<input type="hidden" id="move-row-unit-id" value="">
+				<p id="move-row-info" class="modal-helper-text"></p>
+				<div class="form-field">
+					<label for="move-row-target-pos">Target Row Position (1-based)</label>
+					<input type="number" id="move-row-target-pos" min="1" required>
+				</div>
+				<div class="modal-footer">
+					<button type="button" id="btn-move-row-top" class="btn btn-secondary">Move to Top (1)</button>
+					<button type="button" id="btn-move-row-bottom" class="btn btn-secondary">Move to Bottom</button>
+					<button type="submit" class="btn btn-primary">Move Row</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- Local File System Scripts (Standard script tags for file:// compatibility) -->
+	<script src="data.js"></script>
+	<script src="db.js"></script>
+	<script src="spreadsheet.js"></script>
+	<script src="app.js"></script>
+</body>
+</html>
+

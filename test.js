@@ -89,7 +89,10 @@ function runTests(options = {}) {
 			'korean/analyzer/verb_morphology.js': 700,
 			'korean/analyzer/verb_suffix_rules.js': 500,
 			'korean/analyzer/token_analyzer.js': 600,
-			'korean/analyzer/sentence_analyzer.js': 500
+			'korean/analyzer/sentence_analyzer.js': 500,
+			'db.js': 700,
+			'spreadsheet.js': 1400,
+			'app.js': 900
 		};
 		for (const [relPath, maxLines] of Object.entries(FILE_LIMITS)) {
 			const fullP = path.resolve(__dirname, relPath);
@@ -431,7 +434,8 @@ function runTests(options = {}) {
 			{ name: "Dynamic Semantic Sets", path: path.resolve(__dirname, 'test', 'dynamic_semantic_sets_test.js') },
 			{ name: "Pronunciation Exceptions", path: path.resolve(__dirname, 'test', 'pronunciation_exceptions_test.js') },
 			{ name: "English Phonemes Transliteration", path: path.resolve(__dirname, 'test', 'english_phonemes_test.js') },
-			{ name: "Text Analyzer Modular Subsystem", path: path.resolve(__dirname, 'test', 'analyzer_modular_test.js') }
+			{ name: "Text Analyzer Modular Subsystem", path: path.resolve(__dirname, 'test', 'analyzer_modular_test.js') },
+			{ name: "Spreadsheet UI & Database", path: path.resolve(__dirname, 'test', 'spreadsheet_ui_test.js') }
 		];
 
 		let totalAssertions = 0;
