@@ -1,21 +1,19 @@
 /**
  * ============================================================================
- * spreadsheet.js - Virtualized Language Unit Spreadsheet UI & State Engine
+ * webapp/spreadsheet.js - Virtualized Language Unit Spreadsheet UI & Engine
  * ============================================================================
  *
  * Features:
  *   - Displays all 2,006+ language units from data.js with virtual scrolling
  *     (only rows visible in the scroll viewport + small overscan are rendered).
+ *   - Single unified scroll container so header & body rows scroll horizontally
+ *     in 100% native lockstep, with sticky left "# Order" column (both header
+ *     and body cells) and resizable "# Order" column width.
+ *   - Overlapping / hierarchical multi-column sorting (sortStack): sorting by
+ *     English and then sorting by Source groups primarily by Source while
+ *     keeping units alphabetically sorted by English within each Source.
  *   - Distinct visual styling for Default columns (from data.js) vs.
  *     Additional columns (user-created & flashcard columns stored in IndexedDB).
- *   - Default columns: editable in-place, not deletable.
- *   - Additional columns: creatable, editable (schema & cells), and deletable.
- *   - Column operations: resize (drag handle), reorder (drag & drop / buttons),
- *     hide (header button & column manager), reset visibility.
- *   - Row operations: reorder (drag & drop handle / move), sort by clicking
- *     column header sort button (ascending/descending toggle), reset sort/order.
- *   - Asynchronous non-blocking loading from KongbuheyDB with full persistence
- *     of cell data and view settings across page refreshes.
  */
 
 const _dbModule = (typeof DEFAULT_COLUMNS_SPEC === 'undefined' && typeof require === 'function')
@@ -28,6 +26,8 @@ const _coerceColumnValue = typeof coerceColumnValue !== 'undefined'
 	? coerceColumnValue
 	: (_dbModule.coerceColumnValue || (v => v));
 
+const DEFAULT_ROW_HANDLE_WIDTH = 76;
+
 class SpreadsheetEngine {
 	constructor(options = {}) {
 		this.db = options.db;
@@ -38,7 +38,7 @@ class SpreadsheetEngine {
 		// Virtualization parameters
 		this.rowHeight = options.rowHeight || 38;
 		this.overscan = options.overscan !== undefined ? options.overscan : 6;
-		this.rowHandleWidth = 76;
+		this.rowHandleWidth = options.rowHandleWidth || DEFAULT_ROW_HANDLE_WIDTH;
 
 		// Column definitions: merged Default (data.js) + Custom (DB)
 		this.defaultColumns = _DEFAULT_COLUMNS_SPEC.map(c => ({ ...c }));
@@ -50,7 +50,8 @@ class SpreadsheetEngine {
 		this.columnWidths = {};
 		this.columnVisibility = {};
 		this.rowOrder = []; // Master ordered list of unitIds (0..N-1)
-		this.sortState = { columnKey: null, direction: null }; // 'asc' | 'desc' | null
+		this.sortState = { columnKey: null, direction: null }; // Primary sort state
+		this.sortStack = []; // Array<{ columnKey, direction }> for overlapping multi-column sorts
 
 		// Search & filter state (non-destructive overlay on rowOrder)
 		this.searchQuery = '';
@@ -77,21 +78,14 @@ class SpreadsheetEngine {
 		this.rafPending = false;
 	}
 
-	/**
-	 * Initializes the spreadsheet state: sets up default columns, loads custom
-	 * columns and view settings from DB, renders immediately, and triggers
-	 * asynchronous unit record loading.
-	 */
 	async init() {
 		await this.db.open();
 		this.customColumns = await this.db.getCustomColumns();
 		this._rebuildColumnMap();
 
-		// Initialize canonical row order [0 .. N-1]
 		const totalUnits = this.rawUnits.length;
 		const canonicalIds = Array.from({ length: totalUnits }, (_, idx) => idx);
 
-		// Restore persisted view settings if present
 		const savedView = await this.db.getViewSettings();
 		this._applyViewSettings(savedView, canonicalIds);
 		this._recomputeFilteredRows();
@@ -101,7 +95,6 @@ class SpreadsheetEngine {
 			this.renderViewport();
 		}
 
-		// Start asynchronous chunked loading of per-unit DB data without blocking UI
 		this.asyncLoadComplete = false;
 		await this.db.loadAllUnitDataIncremental((batch) => {
 			for (const rec of batch) {
@@ -116,7 +109,6 @@ class SpreadsheetEngine {
 		}, 300);
 
 		this.asyncLoadComplete = true;
-		// If a sort on a custom column was persisted or filter depends on custom columns, refresh
 		if (this.inSetFilter !== 'all') {
 			this._recomputeFilteredRows();
 		}
@@ -151,7 +143,7 @@ class SpreadsheetEngine {
 			this.columnOrder = [...allColKeys];
 		}
 
-		// 2. Column Widths
+		// 2. Column Widths & # Order Handle Width
 		this.columnWidths = {};
 		for (const key of allColKeys) {
 			const spec = this.columnMap.get(key);
@@ -160,6 +152,10 @@ class SpreadsheetEngine {
 				? savedW
 				: (spec && spec.defaultWidth ? spec.defaultWidth : 140);
 		}
+		const savedHandleW = savedView && (savedView.rowHandleWidth || (savedView.columnWidths && savedView.columnWidths['__rowOrder__']));
+		this.rowHandleWidth = (typeof savedHandleW === 'number' && savedHandleW >= 50)
+			? savedHandleW
+			: DEFAULT_ROW_HANDLE_WIDTH;
 
 		// 3. Column Visibility
 		this.columnVisibility = {};
@@ -187,30 +183,40 @@ class SpreadsheetEngine {
 			this.rowOrder = [...canonicalIds];
 		}
 
-		// 5. Sort State
-		if (savedView && savedView.sortState && savedView.sortState.columnKey && this.columnMap.has(savedView.sortState.columnKey)) {
-			this.sortState = {
+		// 5. Sort Stack & Primary Sort State
+		if (savedView && Array.isArray(savedView.sortStack) && savedView.sortStack.length > 0) {
+			this.sortStack = savedView.sortStack
+				.filter(s => s && s.columnKey && this.columnMap.has(s.columnKey))
+				.map(s => ({ columnKey: s.columnKey, direction: s.direction === 'desc' ? 'desc' : 'asc' }));
+		} else if (savedView && savedView.sortState && savedView.sortState.columnKey && this.columnMap.has(savedView.sortState.columnKey)) {
+			this.sortStack = [{
 				columnKey: savedView.sortState.columnKey,
 				direction: savedView.sortState.direction === 'desc' ? 'desc' : 'asc'
-			};
+			}];
 		} else {
-			this.sortState = { columnKey: null, direction: null };
+			this.sortStack = [];
 		}
+
+		this.sortState = this.sortStack.length > 0
+			? { ...this.sortStack[0] }
+			: { columnKey: null, direction: null };
 	}
 
 	async persistViewSettings() {
 		await this.db.saveViewSettings({
 			columnOrder: this.columnOrder,
 			columnWidths: this.columnWidths,
+			rowHandleWidth: this.rowHandleWidth,
 			columnVisibility: this.columnVisibility,
 			rowOrder: this.rowOrder,
-			sortState: this.sortState
+			sortState: this.sortState,
+			sortStack: this.sortStack
 		});
 		this.onStateChange({ type: 'view-settings' });
 	}
 
 	// =========================================================================
-	// Data Access & Mutation (Default data.js + Custom DB Columns)
+	// Data Access & Mutation
 	// =========================================================================
 
 	_applyDefaultOverridesToMemoryUnit(unitId, overrides) {
@@ -230,9 +236,6 @@ class SpreadsheetEngine {
 		}
 	}
 
-	/**
-	 * Reads the current value of a cell for (unitId, colKey).
-	 */
 	getCellValue(unitId, colKey) {
 		const colSpec = this.columnMap.get(colKey);
 		if (!colSpec) return '';
@@ -258,9 +261,6 @@ class SpreadsheetEngine {
 		}
 	}
 
-	/**
-	 * Formats a cell value as a human-readable string for display or sorting.
-	 */
 	formatCellValue(value, colSpec) {
 		if (!colSpec) return String(value ?? '');
 		if (colSpec.type === 'tags') {
@@ -287,10 +287,6 @@ class SpreadsheetEngine {
 		return String(value);
 	}
 
-	/**
-	 * Updates a cell value (either Default data.js column or Additional column),
-	 * coerces the type, updates in-memory structures, and saves to IndexedDB.
-	 */
 	async setCellValue(unitId, colKey, rawNewValue) {
 		const colSpec = this.columnMap.get(colKey);
 		if (!colSpec) return;
@@ -306,7 +302,6 @@ class SpreadsheetEngine {
 			if (!rec.defaultOverrides) rec.defaultOverrides = {};
 			rec.defaultOverrides[colKey] = coerced;
 
-			// Also keep in-memory KR_EN_languageUnits updated for SPA consistency
 			const unit = this.rawUnits[unitId];
 			if (unit) {
 				if (colKey === 'SemanticTags') {
@@ -332,9 +327,6 @@ class SpreadsheetEngine {
 		return coerced;
 	}
 
-	/**
-	 * Bulk-updates a column value across multiple unitIds in a single transaction.
-	 */
 	async setBulkColumnValue(unitIds, colKey, rawValue) {
 		const colSpec = this.columnMap.get(colKey);
 		if (!colSpec) return;
@@ -405,10 +397,13 @@ class SpreadsheetEngine {
 			delete this.columnWidths[originalKey];
 			this.columnVisibility[updated.key] = this.columnVisibility[originalKey] !== false;
 			delete this.columnVisibility[originalKey];
+
+			this.sortStack = this.sortStack.map(s =>
+				s.columnKey === originalKey ? { ...s, columnKey: updated.key } : s
+			);
 			if (this.sortState.columnKey === originalKey) {
 				this.sortState.columnKey = updated.key;
 			}
-			// Update in-memory unitRecords cache
 			for (const rec of this.unitRecords.values()) {
 				if (rec.custom && Object.prototype.hasOwnProperty.call(rec.custom, originalKey)) {
 					rec.custom[updated.key] = _coerceColumnValue(rec.custom[originalKey], updated);
@@ -440,9 +435,10 @@ class SpreadsheetEngine {
 		this.columnOrder = this.columnOrder.filter(k => k !== key);
 		delete this.columnWidths[key];
 		delete this.columnVisibility[key];
-		if (this.sortState.columnKey === key) {
-			this.sortState = { columnKey: null, direction: null };
-		}
+		this.sortStack = this.sortStack.filter(s => s.columnKey !== key);
+		this.sortState = this.sortStack.length > 0
+			? { ...this.sortStack[0] }
+			: { columnKey: null, direction: null };
 
 		for (const rec of this.unitRecords.values()) {
 			if (rec.custom) delete rec.custom[key];
@@ -495,9 +491,22 @@ class SpreadsheetEngine {
 	}
 
 	async setColumnWidth(colKey, widthPx) {
+		if (colKey === '__rowOrder__') {
+			return this.setRowHandleWidth(widthPx);
+		}
 		if (!this.columnMap.has(colKey)) return;
 		const clamped = Math.max(60, Math.min(800, Math.round(widthPx)));
 		this.columnWidths[colKey] = clamped;
+		await this.persistViewSettings();
+		if (this.container) {
+			this.renderHeader();
+			this.renderViewport();
+		}
+	}
+
+	async setRowHandleWidth(widthPx) {
+		const clamped = Math.max(50, Math.min(300, Math.round(widthPx)));
+		this.rowHandleWidth = clamped;
 		await this.persistViewSettings();
 		if (this.container) {
 			this.renderHeader();
@@ -524,11 +533,12 @@ class SpreadsheetEngine {
 	}
 
 	// =========================================================================
-	// Sorting & Row Reordering
+	// Overlapping Multi-Column Sorting & Row Reordering
 	// =========================================================================
 
 	/**
-	 * Toggles ascending/descending sort on a column when its sort button is clicked.
+	 * Toggles ascending/descending sort on a column and places it at the front
+	 * of sortStack so previous sorts act as secondary/tertiary tie-breakers.
 	 */
 	async toggleSortByColumn(colKey) {
 		if (!this.columnMap.has(colKey)) return;
@@ -539,44 +549,64 @@ class SpreadsheetEngine {
 		await this.sortByColumn(colKey, direction);
 	}
 
+	_compareUnitsBySingleColumn(idA, idB, colSpec, direction) {
+		const mult = direction === 'desc' ? -1 : 1;
+		const colKey = colSpec.key;
+		const valA = this.getCellValue(idA, colKey);
+		const valB = this.getCellValue(idB, colKey);
+
+		if (colSpec.type === 'int' || colSpec.type === 'float' || colSpec.type === 'number' || colSpec.type === 'unixTime') {
+			const numA = Number(valA) || 0;
+			const numB = Number(valB) || 0;
+			if (numA !== numB) return (numA - numB) * mult;
+			return 0;
+		}
+
+		if (colSpec.type === 'boolean') {
+			const boolA = valA ? 1 : 0;
+			const boolB = valB ? 1 : 0;
+			if (boolA !== boolB) return (boolA - boolB) * mult;
+			return 0;
+		}
+
+		if (colSpec.type === 'enum' && Array.isArray(colSpec.enumOptions)) {
+			const idxA = colSpec.enumOptions.indexOf(String(valA));
+			const idxB = colSpec.enumOptions.indexOf(String(valB));
+			if (idxA !== idxB && idxA !== -1 && idxB !== -1) {
+				return (idxA - idxB) * mult;
+			}
+		}
+
+		const strA = this.formatCellValue(valA, colSpec).toLowerCase();
+		const strB = this.formatCellValue(valB, colSpec).toLowerCase();
+		const cmp = strA.localeCompare(strB, 'ko');
+		if (cmp !== 0) return cmp * mult;
+		return 0;
+	}
+
 	async sortByColumn(colKey, direction = 'asc') {
 		const colSpec = this.columnMap.get(colKey);
 		if (!colSpec) return;
 
+		// Promote colKey to primary sort (index 0 of sortStack), preserving prior sorts as tie-breakers
+		const remainingStack = this.sortStack.filter(s => s.columnKey !== colKey);
+		this.sortStack = [{ columnKey: colKey, direction }, ...remainingStack].slice(0, 6);
 		this.sortState = { columnKey: colKey, direction };
-		const mult = direction === 'desc' ? -1 : 1;
+
+		// Capture prior row positions for 100% deterministic stability on full ties
+		const priorIndexMap = new Map();
+		for (let i = 0; i < this.rowOrder.length; i++) {
+			priorIndexMap.set(this.rowOrder[i], i);
+		}
 
 		this.rowOrder.sort((idA, idB) => {
-			const valA = this.getCellValue(idA, colKey);
-			const valB = this.getCellValue(idB, colKey);
-
-			if (colSpec.type === 'int' || colSpec.type === 'float' || colSpec.type === 'number' || colSpec.type === 'unixTime') {
-				const numA = Number(valA) || 0;
-				const numB = Number(valB) || 0;
-				if (numA !== numB) return (numA - numB) * mult;
-				return idA - idB;
+			for (const criterion of this.sortStack) {
+				const spec = this.columnMap.get(criterion.columnKey);
+				if (!spec) continue;
+				const cmp = this._compareUnitsBySingleColumn(idA, idB, spec, criterion.direction);
+				if (cmp !== 0) return cmp;
 			}
-
-			if (colSpec.type === 'boolean') {
-				const boolA = valA ? 1 : 0;
-				const boolB = valB ? 1 : 0;
-				if (boolA !== boolB) return (boolA - boolB) * mult;
-				return idA - idB;
-			}
-
-			if (colSpec.type === 'enum' && Array.isArray(colSpec.enumOptions)) {
-				const idxA = colSpec.enumOptions.indexOf(String(valA));
-				const idxB = colSpec.enumOptions.indexOf(String(valB));
-				if (idxA !== idxB && idxA !== -1 && idxB !== -1) {
-					return (idxA - idxB) * mult;
-				}
-			}
-
-			const strA = this.formatCellValue(valA, colSpec).toLowerCase();
-			const strB = this.formatCellValue(valB, colSpec).toLowerCase();
-			const cmp = strA.localeCompare(strB, 'ko');
-			if (cmp !== 0) return cmp * mult;
-			return idA - idB;
+			return (priorIndexMap.get(idA) ?? 0) - (priorIndexMap.get(idB) ?? 0);
 		});
 
 		this._recomputeFilteredRows();
@@ -587,9 +617,6 @@ class SpreadsheetEngine {
 		}
 	}
 
-	/**
-	 * Reorders a row from one position to another in rowOrder.
-	 */
 	async reorderRowByUnitId(sourceUnitId, targetUnitId, insertAfter = false) {
 		if (sourceUnitId === targetUnitId) return;
 		const fromIdx = this.rowOrder.indexOf(sourceUnitId);
@@ -601,8 +628,8 @@ class SpreadsheetEngine {
 		if (insertAfter) newTargetIdx += 1;
 		this.rowOrder.splice(newTargetIdx, 0, sourceUnitId);
 
-		// Manual row reorder clears active column sort indicator
 		this.sortState = { columnKey: null, direction: null };
+		this.sortStack = [];
 		this._recomputeFilteredRows();
 		await this.persistViewSettings();
 		if (this.container) {
@@ -611,9 +638,6 @@ class SpreadsheetEngine {
 		}
 	}
 
-	/**
-	 * Moves a row to a specific 0-based index in rowOrder.
-	 */
 	async moveRowToIndex(unitId, targetIndex) {
 		const fromIdx = this.rowOrder.indexOf(unitId);
 		if (fromIdx === -1) return;
@@ -623,6 +647,7 @@ class SpreadsheetEngine {
 		this.rowOrder.splice(fromIdx, 1);
 		this.rowOrder.splice(clamped, 0, unitId);
 		this.sortState = { columnKey: null, direction: null };
+		this.sortStack = [];
 		this._recomputeFilteredRows();
 		await this.persistViewSettings();
 		if (this.container) {
@@ -631,11 +656,9 @@ class SpreadsheetEngine {
 		}
 	}
 
-	/**
-	 * Resets sorting and restores canonical row order (Id 0..N-1).
-	 */
 	async resetSortingAndRowOrder() {
 		this.sortState = { columnKey: null, direction: null };
+		this.sortStack = [];
 		this.rowOrder = Array.from({ length: this.rawUnits.length }, (_, idx) => idx);
 		this._recomputeFilteredRows();
 		await this.persistViewSettings();
@@ -645,9 +668,6 @@ class SpreadsheetEngine {
 		}
 	}
 
-	/**
-	 * Resets all view settings (column order, widths, visibility, sort, and row order).
-	 */
 	async resetAllViewSettings() {
 		await this.db.clearViewSettings();
 		const canonicalIds = Array.from({ length: this.rawUnits.length }, (_, idx) => idx);
@@ -661,7 +681,7 @@ class SpreadsheetEngine {
 	}
 
 	// =========================================================================
-	// Filtering & Search (for Practice Set Selection & Debugging)
+	// Filtering & Search
 	// =========================================================================
 
 	setFilters({ searchQuery, posFilter, sourceFilter, inSetFilter }) {
@@ -727,9 +747,6 @@ class SpreadsheetEngine {
 		});
 	}
 
-	/**
-	 * Computes the visible row range for virtual scrolling.
-	 */
 	computeVirtualRange(scrollTop, viewportHeight) {
 		const totalRows = this.filteredRowIds.length;
 		const totalHeight = totalRows * this.rowHeight;
@@ -760,16 +777,13 @@ class SpreadsheetEngine {
 		this.container = containerElement;
 		this.container.innerHTML = '';
 
-		// Header Wrapper (scrolls horizontally in sync with viewport)
-		const headerViewport = document.createElement('div');
-		headerViewport.className = 'sheet-header-viewport';
-		this.headerTrack = document.createElement('div');
-		this.headerTrack.className = 'sheet-header-track';
-		headerViewport.appendChild(this.headerTrack);
-
-		// Body Scroll Viewport
+		// Single unified scroll viewport for both header (sticky top) and rows!
+		// This guarantees 100% identical horizontal scroll rate and sticky left # Order column.
 		this.scrollViewport = document.createElement('div');
 		this.scrollViewport.className = 'sheet-scroll-viewport';
+
+		this.headerTrack = document.createElement('div');
+		this.headerTrack.className = 'sheet-header-track';
 
 		this.scrollSpacer = document.createElement('div');
 		this.scrollSpacer.className = 'sheet-scroll-spacer';
@@ -777,14 +791,12 @@ class SpreadsheetEngine {
 		this.rowsLayer = document.createElement('div');
 		this.rowsLayer.className = 'sheet-rows-layer';
 		this.scrollSpacer.appendChild(this.rowsLayer);
-		this.scrollViewport.appendChild(this.scrollSpacer);
 
-		this.container.appendChild(headerViewport);
+		this.scrollViewport.appendChild(this.headerTrack);
+		this.scrollViewport.appendChild(this.scrollSpacer);
 		this.container.appendChild(this.scrollViewport);
 
-		// Sync horizontal scroll & trigger virtualized vertical render
 		this.scrollViewport.addEventListener('scroll', () => {
-			headerViewport.scrollLeft = this.scrollViewport.scrollLeft;
 			this.scheduleViewportRender();
 		}, { passive: true });
 
@@ -817,34 +829,61 @@ class SpreadsheetEngine {
 		return total;
 	}
 
+	_applyFixedCellWidth(el, widthPx) {
+		const w = `${widthPx}px`;
+		el.style.width = w;
+		el.style.minWidth = w;
+		el.style.maxWidth = w;
+		el.style.flex = `0 0 ${w}`;
+	}
+
 	renderHeader() {
 		if (!this.headerTrack) return;
 		this.headerTrack.innerHTML = '';
 		const visibleCols = this.getVisibleColumns();
 		const totalWidth = this.getTotalGridWidth();
 		this.headerTrack.style.width = `${totalWidth}px`;
+		this.headerTrack.style.minWidth = `${totalWidth}px`;
 
-		// Fixed left corner header for row order / drag handle
+		// Sticky top-left corner header for row order / drag handle (with its own resize handle!)
 		const cornerCell = document.createElement('div');
 		cornerCell.className = 'sheet-header-cell sheet-row-handle-header';
-		cornerCell.style.width = `${this.rowHandleWidth}px`;
-		cornerCell.title = 'Drag rows by their handle to reorder, or click Reset Order in toolbar';
-		cornerCell.innerHTML = `<span class="row-order-label"># Order</span>`;
+		this._applyFixedCellWidth(cornerCell, this.rowHandleWidth);
+		cornerCell.title = 'Drag rows by their handle to reorder, or drag right border to resize # Order column';
+
+		const cornerLabel = document.createElement('span');
+		cornerLabel.className = 'row-order-label';
+		cornerLabel.textContent = '# Order';
+		cornerCell.appendChild(cornerLabel);
+
+		const cornerResize = document.createElement('div');
+		cornerResize.className = 'col-resize-handle';
+		cornerResize.title = 'Drag to resize # Order column';
+		cornerResize.addEventListener('mousedown', (e) => {
+			e.stopPropagation();
+			e.preventDefault();
+			this._startColumnResize(e, '__rowOrder__', this.rowHandleWidth);
+		});
+		cornerCell.appendChild(cornerResize);
+
 		this.headerTrack.appendChild(cornerCell);
 
 		for (const col of visibleCols) {
 			const width = this.columnWidths[col.key] || col.defaultWidth || 140;
 			const cell = document.createElement('div');
 			const originClass = col.isDefault ? 'col-origin-default' : 'col-origin-custom';
-			const isSorted = this.sortState.columnKey === col.key;
-			const sortDir = isSorted ? this.sortState.direction : null;
 
-			cell.className = `sheet-header-cell ${originClass}${isSorted ? ' is-sorted' : ''}`;
-			cell.style.width = `${width}px`;
+			const sortRankIdx = this.sortStack.findIndex(s => s.columnKey === col.key);
+			const isPrimarySort = sortRankIdx === 0;
+			const isSecondarySort = sortRankIdx > 0;
+			const sortEntry = sortRankIdx !== -1 ? this.sortStack[sortRankIdx] : null;
+
+			cell.className = `sheet-header-cell ${originClass}${isPrimarySort ? ' is-sorted' : ''}${isSecondarySort ? ' is-sorted-secondary' : ''}`;
+			this._applyFixedCellWidth(cell, width);
 			cell.dataset.colKey = col.key;
 			cell.draggable = true;
 
-			// Top bar: Origin badge + Type badge + Action buttons (Edit/Delete/Hide)
+			// Top bar: Origin badge + Action buttons (Edit/Delete/Hide)
 			const metaBar = document.createElement('div');
 			metaBar.className = 'col-header-meta';
 
@@ -856,7 +895,6 @@ class SpreadsheetEngine {
 			const actions = document.createElement('div');
 			actions.className = 'col-header-actions';
 
-			// Custom columns can be edited and deleted
 			if (!col.isDefault) {
 				const editBtn = document.createElement('button');
 				editBtn.type = 'button';
@@ -881,7 +919,6 @@ class SpreadsheetEngine {
 				actions.appendChild(delBtn);
 			}
 
-			// Every column can be hidden
 			const hideBtn = document.createElement('button');
 			hideBtn.type = 'button';
 			hideBtn.className = 'col-icon-btn col-hide-btn';
@@ -896,7 +933,7 @@ class SpreadsheetEngine {
 			metaBar.appendChild(actions);
 			cell.appendChild(metaBar);
 
-			// Bottom bar: Column Title + Sort Button
+			// Bottom bar: Column Title + Overlapping Sort Button
 			const mainBar = document.createElement('div');
 			mainBar.className = 'col-header-main';
 
@@ -908,11 +945,15 @@ class SpreadsheetEngine {
 
 			const sortBtn = document.createElement('button');
 			sortBtn.type = 'button';
-			sortBtn.className = `col-sort-btn${isSorted ? ' active' : ''}`;
-			sortBtn.title = `Sort by ${col.label} (toggle ascending / descending)`;
-			sortBtn.innerHTML = isSorted
-				? (sortDir === 'asc' ? '▲ ASC' : '▼ DESC')
-				: '⇅';
+			sortBtn.className = `col-sort-btn${isPrimarySort ? ' active' : ''}${isSecondarySort ? ' active-secondary' : ''}`;
+			sortBtn.title = `Sort by ${col.label} (toggles ASC/DESC; overlaps with previous sorts as primary #1)`;
+			if (sortEntry) {
+				const arrow = sortEntry.direction === 'asc' ? '▲' : '▼';
+				const rankSuffix = this.sortStack.length > 1 ? ` #${sortRankIdx + 1}` : ` ${sortEntry.direction.toUpperCase()}`;
+				sortBtn.textContent = `${arrow}${rankSuffix}`;
+			} else {
+				sortBtn.textContent = '⇅';
+			}
 			sortBtn.addEventListener('click', (e) => {
 				e.stopPropagation();
 				this.toggleSortByColumn(col.key);
@@ -974,11 +1015,17 @@ class SpreadsheetEngine {
 	_startColumnResize(startEvent, colKey, initialWidth) {
 		const startX = startEvent.clientX;
 		let currentWidth = initialWidth;
+		const minW = colKey === '__rowOrder__' ? 50 : 60;
+		const maxW = colKey === '__rowOrder__' ? 300 : 800;
 
 		const onMouseMove = (moveEvent) => {
 			const delta = moveEvent.clientX - startX;
-			currentWidth = Math.max(60, Math.min(800, initialWidth + delta));
-			this.columnWidths[colKey] = currentWidth;
+			currentWidth = Math.max(minW, Math.min(maxW, initialWidth + delta));
+			if (colKey === '__rowOrder__') {
+				this.rowHandleWidth = currentWidth;
+			} else {
+				this.columnWidths[colKey] = currentWidth;
+			}
 			this.renderHeader();
 			this.renderViewport();
 		};
@@ -995,6 +1042,8 @@ class SpreadsheetEngine {
 
 	/**
 	 * Renders ONLY the rows visible inside the scroll viewport.
+	 * Uses top: ${offsetY}px (instead of transform: translateY) so CSS position: sticky
+	 * on .sheet-row-handle-cell remains anchored to left: 0 of .sheet-scroll-viewport!
 	 */
 	renderViewport() {
 		if (!this.scrollViewport || !this.scrollSpacer || !this.rowsLayer) return;
@@ -1006,7 +1055,9 @@ class SpreadsheetEngine {
 		const totalWidth = this.getTotalGridWidth();
 		this.scrollSpacer.style.height = `${Math.max(totalHeight, 1)}px`;
 		this.scrollSpacer.style.width = `${totalWidth}px`;
-		this.rowsLayer.style.transform = `translateY(${offsetY}px)`;
+		this.scrollSpacer.style.minWidth = `${totalWidth}px`;
+		this.rowsLayer.style.top = `${offsetY}px`;
+		this.rowsLayer.style.width = `${totalWidth}px`;
 		this.rowsLayer.innerHTML = '';
 
 		const visibleCols = this.getVisibleColumns();
@@ -1021,23 +1072,25 @@ class SpreadsheetEngine {
 
 		for (let rowIdx = startIndex; rowIdx < endIndex; rowIdx++) {
 			const unitId = this.filteredRowIds[rowIdx];
-			const rowEl = this._createRowElement(unitId, rowIdx, visibleCols);
+			const rowEl = this._createRowElement(unitId, rowIdx, visibleCols, totalWidth);
 			this.rowsLayer.appendChild(rowEl);
 		}
 	}
 
-	_createRowElement(unitId, visualRowIndex, visibleCols) {
+	_createRowElement(unitId, visualRowIndex, visibleCols, totalWidth) {
 		const rowEl = document.createElement('div');
 		const isInSet = Boolean(this.getCellValue(unitId, 'InSet'));
 		rowEl.className = `sheet-row${isInSet ? ' row-in-set' : ''}`;
 		rowEl.style.height = `${this.rowHeight}px`;
+		rowEl.style.width = `${totalWidth}px`;
+		rowEl.style.minWidth = `${totalWidth}px`;
 		rowEl.dataset.unitId = String(unitId);
 		rowEl.dataset.rowIndex = String(visualRowIndex);
 
-		// 1. Row Reorder Handle Cell
+		// 1. Sticky Left Row Reorder Handle Cell
 		const handleCell = document.createElement('div');
 		handleCell.className = 'sheet-cell sheet-row-handle-cell';
-		handleCell.style.width = `${this.rowHandleWidth}px`;
+		this._applyFixedCellWidth(handleCell, this.rowHandleWidth);
 		handleCell.draggable = true;
 		handleCell.title = `Row #${visualRowIndex + 1} (Unit ID ${unitId}) — Drag to reorder row, or double-click to jump row to index`;
 
@@ -1051,13 +1104,11 @@ class SpreadsheetEngine {
 		rowNumSpan.textContent = String(visualRowIndex + 1);
 		handleCell.appendChild(rowNumSpan);
 
-		// Double-click handle to move row to an exact position (helpful for jumping across thousands of rows)
 		handleCell.addEventListener('dblclick', (e) => {
 			e.stopPropagation();
 			this.onStateChange({ type: 'request-move-row', unitId, currentIndex: this.rowOrder.indexOf(unitId) });
 		});
 
-		// Row Drag-and-Drop Reordering
 		handleCell.addEventListener('dragstart', (e) => {
 			this.dragState = { type: 'row', unitId };
 			rowEl.classList.add('is-dragging-row');
@@ -1109,11 +1160,10 @@ class SpreadsheetEngine {
 		const cellEl = document.createElement('div');
 		const originClass = col.isDefault ? 'cell-origin-default' : 'cell-origin-custom';
 		cellEl.className = `sheet-cell ${originClass} cell-type-${col.type}`;
-		cellEl.style.width = `${width}px`;
+		this._applyFixedCellWidth(cellEl, width);
 		cellEl.dataset.unitId = String(unitId);
 		cellEl.dataset.colKey = col.key;
 
-		// Show temporary async placeholder if DB is still streaming initial batches for custom columns
 		if (!col.isDefault && !this.asyncLoadComplete && !this.unitRecords.has(unitId)) {
 			cellEl.classList.add('cell-async-loading');
 		}
@@ -1129,7 +1179,6 @@ class SpreadsheetEngine {
 
 		const val = this.getCellValue(unitId, col.key);
 
-		// Type-specialized interactive renderers
 		if (col.type === 'boolean') {
 			const label = document.createElement('label');
 			label.className = 'cell-checkbox-wrap';
@@ -1142,10 +1191,7 @@ class SpreadsheetEngine {
 			});
 			const txt = document.createElement('span');
 			txt.className = `bool-pill ${val ? 'bool-true' : 'bool-false'}`;
-			txt.textContent = val ? 'In Set' : 'No';
-			if (col.key !== 'InSet') {
-				txt.textContent = val ? 'true' : 'false';
-			}
+			txt.textContent = col.key === 'InSet' ? (val ? 'In Set' : 'No') : (val ? 'true' : 'false');
 			label.appendChild(cb);
 			label.appendChild(txt);
 			cellEl.appendChild(label);
@@ -1153,7 +1199,6 @@ class SpreadsheetEngine {
 		}
 
 		if (col.type === 'enum' && !col.isDefault) {
-			// Direct dropdown for additional enum columns like LongTermRecognition
 			const select = document.createElement('select');
 			select.className = `cell-enum-select enum-val-${String(val)}`;
 			const opts = Array.isArray(col.enumOptions) ? col.enumOptions : [];
@@ -1211,7 +1256,6 @@ class SpreadsheetEngine {
 		const formattedTitle = this.formatCellValue(val, col);
 		cellEl.title = `${col.label}: ${formattedTitle || '(empty)'}\nDouble-click to edit`;
 
-		// Double-click to open inline cell editor
 		cellEl.addEventListener('dblclick', (e) => {
 			e.stopPropagation();
 			this.editingCell = { unitId, colKey: col.key };
@@ -1306,3 +1350,4 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = { SpreadsheetEngine };
 }
+

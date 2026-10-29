@@ -1,13 +1,13 @@
 /**
  * ============================================================================
- * db.js - Browser Database Storage Layer (IndexedDB + LocalStorage Mirror)
+ * webapp/db.js - Browser Database Storage Layer (IndexedDB + LocalStorage)
  * ============================================================================
  *
  * Manages persistent storage for the Kongbuhey Web Application:
  *   1. Additional (user-defined & flashcard) column schemas
  *   2. Per-unit additional column values & default column overrides
- *   3. Spreadsheet view settings (columnOrder, columnWidths, columnVisibility,
- *      rowOrder, sortState)
+ *   3. Spreadsheet view settings (columnOrder, columnWidths, rowHandleWidth,
+ *      columnVisibility, rowOrder, sortState, sortStack)
  *
  * Works directly on local file systems (file://) with zero external dependencies.
  */
@@ -137,7 +137,6 @@ function coerceColumnValue(value, colSpec) {
 		if (!str || str === '0' || str.toLowerCase() === 'never') return 0;
 		if (/^\d+$/.test(str)) {
 			const num = parseInt(str, 10);
-			// Convert milliseconds to seconds if user pasted a 13-digit ms timestamp
 			return str.length >= 13 ? Math.floor(num / 1000) : num;
 		}
 		const dateMs = Date.parse(str);
@@ -151,7 +150,6 @@ function coerceColumnValue(value, colSpec) {
 		const options = Array.isArray(colSpec.enumOptions) ? colSpec.enumOptions : [];
 		const strVal = value === null || value === undefined ? '' : String(value).trim();
 		if (options.length > 0 && !options.includes(strVal)) {
-			// Case-insensitive match attempt
 			const match = options.find(o => o.toLowerCase() === strVal.toLowerCase());
 			if (match) return match;
 			return colSpec.defaultValue !== undefined ? colSpec.defaultValue : options[0];
@@ -185,7 +183,6 @@ function coerceColumnValue(value, colSpec) {
 		return value ? String(value) : '';
 	}
 
-	// Default: string / json
 	if (value === null || value === undefined) {
 		return colSpec.defaultValue !== undefined ? String(colSpec.defaultValue) : '';
 	}
@@ -203,9 +200,6 @@ class KongbuheyDB {
 		};
 	}
 
-	/**
-	 * Opens the IndexedDB database (or initializes localStorage/memory fallback if unavailable).
-	 */
 	async open() {
 		if (this.db || this.useMemoryFallback) return;
 
@@ -236,7 +230,7 @@ class KongbuheyDB {
 				request.onsuccess = (event) => resolve(event.target.result);
 				request.onerror = (event) => reject(event.target.error || new Error('IndexedDB open failed'));
 			});
-		} catch (err) {
+		} catch (_) {
 			this.useMemoryFallback = true;
 			this._loadFallbackFromLocalStorage();
 		}
@@ -249,21 +243,18 @@ class KongbuheyDB {
 		try {
 			const colsRaw = window.localStorage.getItem(LS_FALLBACK_PREFIX + 'custom_columns');
 			if (colsRaw) {
-				const cols = JSON.parse(colsRaw);
-				cols.forEach(c => this.memoryStore.custom_columns.set(c.key, c));
+				JSON.parse(colsRaw).forEach(c => this.memoryStore.custom_columns.set(c.key, c));
 			}
 			const unitsRaw = window.localStorage.getItem(LS_FALLBACK_PREFIX + 'unit_data');
 			if (unitsRaw) {
-				const units = JSON.parse(unitsRaw);
-				units.forEach(u => this.memoryStore.unit_data.set(u.unitId, u));
+				JSON.parse(unitsRaw).forEach(u => this.memoryStore.unit_data.set(u.unitId, u));
 			}
 			const viewRaw = window.localStorage.getItem(LS_FALLBACK_PREFIX + 'view_settings');
 			if (viewRaw) {
-				const views = JSON.parse(viewRaw);
-				views.forEach(v => this.memoryStore.view_settings.set(v.id, v));
+				JSON.parse(viewRaw).forEach(v => this.memoryStore.view_settings.set(v.id, v));
 			}
 		} catch (_) {
-			// Ignore localStorage parse errors
+			// Ignore parse errors
 		}
 	}
 
@@ -280,12 +271,6 @@ class KongbuheyDB {
 		}
 	}
 
-	/**
-	 * Ensure the initial 6 additional columns exist on first database initialization.
-	 * Uses a metadata record in view_settings ('schema_initialized') so if the user
-	 * explicitly deletes one of the initial custom columns later, it stays deleted
-	 * unless they reset custom columns.
-	 */
 	async _ensureInitialColumns() {
 		const initMeta = await this._getRecord('view_settings', 'schema_initialized');
 		const existingCols = await this.getCustomColumns();
@@ -303,9 +288,6 @@ class KongbuheyDB {
 		}
 	}
 
-	/**
-	 * Reset custom columns back to ensure all 6 initial additional columns exist.
-	 */
 	async restoreInitialColumns() {
 		const existingCols = await this.getCustomColumns();
 		const existingKeys = new Set(existingCols.map(c => c.key));
@@ -380,10 +362,6 @@ class KongbuheyDB {
 		});
 	}
 
-	// =========================================================================
-	// Custom Columns CRUD
-	// =========================================================================
-
 	async getCustomColumns() {
 		const cols = await this._getAllRecords('custom_columns');
 		return cols.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -391,16 +369,12 @@ class KongbuheyDB {
 
 	async createCustomColumn(colDef) {
 		const key = String(colDef.key || colDef.label || '').trim();
-		if (!key) {
-			throw new Error('Column name cannot be empty.');
-		}
+		if (!key) throw new Error('Column name cannot be empty.');
 		if (DEFAULT_COLUMNS_SPEC.some(c => c.key.toLowerCase() === key.toLowerCase())) {
 			throw new Error(`Column "${key}" conflicts with a default data.js column.`);
 		}
 		const existing = await this._getRecord('custom_columns', key);
-		if (existing) {
-			throw new Error(`Additional column "${key}" already exists.`);
-		}
+		if (existing) throw new Error(`Additional column "${key}" already exists.`);
 
 		const allCols = await this.getCustomColumns();
 		const type = colDef.type || 'string';
@@ -436,14 +410,10 @@ class KongbuheyDB {
 
 	async updateCustomColumn(originalKey, updates) {
 		const existing = await this._getRecord('custom_columns', originalKey);
-		if (!existing) {
-			throw new Error(`Custom column "${originalKey}" not found.`);
-		}
+		if (!existing) throw new Error(`Custom column "${originalKey}" not found.`);
 
 		const newKey = updates.key ? String(updates.key).trim() : originalKey;
-		if (!newKey) {
-			throw new Error('Column name cannot be empty.');
-		}
+		if (!newKey) throw new Error('Column name cannot be empty.');
 		if (DEFAULT_COLUMNS_SPEC.some(c => c.key.toLowerCase() === newKey.toLowerCase())) {
 			throw new Error(`Column "${newKey}" conflicts with a default data.js column.`);
 		}
@@ -478,13 +448,10 @@ class KongbuheyDB {
 
 		if (newKey !== originalKey) {
 			const conflict = await this._getRecord('custom_columns', newKey);
-			if (conflict) {
-				throw new Error(`Column "${newKey}" already exists.`);
-			}
+			if (conflict) throw new Error(`Column "${newKey}" already exists.`);
 			await this._deleteRecord('custom_columns', originalKey);
 			await this._putRecord('custom_columns', updatedCol);
 
-			// Migrate existing unit values from originalKey to newKey
 			const allUnitData = await this._getAllRecords('unit_data');
 			for (const record of allUnitData) {
 				if (record.custom && Object.prototype.hasOwnProperty.call(record.custom, originalKey)) {
@@ -506,7 +473,6 @@ class KongbuheyDB {
 		}
 		await this._deleteRecord('custom_columns', key);
 
-		// Clean up stored values for this deleted column across unit_data records
 		const allUnitData = await this._getAllRecords('unit_data');
 		for (const record of allUnitData) {
 			if (record.custom && Object.prototype.hasOwnProperty.call(record.custom, key)) {
@@ -517,14 +483,6 @@ class KongbuheyDB {
 		return true;
 	}
 
-	// =========================================================================
-	// Unit Additional Data & Default Overrides (Async Batch & Single Cell)
-	// =========================================================================
-
-	/**
-	 * Asynchronously loads stored unit data in batches and invokes onBatch(records)
-	 * so the UI can progressively populate without blocking initial render.
-	 */
 	async loadAllUnitDataIncremental(onBatch, batchSize = 250) {
 		const allRecords = await this._getAllRecords('unit_data');
 		if (!onBatch) return allRecords;
@@ -560,7 +518,6 @@ class KongbuheyDB {
 	}
 
 	async saveBulkUnitCellValues(updates) {
-		// updates: Array<{ unitId, colKey, value, isDefaultColumn }>
 		if (this.useMemoryFallback) {
 			for (const u of updates) {
 				await this.saveUnitCellValue(u.unitId, u.colKey, u.value, u.isDefaultColumn);
@@ -592,10 +549,6 @@ class KongbuheyDB {
 			tx.onerror = () => reject(tx.error);
 		});
 	}
-
-	// =========================================================================
-	// Spreadsheet View Settings Persistence
-	// =========================================================================
 
 	async getViewSettings() {
 		return this._getRecord('view_settings', 'spreadsheet_view');
