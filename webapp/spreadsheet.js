@@ -44,6 +44,7 @@ class SpreadsheetEngine {
 		this.defaultColumns = _DEFAULT_COLUMNS_SPEC.map(c => ({ ...c }));
 		this.customColumns = [];
 		this.columnMap = new Map();
+		this._rebuildColumnMap();
 
 		// Persistent View Settings
 		this.columnOrder = [];
@@ -426,6 +427,9 @@ class SpreadsheetEngine {
 		if (!colSpec) return false;
 		if (colSpec.isDefault) {
 			throw new Error(`Column "${key}" is a default data.js column and cannot be deleted.`);
+		}
+		if (colSpec.isPermanent || colSpec.deletable === false) {
+			throw new Error(`Column "${key}" is a permanent additional column and cannot be deleted.`);
 		}
 
 		await this.db.deleteCustomColumn(key);
@@ -907,16 +911,18 @@ class SpreadsheetEngine {
 				});
 				actions.appendChild(editBtn);
 
-				const delBtn = document.createElement('button');
-				delBtn.type = 'button';
-				delBtn.className = 'col-icon-btn col-delete-btn';
-				delBtn.title = `Delete column "${col.label}"`;
-				delBtn.textContent = '🗑';
-				delBtn.addEventListener('click', (e) => {
-					e.stopPropagation();
-					this.onStateChange({ type: 'request-delete-column', column: col });
-				});
-				actions.appendChild(delBtn);
+				if (!col.isPermanent && col.deletable !== false) {
+					const delBtn = document.createElement('button');
+					delBtn.type = 'button';
+					delBtn.className = 'col-icon-btn col-delete-btn';
+					delBtn.title = `Delete column "${col.label}"`;
+					delBtn.textContent = '🗑';
+					delBtn.addEventListener('click', (e) => {
+						e.stopPropagation();
+						this.onStateChange({ type: 'request-delete-column', column: col });
+					});
+					actions.appendChild(delBtn);
+				}
 			}
 
 			const hideBtn = document.createElement('button');

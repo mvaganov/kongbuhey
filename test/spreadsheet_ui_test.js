@@ -23,6 +23,13 @@ const path = require('path');
 const { KR_EN_languageUnits, DATA_SCHEMA } = require('../data.js');
 const { DEFAULT_COLUMNS_SPEC, INITIAL_ADDITIONAL_COLUMNS, KongbuheyDB } = require('../webapp/db.js');
 const { SpreadsheetEngine } = require('../webapp/spreadsheet.js');
+const {
+	renderMarkdownWithHtml,
+	formatPithyTime,
+	formatHudTelemetry,
+	generateSentencesForUnit,
+	UnitSelectorView
+} = require('../webapp/selector.js');
 const { sortPracticeSetUnits, evaluateFlashcardAttempt } = require('../webapp/app.js');
 
 let passed = 0;
@@ -53,12 +60,14 @@ async function runSuite() {
 	const indexCssPath = path.join(webappDir, 'index.css');
 	const dbJsPath = path.join(webappDir, 'db.js');
 	const sheetJsPath = path.join(webappDir, 'spreadsheet.js');
+	const selectorJsPath = path.join(webappDir, 'selector.js');
 	const appJsPath = path.join(webappDir, 'app.js');
 
 	assert(fs.existsSync(indexHtmlPath) && fs.statSync(indexHtmlPath).size > 500, 'webapp/index.html exists and is populated');
 	assert(fs.existsSync(indexCssPath) && fs.statSync(indexCssPath).size > 500, 'webapp/index.css exists as separate CSS file');
 	assert(fs.existsSync(dbJsPath) && fs.statSync(dbJsPath).size > 500, 'webapp/db.js exists as separate JS module');
 	assert(fs.existsSync(sheetJsPath) && fs.statSync(sheetJsPath).size > 500, 'webapp/spreadsheet.js exists as separate JS module');
+	assert(fs.existsSync(selectorJsPath) && fs.statSync(selectorJsPath).size > 500, 'webapp/selector.js exists as separate JS module');
 	assert(fs.existsSync(appJsPath) && fs.statSync(appJsPath).size > 500, 'webapp/app.js exists as separate JS module');
 	assert(
 		!fs.existsSync(path.join(rootDir, 'index.html')) &&
@@ -197,6 +206,28 @@ async function runSuite() {
 	}
 	assert(defaultDeleteBlocked && engine.columnMap.has('Korean'), 'Default column from data.js cannot be deleted');
 
+	// Verify the 6 default additional columns are permanent (cannot be deleted)
+	let allPermanentBlocked = true;
+	for (const permKey of expectedInitialCustom) {
+		const spec = engine.columnMap.get(permKey);
+		if (!spec || !spec.isPermanent || spec.deletable !== false) {
+			allPermanentBlocked = false;
+		}
+		let blocked = false;
+		try {
+			await engine.removeCustomColumn(permKey);
+		} catch (_) {
+			blocked = true;
+		}
+		if (!blocked || !engine.columnMap.has(permKey)) {
+			allPermanentBlocked = false;
+		}
+	}
+	assert(
+		allPermanentBlocked,
+		'All 6 default additional columns (InSet, RecognitionScore, LongTermRecognition, TimeStampLastCorrect, TimeStampLastSeen, notes) are permanent and cannot be deleted'
+	);
+
 	const originalEnglish0 = engine.getCellValue(0, 'English');
 	await engine.setCellValue(0, 'English', 'American person (edited)');
 	assert(engine.getCellValue(0, 'English') === 'American person (edited)', 'Default column from data.js is editable');
@@ -329,6 +360,167 @@ async function runSuite() {
 		evalRes.TimeStampLastSeen > 0 &&
 		evalRes.TimeStampLastCorrect > 0,
 		'evaluateFlashcardAttempt updates RecognitionScore, LongTermRecognition, TimeStampLastSeen, and TimeStampLastCorrect'
+	);
+
+	// -------------------------------------------------------------------------
+	// 9. Streamlined Unit Selector (Sources, Tri-State Checkboxes, Expansion)
+	// -------------------------------------------------------------------------
+	console.log(`\n--- 9. Streamlined Unit Selector (Sources & Tri-State Checkboxes) ---`);
+	assert(
+		cssContent.includes('.source-section {\n\tflex-shrink: 0;'),
+		'webapp/index.css sets flex-shrink: 0 on .source-section so 90+ source sections do not collapse into 0px bars inside flex scroll container'
+	);
+
+	// Verify that even BEFORE engine.init() completes, getSourceGroups() resolves all 90 Sources (never flashing "Uncategorized")
+	const uninitEngine = new SpreadsheetEngine({ db: new KongbuheyDB(), rawUnits: KR_EN_languageUnits, dataSchema: DATA_SCHEMA });
+	const uninitSelector = new UnitSelectorView({ engine: uninitEngine });
+	const preInitGroups = uninitSelector.getSourceGroups();
+	assert(
+		preInitGroups.length === 90 && preInitGroups[0].source !== 'Uncategorized',
+		'getSourceGroups() resolves all 90 curriculum sources synchronously before DB init finishes (no "Uncategorized" flash)'
+	);
+
+	const selectorDb = new KongbuheyDB();
+	const selectorEngine = new SpreadsheetEngine({ db: selectorDb, rawUnits: KR_EN_languageUnits, dataSchema: DATA_SCHEMA });
+	await selectorEngine.init();
+	const selectorView = new UnitSelectorView({ engine: selectorEngine });
+
+	const initialGroups = selectorView.getSourceGroups();
+	assert(initialGroups.length > 0 && initialGroups[0].totalCount > 0, `getSourceGroups groups language units by Source (${initialGroups.length} sources found)`);
+
+	const testSource = initialGroups[0].source;
+	const testSourceUnitIds = initialGroups[0].unitIds;
+	assert(
+		initialGroups[0].state === 'none' && initialGroups[0].icon === '' && initialGroups[0].includedCount === 0,
+		`Initial source "${testSource}" has state="none" and empty checkbox icon ""`
+	);
+
+	// Clicking source checkbox when none are included -> includes all units in source
+	const toggleAllRes = await selectorView.toggleSourceInclusion(testSource);
+	const groupAfterAll = selectorView.getSourceGroups().find(g => g.source === testSource);
+	assert(
+		toggleAllRes.targetInclude === true &&
+		groupAfterAll.state === 'all' &&
+		groupAfterAll.icon === '✓' &&
+		groupAfterAll.includedCount === groupAfterAll.totalCount,
+		`Clicking source checkbox toggles all ${groupAfterAll.totalCount} units in "${testSource}" to included (state="all", icon="✓")`
+	);
+
+	// Unchecking one individual language unit inside the source -> partial state ('~')
+	await selectorView.toggleUnitInclusion(testSourceUnitIds[0]);
+	const groupAfterPartial = selectorView.getSourceGroups().find(g => g.source === testSource);
+	assert(
+		groupAfterPartial.state === 'partial' &&
+		groupAfterPartial.icon === '~' &&
+		groupAfterPartial.includedCount === groupAfterPartial.totalCount - 1,
+		`Excluding 1 unit in "${testSource}" sets source checkbox to partial state (state="partial", icon="~")`
+	);
+
+	// Clicking source checkbox when partial -> includes all units in source
+	await selectorView.toggleSourceInclusion(testSource);
+	const groupAfterReAll = selectorView.getSourceGroups().find(g => g.source === testSource);
+	assert(
+		groupAfterReAll.state === 'all' && groupAfterReAll.icon === '✓',
+		`Clicking partial ("~") source checkbox includes all units in "${testSource}" (state="all", icon="✓")`
+	);
+
+	// Clicking source checkbox when all are included -> excludes all units in source
+	await selectorView.toggleSourceInclusion(testSource);
+	const groupAfterNone = selectorView.getSourceGroups().find(g => g.source === testSource);
+	assert(
+		groupAfterNone.state === 'none' && groupAfterNone.icon === '' && groupAfterNone.includedCount === 0,
+		`Clicking checked ("✓") source checkbox excludes all units in "${testSource}" (state="none", icon="")`
+	);
+
+	// Expanding and collapsing a source section
+	assert(selectorView.expandedSources.has(testSource) === false, 'Source starts collapsed');
+	selectorView.toggleSourceExpand(testSource);
+	assert(selectorView.expandedSources.has(testSource) === true, 'toggleSourceExpand expands source to list individual language units');
+	selectorView.toggleSourceExpand(testSource);
+	assert(selectorView.expandedSources.has(testSource) === false, 'toggleSourceExpand collapses expanded source');
+
+	// -------------------------------------------------------------------------
+	// 10. Language Unit Details View (Markdown + HTML, 3 Sentences, Edit, HUD)
+	// -------------------------------------------------------------------------
+	console.log(`\n--- 10. Language Unit Details View (Markdown, Sentences, Edit, HUD) ---`);
+	selectorView.selectUnit(0);
+	assert(selectorView.selectedUnitId === 0 && selectorView.isEditingDetails === false, 'Clicking language unit selects it for Language Unit Details view');
+
+	// Markdown parser with tiered lists and inline HTML
+	const sampleMarkdown = [
+		'# Usage Note',
+		'- Tier 1 bullet with **bold** and <mark class="hl">inline HTML</mark>',
+		'  - Tier 2 nested bullet with *italics*',
+		'    - Tier 3 deeply nested bullet',
+		'- Second top-level bullet'
+	].join('\n');
+	const renderedHtml = renderMarkdownWithHtml(sampleMarkdown);
+	assert(
+		renderedHtml.includes('<h1>Usage Note</h1>') &&
+		renderedHtml.includes('<strong>bold</strong>') &&
+		renderedHtml.includes('<mark class="hl">inline HTML</mark>') &&
+		(renderedHtml.match(/<ul>/g) || []).length >= 3,
+		'renderMarkdownWithHtml renders tiered/nested Markdown lists and preserves inline HTML'
+	);
+
+	// 3 generated sentences/phrases + regeneration
+	const initialSentences = selectorView.getSentencesForSelectedUnit();
+	const unit0Ko = selectorEngine.getCellValue(0, 'Korean');
+	assert(
+		Array.isArray(initialSentences) &&
+		initialSentences.length === 3 &&
+		initialSentences.every(s => typeof s.ko === 'string' && s.ko.length > 0 && typeof s.en === 'string' && s.en.length > 0),
+		`Language Unit Details generates 3 contextual Korean/English sentences for "${unit0Ko}"`
+	);
+
+	const regeneratedSentences = selectorView.regenerateSentences(0);
+	assert(
+		Array.isArray(regeneratedSentences) &&
+		regeneratedSentences.length === 3 &&
+		JSON.stringify(regeneratedSentences) !== JSON.stringify(initialSentences),
+		'Regenerate button generates 3 new sentences/phrases for the language unit'
+	);
+
+	// In-place Edit mode for core details (Korean, Conjugation, English, pure-text Markdown Notes)
+	selectorView.setEditMode(true);
+	assert(selectorView.isEditingDetails === true, 'Pressing Edit button enables in-place editing mode');
+
+	await selectorView.saveEditedDetails(0, {
+		Korean: '미국 사람 (수정)',
+		Conjugation: '미국 사람입니다 / 미국 사람이었어요',
+		English: 'American person (updated)',
+		notes: '- First note\n  - Nested note with <b>HTML</b>'
+	});
+	assert(
+		selectorView.isEditingDetails === false &&
+		selectorEngine.getCellValue(0, 'Korean') === '미국 사람 (수정)' &&
+		selectorEngine.getCellValue(0, 'Conjugation') === '미국 사람입니다 / 미국 사람이었어요' &&
+		selectorEngine.getCellValue(0, 'English') === 'American person (updated)' &&
+		selectorEngine.getCellValue(0, 'notes') === '- First note\n  - Nested note with <b>HTML</b>',
+		'Saving in-place Details edit updates Korean, Conjugation, English, and raw Markdown notes'
+	);
+
+	// Minimalist videogame HUD & clicking TimeStampLastSeen to update to current time
+	const nowSec = Math.floor(Date.now() / 1000);
+	const hudBefore = formatHudTelemetry({
+		RecognitionScore: 12,
+		LongTermRecognition: 'definitionKnown',
+		TimeStampLastCorrect: nowSec - 3600,
+		TimeStampLastSeen: 0
+	}, nowSec);
+	assert(
+		hudBefore.scoreText === '+12' &&
+		hudBefore.ltrBadge.code === 'DEF' &&
+		hudBefore.lastCorrectText === '1h' &&
+		hudBefore.lastSeenText === '--',
+		'formatHudTelemetry produces compact single-line videogame HUD representations for score, LTR, lastCorrect, and lastSeen'
+	);
+
+	const updatedUnix = await selectorView.touchUnitLastSeen(0);
+	const storedSeen = Number(selectorEngine.getCellValue(0, 'TimeStampLastSeen'));
+	assert(
+		updatedUnix > 0 && Math.abs(storedSeen - nowSec) <= 5,
+		'Clicking TimeStampLastSeen representation in HUD updates it to the current Unix timestamp'
 	);
 
 	console.log(`\n======================================================`);

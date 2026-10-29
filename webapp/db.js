@@ -38,7 +38,7 @@ const DEFAULT_COLUMNS_SPEC = [
 
 /**
  * Initial additional columns created immediately for Flashcard mode & practice sets.
- * These are user/additional columns (colored distinctly, creatable, editable, deletable).
+ * These are permanent additional columns (colored as Additional, editable, NOT deletable).
  */
 const INITIAL_ADDITIONAL_COLUMNS = [
 	{
@@ -47,6 +47,8 @@ const INITIAL_ADDITIONAL_COLUMNS = [
 		type: 'boolean',
 		defaultValue: false,
 		isDefault: false,
+		isPermanent: true,
+		deletable: false,
 		defaultWidth: 90,
 		description: 'Whether this language unit is selected for the current practice set'
 	},
@@ -56,6 +58,8 @@ const INITIAL_ADDITIONAL_COLUMNS = [
 		type: 'int',
 		defaultValue: 0,
 		isDefault: false,
+		isPermanent: true,
+		deletable: false,
 		defaultWidth: 145,
 		description: 'Numeric score tracking short-term flashcard recognition accuracy'
 	},
@@ -66,6 +70,8 @@ const INITIAL_ADDITIONAL_COLUMNS = [
 		enumOptions: ['unknown', 'recognized', 'definitionKnown', 'knownByDefinition'],
 		defaultValue: 'unknown',
 		isDefault: false,
+		isPermanent: true,
+		deletable: false,
 		defaultWidth: 185,
 		description: 'Long-term mastery state evaluated by the flashcard system'
 	},
@@ -75,6 +81,8 @@ const INITIAL_ADDITIONAL_COLUMNS = [
 		type: 'unixTime',
 		defaultValue: 0,
 		isDefault: false,
+		isPermanent: true,
+		deletable: false,
 		defaultWidth: 180,
 		description: 'Unix timestamp (seconds) when the user last answered this unit correctly'
 	},
@@ -84,6 +92,8 @@ const INITIAL_ADDITIONAL_COLUMNS = [
 		type: 'unixTime',
 		defaultValue: 0,
 		isDefault: false,
+		isPermanent: true,
+		deletable: false,
 		defaultWidth: 175,
 		description: 'Unix timestamp (seconds) when the user last encountered this unit'
 	},
@@ -93,6 +103,8 @@ const INITIAL_ADDITIONAL_COLUMNS = [
 		type: 'string',
 		defaultValue: '',
 		isDefault: false,
+		isPermanent: true,
+		deletable: false,
 		defaultWidth: 220,
 		description: 'Personal study notes or mnemonics for this language unit'
 	}
@@ -272,20 +284,28 @@ class KongbuheyDB {
 	}
 
 	async _ensureInitialColumns() {
-		const initMeta = await this._getRecord('view_settings', 'schema_initialized');
 		const existingCols = await this.getCustomColumns();
+		const existingMap = new Map(existingCols.map(c => [c.key, c]));
 
-		if (!initMeta && existingCols.length === 0) {
-			for (let i = 0; i < INITIAL_ADDITIONAL_COLUMNS.length; i++) {
-				const col = { ...INITIAL_ADDITIONAL_COLUMNS[i], order: i, createdAt: Date.now() };
+		for (let i = 0; i < INITIAL_ADDITIONAL_COLUMNS.length; i++) {
+			const initCol = INITIAL_ADDITIONAL_COLUMNS[i];
+			const existing = existingMap.get(initCol.key);
+			if (!existing) {
+				const col = { ...initCol, order: i, createdAt: Date.now() };
 				await this._putRecord('custom_columns', col);
+			} else if (!existing.isPermanent || existing.deletable !== false) {
+				await this._putRecord('custom_columns', {
+					...existing,
+					isPermanent: true,
+					deletable: false
+				});
 			}
-			await this._putRecord('view_settings', {
-				id: 'schema_initialized',
-				initializedAt: Date.now(),
-				version: KONGBUHEY_DB_VERSION
-			});
 		}
+		await this._putRecord('view_settings', {
+			id: 'schema_initialized',
+			initializedAt: Date.now(),
+			version: KONGBUHEY_DB_VERSION
+		});
 	}
 
 	async restoreInitialColumns() {
@@ -398,6 +418,8 @@ class KongbuheyDB {
 			enumOptions,
 			defaultValue,
 			isDefault: false,
+			isPermanent: false,
+			deletable: true,
 			defaultWidth: colDef.defaultWidth || 150,
 			description: colDef.description || '',
 			order: allCols.length,
@@ -470,6 +492,13 @@ class KongbuheyDB {
 	async deleteCustomColumn(key) {
 		if (DEFAULT_COLUMNS_SPEC.some(c => c.key === key)) {
 			throw new Error(`Default column "${key}" from data.js cannot be deleted.`);
+		}
+		if (INITIAL_ADDITIONAL_COLUMNS.some(c => c.key === key)) {
+			throw new Error(`Permanent additional column "${key}" cannot be deleted.`);
+		}
+		const existing = await this._getRecord('custom_columns', key);
+		if (existing && (existing.isPermanent || existing.deletable === false)) {
+			throw new Error(`Permanent additional column "${key}" cannot be deleted.`);
 		}
 		await this._deleteRecord('custom_columns', key);
 

@@ -109,7 +109,14 @@ class KongbuheyApp {
 			db: this.db,
 			onStateChange: (evt) => this.handleEngineEvent(evt)
 		});
-		this.activeView = 'spreadsheet';
+		const SelectorClass = (typeof UnitSelectorView !== 'undefined')
+			? UnitSelectorView
+			: (typeof require !== 'undefined' ? require('./selector.js').UnitSelectorView : null);
+		this.selectorView = SelectorClass ? new SelectorClass({
+			engine: this.engine,
+			onStateChange: (evt) => this.handleEngineEvent(evt)
+		}) : null;
+		this.activeView = 'selector';
 		this.flashcardRevealed = false;
 	}
 
@@ -118,6 +125,11 @@ class KongbuheyApp {
 		this._bindNavigationEvents();
 		this._bindToolbarEvents();
 		this._bindModalEvents();
+
+		const selectorMountEl = document.getElementById('selector-container');
+		if (selectorMountEl && this.selectorView) {
+			this.selectorView.mount(selectorMountEl);
+		}
 
 		const mountEl = document.getElementById('spreadsheet-container');
 		if (mountEl) {
@@ -128,6 +140,9 @@ class KongbuheyApp {
 		await this.engine.init();
 		this._setDbStatus('DB Synced', false);
 		this.updateStatsBar();
+		if (this.selectorView) {
+			this.selectorView.render();
+		}
 	}
 
 	_setDbStatus(label, isSaving = false) {
@@ -150,6 +165,9 @@ class KongbuheyApp {
 		if (evt.type === 'ready') {
 			this._setDbStatus('DB Synced', false);
 			this.updateStatsBar();
+			if (this.activeView === 'selector' && this.selectorView) {
+				this.selectorView.render();
+			}
 			return;
 		}
 		if (evt.type === 'request-edit-column') {
@@ -169,6 +187,8 @@ class KongbuheyApp {
 		this.updateStatsBar();
 		if (this.activeView === 'practice') {
 			this.renderPracticeView();
+		} else if (this.activeView === 'selector' && this.selectorView && !String(evt.type || '').startsWith('selector-')) {
+			this.selectorView.render();
 		}
 	}
 
@@ -250,12 +270,16 @@ class KongbuheyApp {
 			t.setAttribute('aria-selected', isMatch ? 'true' : 'false');
 		});
 
+		const selectorViewEl = document.getElementById('view-selector');
 		const sheetView = document.getElementById('view-spreadsheet');
 		const practiceView = document.getElementById('view-practice');
+		if (selectorViewEl) selectorViewEl.classList.toggle('active', viewName === 'selector');
 		if (sheetView) sheetView.classList.toggle('active', viewName === 'spreadsheet');
 		if (practiceView) practiceView.classList.toggle('active', viewName === 'practice');
 
-		if (viewName === 'spreadsheet') {
+		if (viewName === 'selector' && this.selectorView) {
+			this.selectorView.render();
+		} else if (viewName === 'spreadsheet') {
 			this.engine.renderHeader();
 			this.engine.renderViewport();
 		} else if (viewName === 'practice') {
@@ -500,6 +524,7 @@ class KongbuheyApp {
 			title.textContent = `Edit Additional Column: ${existingCol.label}`;
 			origInput.value = existingCol.key;
 			keyInput.value = existingCol.key;
+			keyInput.disabled = Boolean(existingCol.isPermanent || existingCol.deletable === false);
 			typeSelect.value = existingCol.type || 'string';
 			enumInput.value = Array.isArray(existingCol.enumOptions) ? existingCol.enumOptions.join(', ') : '';
 			defInput.value = existingCol.defaultValue !== undefined ? String(existingCol.defaultValue) : '';
@@ -508,6 +533,7 @@ class KongbuheyApp {
 			title.textContent = 'Create New Additional Column';
 			origInput.value = '';
 			keyInput.value = '';
+			keyInput.disabled = false;
 			typeSelect.value = 'string';
 			enumInput.value = '';
 			defInput.value = '';
@@ -520,7 +546,7 @@ class KongbuheyApp {
 	}
 
 	async handleDeleteColumnRequest(col) {
-		if (!col || col.isDefault) return;
+		if (!col || col.isDefault || col.isPermanent || col.deletable === false) return;
 		await this.engine.removeCustomColumn(col.key);
 		if (!document.getElementById('modal-columns-manager')?.classList.contains('hidden')) {
 			this.renderColumnsManagerList();
@@ -604,14 +630,23 @@ class KongbuheyApp {
 				editBtn.addEventListener('click', () => this.openColumnModal(col));
 				right.appendChild(editBtn);
 
-				const delBtn = document.createElement('button');
-				delBtn.type = 'button';
-				delBtn.className = 'btn btn-danger';
-				delBtn.textContent = 'Delete';
-				delBtn.addEventListener('click', async () => {
-					await this.handleDeleteColumnRequest(col);
-				});
-				right.appendChild(delBtn);
+				if (!col.isPermanent && col.deletable !== false) {
+					const delBtn = document.createElement('button');
+					delBtn.type = 'button';
+					delBtn.className = 'btn btn-danger';
+					delBtn.textContent = 'Delete';
+					delBtn.addEventListener('click', async () => {
+						await this.handleDeleteColumnRequest(col);
+					});
+					right.appendChild(delBtn);
+				} else {
+					const permSpan = document.createElement('span');
+					permSpan.className = 'stat-label';
+					permSpan.style.fontSize = '0.72rem';
+					permSpan.title = 'Permanent flashcard column (cannot be deleted)';
+					permSpan.textContent = 'Permanent';
+					right.appendChild(permSpan);
+				}
 			} else {
 				const lockSpan = document.createElement('span');
 				lockSpan.className = 'stat-label';
