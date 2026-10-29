@@ -5,14 +5,14 @@
  * ============================================================================
  *
  * Validates:
- *   1. Local file system architecture (index.html, index.css, db.js, spreadsheet.js, app.js)
+ *   1. Clean webapp/ directory structure (index.html, index.css, db.js, spreadsheet.js, app.js)
  *   2. All 13 default columns from data.js & 6 initial additional columns
- *   3. Visual distinction classes for default vs. additional columns
+ *   3. Visual distinction & compact hover-tooltip legend ("Default", "Additional")
  *   4. Custom columns: creatable, editable, deletable
  *   5. Default columns: editable, NOT deletable
- *   6. Row reordering & column header ascending/descending sort toggle
- *   7. Column resizing, hiding, reordering, and reset mechanisms
- *   8. Virtual scrolling optimization (only visible rows rendered out of 2,006+)
+ *   6. Row reordering, column header sort toggle, and overlapping multi-column sorting
+ *   7. Column resizing (including "# Order" column), hiding, reordering, and resets
+ *   8. Virtual scrolling optimization & unified horizontal scroll alignment
  *   9. View settings & cell data persistence across simulated webpage refresh
  *  10. Flashcard queue sorting & evaluation using the 6 flashcard columns
  */
@@ -21,9 +21,9 @@ const fs = require('fs');
 const path = require('path');
 
 const { KR_EN_languageUnits, DATA_SCHEMA } = require('../data.js');
-const { DEFAULT_COLUMNS_SPEC, INITIAL_ADDITIONAL_COLUMNS, coerceColumnValue, KongbuheyDB } = require('../db.js');
-const { SpreadsheetEngine } = require('../spreadsheet.js');
-const { sortPracticeSetUnits, evaluateFlashcardAttempt } = require('../app.js');
+const { DEFAULT_COLUMNS_SPEC, INITIAL_ADDITIONAL_COLUMNS, KongbuheyDB } = require('../webapp/db.js');
+const { SpreadsheetEngine } = require('../webapp/spreadsheet.js');
+const { sortPracticeSetUnits, evaluateFlashcardAttempt } = require('../webapp/app.js');
 
 let passed = 0;
 let failed = 0;
@@ -44,31 +44,46 @@ async function runSuite() {
 	console.log(`======================================================`);
 
 	// -------------------------------------------------------------------------
-	// 1. Local File System Compatibility & Separate JS/CSS Architecture
+	// 1. Dedicated webapp/ Folder & Local File System Compatibility
 	// -------------------------------------------------------------------------
-	console.log(`\n--- 1. Local File System & Modular File Structure ---`);
+	console.log(`\n--- 1. Dedicated webapp/ Folder & Modular File Structure ---`);
 	const rootDir = path.resolve(__dirname, '..');
-	const indexHtmlPath = path.join(rootDir, 'index.html');
-	const indexCssPath = path.join(rootDir, 'index.css');
-	const dbJsPath = path.join(rootDir, 'db.js');
-	const sheetJsPath = path.join(rootDir, 'spreadsheet.js');
-	const appJsPath = path.join(rootDir, 'app.js');
+	const webappDir = path.join(rootDir, 'webapp');
+	const indexHtmlPath = path.join(webappDir, 'index.html');
+	const indexCssPath = path.join(webappDir, 'index.css');
+	const dbJsPath = path.join(webappDir, 'db.js');
+	const sheetJsPath = path.join(webappDir, 'spreadsheet.js');
+	const appJsPath = path.join(webappDir, 'app.js');
 
-	assert(fs.existsSync(indexHtmlPath) && fs.statSync(indexHtmlPath).size > 500, 'index.html exists and is populated');
-	assert(fs.existsSync(indexCssPath) && fs.statSync(indexCssPath).size > 500, 'index.css exists as separate CSS file');
-	assert(fs.existsSync(dbJsPath) && fs.statSync(dbJsPath).size > 500, 'db.js exists as separate JS module');
-	assert(fs.existsSync(sheetJsPath) && fs.statSync(sheetJsPath).size > 500, 'spreadsheet.js exists as separate JS module');
-	assert(fs.existsSync(appJsPath) && fs.statSync(appJsPath).size > 500, 'app.js exists as separate JS module');
+	assert(fs.existsSync(indexHtmlPath) && fs.statSync(indexHtmlPath).size > 500, 'webapp/index.html exists and is populated');
+	assert(fs.existsSync(indexCssPath) && fs.statSync(indexCssPath).size > 500, 'webapp/index.css exists as separate CSS file');
+	assert(fs.existsSync(dbJsPath) && fs.statSync(dbJsPath).size > 500, 'webapp/db.js exists as separate JS module');
+	assert(fs.existsSync(sheetJsPath) && fs.statSync(sheetJsPath).size > 500, 'webapp/spreadsheet.js exists as separate JS module');
+	assert(fs.existsSync(appJsPath) && fs.statSync(appJsPath).size > 500, 'webapp/app.js exists as separate JS module');
+	assert(
+		!fs.existsSync(path.join(rootDir, 'index.html')) &&
+		!fs.existsSync(path.join(rootDir, 'spreadsheet.js')),
+		'Project root is not polluted by loose webapp files'
+	);
 
 	const htmlContent = fs.readFileSync(indexHtmlPath, 'utf8');
-	assert(!htmlContent.includes('type="module"'), 'index.html avoids ES module scripts that fail under file:// CORS');
-	assert(htmlContent.includes('<link rel="stylesheet" href="index.css">'), 'index.html links separate index.css');
+	assert(!htmlContent.includes('type="module"'), 'webapp/index.html avoids ES module scripts that fail under file:// CORS');
+	assert(htmlContent.includes('<link rel="stylesheet" href="index.css">'), 'webapp/index.html links separate index.css');
 	assert(
-		htmlContent.includes('<script src="data.js"></script>') &&
+		htmlContent.includes('<script src="../data.js"></script>') &&
 		htmlContent.includes('<script src="db.js"></script>') &&
 		htmlContent.includes('<script src="spreadsheet.js"></script>') &&
 		htmlContent.includes('<script src="app.js"></script>'),
-		'index.html loads data.js, db.js, spreadsheet.js, and app.js via local-filesystem-compatible script tags'
+		'webapp/index.html loads ../data.js, db.js, spreadsheet.js, and app.js via local-filesystem-compatible script tags'
+	);
+
+	// Verify concise legend text ("Default", "Additional") with hover tooltips
+	assert(
+		htmlContent.includes('title="Default Columns (data.js · Editable, Non-Deletable)"') &&
+		htmlContent.includes('<span>Default</span>') &&
+		htmlContent.includes('title="Additional Columns (Browser DB · Creatable, Editable, Deletable)"') &&
+		htmlContent.includes('<span>Additional</span>'),
+		'Toolbar color legend uses concise "Default" and "Additional" labels with full details in hover tooltips'
 	);
 
 	const cssContent = fs.readFileSync(indexCssPath, 'utf8');
@@ -77,7 +92,12 @@ async function runSuite() {
 		cssContent.includes('.col-origin-custom') &&
 		cssContent.includes('.cell-origin-default') &&
 		cssContent.includes('.cell-origin-custom'),
-		'index.css defines distinct color styles for default data.js columns vs additional custom columns'
+		'webapp/index.css defines distinct color styles for default data.js columns vs additional custom columns'
+	);
+	assert(
+		!cssContent.includes('will-change: transform') &&
+		cssContent.includes('.sheet-header-track {\n\tposition: sticky;\n\ttop: 0;'),
+		'webapp/index.css uses unified sticky header inside scroll viewport without sticky-breaking transform on rows layer'
 	);
 
 	// -------------------------------------------------------------------------
@@ -144,7 +164,7 @@ async function runSuite() {
 	);
 
 	// -------------------------------------------------------------------------
-	// 4. Custom Columns: Creatable, Editable, Deletable; Default: Editable, Non-Deletable
+	// 4. Column CRUD & Default Column Protection
 	// -------------------------------------------------------------------------
 	console.log(`\n--- 4. Column CRUD & Default Column Protection ---`);
 	const newCol = await engine.addCustomColumn({
@@ -169,26 +189,23 @@ async function runSuite() {
 	await engine.removeCustomColumn('MnemonicHint');
 	assert(!engine.columnMap.has('MnemonicHint'), 'User can delete custom column');
 
-	// Verify default column cannot be deleted
 	let defaultDeleteBlocked = false;
 	try {
 		await engine.removeCustomColumn('Korean');
-	} catch (err) {
+	} catch (_) {
 		defaultDeleteBlocked = true;
 	}
 	assert(defaultDeleteBlocked && engine.columnMap.has('Korean'), 'Default column from data.js cannot be deleted');
 
-	// Verify default column IS editable
 	const originalEnglish0 = engine.getCellValue(0, 'English');
 	await engine.setCellValue(0, 'English', 'American person (edited)');
 	assert(engine.getCellValue(0, 'English') === 'American person (edited)', 'Default column from data.js is editable');
-	// Restore original value in memory & DB
 	await engine.setCellValue(0, 'English', originalEnglish0);
 
 	// -------------------------------------------------------------------------
-	// 5. Row Sorting (ASC/DESC Toggle) & Manual Row Reordering
+	// 5. Row Sorting, Overlapping Multi-Column Sorting & Manual Row Reordering
 	// -------------------------------------------------------------------------
-	console.log(`\n--- 5. Row Sorting & Manual Row Reordering ---`);
+	console.log(`\n--- 5. Row Sorting, Overlapping Sorts & Manual Row Reordering ---`);
 	await engine.toggleSortByColumn('Id');
 	assert(engine.sortState.columnKey === 'Id' && engine.sortState.direction === 'asc', 'First click on column sort button sorts ascending');
 	assert(engine.rowOrder[0] === 0 && engine.rowOrder[1] === 1, 'Ascending Id sort places 0 first');
@@ -197,9 +214,38 @@ async function runSuite() {
 	assert(engine.sortState.columnKey === 'Id' && engine.sortState.direction === 'desc', 'Second click on column sort button toggles to descending');
 	assert(engine.rowOrder[0] === KR_EN_languageUnits.length - 1, 'Descending Id sort places highest Id first');
 
+	// Test overlapping multi-column sort: Sort by English (ASC), then sort by Source (ASC)
+	await engine.resetSortingAndRowOrder();
+	await engine.sortByColumn('English', 'asc');
+	await engine.sortByColumn('Source', 'asc');
+
+	assert(
+		engine.sortStack.length === 2 &&
+		engine.sortStack[0].columnKey === 'Source' &&
+		engine.sortStack[1].columnKey === 'English',
+		'Sorting by English then Source builds an overlapping sortStack [Source, English]'
+	);
+
+	// Verify that within the first Source group (e.g. SUOBI00), all units are sorted alphabetically by English
+	const firstSource = engine.getCellValue(engine.rowOrder[0], 'Source');
+	const groupUnits = engine.rowOrder.filter(id => engine.getCellValue(id, 'Source') === firstSource);
+	let englishOrderedInGroup = true;
+	for (let i = 1; i < groupUnits.length; i++) {
+		const prevEn = String(engine.getCellValue(groupUnits[i - 1], 'English')).toLowerCase();
+		const currEn = String(engine.getCellValue(groupUnits[i], 'English')).toLowerCase();
+		if (prevEn.localeCompare(currEn, 'ko') > 0) {
+			englishOrderedInGroup = false;
+			break;
+		}
+	}
+	assert(
+		groupUnits.length > 5 && englishOrderedInGroup,
+		`Within primary Source group "${firstSource}" (${groupUnits.length} units), rows remain alphabetically sorted by English`
+	);
+
 	// Reset sort and test manual row reorder
 	await engine.resetSortingAndRowOrder();
-	assert(engine.sortState.columnKey === null && engine.rowOrder[0] === 0, 'Reset sorting restores canonical row order 0..N-1');
+	assert(engine.sortState.columnKey === null && engine.sortStack.length === 0 && engine.rowOrder[0] === 0, 'Reset sorting clears sortStack and restores canonical row order 0..N-1');
 
 	await engine.reorderRowByUnitId(5, 0, false);
 	assert(engine.rowOrder[0] === 5 && engine.rowOrder[1] === 0, 'Manual row reorder moves unit 5 before unit 0');
@@ -208,11 +254,14 @@ async function runSuite() {
 	assert(engine.rowOrder[0] === 0 && engine.rowOrder[5] === 5, 'moveRowToIndex restores unit 5 back to index 5');
 
 	// -------------------------------------------------------------------------
-	// 6. Column Resizing, Hiding, Reordering, and Visibility Reset
+	// 6. Column Resizing (including # Order), Hiding, Reordering & Resets
 	// -------------------------------------------------------------------------
-	console.log(`\n--- 6. Column Resizing, Hiding, Reordering & Resets ---`);
+	console.log(`\n--- 6. Column Resizing (including # Order), Hiding, Reordering & Resets ---`);
 	await engine.setColumnWidth('Korean', 260);
-	assert(engine.columnWidths['Korean'] === 260, 'Column width can be resized to 260px');
+	assert(engine.columnWidths['Korean'] === 260, 'Data column width can be resized to 260px');
+
+	await engine.setColumnWidth('__rowOrder__', 115);
+	assert(engine.rowHandleWidth === 115, '# Order column width is resizable via setColumnWidth("__rowOrder__", 115)');
 
 	await engine.setColumnVisibility('SyntaxFrame', false);
 	await engine.setColumnVisibility('SemanticVector', false);
@@ -227,7 +276,6 @@ async function runSuite() {
 	const koreanIdx = engine.columnOrder.indexOf('Korean');
 	assert(inSetIdx === koreanIdx - 1, 'Column reordering moves InSet directly before Korean');
 
-	// Test Reset Column Visibility
 	await engine.resetAllColumnVisibility();
 	assert(
 		engine.columnVisibility['SyntaxFrame'] === true &&
@@ -248,11 +296,11 @@ async function runSuite() {
 	await engine.setColumnVisibility('HonorificRules', false);
 	await engine.reorderRowByUnitId(10, 0, false);
 
-	// Instantiate a fresh SpreadsheetEngine sharing the same DB to simulate page reload
 	const reloadedEngine = new SpreadsheetEngine({ db, rawUnits: KR_EN_languageUnits, dataSchema: DATA_SCHEMA });
 	await reloadedEngine.init();
 
 	assert(reloadedEngine.columnWidths['Korean'] === 260, 'Reloaded spreadsheet preserves resized column width');
+	assert(reloadedEngine.rowHandleWidth === 115, 'Reloaded spreadsheet preserves resized # Order column width');
 	assert(reloadedEngine.columnVisibility['HonorificRules'] === false, 'Reloaded spreadsheet preserves hidden column state');
 	assert(reloadedEngine.columnOrder.indexOf('InSet') === reloadedEngine.columnOrder.indexOf('Korean') - 1, 'Reloaded spreadsheet preserves custom column order');
 	assert(reloadedEngine.rowOrder[0] === 10, 'Reloaded spreadsheet preserves custom row order');
@@ -298,4 +346,3 @@ runSuite().catch(err => {
 	console.error(err);
 	process.exit(1);
 });
-

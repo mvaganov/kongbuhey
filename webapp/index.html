@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Kongbuhey (공부해) — Language Units Spreadsheet & Study Manager</title>
+	<title>Kongbuhey (공부해) — Language Units Spreadsheet &amp; Study Manager</title>
 	<link rel="stylesheet" href="index.css">
 </head>
 <body>
@@ -90,15 +90,15 @@
 			</div>
 
 			<div class="toolbar-row toolbar-row-secondary">
-				<!-- Column Color Key & Row Stats -->
+				<!-- Compact Column Color Key (Full Details on Hover) & Row Stats -->
 				<div class="legend-group">
-					<span class="legend-item">
+					<span class="legend-item" title="Default Columns (data.js · Editable, Non-Deletable)">
 						<span class="legend-swatch swatch-default"></span>
-						<span><strong>Default Columns</strong> (<code>data.js</code> · Editable, Non-Deletable)</span>
+						<span>Default</span>
 					</span>
-					<span class="legend-item">
+					<span class="legend-item" title="Additional Columns (Browser DB · Creatable, Editable, Deletable)">
 						<span class="legend-swatch swatch-custom"></span>
-						<span><strong>Additional Columns</strong> (Browser DB · Creatable, Editable, Deletable)</span>
+						<span>Additional</span>
 					</span>
 					<span class="showing-counter">
 						Showing <strong id="stat-filtered-count">0</strong> rows · <strong id="stat-visible-cols">0</strong>/<span id="stat-total-cols">0</span> columns
@@ -285,7 +285,7 @@
 	</div>
 
 	<!-- Local File System Scripts (Standard script tags for file:// compatibility) -->
-	<script src="data.js"></script>
+	<script src="../data.js"></script>
 	<script src="db.js"></script>
 	<script src="spreadsheet.js"></script>
 	<script src="app.js"></script>

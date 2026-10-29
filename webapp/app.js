@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * app.js - Kongbuhey Single-Page Application Controller
+ * webapp/app.js - Kongbuhey Single-Page Application Controller
  * ============================================================================
  *
  * Coordinates:
@@ -227,10 +227,6 @@ class KongbuheyApp {
 		if (elTotCols) elTotCols.textContent = String(totalCols);
 	}
 
-	// =========================================================================
-	// SPA Navigation
-	// =========================================================================
-
 	_bindNavigationEvents() {
 		const tabs = document.querySelectorAll('.spa-tab');
 		tabs.forEach(tab => {
@@ -267,10 +263,6 @@ class KongbuheyApp {
 			this.renderPracticeView();
 		}
 	}
-
-	// =========================================================================
-	// Toolbar Controls
-	// =========================================================================
 
 	_bindToolbarEvents() {
 		const searchInput = document.getElementById('filter-search');
@@ -314,7 +306,6 @@ class KongbuheyApp {
 			});
 		}
 
-		// Bulk select/unselect filtered units for Practice Set (InSet)
 		const btnSelectFiltered = document.getElementById('btn-select-filtered');
 		const btnUnselectFiltered = document.getElementById('btn-unselect-filtered');
 
@@ -331,7 +322,6 @@ class KongbuheyApp {
 			});
 		}
 
-		// View & Column Reset Controls
 		const btnAddCol = document.getElementById('btn-add-column');
 		const btnManageCols = document.getElementById('btn-manage-columns');
 		const btnResetVis = document.getElementById('btn-reset-visibility');
@@ -361,12 +351,7 @@ class KongbuheyApp {
 		}
 	}
 
-	// =========================================================================
-	// Modals: Create/Edit Column, Column Manager, Move Row
-	// =========================================================================
-
 	_bindModalEvents() {
-		// 1. Column Form Modal
 		const colModal = document.getElementById('modal-column-form');
 		const colForm = document.getElementById('form-custom-column');
 		const typeSelect = document.getElementById('col-input-type');
@@ -430,7 +415,6 @@ class KongbuheyApp {
 			});
 		}
 
-		// 2. Columns Manager Modal
 		const mgrModal = document.getElementById('modal-columns-manager');
 		const closeMgrModal = () => {
 			if (mgrModal) mgrModal.classList.add('hidden');
@@ -465,7 +449,6 @@ class KongbuheyApp {
 			this.openColumnModal(null);
 		});
 
-		// 3. Move Row Modal
 		const rowModal = document.getElementById('modal-move-row');
 		const rowForm = document.getElementById('form-move-row');
 		const closeRowModal = () => {
@@ -585,7 +568,6 @@ class KongbuheyApp {
 			const right = document.createElement('div');
 			right.className = 'mgr-col-right';
 
-			// Move Up / Left
 			const upBtn = document.createElement('button');
 			upBtn.type = 'button';
 			upBtn.className = 'btn btn-secondary';
@@ -600,7 +582,6 @@ class KongbuheyApp {
 			});
 			right.appendChild(upBtn);
 
-			// Move Down / Right
 			const downBtn = document.createElement('button');
 			downBtn.type = 'button';
 			downBtn.className = 'btn btn-secondary';
@@ -664,10 +645,6 @@ class KongbuheyApp {
 		if (modal) modal.classList.remove('hidden');
 	}
 
-	// =========================================================================
-	// View 2: Practice Set & Flashcard Queue Preview
-	// =========================================================================
-
 	renderPracticeView() {
 		const totalUnits = this.engine.rawUnits.length;
 		const inSetIds = [];
@@ -681,7 +658,6 @@ class KongbuheyApp {
 		const countEl = document.getElementById('practice-queue-count');
 		if (countEl) countEl.textContent = String(sortedQueue.length);
 
-		// 1. Render Active Flashcard Stage (Top priority unit in queue)
 		const stageEl = document.getElementById('flashcard-stage');
 		if (stageEl) {
 			stageEl.innerHTML = '';
@@ -748,7 +724,6 @@ class KongbuheyApp {
 			}
 		}
 
-		// 2. Render Sorted Queue Table
 		const tbody = document.getElementById('practice-queue-tbody');
 		if (!tbody) return;
 		tbody.innerHTML = '';

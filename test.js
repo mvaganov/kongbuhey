@@ -90,9 +90,9 @@ function runTests(options = {}) {
 			'korean/analyzer/verb_suffix_rules.js': 500,
 			'korean/analyzer/token_analyzer.js': 600,
 			'korean/analyzer/sentence_analyzer.js': 500,
-			'db.js': 700,
-			'spreadsheet.js': 1400,
-			'app.js': 900
+			'webapp/db.js': 700,
+			'webapp/spreadsheet.js': 1400,
+			'webapp/app.js': 900
 		};
 		for (const [relPath, maxLines] of Object.entries(FILE_LIMITS)) {
 			const fullP = path.resolve(__dirname, relPath);
