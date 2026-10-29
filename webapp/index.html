@@ -19,7 +19,10 @@
 
 		<!-- SPA View Switcher (No page reloads; keeps data.js in memory) -->
 		<nav class="spa-nav" role="tablist" aria-label="Application Views">
-			<button type="button" class="spa-tab active" data-view="spreadsheet" role="tab" aria-selected="true">
+			<button type="button" class="spa-tab active" data-view="selector" role="tab" aria-selected="true">
+				<span>✨ Unit Selector &amp; Details</span>
+			</button>
+			<button type="button" class="spa-tab" data-view="spreadsheet" role="tab" aria-selected="false">
 				<span>📊 Language Units Spreadsheet</span>
 			</button>
 			<button type="button" class="spa-tab" data-view="practice" role="tab" aria-selected="false">
@@ -46,9 +49,16 @@
 	</header>
 
 	<!-- ===================================================================== -->
+	<!-- VIEW 0: STREAMLINED UNIT SELECTOR & LANGUAGE UNIT DETAILS             -->
+	<!-- ===================================================================== -->
+	<main id="view-selector" class="spa-view active">
+		<section id="selector-container" class="selector-container" aria-label="Streamlined Language Unit Selector and Details"></section>
+	</main>
+
+	<!-- ===================================================================== -->
 	<!-- VIEW 1: VIRTUALIZED LANGUAGE UNITS SPREADSHEET                        -->
 	<!-- ===================================================================== -->
-	<main id="view-spreadsheet" class="spa-view active">
+	<main id="view-spreadsheet" class="spa-view">
 		<!-- Control Toolbar -->
 		<section class="sheet-toolbar">
 			<div class="toolbar-row">
@@ -288,6 +298,7 @@
 	<script src="../data.js"></script>
 	<script src="db.js"></script>
 	<script src="spreadsheet.js"></script>
+	<script src="selector.js"></script>
 	<script src="app.js"></script>
 </body>
 </html>

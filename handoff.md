@@ -25,10 +25,11 @@ kongbuhey/
 ├── generator.js & exhaustive.js# Combinatorial phrase generators & Cartesian validator
 ├── test.js                     # 7-stage unified fast-failing master test suite (Stage 0: Static Hygiene & Linter)
 ├── webapp/
-│   ├── index.html              # Local-filesystem SPA entry point (Spreadsheet & Practice Set UI)
-│   ├── index.css               # Stylesheet with distinct Default (data.js) vs Additional (DB) column palettes
+│   ├── index.html              # Local-filesystem SPA entry point (Selector, Spreadsheet & Practice Set UI)
+│   ├── index.css               # Stylesheet with distinct Default (data.js) vs Additional (DB) palettes & HUD
 │   ├── db.js                   # Browser IndexedDB storage layer (+ LocalStorage/memory fallback)
 │   ├── spreadsheet.js          # Virtualized spreadsheet engine (overlapping sort, row/col reorder, resize, hide)
+│   ├── selector.js             # Streamlined Source/Unit Selector & Details view (Markdown, 3 sentences, HUD)
 │   └── app.js                  # SPA controller, column/view modals, and Flashcard queue evaluator
 ├── tts_demo.html               # Interactive browser SpeechSynthesis testbed
 ├── korean.js                   # Public facade re-exporting core modules
@@ -69,10 +70,14 @@ kongbuhey/
 4. **`text_analyzer.js` & `korean/analyzer/`**: Decomposes natural Korean passages into constituent learning units, resolving homonyms and identifying curriculum gaps. Refactored into a modular, zero-dependency engine optimized for both Node CLI and interactive web browser execution (<5ms per passage).
 5. **`ingest.js`**: Unified CLI pipeline automating passage decomposition, stem deduction hints, draft filtering, unit insertion, homonym synchronization, and test verification in one command.
 6. **`tts_demo.html`**: Visual and auditory testbed for evaluating browser `window.speechSynthesis` voices with customizable styles (`natural`, `hyphenated`, `spaced`) and pitch/rate controls.
-7. **`webapp/` (`index.html`, `index.css`, `db.js`, `spreadsheet.js`, `app.js`)**:
+7. **`webapp/` (`index.html`, `index.css`, `db.js`, `spreadsheet.js`, `selector.js`, `app.js`)**:
    - Local-filesystem (`file://`) compatible Single-Page Application (SPA) with separate JS and CSS modules isolated in `webapp/`.
-   - Virtualized Spreadsheet UI displaying all 2,006 language units across all 13 default `data.js` columns (`Id`..`SyntaxFrame`) plus user-extensible Browser DB columns.
-   - Pre-initialized with 6 Flashcard & Practice Set columns: `InSet` (`boolean`), `RecognitionScore` (`int`), `LongTermRecognition` (`enum{unknown, recognized, definitionKnown, knownByDefinition}`), `TimeStampLastCorrect` (`unixTime`), `TimeStampLastSeen` (`unixTime`), and `notes` (`string`).
+   - **Streamlined Source/Unit Selector & Details View (`selector.js`)**:
+     - Collapsible Source groups with tri-state inclusion checkboxes (`✓` when all units included, empty when none included, `~` when partially included; clicking toggles all units in that Source).
+     - Expandable individual language unit rows with checkboxes (`InSet`) and click-to-inspect **Language Unit Details**.
+     - **Language Unit Details View**: Displays Korean text, Conjugation/Grammar rules (if available), English definition, Markdown Notes (supporting tiered/nested lists and inline HTML), in-place Edit mode (showing raw Markdown for Notes), 3 dynamically generated sentences/phrases with a Regenerate button, and a single-line minimalist videogame HUD for `RecognitionScore`, `LongTermRecognition`, `TimeStampLastCorrect`, and clickable `TimeStampLastSeen` (updates to current Unix time).
+   - **Virtualized Spreadsheet UI (`spreadsheet.js`)**: Displays all 2,006 language units across all 13 default `data.js` columns (`Id`..`SyntaxFrame`) plus Browser DB columns.
+   - Pre-initialized with 6 **permanent** Flashcard & Practice Set columns (`isPermanent: true, deletable: false`): `InSet` (`boolean`), `RecognitionScore` (`int`), `LongTermRecognition` (`enum{unknown, recognized, definitionKnown, knownByDefinition}`), `TimeStampLastCorrect` (`unixTime`), `TimeStampLastSeen` (`unixTime`), and `notes` (`string`). Users can still create, edit, and delete additional custom columns.
    - Full persistence of additional column schemas, cell values, default column overrides, and view settings (`columnOrder`, `columnWidths`, `rowHandleWidth`, `columnVisibility`, `rowOrder`, `sortState`, `sortStack`) in `IndexedDB`.
    - Supports overlapping multi-column sorting (`sortStack`), e.g. sorting by `English` and then sorting by `Source` groups primarily by `Source` while maintaining alphabetical `English` order within each source.
 
@@ -137,7 +142,7 @@ kongbuhey/
   - Stage 5: Text Analyzer Passage Check [ PASS ] (28 passages: 0 gaps)
   - Stage 6: Semantic & Honorific Concord [ PASS ] (14 suites, 6,223 assertions passed)
 - **Modular Analyzer Suite (`node test/analyzer_modular_test.js`)**: 14/14 tests passed, browser-clean (zero Node dependencies).
-- **Spreadsheet UI & DB Suite (`node test/spreadsheet_ui_test.js`)**: 59/59 assertions passed (virtual scrolling, IndexedDB persistence, custom/default columns, overlapping multi-column sorting, reordering, flashcard queue evaluation).
+- **Spreadsheet & Selector UI Suite (`node test/spreadsheet_ui_test.js`)**: 78/78 assertions passed (streamlined Source/Unit selector with tri-state `✓`/`~`/empty checkboxes, Language Unit Details view with Markdown + inline HTML & tiered lists, 3 generated sentences + regeneration, in-place editing, videogame HUD with clickable `TimeStampLastSeen`, permanent 6 flashcard columns, virtual scrolling, IndexedDB persistence, overlapping multi-column sorting).
 
 ---
 

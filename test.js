@@ -92,6 +92,7 @@ function runTests(options = {}) {
 			'korean/analyzer/sentence_analyzer.js': 500,
 			'webapp/db.js': 700,
 			'webapp/spreadsheet.js': 1400,
+			'webapp/selector.js': 1500,
 			'webapp/app.js': 900
 		};
 		for (const [relPath, maxLines] of Object.entries(FILE_LIMITS)) {
