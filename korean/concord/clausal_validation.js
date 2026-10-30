@@ -173,6 +173,8 @@ function parseSentenceToClauses(sentence) {
 		for (const rule of state.DYNAMIC_SUFFIX_RULES) {
 			if (w.endsWith(rule.suffix)) {
 				if (rule.isSeoRule) {
+					if (w.endsWith("께서") || w.endsWith("에게서") || w.endsWith("한테서")) continue;
+					if (w.endsWith("에서") && getNounUnit(w.slice(0, -2))) continue;
 					const prevChar = w.slice(-2, -1);
 					if (!prevChar) continue;
 					const d = decomposeHangul(prevChar);

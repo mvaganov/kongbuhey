@@ -1,3 +1,4 @@
+(function() {
 /**
  * ============================================================================
  * webapp/selector.js - Streamlined Source/Unit Selector & Unit Details View
@@ -254,480 +255,97 @@ function formatHudTelemetry(scoreOrObj, ltr, lastCorrect, lastSeen, nowSeconds =
 }
 
 // ============================================================================
-// 3. Korean Morphology & Dynamic 3-Sentence Generator for Any Language Unit
+// 3. Unified AST Sentence Generator & Dual English Translation Adapter
 // ============================================================================
 
-function _decomposeHangul(ch) {
-	if (!ch) return null;
-	const code = ch.charCodeAt(0);
-	if (code < 0xAC00 || code > 0xD7A3) return null;
-	const offset = code - 0xAC00;
-	return {
-		initial: Math.floor(offset / 588),
-		medial: Math.floor((offset % 588) / 28),
-		final: offset % 28
-	};
-}
-
-function _composeHangul(initial, medial, final = 0) {
-	return String.fromCharCode(0xAC00 + (initial * 21 + medial) * 28 + final);
-}
-
-function _hasBatchim(word) {
-	if (!word) return false;
-	for (let i = word.length - 1; i >= 0; i--) {
-		const d = _decomposeHangul(word[i]);
-		if (d) return d.final !== 0;
+const _unitGeneratorEngine = (() => {
+	if (typeof require === 'function') {
+		try {
+			return require('../korean/generation/unit_sentence_generator.js');
+		} catch (_) {}
 	}
-	return false;
-}
-
-function _hasRieulBatchim(word) {
-	if (!word) return false;
-	for (let i = word.length - 1; i >= 0; i--) {
-		const d = _decomposeHangul(word[i]);
-		if (d) return d.final === 8;
-	}
-	return false;
-}
-
-function _attachParticle(noun, type) {
-	const b = _hasBatchim(noun);
-	const r = _hasRieulBatchim(noun);
-	switch (type) {
-		case 'topic': return noun + (b ? '은' : '는');
-		case 'subject': return noun + (b ? '이' : '가');
-		case 'object': return noun + (b ? '을' : '를');
-		case 'copula': return noun + (b ? '이에요' : '예요');
-		case 'copula_past': return noun + (b ? '이었어요' : '였어요');
-		case 'ro': return noun + (!b || r ? '로' : '으로');
-		case 'with': return noun + (b ? '과' : '와');
-		case 'loc': return noun + '에';
-		case 'loc_act': return noun + '에서';
-		case 'also': return noun + '도';
-		default: return noun;
-	}
-}
-
-function _getVerbStem(lemma) {
-	const s = String(lemma || '').trim();
-	return s.endsWith('다') ? s.slice(0, -1) : s;
-}
-
-function _conjugateAoStem(lemma, conjRule = '') {
-	const stem = _getVerbStem(lemma);
-	if (!stem) return '';
-	const rule = String(conjRule || '').toLowerCase();
-
-	if (stem.endsWith('하') || rule.includes('hada')) {
-		return stem.slice(0, -1) + '해';
-	}
-	const lastChar = stem[stem.length - 1];
-	const prefix = stem.slice(0, -1);
-	const d = _decomposeHangul(lastChar);
-	if (!d) return stem + '어';
-
-	// ㅂ irregular (e.g. 어렵다 -> 어려워, 돕다 -> 도와)
-	if (rule.includes('p_irregular') && d.final === 17) {
-		const baseNoBatchim = _composeHangul(d.initial, d.medial, 0);
-		if (stem === '돕' || stem === '곱') {
-			return prefix + baseNoBatchim + '와';
-		}
-		return prefix + baseNoBatchim + '워';
-	}
-	// ㄷ irregular (e.g. 듣다 -> 들어, 걷다 -> 걸어)
-	if (rule.includes('d_irregular') && d.final === 7) {
-		const rieulSyl = _composeHangul(d.initial, d.medial, 8);
-		const vowel = (d.medial === 0 || d.medial === 8) ? '아' : '어';
-		return prefix + rieulSyl + vowel;
-	}
-	// ㅅ irregular (e.g. 짓다 -> 지어, 낫다 -> 나아)
-	if (rule.includes('s_irregular') && d.final === 19) {
-		const baseNoBatchim = _composeHangul(d.initial, d.medial, 0);
-		const vowel = (d.medial === 0 || d.medial === 8) ? '아' : '어';
-		return prefix + baseNoBatchim + vowel;
-	}
-	// 르 irregular (e.g. 모르다 -> 몰라, 부르다 -> 불러)
-	if ((rule.includes('reu_irregular') || lastChar === '르') && d.initial === 5 && d.medial === 18 && d.final === 0 && prefix.length > 0) {
-		const prevChar = prefix[prefix.length - 1];
-		const prevD = _decomposeHangul(prevChar);
-		if (prevD && prevD.final === 0) {
-			const prevWithRieul = _composeHangul(prevD.initial, prevD.medial, 8);
-			const isBright = prevD.medial === 0 || prevD.medial === 8;
-			return prefix.slice(0, -1) + prevWithRieul + (isBright ? '라' : '러');
+	if (typeof window !== 'undefined') {
+		const batchFn = window.generateUnitSentencesAST || window.generateSentencesForUnit;
+		const singleFn = window.generateSingleUnitSentenceAST || window.generateSentenceForUnit;
+		if (typeof batchFn === 'function') {
+			return {
+				generateSentenceForUnit: singleFn,
+				generateSentencesForUnit: batchFn,
+				generateUnitSentencesAST: batchFn
+			};
 		}
 	}
-	// ㅡ drop (e.g. 크다 -> 커, 바쁘다 -> 바빠, 쓰다 -> 써)
-	if (d.medial === 18 && d.final === 0) {
-		let isBright = false;
-		if (prefix.length > 0) {
-			const prevD = _decomposeHangul(prefix[prefix.length - 1]);
-			if (prevD && (prevD.medial === 0 || prevD.medial === 8)) isBright = true;
-		}
-		return prefix + _composeHangul(d.initial, isBright ? 0 : 4, 0);
-	}
-
-	const isBright = (d.medial === 0 || d.medial === 2 || d.medial === 8 || d.medial === 12) && !rule.includes('regular_eo');
-	if (d.final === 0) {
-		if (d.medial === 0 || d.medial === 4 || d.medial === 1 || d.medial === 5) return stem; // 가 -> 가, 서 -> 서
-		if (d.medial === 8) return prefix + _composeHangul(d.initial, 9, 0); // 오 -> 와
-		if (d.medial === 13) return prefix + _composeHangul(d.initial, 14, 0); // 주 -> 줘
-		if (d.medial === 20) return prefix + _composeHangul(d.initial, 6, 0); // 마시 -> 마셔
-		if (d.medial === 11) return prefix + _composeHangul(d.initial, 10, 0); // 되 -> 돼
-	}
-
-	return stem + (isBright ? '아' : '어');
-}
-
-function _conjugatePolite(lemma, conjRule = '') {
-	if (lemma === '이다') return '이에요';
-	if (lemma === '아니다') return '아니에요';
-	return _conjugateAoStem(lemma, conjRule) + '요';
-}
-
-function _conjugatePastPolite(lemma, conjRule = '') {
-	if (lemma === '이다') return '이었어요';
-	const ao = _conjugateAoStem(lemma, conjRule);
-	if (!ao) return '';
-	const last = ao[ao.length - 1];
-	const d = _decomposeHangul(last);
-	if (d && d.final === 0) {
-		return ao.slice(0, -1) + _composeHangul(d.initial, d.medial, 20) + '어요';
-	}
-	return ao + '았어요';
-}
-
-function _conjugateFuturePolite(lemma, conjRule = '') {
-	const stem = _getVerbStem(lemma);
-	if (!stem) return '';
-	const rule = String(conjRule || '').toLowerCase();
-	const last = stem[stem.length - 1];
-	const d = _decomposeHangul(last);
-	if (!d) return stem + '을 거예요';
-
-	if (rule.includes('p_irregular') && d.final === 17) {
-		return stem.slice(0, -1) + _composeHangul(d.initial, d.medial, 0) + '울 거예요';
-	}
-	if (rule.includes('d_irregular') && d.final === 7) {
-		return stem.slice(0, -1) + _composeHangul(d.initial, d.medial, 8) + '을 거예요';
-	}
-	if (d.final === 0) {
-		return stem.slice(0, -1) + _composeHangul(d.initial, d.medial, 8) + ' 거예요';
-	}
-	if (d.final === 8) {
-		return stem + ' 거예요';
-	}
-	return stem + '을 거예요';
-}
-
-function _hasUnitTag(unit, schema, ...targetTags) {
-	if (!unit) return false;
-	const raw = unit[schema.SemanticTags];
-	if (!raw) return false;
-	if (raw instanceof Set) return targetTags.some(t => raw.has(t));
-	if (Array.isArray(raw)) return targetTags.some(t => raw.includes(t));
-	return false;
-}
-
-function _parseVec(unit, schema) {
-	if (!unit) return {};
-	const idx = schema.SemanticData !== undefined ? schema.SemanticData : schema.SemanticVector;
-	const raw = unit[idx];
-	if (!raw) return {};
-	if (typeof raw === 'object') return raw;
-	try { return JSON.parse(raw); } catch (_) { return {}; }
-}
-
-function _pickDistinctRandom(arr, count) {
-	if (!arr || arr.length === 0) return [];
-	const copy = [...arr];
-	for (let i = copy.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		[copy[i], copy[j]] = [copy[j], copy[i]];
-	}
-	return copy.slice(0, count);
-}
+	return null;
+})();
 
 /**
- * Generates `count` (default 3) natural Korean sentences/phrases using the
- * specified language unit `unitId`.
+ * Generates `count` (default 3) grammatical, semantically concordant Korean sentences
+ * for `unitId` using the unified SentenceAST & Dual English Translation engine.
+ *
+ * Each returned item contains:
+ *   - `ko`: Surface Korean sentence
+ *   - `enLiteral`: Direct Korean-word-order English translation with role tags ([topic], [obj], etc.)
+ *   - `enNatural`: Idiomatic SVO English translation
+ *   - `en`: Alias for `enLiteral` (backward-compatible string property)
+ *   - `pronunciation`: Standard Korean Pronunciation (표준 발음법)
+ *   - `eojeols`: Array of eojeols with morpheme `segments` (`{ textKo, textEn, unitId, kind }`)
+ *   - `unitsUsed`: Ordered array of Language Unit metadata objects used in the sentence
+ *   - `unitIds`: Ordered array of Language Unit IDs used in the sentence
+ *
+ * Also attaches `.ok`, `.insufficientSet`, `.missingRoles`, and `.message` onto the
+ * returned array when `options.onlyFromSet` is used.
  */
-function generateSentencesForUnit(unitId, count = 3, rawUnits = null, dataSchema = null) {
-	const units = rawUnits || (typeof KR_EN_languageUnits !== 'undefined' ? KR_EN_languageUnits : []);
-	const schema = dataSchema || (typeof DATA_SCHEMA !== 'undefined' ? DATA_SCHEMA : {
-		Id: 0, Korean: 1, English: 2, PartofSpeech: 3, SemanticTags: 4,
-		Disambiguation: 5, Conjugation: 6, Source: 7, PriorityScore: 8,
-		FormalityLevel: 9, HonorificRules: 10, SemanticData: 11, SyntaxFrame: 12
-	});
-
-	const target = units[unitId];
-	if (!target) return [];
-
-	const ko = String(target[schema.Korean] || '').trim();
-	const en = String(target[schema.English] || '').trim();
-	const pos = String(target[schema.PartofSpeech] || 'Noun');
-	const conj = target[schema.Conjugation] || '';
-	const sv = _parseVec(target, schema);
-
-	const nouns = units.filter(u => u && u[schema.PartofSpeech] === 'Noun');
-	const personNouns = nouns.filter(u => _hasUnitTag(u, schema, 'person', 'profession') && !_hasUnitTag(u, schema, 'measureWord'));
-	const placeNouns = nouns.filter(u => _hasUnitTag(u, schema, 'place', 'country', 'building', 'facility'));
-	const foodNouns = nouns.filter(u => _hasUnitTag(u, schema, 'food'));
-	const drinkNouns = nouns.filter(u => _hasUnitTag(u, schema, 'drink'));
-	const actionVerbs = units.filter(u => u && u[schema.PartofSpeech] === 'Action Verb');
-	const descVerbs = units.filter(u => u && u[schema.PartofSpeech] === 'Descriptive Verb');
-
-	const candidates = [];
-
-	const sampleWord = (pool, fallbackKo, fallbackEn) => {
-		if (!pool || pool.length === 0) return { ko: fallbackKo, en: fallbackEn };
-		const picked = pool[Math.floor(Math.random() * pool.length)];
-		return { ko: picked[schema.Korean], en: picked[schema.English], conj: picked[schema.Conjugation] };
-	};
-
-	if (pos === 'Action Verb') {
-		const req = sv.req || '';
-		let objPool = nouns.filter(u => !_hasUnitTag(u, schema, 'measureWord', 'time', 'person'));
-		let useLocative = _hasUnitTag(target, schema, 'intransitive_motion', 'locative_goal') || req === 'place';
-
-		if (req === 'food' || _hasUnitTag(target, schema, 'transitive_food')) objPool = foodNouns;
-		else if (req === 'drink') objPool = drinkNouns;
-		else if (useLocative) objPool = placeNouns;
-
-		for (let i = 0; i < 8; i++) {
-			const subj = sampleWord(personNouns, '학생', 'student');
-			const obj = sampleWord(objPool, useLocative ? '학교' : '책', useLocative ? 'school' : 'book');
-			const place = sampleWord(placeNouns, '집', 'home');
-			const argPhrase = useLocative
-				? _attachParticle(obj.ko, 'loc')
-				: (req === 'subject' || _hasUnitTag(target, schema, 'intransitive') ? _attachParticle(place.ko, 'loc_act') : _attachParticle(obj.ko, 'object'));
-
-			candidates.push({
-				ko: `${_attachParticle(subj.ko, 'topic')} 오늘 ${argPhrase} ${_conjugatePolite(ko, conj)}.`,
-				en: `Today the ${subj.en} (${ko}: ${en}) — with ${obj.en}.`
-			});
-			candidates.push({
-				ko: `어제 친구와 같이 ${argPhrase} ${_conjugatePastPolite(ko, conj)}.`,
-				en: `Yesterday with a friend: ${ko} (${en}, past tense).`
-			});
-			candidates.push({
-				ko: `내일도 ${argPhrase} ${_conjugateFuturePolite(ko, conj)}.`,
-				en: `Tomorrow as well: will ${en} (${ko}).`
-			});
-			candidates.push({
-				ko: `저는 지금 ${argPhrase} ${_getVerbStem(ko)}고 싶어요.`,
-				en: `Right now I want to ${en} (${ko}).`
-			});
-			candidates.push({
-				ko: `${_attachParticle(subj.ko, 'subject')} 지금 ${argPhrase} ${_getVerbStem(ko)}고 있어요.`,
-				en: `The ${subj.en} is currently doing: ${ko} (${en}).`
-			});
-		}
-	} else if (pos === 'Descriptive Verb') {
-		const req = sv.req || '';
-		let subjPool = nouns.filter(u => !_hasUnitTag(u, schema, 'measureWord', 'time'));
-		if (req === 'food' || _hasUnitTag(target, schema, 'descriptive_food')) subjPool = [...foodNouns, ...drinkNouns];
-		else if (req === 'person' || _hasUnitTag(target, schema, 'descriptive_person')) subjPool = personNouns;
-		else if (req === 'place') subjPool = placeNouns;
-
-		const degreeAdverbs = ['아주', '매우', '정말', '참'];
-		for (let i = 0; i < 8; i++) {
-			const subj = sampleWord(subjPool, '음식', 'food');
-			const adv = degreeAdverbs[i % degreeAdverbs.length];
-			candidates.push({
-				ko: `이 ${_attachParticle(subj.ko, 'topic')} ${adv} ${_conjugatePolite(ko, conj)}.`,
-				en: `This ${subj.en} is ${adv} ${en} (${ko}).`
-			});
-			candidates.push({
-				ko: `어제는 ${_attachParticle(subj.ko, 'subject')} 정말 ${_conjugatePastPolite(ko, conj)}.`,
-				en: `Yesterday the ${subj.en} was really ${en} (${ko}).`
-			});
-			candidates.push({
-				ko: `${_attachParticle(subj.ko, 'subject')} ${_conjugateAoStem(ko, conj)}서 기분이 좋아요.`,
-				en: `Because the ${subj.en} is ${en} (${ko}), I feel good.`
-			});
-			candidates.push({
-				ko: `요즘도 ${_attachParticle(subj.ko, 'subject')} 많이 ${_conjugatePolite(ko, conj)}?`,
-				en: `Is the ${subj.en} still very ${en} (${ko}) these days?`
-			});
-		}
-	} else if (pos === 'Noun' || pos === 'Pronoun') {
-		const isPlace = _hasUnitTag(target, schema, 'place', 'country', 'building', 'facility') || sv.domain === 'place';
-		const isFood = _hasUnitTag(target, schema, 'food') || sv.domain === 'food';
-		const isDrink = _hasUnitTag(target, schema, 'drink') || sv.domain === 'drink';
-		const isPerson = _hasUnitTag(target, schema, 'person', 'profession') || sv.domain === 'person';
-		const isTime = _hasUnitTag(target, schema, 'time') || sv.domain === 'time';
-
-		for (let i = 0; i < 8; i++) {
-			if (isPlace) {
-				const person = sampleWord(personNouns, '학생', 'student');
-				candidates.push({
-					ko: `${_attachParticle(person.ko, 'topic')} 오늘 ${_attachParticle(ko, 'loc')} 가요.`,
-					en: `Today the ${person.en} goes to ${en} (${ko}).`
-				});
-				candidates.push({
-					ko: `저는 어제 ${_attachParticle(ko, 'loc_act')} 친구를 만났어요.`,
-					en: `Yesterday I met a friend at ${en} (${ko}).`
-				});
-				candidates.push({
-					ko: `여기가 바로 유명한 ${_attachParticle(ko, 'copula')}.`,
-					en: `This place right here is the famous ${en} (${ko}).`
-				});
-			} else if (isFood || isDrink) {
-				const verb = isDrink ? '마시다' : '먹다';
-				const verbConj = isDrink ? 'i_irregular' : 'regular_eo';
-				candidates.push({
-					ko: `저는 오늘 ${_attachParticle(ko, 'object')} ${_conjugatePolite(verb, verbConj)}.`,
-					en: `Today I ${isDrink ? 'drink' : 'eat'} ${en} (${ko}).`
-				});
-				candidates.push({
-					ko: `이 ${_attachParticle(ko, 'topic')} 정말 맛있어요.`,
-					en: `This ${en} (${ko}) is really delicious.`
-				});
-				candidates.push({
-					ko: `우리 같이 ${_attachParticle(ko, 'object')} 먹을까요?`,
-					en: `Shall we have ${en} (${ko}) together?`
-				});
-			} else if (isPerson) {
-				const place = sampleWord(placeNouns, '학교', 'school');
-				candidates.push({
-					ko: `${_attachParticle(ko, 'topic')} 지금 ${_attachParticle(place.ko, 'loc')} 있어요.`,
-					en: `The ${en} (${ko}) is at ${place.en} right now.`
-				});
-				candidates.push({
-					ko: `저기 있는 분은 친절한 ${_attachParticle(ko, 'copula')}.`,
-					en: `That person over there is a kind ${en} (${ko}).`
-				});
-				candidates.push({
-					ko: `${_attachParticle(ko, 'with')} 함께 한국어를 공부해요.`,
-					en: `I study Korean together with ${en} (${ko}).`
-				});
-			} else if (isTime) {
-				const av = sampleWord(actionVerbs, '공부하다', 'to study');
-				candidates.push({
-					ko: `${ko} 친구와 같이 한국어를 ${_conjugatePolite(av.ko, av.conj)}.`,
-					en: `At/on ${en} (${ko}), I ${av.en} with a friend.`
-				});
-				candidates.push({
-					ko: `${_attachParticle(ko, 'topic')} 날씨가 참 좋아요.`,
-					en: `As for ${en} (${ko}), the weather is very nice.`
-				});
-				candidates.push({
-					ko: `${ko} 시간이 괜찮아요?`,
-					en: `Is the time okay on/at ${en} (${ko})?`
-				});
-			} else {
-				const person = sampleWord(personNouns, '학생', 'student');
-				const dv = sampleWord(descVerbs, '좋다', 'to be good');
-				candidates.push({
-					ko: `이것은 제가 좋아하는 ${_attachParticle(ko, 'copula')}.`,
-					en: `This is the ${en} (${ko}) that I like.`
-				});
-				candidates.push({
-					ko: `${_attachParticle(person.ko, 'topic')} ${_attachParticle(ko, 'object')} 찾고 있어요.`,
-					en: `The ${person.en} is looking for ${en} (${ko}).`
-				});
-				candidates.push({
-					ko: `이 ${_attachParticle(ko, 'subject')} 아주 ${_conjugatePolite(dv.ko, dv.conj)}.`,
-					en: `This ${en} (${ko}) is very ${dv.en}.`
-				});
-			}
-		}
-	} else if (pos === 'Grammar') {
-		for (let i = 0; i < 8; i++) {
-			const person = sampleWord(personNouns, '학생', 'student');
-			const place = sampleWord(placeNouns, '학교', 'school');
-			const food = sampleWord(foodNouns, '밥', 'rice/meal');
-			const av = sampleWord(actionVerbs, '가다', 'to go');
-			const stem = _getVerbStem(av.ko);
-			const cleanGram = ko.replace(/^-/, '').split('/')[0].trim();
-
-			if (ko.startsWith('-')) {
-				candidates.push({
-					ko: `저는 오늘 ${_attachParticle(place.ko, 'loc')} ${stem}${cleanGram}.`,
-					en: `Pattern [${ko}] (${en}) applied to ${av.ko} (${av.en}).`
-				});
-				candidates.push({
-					ko: `${_attachParticle(person.ko, 'topic')} ${_attachParticle(food.ko, 'object')} 먹${cleanGram}.`,
-					en: `Using grammar [${ko}] (${en}) with 먹다 (to eat).`
-				});
-				candidates.push({
-					ko: `한국어를 열심히 공부하${cleanGram}.`,
-					en: `Using grammar [${ko}] (${en}) with 공부하다 (to study).`
-				});
-			} else {
-				candidates.push({
-					ko: `${person.ko}${cleanGram} 지금 ${_attachParticle(place.ko, 'loc')} 가요.`,
-					en: `Using particle/grammar [${ko}] (${en}) with ${person.ko} (${person.en}).`
-				});
-				candidates.push({
-					ko: `오늘 ${food.ko}${cleanGram} 정말 맛있어요.`,
-					en: `Using [${ko}] (${en}) in a descriptive sentence with ${food.ko}.`
-				});
-				candidates.push({
-					ko: `이곳은 ${place.ko}${cleanGram} 맞아요.`,
-					en: `Using [${ko}] (${en}) with ${place.ko} (${place.en}).`
-				});
-			}
-		}
-	} else {
-		// Adverb, Determiner, Number, Exclamation
-		for (let i = 0; i < 8; i++) {
-			const person = sampleWord(personNouns, '친구', 'friend');
-			const place = sampleWord(placeNouns, '한국', 'Korea');
-			const av = sampleWord(actionVerbs, '공부하다', 'to study');
-			if (pos === 'Determiner' || pos === 'Number') {
-				candidates.push({
-					ko: `${ko} ${_attachParticle(person.ko, 'topic')} 한국어를 잘해요.`,
-					en: `${en} (${ko}) ${person.en} speaks Korean well.`
-				});
-				candidates.push({
-					ko: `저는 ${ko} 책을 읽고 싶어요.`,
-					en: `I want to read ${en} (${ko}) book(s).`
-				});
-				candidates.push({
-					ko: `${ko} 사람이 ${_attachParticle(place.ko, 'loc')} 왔어요.`,
-					en: `${en} (${ko}) person/people came to ${place.en}.`
-				});
-			} else if (pos === 'Exclamation') {
-				candidates.push({
-					ko: `${ko}! 만나서 반가워요.`,
-					en: `${en} (${ko})! Nice to meet you.`
-				});
-				candidates.push({
-					ko: `${ko}, 저는 ${_attachParticle(place.ko, 'loc')} 가고 있어요.`,
-					en: `${en} (${ko}), I am going to ${place.en}.`
-				});
-				candidates.push({
-					ko: `${ko}, 오늘 시간이 괜찮아요.`,
-					en: `${en} (${ko}), the time works today.`
-				});
-			} else {
-				// Adverb
-				candidates.push({
-					ko: `${_attachParticle(person.ko, 'topic')} ${ko} 한국어를 ${_conjugatePolite(av.ko, av.conj)}.`,
-					en: `The ${person.en} (${ko}: ${en}) ${av.en} Korean.`
-				});
-				candidates.push({
-					ko: `오늘도 ${ko} ${_attachParticle(place.ko, 'loc')} 갔어요.`,
-					en: `Today too, went to ${place.en} (${ko}: ${en}).`
-				});
-				candidates.push({
-					ko: `우리 ${ko} 같이 연습해요!`,
-					en: `Let's practice together (${ko}: ${en})!`
-				});
-			}
-		}
+function generateSentencesForUnit(unitId, count = 3, optionsOrRawUnits = null, dataSchema = null) {
+	let options = {};
+	if (
+		optionsOrRawUnits &&
+		typeof optionsOrRawUnits === 'object' &&
+		!Array.isArray(optionsOrRawUnits)
+	) {
+		options = { ...optionsOrRawUnits };
 	}
 
-	// Deduplicate by Korean string and pick `count`
-	const uniqueMap = new Map();
-	for (const item of candidates) {
-		if (!uniqueMap.has(item.ko)) {
-			uniqueMap.set(item.ko, item);
-		}
+	const engineBatchFn = _unitGeneratorEngine && (
+		_unitGeneratorEngine.generateUnitSentencesAST || _unitGeneratorEngine.generateSentencesForUnit
+	);
+	if (typeof engineBatchFn === 'function' && engineBatchFn !== generateSentencesForUnit) {
+		const res = engineBatchFn(unitId, count, options);
+		const list = (res && Array.isArray(res.sentences) ? res.sentences : []).map(s => ({
+			ko: s.ko || '',
+			enLiteral: s.enLiteral || '',
+			enNatural: s.enNatural || '',
+			en: s.enLiteral || s.enNatural || '',
+			pronunciation: s.pronunciation || s.ko || '',
+			eojeols: Array.isArray(s.eojeols) ? s.eojeols.map(ej => ({
+				surfaceKo: ej.surfaceKo,
+				surfaceEnLit: ej.surfaceEnLit || '',
+				role: ej.role || '',
+				headUnitId: ej.headUnitId ?? null,
+				particleUnitId: ej.particleUnitId ?? null,
+				endingUnitId: ej.endingUnitId ?? null,
+				segments: Array.isArray(ej.segments) ? ej.segments.map(seg => ({
+					textKo: seg.textKo || '',
+					textEn: seg.textEn || '',
+					unitId: typeof seg.unitId === 'number' ? seg.unitId : null,
+					kind: seg.kind || 'stem',
+					pos: seg.pos || null,
+					role: seg.role || null
+				})) : []
+			})) : [],
+			unitsUsed: Array.isArray(s.unitsUsed) ? s.unitsUsed : [],
+			unitIds: Array.isArray(s.unitIds) ? s.unitIds : []
+		}));
+
+		Object.defineProperties(list, {
+			ok: { value: Boolean(res && res.ok), enumerable: false, configurable: true },
+			insufficientSet: { value: Boolean(res && res.insufficientSet), enumerable: false, configurable: true },
+			missingRoles: { value: (res && res.missingRoles) || [], enumerable: false, configurable: true },
+			message: { value: (res && res.message) || null, enumerable: false, configurable: true }
+		});
+		return list;
 	}
-	return _pickDistinctRandom(Array.from(uniqueMap.values()), count);
+
+	return [];
 }
 
 // ============================================================================
@@ -743,11 +361,27 @@ class UnitSelectorView {
 		this.selectedUnitId = null;
 		this.isEditingDetails = false;
 		this.generatedSentences = [];
+		this.lastGenerationError = null;
+		this.lastGenerationMode = 'all';
 		this.searchQuery = '';
 
 		this.container = null;
 		this.sourcesListEl = null;
 		this.detailsPaneEl = null;
+	}
+
+	/**
+	 * Collects all Language Unit IDs currently marked `InSet = true`.
+	 */
+	getActiveSetUnitIds() {
+		const setIds = new Set();
+		const total = this.engine?.rawUnits ? this.engine.rawUnits.length : 0;
+		for (let id = 0; id < total; id++) {
+			if (this.engine.getCellValue(id, 'InSet')) {
+				setIds.add(id);
+			}
+		}
+		return setIds;
 	}
 
 	/**
@@ -847,7 +481,7 @@ class UnitSelectorView {
 		const nextVal = checked !== undefined ? Boolean(checked) : !this.engine.getCellValue(unitId, 'InSet');
 		await this.engine.setCellValue(unitId, 'InSet', nextVal);
 		this.renderSourcesList();
-		if (this.selectedUnitId === unitId) {
+		if (this.selectedUnitId !== null) {
 			this.renderDetailsPane();
 		}
 		this.onStateChange({ type: 'selector-unit-toggled', unitId, included: nextVal });
@@ -857,6 +491,8 @@ class UnitSelectorView {
 	selectUnitForDetails(unitId) {
 		this.selectedUnitId = unitId;
 		this.isEditingDetails = false;
+		this.lastGenerationError = null;
+		this.lastGenerationMode = 'all';
 		this.regenerateSentences(unitId);
 		this.renderSourcesList();
 		this.renderDetailsPane();
@@ -868,31 +504,55 @@ class UnitSelectorView {
 
 	getSentencesForSelectedUnit() {
 		if (this.selectedUnitId === null) return [];
-		if (!this.generatedSentences || this.generatedSentences.length === 0) {
+		if ((!this.generatedSentences || this.generatedSentences.length === 0) && !this.lastGenerationError) {
 			this.regenerateSentences(this.selectedUnitId);
 		}
 		return this.generatedSentences;
 	}
 
-	regenerateSentences(unitId = this.selectedUnitId) {
+	regenerateSentences(unitId = this.selectedUnitId, options = {}) {
 		const targetId = unitId !== undefined && unitId !== null ? unitId : this.selectedUnitId;
 		if (targetId === null || targetId === undefined) {
 			this.generatedSentences = [];
+			this.lastGenerationError = null;
 			return [];
 		}
+
+		const onlyFromSet = Boolean(options && options.onlyFromSet);
+		this.lastGenerationMode = onlyFromSet ? 'onlyFromSet' : 'all';
+
+		if (onlyFromSet) {
+			const allowedUnitIds = (options && options.allowedUnitIds)
+				? (options.allowedUnitIds instanceof Set ? options.allowedUnitIds : new Set(options.allowedUnitIds))
+				: this.getActiveSetUnitIds();
+
+			const next = generateSentencesForUnit(targetId, 3, {
+				onlyFromSet: true,
+				allowedUnitIds
+			});
+			if (next.insufficientSet || next.ok === false || next.length === 0) {
+				this.lastGenerationError = next.message || 'Not enough compatible language units in the current Practice Set to generate complete sentences.';
+				this.generatedSentences = next;
+			} else {
+				this.lastGenerationError = null;
+				this.generatedSentences = next;
+			}
+			return this.generatedSentences;
+		}
+
+		this.lastGenerationError = null;
 		const prevJson = JSON.stringify(this.generatedSentences || []);
 		let next = [];
 		for (let attempt = 0; attempt < 5; attempt++) {
-			next = generateSentencesForUnit(
-				targetId,
-				3,
-				this.engine.rawUnits,
-				this.engine.dataSchema
-			);
+			next = generateSentencesForUnit(targetId, 3, { seedOffset: Math.floor(Math.random() * 997) + attempt * 13 });
 			if (JSON.stringify(next) !== prevJson) break;
 		}
 		this.generatedSentences = next;
 		return this.generatedSentences;
+	}
+
+	regenerateSentencesOnlyFromSet(unitId = this.selectedUnitId, allowedUnitIds = null) {
+		return this.regenerateSentences(unitId, { onlyFromSet: true, allowedUnitIds });
 	}
 
 	setEditMode(isEditing) {
@@ -1334,42 +994,229 @@ class UnitSelectorView {
 		card.appendChild(coreSection);
 
 		// ---------------------------------------------------------------------
-		// 3. Generated Sentences / Phrases (3 items + Regenerate Button)
+		// 3. Generated Sentences / Phrases (Dual English + Interactive Pill Buttons)
 		// ---------------------------------------------------------------------
 		const sentencesSection = document.createElement('div');
 		sentencesSection.className = 'details-sentences-section';
 
 		const sentHeader = document.createElement('div');
 		sentHeader.className = 'details-sentences-header';
-		sentHeader.innerHTML = `<span class="details-field-label">Generated Example Sentences (3)</span>`;
+
+		const sentTitleGroup = document.createElement('div');
+		sentTitleGroup.className = 'details-sentences-title-group';
+		sentTitleGroup.innerHTML = `
+			<span class="details-field-label">Generated Example Sentences (3)</span>
+			<span class="pill-legend" title="Click any Korean or English word/particle pill below to toggle its inclusion in your Practice Set">
+				<span class="pill-legend-item"><span class="pill-dot is-in-set"></span> In Set</span>
+				<span class="pill-legend-item"><span class="pill-dot not-in-set"></span> Not in Set</span>
+			</span>
+		`;
+		sentHeader.appendChild(sentTitleGroup);
+
+		const sentActions = document.createElement('div');
+		sentActions.className = 'details-sentences-actions';
 
 		const regenBtn = document.createElement('button');
 		regenBtn.type = 'button';
 		regenBtn.id = 'btn-regenerate-sentences';
-		regenBtn.className = 'btn btn-secondary';
+		regenBtn.className = `btn ${this.lastGenerationMode === 'all' ? 'btn-secondary' : 'btn-ghost'}`;
 		regenBtn.textContent = '↻ Regenerate';
+		regenBtn.title = 'Generate 3 new example sentences using all curriculum language units';
 		regenBtn.addEventListener('click', () => {
-			this.regenerateSentences();
+			this.regenerateSentences(unitId, { onlyFromSet: false });
 			this.renderDetailsPane();
 		});
-		sentHeader.appendChild(regenBtn);
+		sentActions.appendChild(regenBtn);
+
+		const onlySetBtn = document.createElement('button');
+		onlySetBtn.type = 'button';
+		onlySetBtn.id = 'btn-regenerate-only-from-set';
+		onlySetBtn.className = `btn ${this.lastGenerationMode === 'onlyFromSet' ? 'btn-emerald' : 'btn-secondary'}`;
+		onlySetBtn.textContent = '🎯 Only From Set';
+		onlySetBtn.title = 'Regenerate 3 sentences using ONLY language units currently included in your Practice Set (InSet = true)';
+		onlySetBtn.addEventListener('click', () => {
+			this.regenerateSentencesOnlyFromSet(unitId);
+			this.renderDetailsPane();
+		});
+		sentActions.appendChild(onlySetBtn);
+
+		sentHeader.appendChild(sentActions);
 		sentencesSection.appendChild(sentHeader);
 
-		if (this.generatedSentences.length === 0) {
-			this.regenerateSentences();
+		if (this.generatedSentences.length === 0 && !this.lastGenerationError) {
+			this.regenerateSentences(unitId, { onlyFromSet: false });
 		}
+
+		if (this.lastGenerationError) {
+			const errBanner = document.createElement('div');
+			errBanner.className = 'sentence-set-error';
+			errBanner.setAttribute('role', 'alert');
+			errBanner.innerHTML = `
+				<div class="sentence-set-error-title">⚠️ Insufficient Language Units in Active Practice Set</div>
+				<div class="sentence-set-error-msg"></div>
+				<div class="sentence-set-error-hint">Tip: Include more Sources on the left, or click the muted word/particle pills in standard generated sentences to add compatible units to your Practice Set.</div>
+			`;
+			errBanner.querySelector('.sentence-set-error-msg').textContent = this.lastGenerationError;
+			sentencesSection.appendChild(errBanner);
+		}
+
+		const createPillButton = (seg, isKorean) => {
+			const segUnitId = seg.unitId;
+			const hasValidUnit = typeof segUnitId === 'number' && Boolean(this.engine.rawUnits[segUnitId]);
+			const text = isKorean ? seg.textKo : seg.textEn;
+			if (!text) return null;
+
+			if (!hasValidUnit) {
+				const span = document.createElement('span');
+				span.className = isKorean ? 'lu-pill-static' : 'lu-pill-static-en';
+				span.textContent = text;
+				return span;
+			}
+
+			const segInSet = Boolean(this.engine.getCellValue(segUnitId, 'InSet'));
+			const isTarget = segUnitId === unitId;
+			const uKo = String(this.engine.getCellValue(segUnitId, 'Korean') || '');
+			const uEn = String(this.engine.getCellValue(segUnitId, 'English') || '');
+			const uPos = String(this.engine.getCellValue(segUnitId, 'PartofSpeech') || '');
+
+			const btn = document.createElement('button');
+			btn.type = 'button';
+			btn.className = [
+				'lu-pill-btn',
+				isKorean ? 'lu-pill-ko' : 'lu-pill-en',
+				segInSet ? 'is-in-set' : 'not-in-set',
+				isTarget ? 'is-target-unit' : '',
+				seg.kind ? `seg-kind-${seg.kind}` : ''
+			].filter(Boolean).join(' ');
+			btn.dataset.unitId = String(segUnitId);
+			btn.dataset.inSet = String(segInSet);
+			btn.textContent = text;
+			btn.title = `[#${segUnitId}] ${uKo} — "${uEn}" (${uPos})\n${segInSet ? '★ In Practice Set — Click to remove from set' : '○ Not in Set — Click to add to set'}`;
+			btn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				this.toggleUnitInclusion(segUnitId);
+			});
+			return btn;
+		};
 
 		const sentList = document.createElement('ol');
 		sentList.className = 'details-sentences-list';
+
 		for (const item of this.generatedSentences) {
 			const li = document.createElement('li');
 			li.className = 'details-sentence-item';
-			li.innerHTML = `
-				<div class="sentence-item-ko">${item.ko}</div>
-				<div class="sentence-item-en">${item.en}</div>
-			`;
+
+			// 1. Interactive Hangul Sentence Row (shares space with generated Korean text)
+			const koRow = document.createElement('div');
+			koRow.className = 'sentence-item-ko';
+			const eojeols = Array.isArray(item.eojeols) ? item.eojeols : [];
+
+			if (eojeols.length > 0) {
+				const koPillsWrap = document.createElement('div');
+				koPillsWrap.className = 'sentence-pills-flow sentence-pills-ko';
+
+				eojeols.forEach((ej, ejIdx) => {
+					const group = document.createElement('span');
+					group.className = 'eojeol-pill-group';
+					const segs = Array.isArray(ej.segments) && ej.segments.length > 0
+						? ej.segments
+						: [{ textKo: ej.surfaceKo, textEn: ej.surfaceEnLit, unitId: ej.headUnitId, kind: 'stem' }];
+
+					for (const seg of segs) {
+						const el = createPillButton(seg, true);
+						if (el) group.appendChild(el);
+					}
+					if (ejIdx === eojeols.length - 1) {
+						const punctMatch = String(item.ko || '').match(/([.?!~]+)$/);
+						if (punctMatch && !String(ej.surfaceKo || '').endsWith(punctMatch[1])) {
+							const punctSpan = document.createElement('span');
+							punctSpan.className = 'sentence-terminal-punct';
+							punctSpan.textContent = punctMatch[1];
+							group.appendChild(punctSpan);
+						}
+					}
+					koPillsWrap.appendChild(group);
+				});
+				koRow.appendChild(koPillsWrap);
+			} else {
+				koRow.textContent = item.ko;
+			}
+			li.appendChild(koRow);
+
+			// 2. Primary Direct Korean-Word-Order English Translation Row (enLiteral)
+			const litRow = document.createElement('div');
+			litRow.className = 'sentence-item-en-literal';
+
+			const litBadge = document.createElement('span');
+			litBadge.className = 'trans-mode-badge badge-literal';
+			litBadge.title = 'Direct translation in Korean SOV word & morpheme order — click any English pill to toggle unit in Practice Set';
+			litBadge.textContent = 'KR Order';
+			litRow.appendChild(litBadge);
+
+			if (eojeols.length > 0) {
+				const enPillsWrap = document.createElement('div');
+				enPillsWrap.className = 'sentence-pills-flow sentence-pills-en-literal';
+
+				eojeols.forEach((ej, ejIdx) => {
+					const group = document.createElement('span');
+					group.className = 'eojeol-pill-group eojeol-pill-group-en';
+					const segs = Array.isArray(ej.segments) && ej.segments.length > 0
+						? ej.segments
+						: [{ textKo: ej.surfaceKo, textEn: ej.surfaceEnLit, unitId: ej.headUnitId, kind: 'stem' }];
+
+					for (const seg of segs) {
+						const el = createPillButton(seg, false);
+						if (el) group.appendChild(el);
+					}
+					if (ejIdx === eojeols.length - 1) {
+						const punctMatch = String(item.enLiteral || item.ko || '').match(/([.?!~]+)$/);
+						if (punctMatch) {
+							const punctSpan = document.createElement('span');
+							punctSpan.className = 'sentence-terminal-punct';
+							punctSpan.textContent = punctMatch[1];
+							group.appendChild(punctSpan);
+						}
+					}
+					if (group.childNodes.length > 0) {
+						enPillsWrap.appendChild(group);
+					}
+				});
+				litRow.appendChild(enPillsWrap);
+			} else {
+				const litText = document.createElement('span');
+				litText.className = 'sentence-literal-text';
+				litText.textContent = item.enLiteral || item.en;
+				litRow.appendChild(litText);
+			}
+			li.appendChild(litRow);
+
+			// 3. Secondary Natural SVO English Translation Row (enNatural) + Pronunciation
+			const natRow = document.createElement('div');
+			natRow.className = 'sentence-item-en sentence-item-en-natural';
+
+			const natBadge = document.createElement('span');
+			natBadge.className = 'trans-mode-badge badge-natural';
+			natBadge.title = 'Natural idiomatic English translation';
+			natBadge.textContent = 'Natural EN';
+			natRow.appendChild(natBadge);
+
+			const natText = document.createElement('span');
+			natText.className = 'sentence-natural-text';
+			natText.textContent = item.enNatural || item.en;
+			natRow.appendChild(natText);
+
+			if (item.pronunciation && item.pronunciation !== item.ko) {
+				const pronSpan = document.createElement('span');
+				pronSpan.className = 'sentence-pronunciation';
+				pronSpan.title = 'Standard Korean Pronunciation (표준 발음법)';
+				pronSpan.textContent = `[${item.pronunciation}]`;
+				natRow.appendChild(pronSpan);
+			}
+
+			li.appendChild(natRow);
 			sentList.appendChild(li);
 		}
+
 		sentencesSection.appendChild(sentList);
 		card.appendChild(sentencesSection);
 
@@ -1394,3 +1241,4 @@ if (typeof module !== 'undefined' && module.exports) {
 		UnitSelectorView
 	};
 }
+})();

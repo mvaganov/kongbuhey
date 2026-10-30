@@ -1,3 +1,4 @@
+(function() {
 /**
  * ============================================================================
  * korean/core/lexicon_index.js - Unified O(1) Lexicon & Candidate Cache Index
@@ -154,4 +155,4 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = lexiconIndexExports;
 }
-
+})();

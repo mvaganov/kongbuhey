@@ -1,3 +1,4 @@
+(function() {
 /**
  * korean/generation/sentence_ast.js
  *
@@ -59,6 +60,14 @@ const {
 const {
 	getPronunciation
 } = (typeof require !== 'undefined' ? require('../phonetics/pronunciation.js') : window);
+
+const {
+	realizeLiteralEnglish
+} = (typeof require !== 'undefined' ? require('../translation/literal_realizer.js') : window);
+
+const {
+	realizeNaturalEnglish
+} = (typeof require !== 'undefined' ? require('../translation/natural_realizer.js') : window);
 
 let cachedGrammarRegistry = null;
 let cachedGrammarUnitsRef = null;
@@ -506,9 +515,10 @@ function buildConstituentEojeols(constituent, surfaceKo) {
 		];
 	}
 
-	// 3. Determiner + Noun (+ Particle): e.g. "이 책을"
-	if (determinerUnit && words.length === 2 && primaryUnit) {
-		const lastSegs = splitNounAndParticleSegments(words[1], primaryUnit, particleUnit, role);
+	// 3. Determiner + Noun (+ Particle): e.g. "이 책을" or "이 미국 사람을"
+	if (determinerUnit && words.length >= 2 && primaryUnit) {
+		const nounWithParticle = words.slice(1).join(" ");
+		const lastSegs = splitNounAndParticleSegments(nounWithParticle, primaryUnit, particleUnit, role);
 		return [
 			{
 				surfaceKo: words[0],
@@ -519,7 +529,7 @@ function buildConstituentEojeols(constituent, surfaceKo) {
 				segments: [makeSegment(words[0], determinerUnit, "lexical", "determiner")]
 			},
 			{
-				surfaceKo: words[1],
+				surfaceKo: nounWithParticle,
 				role,
 				headUnitId: primaryUnit[DATA_SCHEMA.Id],
 				particleUnitId: particleUnit ? particleUnit[DATA_SCHEMA.Id] : null,
@@ -529,7 +539,21 @@ function buildConstituentEojeols(constituent, surfaceKo) {
 		];
 	}
 
-	// 4. Standard single-word constituent (Noun+Particle, Adverb, Time word, Exclamation)
+	// 4. Standard single-unit constituent (including multi-word lexical lemmas like "미국 사람" or "가족 여행")
+	if (!counterUnit && !positionUnit && !determinerUnit && primaryUnit) {
+		const fullTrimmed = surfaceKo.trim();
+		const segs = splitNounAndParticleSegments(fullTrimmed, primaryUnit, particleUnit, role);
+		return [{
+			surfaceKo: fullTrimmed,
+			role,
+			headUnitId: primaryUnit[DATA_SCHEMA.Id],
+			particleUnitId: particleUnit ? particleUnit[DATA_SCHEMA.Id] : null,
+			unitIds: segs.map(s => s.unitId).filter(id => id !== null),
+			segments: segs
+		}];
+	}
+
+	// 5. Fallback for explicit surface expressions without a single primaryUnit
 	if (words.length === 1) {
 		const segs = splitNounAndParticleSegments(words[0], primaryUnit, particleUnit, role);
 		return [{
@@ -804,7 +828,7 @@ function realizePredicateKo(predNode, clauseContext = {}) {
 			);
 		} else if (speechAct === "propositive") {
 			surfaceKo = buildMoodPredicate(activeVerbUnit, "propositive", politeness, { tense });
-		} else if (polarity === "negative") {
+		} else if (polarity === "negative" && !state.FORBIDDEN_NEGATIVE_ROOTS.has(activeVerbUnit[DATA_SCHEMA.Korean]) && !["없다", "아니다", "모르다"].includes(activeVerbUnit[DATA_SCHEMA.Korean])) {
 			const isLong = predNode.negationType === "long_ji_anta" || predNode.negationType === "long_ji_mothada";
 			const isInability = predNode.negationType === "long_ji_mothada" || predNode.negationType === "short_mot";
 			surfaceKo = buildNegatedPredicate(activeVerbUnit, {
@@ -814,7 +838,7 @@ function realizePredicateKo(predNode, clauseContext = {}) {
 				tense
 			});
 		} else {
-			if (isElderSubj && !state.HONORIFIC_WORDS.has(activeVerbUnit[DATA_SCHEMA.Korean])) {
+			if (isElderSubj && !state.HONORIFIC_WORDS.has(activeVerbUnit[DATA_SCHEMA.Korean]) && !state.HUMBLE_WORDS.has(activeVerbUnit[DATA_SCHEMA.Korean])) {
 				const honEnding = tense === "past"
 					? (politeness === "formal_high" ? "으/셨습니다" : "으/셨어요")
 					: (politeness === "formal_high" ? "으/십니다" : "으/세요");
@@ -918,6 +942,10 @@ function realizeKoreanFromAST(ast) {
 	const punct = speechAct === "interrogative" ? "?" : (speechAct === "exclamatory" ? "!" : ".");
 	const koWithPunct = /[.?~]$/.test(resolvedKo) ? resolvedKo : (resolvedKo ? resolvedKo + punct : "");
 
+	// Realize Dual English Translations (Literal SOV + Natural SVO) and annotate eojeols/segments
+	const enLiteral = typeof realizeLiteralEnglish === "function" ? realizeLiteralEnglish(ast) : "";
+	const enNatural = typeof realizeNaturalEnglish === "function" ? realizeNaturalEnglish(ast) : "";
+
 	// Assign eojeol indices and collect ordered unitsUsed
 	const unitsUsed = [];
 	const seenUnitIds = new Set();
@@ -936,6 +964,7 @@ function realizeKoreanFromAST(ast) {
 						kind: seg.kind,
 						role: seg.role || eojeol.role,
 						surfaceKo: seg.textKo,
+						surfaceEn: seg.textEn || "",
 						eojeolIndex: idx
 					});
 				}
@@ -951,6 +980,8 @@ function realizeKoreanFromAST(ast) {
 		ko: koWithPunct,
 		koBare: resolvedKo,
 		pronunciation: koWithPunct ? getPronunciation(koWithPunct) : "",
+		enLiteral,
+		enNatural,
 		ast,
 		eojeols: allEojeols,
 		unitsUsed,
@@ -980,3 +1011,4 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = sentenceAstExports;
 }
+})();

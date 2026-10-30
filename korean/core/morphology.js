@@ -1,3 +1,4 @@
+(function() {
 /**
  * Korean Morphology Engine, Verb Conjugation & Phonology
  *
@@ -1495,4 +1496,4 @@ if (typeof module !== 'undefined' && module.exports) {
 if (state && typeof state.registerMorphologyEngine === 'function') {
 	state.registerMorphologyEngine({ applyMorphology });
 }
-
+})();

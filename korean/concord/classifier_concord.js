@@ -1,3 +1,4 @@
+(function() {
 /**
  * Feature 6: Numeral-Classifier Matrix & Attributive Measure Word Syntax
  *
@@ -373,3 +374,4 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = classifierExports;
 }
+})();

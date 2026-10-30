@@ -1,3 +1,4 @@
+(function() {
 /**
  * Dynamic Collocation Filter Evaluator & Header Parser
  *
@@ -50,3 +51,4 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = filterEvaluatorExports;
 }
+})();
