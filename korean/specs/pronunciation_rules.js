@@ -1,3 +1,4 @@
+(function() {
 /**
  * Standard Korean Pronunciation (표준 발음법) Rules and Phonological Tables
  *
@@ -185,3 +186,4 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = pronunciationRules;
 }
+})();

@@ -1,3 +1,4 @@
+(function() {
 /**
  * Action and Descriptive Verb Argument Specifications
  *
@@ -136,3 +137,4 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = verbArgumentSpecs;
 }
+})();

@@ -77,7 +77,9 @@ const adverbialConcord = require('./korean/concord/adverbial_concord.js');
 const clausalValidation = require('./korean/concord/clausal_validation.js');
 const clausalGenerator = require('./korean/concord/clausal_generator.js');
 
-// 5. Generation Engines
+// 5. Generation & Translation Engines
+const literalRealizer = require('./korean/translation/literal_realizer.js');
+const naturalRealizer = require('./korean/translation/natural_realizer.js');
 const templateEngine = require('./korean/generation/template_engine.js');
 const semanticGenerator = require('./korean/generation/semantic_generator.js');
 const sentenceAst = require('./korean/generation/sentence_ast.js');
@@ -381,6 +383,8 @@ const exportedMembers = {
 	resolveParticleUnit: sentenceAst.resolveParticleUnit,
 	resolveEndingUnit: sentenceAst.resolveEndingUnit,
 	realizeKoreanFromAST: sentenceAst.realizeKoreanFromAST,
+	realizeLiteralEnglish: literalRealizer.realizeLiteralEnglish,
+	realizeNaturalEnglish: naturalRealizer.realizeNaturalEnglish,
 	generateSentenceForUnit: unitGenerator.generateSentenceForUnit,
 	generateSentencesForUnit: unitGenerator.generateSentencesForUnit,
 

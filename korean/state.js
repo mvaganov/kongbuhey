@@ -1,3 +1,4 @@
+(function() {
 /**
  * Korean Engine Centralized State Registry & Lifecycle Management
  *
@@ -907,3 +908,4 @@ if (typeof module !== 'undefined' && module.exports) {
 
 // Auto-initialize when loaded
 initAllDataSets();
+})();

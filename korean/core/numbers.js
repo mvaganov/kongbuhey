@@ -1,3 +1,4 @@
+(function() {
 /**
  * Korean Number Generators (Sino-Korean & Native/Pure-Korean)
  *
@@ -153,3 +154,4 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = numberExports;
 }
+})();

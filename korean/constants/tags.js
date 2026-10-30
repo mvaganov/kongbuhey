@@ -1,3 +1,4 @@
+(function() {
 /**
  * Korean Engine Semantic and Grammar Tag Constants
  *
@@ -83,3 +84,4 @@ if (typeof window !== "undefined") {
 if (typeof module !== "undefined" && module.exports) {
 	module.exports = { GRAMMAR_TAGS };
 }
+})();

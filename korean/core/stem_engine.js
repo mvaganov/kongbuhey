@@ -1,3 +1,4 @@
+(function() {
 /**
  * ============================================================================
  * korean/core/stem_engine.js - Unified Pure Korean Stem & Allomorph Engine
@@ -413,4 +414,4 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = stemEngineExports;
 }
-
+})();
