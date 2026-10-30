@@ -80,6 +80,8 @@ const clausalGenerator = require('./korean/concord/clausal_generator.js');
 // 5. Generation Engines
 const templateEngine = require('./korean/generation/template_engine.js');
 const semanticGenerator = require('./korean/generation/semantic_generator.js');
+const sentenceAst = require('./korean/generation/sentence_ast.js');
+const unitGenerator = require('./korean/generation/unit_sentence_generator.js');
 
 // 6. Text Analyzer Subsystem
 const analyzer = require('./korean/analyzer/index.js');
@@ -375,6 +377,12 @@ const exportedMembers = {
 	expandSemanticClause: semanticGenerator.expandSemanticClause,
 	expandSemanticTerminal: semanticGenerator.expandSemanticTerminal,
 	generateSemanticSentence: semanticGenerator.generateSemanticSentence,
+	getGrammarRegistry: sentenceAst.getGrammarRegistry,
+	resolveParticleUnit: sentenceAst.resolveParticleUnit,
+	resolveEndingUnit: sentenceAst.resolveEndingUnit,
+	realizeKoreanFromAST: sentenceAst.realizeKoreanFromAST,
+	generateSentenceForUnit: unitGenerator.generateSentenceForUnit,
+	generateSentencesForUnit: unitGenerator.generateSentencesForUnit,
 
 	// LUT Utilities
 	reconstructFromLanguageUnitTree: lutSerializer.reconstructFromLanguageUnitTree,

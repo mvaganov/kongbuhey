@@ -85,14 +85,22 @@ function reconstructFromLanguageUnitTree(tree, phraseBuilders = {}) {
 	if (!Array.isArray(tree) || tree.length === 0) return "";
 
 	const grammarRef = tree[0];
-	const children = tree.slice(1);
+	let children = tree.slice(1);
+	let explicitFormulaIndex = null;
+	if (children.length > 0 && typeof children[0] === 'string' && children[0].startsWith('@f:')) {
+		const parsedIdx = parseInt(children[0].slice(3), 10);
+		if (!isNaN(parsedIdx)) explicitFormulaIndex = parsedIdx;
+		children = children.slice(1);
+	}
 	let template = "";
 
 	if (typeof grammarRef === 'number') {
 		const grammarUnit = units ? units[grammarRef] : null;
 		if (grammarUnit && Array.isArray(grammarUnit[DATA_SCHEMA.Conjugation])) {
 			const formulas = grammarUnit[DATA_SCHEMA.Conjugation];
-			if (formulas.length === 1) {
+			if (explicitFormulaIndex !== null && formulas[explicitFormulaIndex]) {
+				template = formulas[explicitFormulaIndex];
+			} else if (formulas.length === 1) {
 				template = formulas[0];
 			} else {
 				const candidate = formulas.find(f => {
@@ -136,11 +144,25 @@ function reconstructFromLanguageUnitTree(tree, phraseBuilders = {}) {
 	const tokenRegex = /\{([^}:]+)(?::([^}]+))?\}/g;
 	let match, childIndex = 0;
 
-	const buildAction = phraseBuilders.buildActionVerbPhrase || (typeof window !== 'undefined' ? window.buildActionVerbPhrase : null);
-	const buildDescriptive = phraseBuilders.buildDescriptiveVerbPhrase || (typeof window !== 'undefined' ? window.buildDescriptiveVerbPhrase : null);
+	let morphologyMod = null;
+	let classifierMod = null;
+	let spatialMod = null;
+	if (typeof require !== 'undefined') {
+		try {
+			morphologyMod = require('../core/morphology.js');
+			classifierMod = require('../concord/classifier_concord.js');
+			spatialMod = require('../concord/spatial_concord.js');
+		} catch (e) {}
+	}
+
+	const buildAction = phraseBuilders.buildActionVerbPhrase || (morphologyMod && morphologyMod.buildActionVerbPhrase) || (typeof window !== 'undefined' ? window.buildActionVerbPhrase : null);
+	const buildDescriptive = phraseBuilders.buildDescriptiveVerbPhrase || (morphologyMod && morphologyMod.buildDescriptiveVerbPhrase) || (typeof window !== 'undefined' ? window.buildDescriptiveVerbPhrase : null);
+	const buildCounting = phraseBuilders.buildCountingPhrase || (classifierMod && classifierMod.buildCountingPhrase) || (typeof window !== 'undefined' ? window.buildCountingPhrase : null);
+	const buildSpatial = phraseBuilders.buildSpatialPhrase || (spatialMod && spatialMod.buildSpatialPhrase) || (typeof window !== 'undefined' ? window.buildSpatialPhrase : null);
+	const buildDeictic = phraseBuilders.buildDeicticPhrase || (spatialMod && spatialMod.buildDeicticPhrase) || (typeof window !== 'undefined' ? window.buildDeicticPhrase : null);
 
 	while ((match = tokenRegex.exec(koResult)) !== null) {
-		const token = match[0], tokenType = match[1];
+		const token = match[0], tokenType = match[1], tag = match[2];
 		const child = children[childIndex++];
 		let replacement = "";
 
@@ -169,6 +191,33 @@ function reconstructFromLanguageUnitTree(tree, phraseBuilders = {}) {
 			}
 		} else if (tokenType === "Clause" || tokenType === "VP") {
 			replacement = reconstructFromLanguageUnitTree(child, phraseBuilders);
+		} else if ((tokenType === "CountPhrase" || tokenType === "Noun_Count") && Array.isArray(child) && buildCounting) {
+			const noun = (typeof child[0] === 'number' && units) ? units[child[0]] : child[0];
+			const count = typeof child[1] === 'number' ? child[1] : 1;
+			const classifierUnit = (typeof child[2] === 'number' && units) ? units[child[2]] : null;
+			const classifier = classifierUnit ? classifierUnit[DATA_SCHEMA.Korean] : (typeof child[2] === 'string' ? child[2] : '개');
+			let particle = null;
+			if (tag === "object" || tag === "AV" || /을|를/.test(token)) particle = "object";
+			else if (tag === "subject" || tag === "DV" || /이|가/.test(token)) particle = "subject";
+			else if (tag === "topic" || /은|는/.test(token)) particle = "topic";
+			replacement = buildCounting(noun, count, { classifier, particle });
+		} else if ((tokenType === "Spatial_Phrase" || tokenType === "Relational_Loc") && Array.isArray(child) && buildSpatial) {
+			const ground = (typeof child[0] === 'number' && units) ? units[child[0]] : child[0];
+			const posUnit = (typeof child[1] === 'number' && units) ? units[child[1]] : null;
+			const posKo = posUnit ? posUnit[DATA_SCHEMA.Korean] : (typeof child[1] === 'string' ? child[1] : '위');
+			let particleType = "location";
+			if (tag === "static" || /에$/.test(token)) particleType = "location_static";
+			else if (tag === "dynamic" || /에서$/.test(token)) particleType = "location_dynamic";
+			else if (tag === "direction" || /로$/.test(token)) particleType = "direction";
+			replacement = buildSpatial(ground, posKo, { particle: particleType });
+		} else if (tokenType === "Deictic_NP" && Array.isArray(child) && buildDeictic) {
+			const proximity = tag === "medial" ? "medial" : tag === "distal" ? "distal" : tag === "interrogative" ? "interrogative" : "proximal";
+			const noun = (typeof child[1] === 'number' && units) ? units[child[1]] : child[1];
+			replacement = buildDeictic(proximity, "noun", { noun });
+		} else if (tokenType === "properNoun" && Array.isArray(child) && child.length === 2) {
+			const ssiUnit = (typeof child[0] === 'number' && units) ? units[child[0]] : null;
+			const ssiKo = ssiUnit ? ssiUnit[DATA_SCHEMA.Korean] : "씨";
+			replacement = String(child[1] || "") + ssiKo;
 		} else {
 			if (typeof child === 'number' && units && units[child]) {
 				replacement = units[child][DATA_SCHEMA.Korean];

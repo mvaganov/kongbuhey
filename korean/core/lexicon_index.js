@@ -74,7 +74,9 @@ function buildLexiconIndex(dm = dataModule) {
 				}
 			}
 		} else if (pos === 'Action Verb' || pos === 'Descriptive Verb') {
-			if (!verbByKo.has(ko)) verbByKo.set(ko, u);
+			if (!verbByKo.has(ko) || (pos === 'Action Verb' && verbByKo.get(ko)[DATA_SCHEMA.PartofSpeech] !== 'Action Verb')) {
+				verbByKo.set(ko, u);
+			}
 		}
 	}
 
