@@ -39,13 +39,13 @@ OPTIONS:
   -v, --verbose        Include detailed operation messages (quiet by default on mutations)
   --data <path>        Custom data file (default: ./data.js)
 
-SCHEMA COLUMNS (aliases: id, ko, en, pos, tags, disambig, conj, src, score, formality, honorific, vector):
+SCHEMA COLUMNS (aliases: id, ko, en, pos, tags, disambig, conj, src, score, formality, honorific, sd, sv):
   0. Id (int, PK)               6. Conjugation (str rule or array of formulas)
   1. Korean (str)               7. Source (curriculum tag, e.g. SUOBI01, class2012)
   2. English (str)              8. PriorityScore (int 1-5, TOPIK learner tier)
   3. PartofSpeech (str)         9. FormalityLevel (str)
   4. SemanticTags (str[])      10. HonorificRules (str)
-  5. Disambiguation (str)      11. SemanticVector (JSON str, e.g. {"domain":"..."})
+  5. Disambiguation (str)      11. SemanticData (JSON str, e.g. {"domain":"...","en":{...}})
 
 WHERE OPERATORS:
   =, !=, <, >, <=, >=, AND, OR, LIKE '%pat%', NOT LIKE, CONTAINS 'tag', NOT CONTAINS, IN ('a','b'), NOT IN
@@ -54,11 +54,11 @@ KEY LLM WORKFLOW PATTERNS:
   Find next ID:  node select.js "SELECT Id ORDER BY Id DESC LIMIT 1"
   Count rows:    node select.js "COUNT WHERE Source = 'class2012'"
   Query to TSV:  node select.js "SELECT Id, Korean, English WHERE Source = 'SUOBI01'"
-  Export subset: node select.js "SELECT Id, Korean, SemanticVector WHERE Id < 50" > output.txt
-  Update back:   node select.js UPDATE Korean, SemanticVector FROMFILE output.txt
+  Export subset: node select.js "SELECT Id, Korean, SemanticData WHERE Id < 50" > output.txt
+  Update back:   node select.js UPDATE Korean, SemanticData FROMFILE output.txt
   Insert batch:  node select.js INSERT FROMFILE new_units.json --source class2012 --dry-run
   Inspect tag:   node select.js "SELECT Id, Korean WHERE SemanticTags CONTAINS 'food' LIMIT 10"
-  Query JSON:    node select.js "SELECT Id, Korean, sv.domain, sv.polarity WHERE sv.domain = 'age'"
+  Query JSON:    node select.js "SELECT Id, Korean, sd.domain, sd.polarity WHERE sd.domain = 'age'"
 `);
 }
 
@@ -89,7 +89,8 @@ let SCHEMA_COLUMNS = [
 	{ name: "PriorityScore", index: 8, type: "number" },
 	{ name: "FormalityLevel", index: 9, type: "string" },
 	{ name: "HonorificRules", index: 10, type: "string" },
-	{ name: "SemanticVector", index: 11, type: "json" }
+	{ name: "SemanticData", index: 11, type: "json" },
+	{ name: "SyntaxFrame", index: 12, type: "string" }
 ];
 
 function getSchemaColumns(DATA_SCHEMA) {
@@ -102,7 +103,7 @@ function getSchemaColumns(DATA_SCHEMA) {
 			if (name === "Id" || name === "PriorityScore") type = "number";
 			else if (name === "SemanticTags") type = "tags";
 			else if (name === "Conjugation") type = "conjugation";
-			else if (name === "SemanticVector") type = "json";
+			else if (name === "SemanticData" || name === "SemanticVector") type = "json";
 			cols.push({ name, index: i, type });
 		} else {
 			break;
@@ -129,7 +130,8 @@ const COLUMN_ALIASES = {
 	"priorityscore": "PriorityScore", "priority": "PriorityScore", "score": "PriorityScore", "ps": "PriorityScore",
 	"formalitylevel": "FormalityLevel", "formality": "FormalityLevel", "formality_level": "FormalityLevel",
 	"honorificrules": "HonorificRules", "honorific": "HonorificRules", "honorific_rules": "HonorificRules",
-	"semanticvector": "SemanticVector", "vector": "SemanticVector", "semantic_vector": "SemanticVector", "sv": "SemanticVector",
+	"semanticdata": "SemanticData", "semantic_data": "SemanticData", "sd": "SemanticData",
+	"semanticvector": "SemanticData", "vector": "SemanticData", "semantic_vector": "SemanticData", "sv": "SemanticData",
 	"id": "Id", "index": "Id", "rowid": "Id", "id_num": "Id"
 };
 
@@ -183,8 +185,8 @@ function unitToRecord(unit, selectedCols = null, DATA_SCHEMA) {
 		if (col.includes('.')) {
 			const parts = col.split('.');
 			const rootCol = normalizeColumnName(parts[0]);
-			if (rootCol === 'SemanticVector') {
-				const raw = unit[DATA_SCHEMA.SemanticVector];
+			if (rootCol === 'SemanticData' || rootCol === 'SemanticVector') {
+				const raw = unit[DATA_SCHEMA.SemanticData];
 				let parsed = null;
 				if (typeof raw === 'object' && raw !== null) parsed = raw;
 				else if (typeof raw === 'string' && raw.trim()) {
@@ -236,7 +238,7 @@ function formatColumnValue(colName, val) {
 		}
 		return JSON.stringify(val ?? "");
 	}
-	if (canonical === 'SemanticVector') {
+	if (canonical === 'SemanticData' || canonical === 'SemanticVector') {
 		if (val !== undefined && val !== null && val !== "") {
 			const s = typeof val === 'object' ? JSON.stringify(val) : String(val);
 			return (s.startsWith('{') && !s.includes("'")) ? `'${s}'` : JSON.stringify(s);
@@ -290,6 +292,9 @@ function buildUnitFromRecord(rec, resolvedSource, newId = 0, schemaCols = SCHEMA
 		if (col.name === 'PartofSpeech') {
 			return rec.PartofSpeech || rec.PartOfSpeech || rec.pos || "Noun";
 		}
+		if (col.name === 'SemanticData') {
+			return rec.SemanticData !== undefined ? rec.SemanticData : (rec.SemanticVector !== undefined ? rec.SemanticVector : "");
+		}
 		return rec[col.name] !== undefined ? rec[col.name] : (col.type === 'number' ? 0 : "");
 	});
 }
@@ -305,13 +310,13 @@ function getVerbSemanticConstraint(unit, schemaCols = SCHEMA_COLUMNS) {
 		if (found) return found.index;
 		return schemaCols[colName] !== undefined ? schemaCols[colName] : -1;
 	};
-	const svIdx = getIdx("SemanticVector");
+	const sdIdx = getIdx("SemanticData") >= 0 ? getIdx("SemanticData") : getIdx("SemanticVector");
 	const posIdx = getIdx("PartofSpeech");
 	const tagsIdx = getIdx("SemanticTags");
-	const svVal = svIdx >= 0 ? unit[svIdx] : null;
+	const sdVal = sdIdx >= 0 ? unit[sdIdx] : null;
 
 	let sv = {};
-	try { sv = typeof svVal === 'string' ? JSON.parse(svVal) : svVal; } catch (_) { }
+	try { sv = typeof sdVal === 'string' ? JSON.parse(sdVal) : sdVal; } catch (_) { }
 
 	const pos = posIdx >= 0 ? unit[posIdx] : "Noun";
 	const tagsVal = tagsIdx >= 0 ? unit[tagsIdx] : [];
@@ -363,7 +368,7 @@ function detectUndifferentiatedHomonym(unit, schemaCols = SCHEMA_COLUMNS) {
 	const enIdx = getIdx("English");
 	const disIdx = getIdx("Disambiguation");
 	const tagsIdx = getIdx("SemanticTags");
-	const svIdx = getIdx("SemanticVector");
+	const svIdx = getIdx("SemanticData") >= 0 ? getIdx("SemanticData") : getIdx("SemanticVector");
 
 	const pos = posIdx >= 0 ? unit[posIdx] : "Noun";
 	if (pos !== "Action Verb" && pos !== "Descriptive Verb") return null;
@@ -489,7 +494,7 @@ function validateLanguageUnitSemanticSelection(unit, allUnits, schemaCols = SCHE
 	const koIdx = getIdx("Korean");
 	const idIdx = getIdx("Id");
 	const tagsIdx = getIdx("SemanticTags");
-	const svIdx = getIdx("SemanticVector");
+	const svIdx = getIdx("SemanticData") >= 0 ? getIdx("SemanticData") : getIdx("SemanticVector");
 
 	const pos = posIdx >= 0 ? unit[posIdx] : "Noun";
 	const id = idIdx >= 0 ? unit[idIdx] : "?";
@@ -497,7 +502,7 @@ function validateLanguageUnitSemanticSelection(unit, allUnits, schemaCols = SCHE
 	const tagsVal = tagsIdx >= 0 ? unit[tagsIdx] : [];
 	const tags = tagsVal instanceof Set ? Array.from(tagsVal) : (Array.isArray(tagsVal) ? tagsVal : []);
 
-	// 1. Validate collocation_filter in SemanticVector if present
+	// 1. Validate collocation_filter in SemanticData if present
 	const svVal = svIdx >= 0 ? unit[svIdx] : null;
 	if (svVal) {
 		try {
@@ -507,7 +512,7 @@ function validateLanguageUnitSemanticSelection(unit, allUnits, schemaCols = SCHE
 			}
 		} catch (filterErr) {
 			const errMsg = `[SEMANTIC FILTER ERROR] Unit '${ko}' (Id: ${id}) has invalid collocation_filter: ${filterErr.message}\n` +
-				`-> Location: SemanticVector column in data.js\n` +
+				`-> Location: SemanticData column in data.js\n` +
 				`-> Expected format: /*js:filter*/ (noun, hasTag) => ...\n` +
 				`-> See korean.js (parseAndValidateCollocationFilter, lines ~410-465) for specifications.`;
 			if (options.strict) throw new Error(errMsg);
@@ -734,8 +739,8 @@ function evaluatePredicate(unit, colName, op, valStr, DATA_SCHEMA) {
 	if (isJsonPath) {
 		const parts = colName.split('.');
 		const rootCol = normalizeColumnName(parts[0]);
-		if (rootCol === 'SemanticVector') {
-			const raw = unit[DATA_SCHEMA.SemanticVector];
+		if (rootCol === 'SemanticData' || rootCol === 'SemanticVector') {
+			const raw = unit[DATA_SCHEMA.SemanticData];
 			let parsed = null;
 			if (typeof raw === 'object' && raw !== null) parsed = raw;
 			else if (typeof raw === 'string' && raw.trim()) {
@@ -891,6 +896,7 @@ const COMPLEXITY_THRESHOLD = 8;
 const COLUMN_COMPLEXITY_WEIGHTS = {
 	'SemanticTags': 2,
 	'Conjugation': 2,
+	'SemanticData': 4,
 	'SemanticVector': 4
 };
 
@@ -1703,7 +1709,7 @@ function executeAddColumn(commandStr, options = {}) {
 		if (name === 'Id' || name === 'PriorityScore') type = 'number';
 		else if (name === 'SemanticTags') type = 'tags';
 		else if (name === 'Conjugation') type = 'conjugation';
-		else if (name === 'SemanticVector') type = 'json';
+		else if (name === 'SemanticData' || name === 'SemanticVector') type = 'json';
 		return { name, index, type };
 	});
 

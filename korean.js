@@ -123,6 +123,7 @@ const exportedMembers = {
 	// Primitives
 	DATA_SCHEMA: primitives.DATA_SCHEMA,
 	hasTag: primitives.hasTag,
+	parseSemanticData: primitives.parseSemanticData,
 	parseSemanticVector: primitives.parseSemanticVector,
 	HANGUL_INITIALS: primitives.HANGUL_INITIALS,
 	HANGUL_MEDIALS: primitives.HANGUL_MEDIALS,

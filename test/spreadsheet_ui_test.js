@@ -116,7 +116,7 @@ async function runSuite() {
 	const expectedDefaultCols = [
 		'Id', 'Korean', 'English', 'PartofSpeech', 'SemanticTags',
 		'Disambiguation', 'Conjugation', 'Source', 'PriorityScore',
-		'FormalityLevel', 'HonorificRules', 'SemanticVector', 'SyntaxFrame'
+		'FormalityLevel', 'HonorificRules', 'SemanticData', 'SyntaxFrame'
 	];
 	assert(DEFAULT_COLUMNS_SPEC.length === 13, 'DEFAULT_COLUMNS_SPEC has all 13 default columns from data.js');
 	assert(
@@ -295,7 +295,7 @@ async function runSuite() {
 	assert(engine.rowHandleWidth === 115, '# Order column width is resizable via setColumnWidth("__rowOrder__", 115)');
 
 	await engine.setColumnVisibility('SyntaxFrame', false);
-	await engine.setColumnVisibility('SemanticVector', false);
+	await engine.setColumnVisibility('SemanticData', false);
 	assert(
 		engine.columnVisibility['SyntaxFrame'] === false &&
 		!engine.getVisibleColumns().some(c => c.key === 'SyntaxFrame'),
@@ -310,7 +310,7 @@ async function runSuite() {
 	await engine.resetAllColumnVisibility();
 	assert(
 		engine.columnVisibility['SyntaxFrame'] === true &&
-		engine.columnVisibility['SemanticVector'] === true,
+		engine.columnVisibility['SemanticData'] === true,
 		'resetAllColumnVisibility restores all hidden columns to visible'
 	);
 

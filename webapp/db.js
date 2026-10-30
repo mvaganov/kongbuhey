@@ -32,7 +32,7 @@ const DEFAULT_COLUMNS_SPEC = [
 	{ key: 'PriorityScore', schemaIndex: 8, label: 'PriorityScore', type: 'int', isDefault: true, defaultWidth: 115, editable: true },
 	{ key: 'FormalityLevel', schemaIndex: 9, label: 'FormalityLevel', type: 'string', isDefault: true, defaultWidth: 130, editable: true },
 	{ key: 'HonorificRules', schemaIndex: 10, label: 'HonorificRules', type: 'string', isDefault: true, defaultWidth: 190, editable: true },
-	{ key: 'SemanticVector', schemaIndex: 11, label: 'SemanticVector', type: 'json', isDefault: true, defaultWidth: 240, editable: true },
+	{ key: 'SemanticData', schemaIndex: 11, label: 'SemanticData', type: 'json', isDefault: true, defaultWidth: 240, editable: true },
 	{ key: 'SyntaxFrame', schemaIndex: 12, label: 'SyntaxFrame', type: 'string', isDefault: true, defaultWidth: 230, editable: true }
 ];
 

@@ -135,6 +135,19 @@ class SpreadsheetEngine {
 			...this.customColumns.map(c => c.key)
 		];
 
+		// Migrate legacy 'SemanticVector' view settings to 'SemanticData'
+		if (savedView) {
+			if (Array.isArray(savedView.columnOrder)) {
+				savedView.columnOrder = savedView.columnOrder.map(k => k === 'SemanticVector' ? 'SemanticData' : k);
+			}
+			if (savedView.columnWidths && savedView.columnWidths.SemanticVector !== undefined && savedView.columnWidths.SemanticData === undefined) {
+				savedView.columnWidths.SemanticData = savedView.columnWidths.SemanticVector;
+			}
+			if (savedView.columnVisibility && savedView.columnVisibility.SemanticVector !== undefined && savedView.columnVisibility.SemanticData === undefined) {
+				savedView.columnVisibility.SemanticData = savedView.columnVisibility.SemanticVector;
+			}
+		}
+
 		// 1. Column Order
 		if (savedView && Array.isArray(savedView.columnOrder) && savedView.columnOrder.length > 0) {
 			const validSaved = savedView.columnOrder.filter(k => this.columnMap.has(k));
