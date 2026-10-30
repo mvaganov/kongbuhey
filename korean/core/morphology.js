@@ -420,7 +420,7 @@ function buildNegatedPredicate(verbOrKo, options = {}) {
 	}
 
 	if (isInability) {
-		if (!canTakeMood(ko, "inability")) {
+		if (!canTakeMood(verbOrKo, "inability")) {
 			throw new Error(`Descriptive verb '${ko}' cannot take inability negation (못 / -지 못하다).`);
 		}
 		const conj = verbUnit ? verbUnit[DATA_SCHEMA.Conjugation] : "";
@@ -428,7 +428,7 @@ function buildNegatedPredicate(verbOrKo, options = {}) {
 		if (isLong) {
 			return applyMorphology(stem + "지 " + conjugatePredicate("못하다", formality, tense));
 		} else {
-			return "못 " + conjugatePredicate(ko, formality, tense);
+			return "못 " + conjugatePredicate(verbOrKo, formality, tense);
 		}
 	}
 
@@ -437,7 +437,7 @@ function buildNegatedPredicate(verbOrKo, options = {}) {
 	if (isLong) {
 		return applyMorphology(stem + "지 " + conjugatePredicate("않다", formality, tense));
 	} else {
-		return "안 " + conjugatePredicate(ko, formality, tense);
+		return "안 " + conjugatePredicate(verbOrKo, formality, tense);
 	}
 }
 
@@ -448,7 +448,7 @@ function buildMoodPredicate(verbOrKo, mood, formality = "polite", options = {}) 
 
 	const normalizedMood = (mood || "").toLowerCase();
 
-	if (!canTakeMood(ko, normalizedMood)) {
+	if (!canTakeMood(verbOrKo, normalizedMood)) {
 		throw new Error(`Verb '${ko}' cannot take mood '${mood}'. Descriptive verbs are restricted from imperative, propositive, inability, and volitional moods.`);
 	}
 
@@ -722,6 +722,17 @@ function getVerbParticleType(verbUnit) {
 }
 
 function getNounCandidatesForVerb(verbUnit) {
+	if (!verbUnit) return [];
+	const idx = !state.currentUsageFilter ? getLexiconIndex() : null;
+	const unitId = verbUnit[DATA_SCHEMA.Id];
+	if (idx && typeof unitId === 'number' && idx.verbCandidateCache.has(unitId)) {
+		return idx.verbCandidateCache.get(unitId);
+	}
+	const cacheAndReturn = (res) => {
+		if (idx && typeof unitId === 'number') idx.verbCandidateCache.set(unitId, res);
+		return res;
+	};
+
 	const sv = parseSemanticVector(verbUnit);
 	const getFilteredWords = typeof window !== 'undefined' ? window.getFilteredWords : require('./numbers.js').getFilteredWords;
 
@@ -732,13 +743,13 @@ function getNounCandidatesForVerb(verbUnit) {
 			const matched = allNouns.filter(n => {
 				try { return filterFn(n, hasTag); } catch (e) { return false; }
 			});
-			if (matched.length > 0) return matched;
+			if (matched.length > 0) return cacheAndReturn(matched);
 		}
 	}
 
 	if (sv && sv.req && sv.req !== 'any') {
 		const reqNouns = getFilteredWords("Noun", sv.req).filter(n => !hasTag(n, "measureWord"));
-		if (reqNouns.length > 0) return reqNouns;
+		if (reqNouns.length > 0) return cacheAndReturn(reqNouns);
 	}
 
 	for (const spec of ACTION_VERB_SPECS) {
@@ -751,16 +762,27 @@ function getNounCandidatesForVerb(verbUnit) {
 			if (words.length === 0 && spec.fallbackTag !== undefined) {
 				words = getFilteredWords("Noun", spec.fallbackTag || undefined).filter(n => !hasTag(n, "measureWord"));
 			}
-			if (words.length > 0) return words;
+			if (words.length > 0) return cacheAndReturn(words);
 		}
 	}
 
 	let fallback = getFilteredWords("Noun", "object").filter(n => !hasTag(n, "measureWord"));
 	if (fallback.length === 0) fallback = getFilteredWords("Noun").filter(n => !hasTag(n, "measureWord"));
-	return fallback;
+	return cacheAndReturn(fallback);
 }
 
 function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
+	if (!dvUnit) return [];
+	const idx = !state.currentUsageFilter ? getLexiconIndex() : null;
+	const unitId = dvUnit[DATA_SCHEMA.Id];
+	if (idx && typeof unitId === 'number' && idx.dvCandidateCache.has(unitId)) {
+		return idx.dvCandidateCache.get(unitId);
+	}
+	const cacheAndReturn = (res) => {
+		if (idx && typeof unitId === 'number') idx.dvCandidateCache.set(unitId, res);
+		return res;
+	};
+
 	const sv = parseSemanticVector(dvUnit);
 	const getFilteredWords = typeof window !== 'undefined' ? window.getFilteredWords : require('./numbers.js').getFilteredWords;
 
@@ -771,13 +793,13 @@ function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
 			const matched = allNouns.filter(n => {
 				try { return filterFn(n, hasTag); } catch (e) { return false; }
 			});
-			if (matched.length > 0) return matched;
+			if (matched.length > 0) return cacheAndReturn(matched);
 		}
 	}
 
 	if (sv && sv.req && sv.req !== 'any') {
 		const reqNouns = getFilteredWords("Noun", sv.req).filter(n => !hasTag(n, "measureWord"));
-		if (reqNouns.length > 0) return reqNouns;
+		if (reqNouns.length > 0) return cacheAndReturn(reqNouns);
 	}
 
 	for (const spec of DESCRIPTIVE_VERB_SPECS) {
@@ -790,13 +812,13 @@ function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
 			if (words.length === 0 && spec.fallbackTag !== undefined) {
 				words = getFilteredWords("Noun", spec.fallbackTag || undefined).filter(n => !hasTag(n, "measureWord"));
 			}
-			if (words.length > 0) return words;
+			if (words.length > 0) return cacheAndReturn(words);
 		}
 	}
 
 	let fallback = getFilteredWords("Noun", "object").filter(n => !hasTag(n, "measureWord"));
 	if (fallback.length === 0) fallback = getFilteredWords("Noun").filter(n => !hasTag(n, "measureWord"));
-	return fallback;
+	return cacheAndReturn(fallback);
 }
 
 function getRandom(arr) {

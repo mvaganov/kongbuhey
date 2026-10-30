@@ -229,33 +229,36 @@ function expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint)
 function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {}) {
 	if (depth > 2) return { ko: "좋아요", context: {}, tree: "좋아요" };
 
-	let template = "", grammarId = null;
+	let template = "", grammarId = null, formulaIndex = 0;
 	const units = dataModule.KR_EN_languageUnits || (typeof window !== 'undefined' ? window.KR_EN_languageUnits : []);
 
 	if (typeof templateOrUnit === 'number') {
 		const gu = units ? units[templateOrUnit] : null;
 		if (gu) {
 			grammarId = gu[DATA_SCHEMA.Id];
-			template = getRandom(gu[DATA_SCHEMA.Conjugation]) || "";
+			const formulas = Array.isArray(gu[DATA_SCHEMA.Conjugation]) ? gu[DATA_SCHEMA.Conjugation] : [];
+			if (formulas.length > 0) {
+				formulaIndex = Math.floor(Math.random() * formulas.length);
+				template = formulas[formulaIndex] || "";
+			}
 		} else {
 			template = String(templateOrUnit);
 			grammarId = template;
 		}
 	} else if (Array.isArray(templateOrUnit) && typeof templateOrUnit[DATA_SCHEMA.Id] === 'number') {
 		grammarId = templateOrUnit[DATA_SCHEMA.Id];
-		template = getRandom(templateOrUnit[DATA_SCHEMA.Conjugation]) || "";
+		const formulas = Array.isArray(templateOrUnit[DATA_SCHEMA.Conjugation]) ? templateOrUnit[DATA_SCHEMA.Conjugation] : [];
+		if (formulas.length > 0) {
+			formulaIndex = Math.floor(Math.random() * formulas.length);
+			template = formulas[formulaIndex] || "";
+		}
 	} else if (typeof templateOrUnit === 'string') {
 		template = templateOrUnit;
 		const match = findGrammarUnitForTemplate(template);
 		if (match && match.grammarUnit) {
 			const gu = match.grammarUnit;
-			const formulas = gu[DATA_SCHEMA.Conjugation] || [];
-			if (formulas.length > 1 && match.formulaIndex > 0) {
-				const sigs = formulas.map(f => (f.match(/\{[^}]+\}/g) || []).join(','));
-				grammarId = sigs.slice(0, match.formulaIndex).includes(sigs[match.formulaIndex]) ? template : gu[DATA_SCHEMA.Id];
-			} else {
-				grammarId = gu[DATA_SCHEMA.Id];
-			}
+			grammarId = gu[DATA_SCHEMA.Id];
+			formulaIndex = match.formulaIndex || 0;
 		} else {
 			grammarId = template;
 		}
@@ -421,7 +424,11 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 		tokenRegex.lastIndex = 0;
 	}
 
-	return { ko: koResult, context: currentContext, tree: [grammarId, ...childrenTree] };
+	const tree = (typeof grammarId === 'number' && formulaIndex > 0)
+		? [grammarId, `@f:${formulaIndex}`, ...childrenTree]
+		: [grammarId, ...childrenTree];
+
+	return { ko: koResult, context: currentContext, tree };
 }
 
 const semanticGeneratorExports = {
