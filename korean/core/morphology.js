@@ -23,6 +23,7 @@ const state = (typeof require !== 'undefined' ? require('../state.js') : window)
 const {
 	DATA_SCHEMA,
 	hasTag,
+	parseSemanticData,
 	parseSemanticVector,
 	getStem,
 	decomposeHangul,
@@ -32,6 +33,17 @@ const {
 	hasRieulBatchim,
 	getVowelHarmony
 } = (typeof require !== 'undefined' ? require('./primitives.js') : window);
+
+const {
+	getConjugatedStem,
+	conjugateAoStem,
+	resolvePureMorphology
+} = (typeof require !== 'undefined' ? require('./stem_engine.js') : window);
+
+const {
+	getLexiconIndex,
+	getCompiledCollocationFilter
+} = (typeof require !== 'undefined' ? require('./lexicon_index.js') : window);
 
 const {
 	FINAL_TO_INITIAL,
@@ -100,228 +112,7 @@ function registerConcordRepairs(repairs) {
 // =========================================================================
 
 function applyMorphology(text) {
-	let resolvedKo = text;
-
-	// Irregular Verbs
-	// 1. b_irregular
-	resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고|므로|ㄹ|ㄴ)/g, (_, ch, s) => {
-		const base = setFinal(ch, 0);
-		return s === 'ㄴ' ? base + '운' : s === 'ㄹ' ? base + '울' : base + '우' + s;
-	});
-	resolvedKo = resolvedKo.replace(/([가-힣])\[b_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => {
-		const base = setFinal(ch, 0);
-		const isW = (ch === '돕' || ch === '곱');
-		const added = (h === "았/었") ? (isW ? "왔" : "웠") : (isW ? "와" : "워");
-		return base + added + s;
-	});
-
-	// 2. l_irregular
-	resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고|므로|ㄹ|ㄴ)/g, (_, ch, s) => {
-		if (s === 'ㄴ') return setFinal(ch, 4);
-		if (s === 'ㄹ') return ch;
-		if (/^(면|면서|러|려고|려면|로|라고|므로)$/.test(s)) return ch + s;
-		return setFinal(ch, 0) + s;
-	});
-	resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\](는|나|니|냐)/g, (_, ch, s) => setFinal(ch, 0) + s);
-	resolvedKo = resolvedKo.replace(/([가-힣])\[l_irregular\]습니다\/ㅂ니다/g, (_, ch) => setFinal(ch, 17) + "니다");
-
-	// 3. d_irregular
-	resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고|므로|ㄹ|ㄴ)/g, (_, ch, s) => {
-		const withL = setFinal(ch, 8);
-		return s === 'ㄴ' ? withL + '은' : s === 'ㄹ' ? withL + '을' : withL + '으' + s;
-	});
-	resolvedKo = resolvedKo.replace(/([가-힣])\[d_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => setFinal(ch, 8) + h + s);
-
-	// 4. eu_irregular
-	resolvedKo = resolvedKo.replace(/([가-힣])\[eu_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, ch, h, s) => {
-		const idx = resolvedKo.indexOf(match);
-		const prevVowel = idx > 0 ? getVowelHarmony(resolvedKo[idx - 1]) : '어';
-		const d = decomposeHangul(ch);
-		return composeHangul(d.initial, prevVowel === '아' ? 0 : 4, h === "았/었" ? 20 : 0) + s;
-	});
-
-	// 5. reu_irregular & reo_irregular
-	resolvedKo = resolvedKo.replace(/([가-힣])르\[reu_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, pre, h, s) => {
-		const prevVowel = getVowelHarmony(pre);
-		return setFinal(pre, 8) + composeHangul(5, prevVowel === '아' ? 0 : 4, h === "았/었" ? 20 : 0) + s;
-	});
-	resolvedKo = resolvedKo.replace(/([가-힣])르\[reo_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, pre, h, s) => {
-		return pre + "르" + (h === "았/었" ? "렀" : "러") + s;
-	});
-
-	// 6. h_irregular
-	resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고|므로|ㄹ|ㄴ)/g, (_, ch, s) => {
-		const base = setFinal(ch, 0);
-		return s === 'ㄴ' ? setFinal(base, 4) : s === 'ㄹ' ? setFinal(base, 8) : base + s;
-	});
-	resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => {
-		return composeHangul(decomposeHangul(ch).initial, 1, h === "았/었" ? 20 : 0) + s;
-	});
-
-	// 7. s_irregular
-	resolvedKo = resolvedKo.replace(/([가-힣])\[s_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고|므로|ㄹ|ㄴ)/g, (_, ch, s) => {
-		const base = setFinal(ch, 0);
-		return s === 'ㄴ' ? base + '은' : s === 'ㄹ' ? base + '을' : base + '으' + s;
-	});
-	resolvedKo = resolvedKo.replace(/([가-힣])\[s_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => {
-		const base = setFinal(ch, 0);
-		const hv = getVowelHarmony(base);
-		return base + '\u200B' + (h === "았/었" ? (hv === '아' ? '았' : '었') : hv) + s;
-	});
-
-	// Strip leftover conjugation markers
-	resolvedKo = resolvedKo.replace(/\[[^\]]+\]/g, '');
-
-	// Resolve particles based on previous character's batchim
-	if (!state.particlePairsRegex && state.PARTICLE_PAIRS) {
-		const keys = Object.keys(state.PARTICLE_PAIRS).sort((a, b) => b.length - a.length);
-		if (keys.length > 0) {
-			const escaped = keys.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-			state.particlePairsRegex = new RegExp(`([가-힣])(${escaped})`, 'g');
-		}
-	}
-	if (state.particlePairsRegex && state.PARTICLE_PAIRS) {
-		resolvedKo = resolvedKo.replace(state.particlePairsRegex, (_, ch, p) => {
-			const pair = state.PARTICLE_PAIRS[p];
-			return ch + (pair ? (hasBatchim(ch) ? pair[0] : pair[1]) : p);
-		});
-	}
-
-	// Resolve contracted pronouns
-	(state.PRONOUN_REPLACEMENTS || []).forEach(([pat, rep]) => { resolvedKo = resolvedKo.replace(pat, rep); });
-
-	// Resolve 이/예요 based on batchim
-	resolvedKo = resolvedKo.replace(/([가-힣])이\/예요/g, (_, ch) => ch + (hasBatchim(ch) ? '이에요' : '예요'));
-
-	// Resolve 습니다/ㅂ니다 based on batchim
-	resolvedKo = resolvedKo.replace(/([가-힣])(습니다\/ㅂ니다|습니다|ㅂ니다)/g, (_, ch, ending) => {
-		if (ending === "습니다/ㅂ니다") {
-			const d = decomposeHangul(ch);
-			if (d && d.final !== 0) {
-				return d.final === 8 ? setFinal(ch, 17) + "니다" : ch + "습니다";
-			}
-			return setFinal(ch, 17) + "니다";
-		}
-		return ch + ending;
-	});
-
-	// Resolve 으/ㅂ시다 and (으)ㅂ시다 based on batchim
-	resolvedKo = resolvedKo.replace(/([가-힣])(?:으\/ㅂ시다|\(으\)ㅂ시다)/g, (_, ch) => {
-		const d = decomposeHangul(ch);
-		if (d && d.final !== 0) {
-			return d.final === 8 ? setFinal(ch, 17) + "시다" : ch + "읍시다";
-		}
-		return setFinal(ch, 17) + "시다";
-	});
-
-	// Resolve 아/어/았/었 vowel harmony
-	resolvedKo = resolvedKo.replace(/([가-힣])(아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => {
-		const hv = getVowelHarmony(ch);
-		if (h === "았/었") {
-			return ch + (hv === '여' ? '였' : hv === '아' ? '았' : '었') + s;
-		}
-		return ch + hv + s;
-	});
-
-	// Resolve 으 insertion and ㄹ-dropping before (세|시|셔|셨|십)
-	resolvedKo = resolvedKo.replace(/([가-힣])으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고|므로)/g, (_, ch, s) => {
-		const d = decomposeHangul(ch);
-		if (d && d.final === 8 && (s === '세' || s === '시' || s === '셔' || s === '셨' || s === '십')) {
-			return setFinal(ch, 0) + s;
-		}
-		return ch + (d && d.final !== 0 && d.final !== 8 ? '으' : '') + s;
-	});
-
-	// Resolve (으)로 based on batchim
-	resolvedKo = resolvedKo.replace(/([가-힣])\(으\)로/g, (_, ch) => {
-		const d = decomposeHangul(ch);
-		return ch + (d && d.final !== 0 && d.final !== 8 ? '으로' : '로');
-	});
-
-	// Resolve (으)므로 based on batchim
-	resolvedKo = resolvedKo.replace(/([가-힣])\(으\)므로/g, (_, ch) => {
-		const d = decomposeHangul(ch);
-		return ch + (d && d.final !== 0 && d.final !== 8 ? '으므로' : '므로');
-	});
-
-	// Resolve (으)시 / (으)세 / (으)십 / (으)셨 based on batchim
-	resolvedKo = resolvedKo.replace(/([가-힣])\(으\)(시|세|셔|셨|십)/g, (_, ch, s) => {
-		const d = decomposeHangul(ch);
-		if (d && d.final === 8) return setFinal(ch, 0) + s;
-		return ch + (d && d.final !== 0 && d.final !== 8 ? '으' : '') + s;
-	});
-
-	// Resolve 으/ㄹ
-	resolvedKo = resolvedKo.replace(/([가-힣])으\/ㄹ/g, (_, ch) => {
-		const d = decomposeHangul(ch);
-		if (d && d.final !== 0) return d.final === 8 ? ch : ch + '을';
-		return setFinal(ch, 8);
-	});
-
-	// Resolve 으/ㄴ
-	resolvedKo = resolvedKo.replace(/([가-힣])으\/ㄴ/g, (_, ch) => {
-		const d = decomposeHangul(ch);
-		if (d && d.final !== 0) return d.final === 8 ? setFinal(ch, 4) : ch + '은';
-		return setFinal(ch, 4);
-	});
-
-	// Resolve (느)ㄴ다(고)
-	resolvedKo = resolvedKo.replace(/([가-힣])(?:느\/ㄴ다|\(느\)ㄴ다)(고|)/g, (_, ch, quote) => {
-		const q = quote || '';
-		const d = decomposeHangul(ch);
-		if (d && d.final !== 0) return (d.final === 8 ? setFinal(ch, 4) : ch + '는') + '다' + q;
-		return setFinal(ch, 4) + '다' + q;
-	});
-
-	// Basic Vowel Contractions
-	resolvedKo = resolvedKo.replace(/([가-힣])아(요|서|도|야|라|)/g, (m, ch, s) => {
-		const d = decomposeHangul(ch);
-		if (!d || d.final !== 0) return m;
-		if (d.medial === 0) return ch + s; // ㅏ
-		if (d.medial === 8) return composeHangul(d.initial, 9, 0) + s; // ㅗ -> ㅘ
-		return m;
-	});
-
-	resolvedKo = resolvedKo.replace(/([가-힣])았(어요|어|다가|던|습니다|다)/g, (m, ch, s) => {
-		const d = decomposeHangul(ch);
-		if (!d || d.final !== 0) return m;
-		if (d.medial === 0) return composeHangul(d.initial, 0, 20) + s; // ㅏ -> 았
-		if (d.medial === 8) return composeHangul(d.initial, 9, 20) + s; // ㅗ -> 왔
-		return m;
-	});
-
-	resolvedKo = resolvedKo.replace(/오아(요|서|도|야|라)/g, (m, s) => "와" + s);
-	resolvedKo = resolvedKo.replace(/오았(어요|어|다가|던|습니다|다)/g, (m, s) => "왔" + s);
-	resolvedKo = resolvedKo.replace(/하여(요|서|도|야|라|지|져|졌)/g, (m, s) => "해" + s);
-	resolvedKo = resolvedKo.replace(/하였(어요|어|다가|던|습니다|다)/g, (m, s) => "했" + s);
-	resolvedKo = resolvedKo.replace(/마시(아|어)(요|서|도|야|라)/g, (m, v, s) => "마셔" + s);
-	resolvedKo = resolvedKo.replace(/크(아|어)(요|서|도|야|라)/g, (m, v, s) => "커" + s);
-	resolvedKo = resolvedKo.replace(/이어요/g, "이에요");
-
-	resolvedKo = resolvedKo.replace(/([가-힣])어(요|서|도|야|라|지|져|졌)/g, (m, ch, s) => {
-		const d = decomposeHangul(ch);
-		if (!d || d.final !== 0) return m;
-		if (d.medial === 20) return composeHangul(d.initial, 6, 0) + s; // ㅣ -> ㅕ
-		if (d.medial === 13) return composeHangul(d.initial, 14, 0) + s; // ㅜ -> ㅝ
-		if ([1, 4, 5, 6].includes(d.medial)) return ch + s; // ㅐ, ㅓ, ㅔ, ㅕ
-		return m;
-	});
-
-	resolvedKo = resolvedKo.replace(/([가-힣])었(어요|어|다가|던|습니다|다)/g, (m, ch, s) => {
-		const d = decomposeHangul(ch);
-		if (!d || d.final !== 0) return m;
-		if (d.medial === 20) return composeHangul(d.initial, 6, 20) + s; // ㅣ -> 였
-		if (d.medial === 13) return composeHangul(d.initial, 14, 20) + s; // ㅜ -> 웠
-		if ([1, 4, 5, 6].includes(d.medial)) return composeHangul(d.initial, d.medial, 20) + s;
-		return m;
-	});
-
-	if (state.BARE_TIME_WORDS_NO_PARTICLE && state.BARE_TIME_WORDS_NO_PARTICLE.size > 0) {
-		for (const bare of state.BARE_TIME_WORDS_NO_PARTICLE) {
-			const deicticRegex = new RegExp(`(^|[^가-힣])(${bare})에([^가-힣]|$)`, 'g');
-			resolvedKo = resolvedKo.replace(deicticRegex, '$1$2$3');
-		}
-	}
+	let resolvedKo = resolvePureMorphology(text, state);
 
 	// Concord repairs delegation
 	if (concordRepairs.applyCounterConcord) resolvedKo = concordRepairs.applyCounterConcord(resolvedKo);
@@ -330,8 +121,7 @@ function applyMorphology(text) {
 	if (concordRepairs.applyAdverbConcord) resolvedKo = concordRepairs.applyAdverbConcord(resolvedKo);
 	if (concordRepairs.applyClausalConcord) resolvedKo = concordRepairs.applyClausalConcord(resolvedKo);
 
-	resolvedKo = resolvedKo.replace(/\u200B/g, '');
-	return resolvedKo;
+	return resolvedKo.replace(/\u200B/g, '');
 }
 
 // =========================================================================
@@ -485,15 +275,8 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 
 // =========================================================================
 // Predicate Conjugation & Mood Builders
+// (getConjugatedStem is imported from ./stem_engine.js)
 // =========================================================================
-
-function getConjugatedStem(koreanWord, conjugation) {
-	let stem = getStem(koreanWord);
-	if (conjugation && conjugation !== "regular" && conjugation !== "" && /^[a-z_]+$/.test(conjugation)) {
-		stem += `[${conjugation}]`;
-	}
-	return stem;
-}
 
 function isDescriptiveVerb(verbOrKo) {
 	if (!verbOrKo) return false;
@@ -751,57 +534,25 @@ function buildMoodPredicate(verbOrKo, mood, formality = "polite", options = {}) 
 }
 
 // =========================================================================
-// Lookup Map Caches & Query Helpers
+// Lookup Map Caches & Query Helpers (Delegated to Unified Lexicon Index)
 // =========================================================================
-
-let nounLookupMap = null;
-let allNounsMap = null;
-let verbLookupMap = null;
 
 function getNounUnit(nounOrKo) {
 	if (Array.isArray(nounOrKo)) return nounOrKo;
 	if (typeof nounOrKo !== 'string') return null;
-	const getWords = dataModule.getWords || (typeof window !== 'undefined' ? window.getWords : () => []);
-	if (!nounLookupMap) {
-		nounLookupMap = new Map();
-		const nouns = getWords("Noun");
-		for (const n of nouns) {
-			const ko = n[DATA_SCHEMA.Korean];
-			if (!nounLookupMap.has(ko)) nounLookupMap.set(ko, n);
-		}
-	}
-	return nounLookupMap.get(nounOrKo) || null;
+	return getLexiconIndex().nounByKo.get(nounOrKo) || null;
 }
 
 function getAllNounUnits(nounOrKo) {
 	if (Array.isArray(nounOrKo)) return [nounOrKo];
 	if (typeof nounOrKo !== 'string') return [];
-	const getWords = dataModule.getWords || (typeof window !== 'undefined' ? window.getWords : () => []);
-	if (!allNounsMap) {
-		allNounsMap = new Map();
-		const nouns = getWords("Noun");
-		for (const n of nouns) {
-			const ko = n[DATA_SCHEMA.Korean];
-			if (!allNounsMap.has(ko)) allNounsMap.set(ko, []);
-			allNounsMap.get(ko).push(n);
-		}
-	}
-	return allNounsMap.get(nounOrKo) || [];
+	return getLexiconIndex().allNounsByKo.get(nounOrKo) || [];
 }
 
 function getVerbUnit(verbOrKo) {
 	if (Array.isArray(verbOrKo)) return verbOrKo;
 	if (typeof verbOrKo !== 'string') return null;
-	const getWords = dataModule.getWords || (typeof window !== 'undefined' ? window.getWords : () => []);
-	if (!verbLookupMap) {
-		verbLookupMap = new Map();
-		const verbs = [...getWords("Action Verb"), ...getWords("Descriptive Verb")];
-		for (const v of verbs) {
-			const ko = v[DATA_SCHEMA.Korean];
-			if (!verbLookupMap.has(ko)) verbLookupMap.set(ko, v);
-		}
-	}
-	return verbLookupMap.get(verbOrKo) || null;
+	return getLexiconIndex().verbByKo.get(verbOrKo) || null;
 }
 
 // =========================================================================
@@ -972,25 +723,18 @@ function getVerbParticleType(verbUnit) {
 
 function getNounCandidatesForVerb(verbUnit) {
 	const sv = parseSemanticVector(verbUnit);
+	const getFilteredWords = typeof window !== 'undefined' ? window.getFilteredWords : require('./numbers.js').getFilteredWords;
 
 	if (sv && typeof sv.collocation_filter === 'string') {
-		try {
-			const { lang, code } = parseAndValidateCollocationFilter(sv.collocation_filter, verbUnit[DATA_SCHEMA.Id]);
-			if (lang === 'js') {
-				const filterFn = new Function('noun', 'hasTag', `return (${code})(noun, hasTag);`);
-				const getFilteredWords = typeof window !== 'undefined' ? window.getFilteredWords : require('./numbers.js').getFilteredWords;
-				const allNouns = getFilteredWords("Noun");
-				const matched = allNouns.filter(n => {
-					try { return filterFn(n, hasTag); } catch (e) { return false; }
-				});
-				if (matched.length > 0) return matched;
-			}
-		} catch (e) {
-			console.error(`Failed to execute collocation_filter on verb unit ${verbUnit[DATA_SCHEMA.Id]}:`, e.message || e);
+		const filterFn = getCompiledCollocationFilter(verbUnit, parseAndValidateCollocationFilter);
+		if (filterFn) {
+			const allNouns = getFilteredWords("Noun");
+			const matched = allNouns.filter(n => {
+				try { return filterFn(n, hasTag); } catch (e) { return false; }
+			});
+			if (matched.length > 0) return matched;
 		}
 	}
-
-	const getFilteredWords = typeof window !== 'undefined' ? window.getFilteredWords : require('./numbers.js').getFilteredWords;
 
 	if (sv && sv.req && sv.req !== 'any') {
 		const reqNouns = getFilteredWords("Noun", sv.req).filter(n => !hasTag(n, "measureWord"));
@@ -1018,25 +762,18 @@ function getNounCandidatesForVerb(verbUnit) {
 
 function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
 	const sv = parseSemanticVector(dvUnit);
+	const getFilteredWords = typeof window !== 'undefined' ? window.getFilteredWords : require('./numbers.js').getFilteredWords;
 
 	if (sv && typeof sv.collocation_filter === 'string') {
-		try {
-			const { lang, code } = parseAndValidateCollocationFilter(sv.collocation_filter, dvUnit[DATA_SCHEMA.Id]);
-			if (lang === 'js') {
-				const filterFn = new Function('noun', 'hasTag', `return (${code})(noun, hasTag);`);
-				const getFilteredWords = typeof window !== 'undefined' ? window.getFilteredWords : require('./numbers.js').getFilteredWords;
-				const allNouns = getFilteredWords("Noun");
-				const matched = allNouns.filter(n => {
-					try { return filterFn(n, hasTag); } catch (e) { return false; }
-				});
-				if (matched.length > 0) return matched;
-			}
-		} catch (e) {
-			console.error(`Failed to execute collocation_filter on descriptive unit ${dvUnit[DATA_SCHEMA.Id]}:`, e.message || e);
+		const filterFn = getCompiledCollocationFilter(dvUnit, parseAndValidateCollocationFilter);
+		if (filterFn) {
+			const allNouns = getFilteredWords("Noun");
+			const matched = allNouns.filter(n => {
+				try { return filterFn(n, hasTag); } catch (e) { return false; }
+			});
+			if (matched.length > 0) return matched;
 		}
 	}
-
-	const getFilteredWords = typeof window !== 'undefined' ? window.getFilteredWords : require('./numbers.js').getFilteredWords;
 
 	if (sv && sv.req && sv.req !== 'any') {
 		const reqNouns = getFilteredWords("Noun", sv.req).filter(n => !hasTag(n, "measureWord"));

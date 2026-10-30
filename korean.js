@@ -56,6 +56,8 @@ const errorCodes = require('./korean/constants/error_codes.js');
 const grammarTags = require('./korean/constants/tags.js');
 
 // 2. Core Engines
+const stemEngine = require('./korean/core/stem_engine.js');
+const lexiconIndex = require('./korean/core/lexicon_index.js');
 const numbers = require('./korean/core/numbers.js');
 const morphology = require('./korean/core/morphology.js');
 const phonetics = require('./korean/phonetics/pronunciation.js');
@@ -187,6 +189,12 @@ const exportedMembers = {
 	NUCLEUS_EN: englishPhonemes.NUCLEUS_EN,
 	CODA_EN: englishPhonemes.CODA_EN,
 	applyMorphology: morphology.applyMorphology,
+	resolvePureMorphology: stemEngine.resolvePureMorphology,
+	conjugateAoStem: stemEngine.conjugateAoStem,
+	deriveConnectiveEndings: stemEngine.deriveConnectiveEndings,
+	getLexiconIndex: lexiconIndex.getLexiconIndex,
+	invalidateLexiconIndex: lexiconIndex.invalidateLexiconIndex,
+	getCompiledCollocationFilter: lexiconIndex.getCompiledCollocationFilter,
 	attachParticle: morphology.attachParticle,
 	getConjugatedStem: morphology.getConjugatedStem,
 	isDescriptiveVerb: morphology.isDescriptiveVerb,

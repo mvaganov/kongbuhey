@@ -17,8 +17,11 @@ if (typeof require !== 'undefined') {
 	dataModule = typeof window !== 'undefined' ? window : {};
 }
 
-const { DATA_SCHEMA, hasTag, parseSemanticVector, getStem, decomposeHangul, composeHangul, setFinal, getVowelHarmony } =
+const { DATA_SCHEMA, hasTag, parseSemanticData, parseSemanticVector, getStem, decomposeHangul, composeHangul, setFinal, getVowelHarmony } =
 	(typeof require !== 'undefined' ? require('./core/primitives.js') : window);
+
+const { getConjugatedStem, resolvePureMorphology } =
+	(typeof require !== 'undefined' ? require('./core/stem_engine.js') : window);
 
 // =========================================================================
 // State Collections
@@ -136,98 +139,6 @@ let nounLookupMap = null;
 // =========================================================================
 // Lifecycle Methods
 // =========================================================================
-
-function getConjugatedStem(koreanWord, conjugation) {
-	let stem = getStem(koreanWord);
-	if (conjugation && conjugation !== "regular" && conjugation !== "" && /^[a-z_]+$/.test(conjugation)) {
-		stem += `[${conjugation}]`;
-	}
-	return stem;
-}
-
-function basicConjugate(stemWithMarker, endingPattern) {
-	// Local lightweight conjugation helper to avoid circular dependency with full morphology
-	let resolved = stemWithMarker;
-
-	// Strip conjugation tags for regular / unhandled
-	resolved = resolved.replace(/\[[^\]]+\]/g, '');
-
-	if (endingPattern === "아/어요" || endingPattern === "아/어") {
-		const isYo = endingPattern === "아/어요";
-		const lastChar = resolved.slice(-1);
-		const vh = getVowelHarmony(lastChar);
-		if (lastChar === '하') {
-			resolved = resolved.slice(0, -1) + (isYo ? "해요" : "해");
-		} else {
-			const d = decomposeHangul(lastChar);
-			if (d && d.final === 0) {
-				if (d.medial === 0) resolved = resolved + (isYo ? "요" : "");
-				else if (d.medial === 8) resolved = resolved.slice(0, -1) + composeHangul(d.initial, 9, 0) + (isYo ? "요" : "");
-				else if (d.medial === 20) resolved = resolved.slice(0, -1) + composeHangul(d.initial, 6, 0) + (isYo ? "요" : "");
-				else if (d.medial === 13) resolved = resolved.slice(0, -1) + composeHangul(d.initial, 14, 0) + (isYo ? "요" : "");
-				else resolved = resolved + vh + (isYo ? "요" : "");
-			} else {
-				resolved = resolved + vh + (isYo ? "요" : "");
-			}
-		}
-		return resolved;
-	}
-
-	if (endingPattern === "습니다/ㅂ니다") {
-		const lastChar = resolved.slice(-1);
-		const d = decomposeHangul(lastChar);
-		if (d && d.final !== 0) {
-			return resolved + "습니다";
-		}
-		return setFinal(lastChar, 17) + "니다";
-	}
-
-	if (endingPattern === "았/었어요" || endingPattern === "았/었습니다") {
-		const isFormal = endingPattern === "았/었습니다";
-		const lastChar = resolved.slice(-1);
-		const vh = getVowelHarmony(lastChar);
-		const pastVowel = vh === '여' ? '였' : vh === '아' ? '았' : '었';
-		if (lastChar === '하') {
-			resolved = resolved.slice(0, -1) + (isFormal ? "했습니다" : "했어요");
-		} else {
-			const d = decomposeHangul(lastChar);
-			if (d && d.final === 0) {
-				if (d.medial === 0) resolved = resolved.slice(0, -1) + composeHangul(d.initial, 0, 20) + (isFormal ? "습니다" : "어요");
-				else if (d.medial === 8) resolved = resolved.slice(0, -1) + composeHangul(d.initial, 9, 20) + (isFormal ? "습니다" : "어요");
-				else if (d.medial === 20) resolved = resolved.slice(0, -1) + composeHangul(d.initial, 6, 20) + (isFormal ? "습니다" : "어요");
-				else if (d.medial === 13) resolved = resolved.slice(0, -1) + composeHangul(d.initial, 14, 20) + (isFormal ? "습니다" : "어요");
-				else resolved = resolved + pastVowel + (isFormal ? "습니다" : "어요");
-			} else {
-				resolved = resolved + pastVowel + (isFormal ? "습니다" : "어요");
-			}
-		}
-		return resolved;
-	}
-
-	if (endingPattern === "으/십시오") {
-		const lastChar = resolved.slice(-1);
-		const d = decomposeHangul(lastChar);
-		return resolved + (d && d.final !== 0 ? "으십시오" : "십시오");
-	}
-	if (endingPattern === "으/세요") {
-		const lastChar = resolved.slice(-1);
-		const d = decomposeHangul(lastChar);
-		return resolved + (d && d.final !== 0 ? "으세요" : "세요");
-	}
-	if (endingPattern === "아/어라") {
-		const lastChar = resolved.slice(-1);
-		const vh = getVowelHarmony(lastChar);
-		return resolved + vh + "라";
-	}
-	if (endingPattern === "으/ㅂ시다") {
-		const lastChar = resolved.slice(-1);
-		const d = decomposeHangul(lastChar);
-		if (d && d.final !== 0) return resolved + "읍시다";
-		return setFinal(lastChar, 17) + "시다";
-	}
-
-	return resolved + endingPattern;
-}
 
 function initProperNames(dm = dataModule) {
 	properNames.length = 0;
@@ -380,7 +291,6 @@ let morphologyEngine = null;
 
 function registerMorphologyEngine(engine) {
 	morphologyEngine = engine;
-	initSemanticSets();
 }
 
 function initSemanticSets(dm = dataModule) {
@@ -743,12 +653,7 @@ function initSemanticSets(dm = dataModule) {
 		}
 	}
 
-	let applyMorph = (morphologyEngine && morphologyEngine.applyMorphology)
-		|| (typeof window !== 'undefined' && window.applyMorphology ? window.applyMorphology : null);
-	const morph = (pattern) => {
-		if (applyMorph) return applyMorph(pattern);
-		return basicConjugate(pattern, "");
-	};
+	const morph = (pattern) => resolvePureMorphology(pattern, stateExports);
 
 	const descriptiveUnits = allUnits.filter(u => u && u[DATA_SCHEMA.PartofSpeech] === "Descriptive Verb");
 	for (const du of descriptiveUnits) {

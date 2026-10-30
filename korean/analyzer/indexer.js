@@ -21,59 +21,19 @@ if (typeof require !== 'undefined') {
 const { DATA_SCHEMA, parseSemanticVector, getStem, decomposeHangul, composeHangul } =
 	(typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 
+const { deriveConnectiveEndings } =
+	(typeof require !== 'undefined' ? require('../core/stem_engine.js') : window);
+
 /**
  * Dynamically derives the informal connective ending (-아/어/여/해) and contracted
  * trailing syllables for a dictionary verb (ending in 다).
+ * Delegated to unified stem_engine.deriveConnectiveEndings.
  * 
  * @param {string} ko Korean dictionary verb form
  * @returns {Array<string>} Derived informal ending syllables
  */
 function deriveInformalConnectiveEndings(ko) {
-	if (typeof ko !== 'string' || !ko.endsWith('다') || ko.length < 2) return [];
-	if (ko.endsWith('하다')) return ['해'];
-	if (ko.endsWith('되다')) return ['돼'];
-	if (ko.endsWith('르다')) return ['라', '러'];
-
-	const clean = ko.replace(/\s+/g, '');
-	const stem = clean.slice(0, -1);
-	const lastChar = stem.slice(-1);
-	const d = decomposeHangul ? decomposeHangul(lastChar) : null;
-	if (!d) return [];
-
-	if (d.final !== 0) {
-		return ['아', '어'];
-	}
-
-	const initial = d.initial;
-	const medial = d.medial;
-
-	// ㅏ, ㅐ, ㅓ, ㅔ: open stem contracts with identical or neutral vowel
-	if (medial === 0 || medial === 1 || medial === 4 || medial === 5) {
-		return [lastChar];
-	}
-	// ㅗ + 아 -> ㅘ (오다 -> 와, 보다 -> 봐)
-	if (medial === 8) {
-		return [composeHangul(initial, 9, 0)];
-	}
-	// ㅜ + 어 -> ㅝ (주다 -> 줘, 두다 -> 둬, 꾸다 -> 꿔)
-	if (medial === 13) {
-		return [composeHangul(initial, 14, 0)];
-	}
-	// ㅣ + 어 -> ㅕ (마시다 -> 마셔, 드시다 -> 드셔)
-	if (medial === 20) {
-		const contracted = composeHangul(initial, 6, 0);
-		if (stem.length >= 2) {
-			const prevChar = stem.slice(-2, -1);
-			return [contracted, prevChar + contracted];
-		}
-		return [contracted];
-	}
-	// ㅡ + 어 -> ㅓ (크다 -> 커, 쓰다 -> 써, 뜨다 -> 떠)
-	if (medial === 18) {
-		return [composeHangul(initial, 4, 0)];
-	}
-
-	return ['아', '어'];
+	return deriveConnectiveEndings(ko);
 }
 
 /**
