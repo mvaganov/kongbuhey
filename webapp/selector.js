@@ -431,7 +431,8 @@ function _hasUnitTag(unit, schema, ...targetTags) {
 
 function _parseVec(unit, schema) {
 	if (!unit) return {};
-	const raw = unit[schema.SemanticVector];
+	const idx = schema.SemanticData !== undefined ? schema.SemanticData : schema.SemanticVector;
+	const raw = unit[idx];
 	if (!raw) return {};
 	if (typeof raw === 'object') return raw;
 	try { return JSON.parse(raw); } catch (_) { return {}; }
@@ -456,7 +457,7 @@ function generateSentencesForUnit(unitId, count = 3, rawUnits = null, dataSchema
 	const schema = dataSchema || (typeof DATA_SCHEMA !== 'undefined' ? DATA_SCHEMA : {
 		Id: 0, Korean: 1, English: 2, PartofSpeech: 3, SemanticTags: 4,
 		Disambiguation: 5, Conjugation: 6, Source: 7, PriorityScore: 8,
-		FormalityLevel: 9, HonorificRules: 10, SemanticVector: 11, SyntaxFrame: 12
+		FormalityLevel: 9, HonorificRules: 10, SemanticData: 11, SyntaxFrame: 12
 	});
 
 	const target = units[unitId];

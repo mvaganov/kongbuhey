@@ -134,14 +134,14 @@ function validateSemanticVectors() {
 	allPos.forEach(pos => {
 		getFilteredWords(pos).forEach(unit => {
 			totalCount++;
-			const raw = unit[DATA_SCHEMA.SemanticVector];
+			const raw = unit[DATA_SCHEMA.SemanticData];
 			if (raw && raw !== "") {
 				taggedCount++;
 				try {
 					if (typeof raw === 'string') JSON.parse(raw);
 				} catch (e) {
 					invalidCount++;
-					console.error(`Invalid SemanticVector JSON for ${unit[DATA_SCHEMA.Korean]}:`, raw);
+					console.error(`Invalid SemanticData JSON for ${unit[DATA_SCHEMA.Korean]}:`, raw);
 				}
 			}
 		});

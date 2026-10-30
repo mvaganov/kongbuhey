@@ -261,16 +261,16 @@ function runTests(options = {}) {
 				failFast("Stage 1 (Data Integrity)", `Invalid PriorityScore '${score}' at ID ${id} (${ko}). Must be integer between 1 and 5.`);
 			}
 
-			// SemanticVector JSON validation
-			const vec = unit[DATA_SCHEMA.SemanticVector];
+			// SemanticData JSON validation
+			const vec = unit[DATA_SCHEMA.SemanticData];
 			if (vec) {
 				try {
 					const parsed = typeof vec === 'string' ? JSON.parse(vec) : vec;
 					if (!parsed.domain && !parsed.logic) {
-						failFast("Stage 1 (Data Integrity)", `SemanticVector at ID ${id} (${ko}) is missing required 'domain' or 'logic' property: ${JSON.stringify(parsed)}.`);
+						failFast("Stage 1 (Data Integrity)", `SemanticData at ID ${id} (${ko}) is missing required 'domain' or 'logic' property: ${JSON.stringify(parsed)}.`);
 					}
 				} catch (jsonErr) {
-					failFast("Stage 1 (Data Integrity)", `Invalid JSON in SemanticVector at ID ${id} (${ko}): ${jsonErr.message}\nContent: ${vec}`);
+					failFast("Stage 1 (Data Integrity)", `Invalid JSON in SemanticData at ID ${id} (${ko}): ${jsonErr.message}\nContent: ${vec}`);
 				}
 			}
 

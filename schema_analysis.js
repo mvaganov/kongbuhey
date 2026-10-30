@@ -75,8 +75,8 @@ function analyzeSchema(dataPath = DEFAULT_DATA_PATH) {
 			honorificCounts[cleanHon] = (honorificCounts[cleanHon] || 0) + 1;
 		}
 
-		// 4. Semantic Vector
-		const vec = unit[DATA_SCHEMA.SemanticVector];
+		// 4. Semantic Data (formerly SemanticVector)
+		const vec = unit[DATA_SCHEMA.SemanticData];
 		if (vec) {
 			let parsed = null;
 			if (typeof vec === 'object') {
@@ -190,7 +190,7 @@ function findExistingUnit(korean, dataPath = DEFAULT_DATA_PATH) {
 		if (!u) continue;
 		if (u[DATA_SCHEMA.Korean] === word) return u;
 
-		const svRaw = u[DATA_SCHEMA.SemanticVector];
+		const svRaw = u[DATA_SCHEMA.SemanticData];
 		if (svRaw && typeof svRaw === 'string' && svRaw.includes(word)) {
 			try {
 				const sv = JSON.parse(svRaw);
@@ -668,6 +668,7 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 			PriorityScore: context.priorityScore || 1,
 			FormalityLevel: "Universal",
 			HonorificRules: "",
+			SemanticData: JSON.stringify(vector),
 			SemanticVector: JSON.stringify(vector),
 			SyntaxFrame: ""
 		};
@@ -739,6 +740,7 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 		PriorityScore: context.priorityScore || 1,
 		FormalityLevel: context.formality || "Universal",
 		HonorificRules: context.honorific || "",
+		SemanticData: JSON.stringify(vector),
 		SemanticVector: JSON.stringify(vector),
 		SyntaxFrame: syntaxFrame || context.syntaxFrame || ""
 	};

@@ -20,18 +20,43 @@ if (typeof require !== 'undefined') {
 	dataModule = typeof window !== 'undefined' ? window : {};
 }
 
-const DATA_SCHEMA = dataModule.DATA_SCHEMA || {
-	Id: 0,
-	Korean: 1,
-	English: 2,
-	PartofSpeech: 3,
-	Conjugation: 4,
-	Source: 5,
-	SemanticTags: 6,
-	SemanticVector: 7,
-	HonorificRules: 8,
-	FormalityLevel: 9
-};
+const DATA_SCHEMA = dataModule.DATA_SCHEMA || (() => {
+	const schema = {
+		Id: 0,
+		Korean: 1,
+		English: 2,
+		PartofSpeech: 3,
+		SemanticTags: 4,
+		Disambiguation: 5,
+		Conjugation: 6,
+		Source: 7,
+		PriorityScore: 8,
+		FormalityLevel: 9,
+		HonorificRules: 10,
+		SemanticData: 11,
+		SyntaxFrame: 12,
+		0: 'Id',
+		1: 'Korean',
+		2: 'English',
+		3: 'PartofSpeech',
+		4: 'SemanticTags',
+		5: 'Disambiguation',
+		6: 'Conjugation',
+		7: 'Source',
+		8: 'PriorityScore',
+		9: 'FormalityLevel',
+		10: 'HonorificRules',
+		11: 'SemanticData',
+		12: 'SyntaxFrame'
+	};
+	Object.defineProperty(schema, 'SemanticVector', {
+		value: 11,
+		enumerable: false,
+		writable: false,
+		configurable: false
+	});
+	return Object.freeze(schema);
+})();
 
 const hasTag = dataModule.hasTag || function (unit, ...tags) {
 	if (!unit) return false;
@@ -50,13 +75,29 @@ const hasTag = dataModule.hasTag || function (unit, ...tags) {
 	return false;
 };
 
-function parseSemanticVector(unit) {
-	if (!unit) return {};
-	const raw = unit[DATA_SCHEMA.SemanticVector];
-	if (!raw || raw === "") return {};
+const EMPTY_SEMANTIC_DATA = Object.freeze({});
+
+/**
+ * Parses and memoizes the unit's SemanticData JSON object in O(1) time.
+ * Re-parses automatically if the underlying string in `unit[DATA_SCHEMA.SemanticData]` changes.
+ */
+function parseSemanticData(unit) {
+	if (!unit) return EMPTY_SEMANTIC_DATA;
+	const raw = unit[DATA_SCHEMA.SemanticData];
+	if (!raw || raw === "") return EMPTY_SEMANTIC_DATA;
 	if (typeof raw === 'object') return raw;
-	try { return JSON.parse(raw); } catch (e) { return {}; }
+	if (unit._sdRaw === raw && unit._sdParsed) return unit._sdParsed;
+	try {
+		const parsed = JSON.parse(raw);
+		Object.defineProperty(unit, '_sdRaw', { value: raw, writable: true, configurable: true, enumerable: false });
+		Object.defineProperty(unit, '_sdParsed', { value: parsed, writable: true, configurable: true, enumerable: false });
+		return parsed;
+	} catch (e) {
+		return EMPTY_SEMANTIC_DATA;
+	}
 }
+
+const parseSemanticVector = parseSemanticData;
 
 const HANGUL_INITIALS = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 const HANGUL_MEDIALS = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
@@ -133,6 +174,7 @@ function matchesBaseSyllable(char, ...baseChars) {
 const exportedPrimitives = {
 	DATA_SCHEMA,
 	hasTag,
+	parseSemanticData,
 	parseSemanticVector,
 	HANGUL_INITIALS,
 	HANGUL_MEDIALS,
