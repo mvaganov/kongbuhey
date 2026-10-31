@@ -297,8 +297,8 @@ function selectActionVerbForNoun(nounUnit, options = {}, targetId = null) {
 	if (matchingAVs.length > 0) return pickRandom(matchingAVs);
 
 	if (hasTag(nounUnit, "place", "location", "institution", "facility")) {
-		const motionAVs = allAVs.filter(av => hasTag(av, "intransitive_motion", "intransitive_place", "locative_goal"));
-		if (motionAVs.length > 0) return pickRandom(motionAVs);
+		const transitivePlaceAVs = allAVs.filter(av => ["방문하다", "찾다", "청소하다", "구경하다"].includes(av[DATA_SCHEMA.Korean]));
+		if (transitivePlaceAVs.length > 0) return pickRandom(transitivePlaceAVs);
 	}
 
 	if (hasTag(nounUnit, "teeth", "bodyPart") || parseSemanticData(nounUnit).domain === "body") {
@@ -1461,8 +1461,17 @@ function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 	const ko = grammarUnit[DATA_SCHEMA.Korean];
 	const formulas = Array.isArray(grammarUnit[DATA_SCHEMA.Conjugation]) ? grammarUnit[DATA_SCHEMA.Conjugation] : [];
 
-	const avs = getAllUnitsOfPos("Action Verb", options, targetId);
-	const dvs = getAllUnitsOfPos("Descriptive Verb", options, targetId);
+	const isNegativeGrammar = hasTag(grammarUnit, "negative", "inability", "prohibition") || formulas.some(f => f.includes("못") || f.includes("안"));
+	const isInability = hasTag(grammarUnit, "inability") || formulas.some(f => f.includes("못"));
+	const avs = getAllUnitsOfPos("Action Verb", options, targetId).filter(v => {
+		if (isNegativeGrammar && state.FORBIDDEN_NEGATIVE_ROOTS.has(v[DATA_SCHEMA.Korean])) return false;
+		if (isInability && (["낫다", "걸리다", "끝나다", "시작되다", "고장 나다", "죽다", "생기다"].includes(v[DATA_SCHEMA.Korean]) || hasTag(v, "involuntary", "passive", "weather"))) return false;
+		return true;
+	});
+	const dvs = getAllUnitsOfPos("Descriptive Verb", options, targetId).filter(v => {
+		if (isNegativeGrammar && state.FORBIDDEN_NEGATIVE_ROOTS.has(v[DATA_SCHEMA.Korean])) return false;
+		return true;
+	});
 	const nouns = getAllUnitsOfPos("Noun", options, targetId).filter(n => !hasTag(n, "measureWord", "counter") && n[DATA_SCHEMA.Korean] !== "이");
 
 	if (options.onlyFromSet) {
@@ -1584,8 +1593,21 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 	let predicate = null;
 
 	const isInterrogative = formula.includes("?") || hasTag(grammarUnit, "interrogative");
-	const avs = getAllUnitsOfPos("Action Verb", options, targetId).filter(v => v[DATA_SCHEMA.Id] === targetId || isInterrogative || !hasTag(v, "questionWord", "interrogative"));
-	const dvs = getAllUnitsOfPos("Descriptive Verb", options, targetId).filter(v => v[DATA_SCHEMA.Id] === targetId || isInterrogative || !hasTag(v, "questionWord", "interrogative"));
+	const isClauseNeg = hasTag(grammarUnit, "negative", "inability", "prohibition") || formula.includes("못") || formula.includes("안");
+	const isClauseInability = hasTag(grammarUnit, "inability") || formula.includes("못");
+	const avs = getAllUnitsOfPos("Action Verb", options, targetId).filter(v => {
+		if (v[DATA_SCHEMA.Id] === targetId) return true;
+		if (!isInterrogative && hasTag(v, "questionWord", "interrogative")) return false;
+		if (isClauseNeg && state.FORBIDDEN_NEGATIVE_ROOTS.has(v[DATA_SCHEMA.Korean])) return false;
+		if (isClauseInability && (["낫다", "걸리다", "끝나다", "시작되다", "고장 나다", "죽다", "생기다"].includes(v[DATA_SCHEMA.Korean]) || hasTag(v, "involuntary", "passive", "weather"))) return false;
+		return true;
+	});
+	const dvs = getAllUnitsOfPos("Descriptive Verb", options, targetId).filter(v => {
+		if (v[DATA_SCHEMA.Id] === targetId) return true;
+		if (!isInterrogative && hasTag(v, "questionWord", "interrogative")) return false;
+		if (isClauseNeg && state.FORBIDDEN_NEGATIVE_ROOTS.has(v[DATA_SCHEMA.Korean])) return false;
+		return true;
+	});
 	const allNouns = getAllUnitsOfPos("Noun", options, targetId).filter(n => !hasTag(n, "measureWord", "counter") && n[DATA_SCHEMA.Korean] !== "이");
 
 	// Match tokens with their immediately following literal suffix up to the next space or token
@@ -1815,7 +1837,8 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 						particleType: "topic"
 					});
 				}
-				const av = selectActionVerbForNoun(baseNoun, options, targetId) || pickRandom(avs);
+				const transitiveAvs = avs.filter(v => !isIntransitiveVerb(v) && getVerbParticleType(v) === "object");
+				const av = selectActionVerbForNoun(baseNoun, options, targetId) || pickRandom(transitiveAvs) || pickRandom(avs);
 				if (av) {
 					predicate = {
 						role: "predicate",
