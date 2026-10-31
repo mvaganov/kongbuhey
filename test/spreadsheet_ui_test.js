@@ -481,6 +481,21 @@ async function runSuite() {
 		'Regenerate button generates 3 new sentences/phrases for the language unit'
 	);
 
+	// Speech synthesis pronunciation playback method
+	assert(
+		typeof selectorView.speakKoreanSentence === 'function',
+		'UnitSelectorView provides speakKoreanSentence speech synthesis playback method'
+	);
+	let spokenSentence = null;
+	const originalSpeak = selectorView.speakKoreanSentence;
+	selectorView.speakKoreanSentence = (text) => { spokenSentence = text; };
+	selectorView.speakKoreanSentence('한국어 문장');
+	assert(
+		spokenSentence === '한국어 문장',
+		'speakKoreanSentence receives target Korean sentence text for speech synthesis'
+	);
+	selectorView.speakKoreanSentence = originalSpeak;
+
 	// In-place Edit mode for core details (Korean, Conjugation, English, pure-text Markdown Notes)
 	selectorView.setEditMode(true);
 	assert(selectorView.isEditingDetails === true, 'Pressing Edit button enables in-place editing mode');
