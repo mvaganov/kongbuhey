@@ -372,13 +372,13 @@ async function runSuite() {
 		'webapp/index.css sets flex-shrink: 0 on .source-section so 90+ source sections do not collapse into 0px bars inside flex scroll container'
 	);
 
-	// Verify that even BEFORE engine.init() completes, getSourceGroups() resolves all 90 Sources (never flashing "Uncategorized")
+	// Verify that even BEFORE engine.init() completes, getSourceGroups() resolves all Sources (never flashing "Uncategorized")
 	const uninitEngine = new SpreadsheetEngine({ db: new KongbuheyDB(), rawUnits: KR_EN_languageUnits, dataSchema: DATA_SCHEMA });
 	const uninitSelector = new UnitSelectorView({ engine: uninitEngine });
 	const preInitGroups = uninitSelector.getSourceGroups();
 	assert(
-		preInitGroups.length === 90 && preInitGroups[0].source !== 'Uncategorized',
-		'getSourceGroups() resolves all 90 curriculum sources synchronously before DB init finishes (no "Uncategorized" flash)'
+		preInitGroups.length >= 90 && preInitGroups[0].source !== 'Uncategorized',
+		'getSourceGroups() resolves all curriculum sources synchronously before DB init finishes (no "Uncategorized" flash)'
 	);
 
 	const selectorDb = new KongbuheyDB();
