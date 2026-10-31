@@ -32,20 +32,6 @@ const {
 	parseSemanticData
 } = (typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 
-// Common INTRANSITIVE verbs that cannot take an accusative direct object -(을/를)
-const INTRANSITIVE_VERB_ROOTS = new Set([
-	"가다", "오다", "도착하다", "출발하다", "다니다", "돌아오다", "돌아가다", "올라가다", "내려가다",
-	"끝나다", "시작되다", "배달되다", "고장 나다", "일어나다", "자다", "죽다", "살다", "눕다", "서다",
-	"비가 오다", "눈이 오다", "바람이 불다", "목이 쉬다", "몸이 떨리다", "떨리다", "생기다", "남다"
-]);
-
-// Volitional actions that strictly require human or animate agents
-const STRICT_VOLITIONAL_HUMAN_VERBS = new Set([
-	"공부하다", "식사하다", "일하다", "운동하다", "생각하다", "이야기하다", "운전하다",
-	"노래하다", "춤을 추다", "독서를 하다", "데이트하다", "등산하다", "아르바이트하다",
-	"대답하다", "질문하다", "서명하다", "결정하다", "기뻐하다", "슬퍼하다"
-]);
-
 // Numeral classifier category rules
 const CLASSIFIER_DOMAIN_RULES = {
 	"명": { allowedTags: ["person", "human", "family", "profession", "job", "honorific_person", "kinship_plain"], name: "people" },
@@ -148,11 +134,13 @@ function validateSentenceAST(ast, realized) {
 		let subjCon = null;
 		let objCon = null;
 		let numCon = null;
+		let advCon = null;
 
 		for (const con of constituents) {
 			if (con.role === "subject" || con.role === "topic") subjCon = con;
 			if (con.role === "object" || con.particleType === "object" || con.particleType === "accusative") objCon = con;
 			if (con.numeralUnit || con.classifierUnit) numCon = con;
+			if (con.role === "adverb" || con.particleType === "adverb") advCon = con;
 		}
 
 		// A. VALENCY_TRANSITIVITY_MISMATCH
@@ -166,8 +154,7 @@ function validateSentenceAST(ast, realized) {
 					message: `Descriptive verb '${verbKo}' cannot take accusative direct object '${objKo}' in: "${ko}"`
 				});
 			} else if (verbKo) {
-				const isIntrans = INTRANSITIVE_VERB_ROOTS.has(verbKo) ||
-					(verbUnit && hasTag(verbUnit, "intransitive", "passive", "weather") && !hasTag(verbUnit, "transitive"));
+				const isIntrans = verbUnit && hasTag(verbUnit, "intransitive", "intransitive_general", "intransitive_motion", "intransitive_place", "intransitive_person", "intransitive_state", "passive", "weather") && !hasTag(verbUnit, "transitive");
 				if (isIntrans) {
 					errors.push({
 						code: "VALENCY_TRANSITIVITY_MISMATCH",
@@ -193,7 +180,7 @@ function validateSentenceAST(ast, realized) {
 			const subjUnit = subjCon.nounUnit || subjCon.unit;
 			if (subjUnit) {
 				const subjKo = subjUnit[DATA_SCHEMA.Korean] || "";
-				const isStrictHumanVerb = STRICT_VOLITIONAL_HUMAN_VERBS.has(verbKo);
+				const isStrictHumanVerb = hasTag(verbUnit, "volitional_human");
 				const isInanimate = hasTag(subjUnit, "inanimate", "abstract", "academic", "concept", "facility")
 					|| ["신분증", "경제학", "의자", "공항버스", "수업", "회의", "가구"].includes(subjKo);
 
@@ -219,6 +206,38 @@ function validateSentenceAST(ast, realized) {
 					warnings.push({
 						code: "CLASSIFIER_DOMAIN_MISMATCH",
 						message: `Classifier '${cKo}' (${rule.name}) is incompatible with noun '${nKo}' in: "${ko}"`
+					});
+				}
+			}
+		}
+
+		// E. DEGREE_ADVERB_ACTION_VERB_MISMATCH
+		if (advCon && predType === "action" && verbKo) {
+			const advUnit = advCon.unit || advCon.nounUnit;
+			const advKo = advUnit ? advUnit[DATA_SCHEMA.Korean] : "";
+			const isDegreeAdv = hasTag(advUnit, "degree_pure");
+			const isScalableVerb = hasTag(verbUnit, "scalable", "scalable_duration", "scalable_emotion", "scalable_quantity");
+			if (isDegreeAdv && !isScalableVerb) {
+				errors.push({
+					code: "DEGREE_ADVERB_ACTION_VERB_MISMATCH",
+					message: `Degree adverb '${advKo}' cannot modify discrete action verb '${verbKo}' in: "${ko}"`
+				});
+			}
+		}
+
+		// F. QUESTION_WORD_DECLARATIVE_MISMATCH
+		if (advCon) {
+			const advUnit = advCon.unit || advCon.nounUnit;
+			const advKo = advUnit ? advUnit[DATA_SCHEMA.Korean] : "";
+			const isWhQuestionAdverb = hasTag(advUnit, "questionWord", "interrogative") && !hasTag(advUnit, "manner", "adverb_manner");
+			if (isWhQuestionAdverb) {
+				const isRootDeclarative = (ast.speechAct === "declarative" || !ast.speechAct) && clauses.length === 1;
+				const endsWithPeriod = /[.]$/.test(ko.trim());
+				const isEmbeddedIndirect = /(?:몰라|모르|알아|알다|알려|는지|은지)/.test(ko);
+				if ((isRootDeclarative || endsWithPeriod) && !isEmbeddedIndirect) {
+					errors.push({
+						code: "QUESTION_WORD_DECLARATIVE_MISMATCH",
+						message: `Question adverb '${advKo}' in root clause requires interrogative speechAct ('?') but realized as declarative in: "${ko}"`
 					});
 				}
 			}
@@ -263,6 +282,16 @@ function validateSentenceString(ko, context = {}) {
 		errors.push({ code: "CORRUPTED_CLAUSAL_GREETING", message: `Corrupted greeting '니까 오세요' detected in: "${ko}"` });
 	}
 
+	// 4. Question word in declarative root sentence
+	if (/(?:^|\s)(?:얼마나|왜|어떻게)\s/.test(ko) && /[.]$/.test(ko.trim())) {
+		if (!/(?:는지|은지|ㄴ지|는지도|ㄹ지|을지|몰라|모르|알아|알다|알려)/.test(ko)) {
+			errors.push({
+				code: "QUESTION_WORD_DECLARATIVE_MISMATCH",
+				message: `Question word in sentence ending with declarative period '.' without embedded interrogative connective: "${ko}"`
+			});
+		}
+	}
+
 	return {
 		valid: errors.length === 0,
 		errors,
@@ -273,8 +302,6 @@ function validateSentenceString(ko, context = {}) {
 const sentenceValidatorExports = {
 	validateSentenceAST,
 	validateSentenceString,
-	INTRANSITIVE_VERB_ROOTS,
-	STRICT_VOLITIONAL_HUMAN_VERBS,
 	CLASSIFIER_DOMAIN_RULES,
 	UNRESOLVED_PATTERNS
 };

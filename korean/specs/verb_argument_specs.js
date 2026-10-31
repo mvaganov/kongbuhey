@@ -6,6 +6,8 @@
  * arguments, particles, and domain preference flags.
  */
 
+const { hasTag } = (typeof require !== 'undefined' ? require('../core/primitives.js') : window);
+
 const ACTION_VERB_SPECS = Object.freeze([
 	// Apparel (Fine-grained)
 	{ tag: "transitive_clothing", nounTag: "clothing", particle: "object" },
@@ -125,9 +127,37 @@ const DESCRIPTIVE_VERB_SPECS = Object.freeze([
 	{ tag: "descriptive_general", nounTag: "object", fallbackTag: null }
 ]);
 
+/**
+ * Declarative Semantic Predicate and Argument Classifiers
+ */
+function isGradableDescriptiveVerb(unit) {
+	return hasTag(unit, "gradable");
+}
+
+function isScalableActionVerb(unit) {
+	return hasTag(unit, "scalable", "scalable_duration", "scalable_emotion", "scalable_quantity");
+}
+
+function isPureDegreeAdverb(unit) {
+	return hasTag(unit, "degree_pure");
+}
+
+function isVolitionalHumanVerb(unit) {
+	return hasTag(unit, "volitional_human");
+}
+
+function isResourceNoun(unit) {
+	return hasTag(unit, "resource");
+}
+
 const verbArgumentSpecs = {
 	ACTION_VERB_SPECS,
-	DESCRIPTIVE_VERB_SPECS
+	DESCRIPTIVE_VERB_SPECS,
+	isGradableDescriptiveVerb,
+	isScalableActionVerb,
+	isPureDegreeAdverb,
+	isVolitionalHumanVerb,
+	isResourceNoun
 };
 
 if (typeof window !== 'undefined') {
