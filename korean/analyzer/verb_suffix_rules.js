@@ -1,3 +1,4 @@
+(function() {
 /**
  * korean/analyzer/verb_suffix_rules.js
  *
@@ -432,3 +433,4 @@ if (typeof module !== 'undefined' && module.exports) {
 		VERB_SUFFIX_RULES
 	};
 }
+})();

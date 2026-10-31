@@ -184,6 +184,7 @@ function applyClausalConcord(input, options = {}) {
 	str = str.replace(/(?:^|\s)([가-힣]*?)([가-힣])어서(?=\s+|$)/g, (match, prefix, pastSyl) => {
 		const d = decomposeHangul(pastSyl);
 		if (!d || d.final !== 20) return match;
+		if (pastSyl === '있') return match; // '있어서' is the valid present connective of '있다' (e.g. 있어서, 맛있어서)
 		const leadSpace = match.startsWith(' ') ? ' ' : '';
 
 		if (pastSyl === '왔') return leadSpace + (prefix ? prefix + '와서' : '와서');

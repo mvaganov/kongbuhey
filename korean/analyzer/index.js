@@ -1,3 +1,4 @@
+(function() {
 /**
  * korean/analyzer/index.js
  *
@@ -61,3 +62,4 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = analyzerExports;
 }
+})();

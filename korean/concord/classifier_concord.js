@@ -245,17 +245,43 @@ function applyCounterConcord(text) {
 		const counterPattern = pureCounters.join('|');
 		const suffix = '((?:[을를이가은는의도]|(?:에게|한테|으로|로|입니다|입니까|이에요|예요|이다|이고|이면))?)(?=[^가-힣]|$)';
 
-		s = s.replace(new RegExp(`(^|[^가-힣])하나\\s+(${counterPattern})${suffix}`, 'g'), '$1한 $2$3');
-		s = s.replace(new RegExp(`(^|[^가-힣])둘\\s+(${counterPattern})${suffix}`, 'g'), '$1두 $2$3');
-		s = s.replace(new RegExp(`(^|[^가-힣])셋\\s+(${counterPattern})${suffix}`, 'g'), '$1세 $2$3');
-		s = s.replace(new RegExp(`(^|[^가-힣])넷\\s+(${counterPattern})${suffix}`, 'g'), '$1네 $2$3');
-		s = s.replace(new RegExp(`(^|[^가-힣])스물\\s+(${counterPattern})${suffix}`, 'g'), '$1스무 $2$3');
+		const replaceCardinal = (str, numRegex, targetAttr) => {
+			return str.replace(numRegex, (match, p1, num, counter, suf, offset, fullStr) => {
+				// Guard: '줄' is a counter (e.g. 김밥 두 줄), but in '둘 줄 알다/모르다',
+				// '둘' is the prospective form of verb '두다' (to put) and '줄' is the ability noun.
+				if (counter === '줄') {
+					const rest = fullStr.slice(offset + match.length);
+					if (/^\s*(?:알|압|모르|모릅|몰)/.test(rest)) {
+						return match;
+					}
+				}
+				return `${p1}${targetAttr} ${counter}${suf || ''}`;
+			});
+		};
+
+		s = replaceCardinal(s, new RegExp(`(^|[^가-힣])(하나)\\s+(${counterPattern})${suffix}`, 'g'), '한');
+		s = replaceCardinal(s, new RegExp(`(^|[^가-힣])(둘)\\s+(${counterPattern})${suffix}`, 'g'), '두');
+		s = replaceCardinal(s, new RegExp(`(^|[^가-힣])(셋)\\s+(${counterPattern})${suffix}`, 'g'), '세');
+		s = replaceCardinal(s, new RegExp(`(^|[^가-힣])(넷)\\s+(${counterPattern})${suffix}`, 'g'), '네');
+		s = replaceCardinal(s, new RegExp(`(^|[^가-힣])(스물)\\s+(${counterPattern})${suffix}`, 'g'), '스무');
 
 		const tensPrefixes = "열|스물|서른|마흔|쉰|예순|일흔|여든|아흔";
-		s = s.replace(new RegExp(`(^|[^가-힣])(${tensPrefixes})하나\\s+(${counterPattern})${suffix}`, 'g'), '$1$2한 $3$4');
-		s = s.replace(new RegExp(`(^|[^가-힣])(${tensPrefixes})둘\\s+(${counterPattern})${suffix}`, 'g'), '$1$2두 $3$4');
-		s = s.replace(new RegExp(`(^|[^가-힣])(${tensPrefixes})셋\\s+(${counterPattern})${suffix}`, 'g'), '$1$2세 $3$4');
-		s = s.replace(new RegExp(`(^|[^가-힣])(${tensPrefixes})넷\\s+(${counterPattern})${suffix}`, 'g'), '$1$2네 $3$4');
+		const replaceTensCardinal = (str, numSuffix, targetAttr) => {
+			return str.replace(new RegExp(`(^|[^가-힣])(${tensPrefixes})(${numSuffix})\\s+(${counterPattern})${suffix}`, 'g'), (match, p1, ten, num, counter, suf, offset, fullStr) => {
+				if (counter === '줄') {
+					const rest = fullStr.slice(offset + match.length);
+					if (/^\s*(?:알|압|모르|모릅|몰)/.test(rest)) {
+						return match;
+					}
+				}
+				return `${p1}${ten}${targetAttr} ${counter}${suf || ''}`;
+			});
+		};
+
+		s = replaceTensCardinal(s, '하나', '한');
+		s = replaceTensCardinal(s, '둘', '두');
+		s = replaceTensCardinal(s, '셋', '세');
+		s = replaceTensCardinal(s, '넷', '네');
 	}
 
 	s = s.replace(/(^|[^가-힣])육\s*월(?=[^가-힣]|$|[을를이가은는의도]|(?:에|에서|부터|까지|으로|로))/g, '$1유월');
@@ -279,6 +305,12 @@ function validateCounterConcord(input, context = {}) {
 		const cardinalRegex = new RegExp(`(^|[^가-힣])((?:(?:열|스물|서른|마흔|쉰|예순|일흔|여든|아흔)?(?:하나|둘|셋|넷)|스물))\\s+(${pureCounters.join('|')})${counterSuffix}`, 'g');
 		let cardMatch;
 		while ((cardMatch = cardinalRegex.exec(text)) !== null) {
+			if (cardMatch[3] === '줄') {
+				const rest = text.slice(cardMatch.index + cardMatch[0].length);
+				if (/^\s*(?:알|압|모르|모릅|몰)/.test(rest)) {
+					continue; // Not a counter; it's the grammar pattern -(으)ㄹ 줄 알다/모르다 with verb '두다'
+				}
+			}
 			errors.push(`Cardinal pure Korean number '${cardMatch[2]}' used before counter '${cardMatch[3]}'; expected attributive form (한/두/세/네/스무) in: "${text}"`);
 			errorCodes.push(ERROR_CODES.NUMERAL_CLASSIFIER_TYPE_MISMATCH);
 		}

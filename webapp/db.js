@@ -599,6 +599,34 @@ class KongbuheyDB {
 		await this._deleteRecord('view_settings', 'spreadsheet_view');
 		return true;
 	}
+
+	async getSavedSets() {
+		const rec = await this._getRecord('view_settings', 'saved_practice_sets');
+		return (rec && Array.isArray(rec.sets)) ? rec.sets : [];
+	}
+
+	async saveNamedSet(name, unitIds) {
+		const sets = await this.getSavedSets();
+		const cleanName = String(name || '').trim();
+		const id = 'set_' + Date.now();
+		const newSet = {
+			id,
+			name: cleanName || new Date().toISOString(),
+			unitIds: Array.from(unitIds || []).map(Number),
+			createdAt: Date.now()
+		};
+		const filtered = sets.filter(s => s.name !== newSet.name);
+		filtered.unshift(newSet);
+		await this._putRecord('view_settings', { id: 'saved_practice_sets', sets: filtered });
+		return newSet;
+	}
+
+	async deleteNamedSet(id) {
+		const sets = await this.getSavedSets();
+		const filtered = sets.filter(s => s.id !== id);
+		await this._putRecord('view_settings', { id: 'saved_practice_sets', sets: filtered });
+		return true;
+	}
 }
 
 if (typeof window !== 'undefined') {

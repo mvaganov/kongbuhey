@@ -1,3 +1,4 @@
+(function() {
 /**
  * korean/analyzer/token_analyzer.js
  *
@@ -570,3 +571,4 @@ if (typeof module !== 'undefined' && module.exports) {
 		analyzeSingleToken
 	};
 }
+})();

@@ -1583,8 +1583,9 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 	const constituents = [];
 	let predicate = null;
 
-	const avs = getAllUnitsOfPos("Action Verb", options, targetId);
-	const dvs = getAllUnitsOfPos("Descriptive Verb", options, targetId);
+	const isInterrogative = formula.includes("?") || hasTag(grammarUnit, "interrogative");
+	const avs = getAllUnitsOfPos("Action Verb", options, targetId).filter(v => v[DATA_SCHEMA.Id] === targetId || isInterrogative || !hasTag(v, "questionWord", "interrogative"));
+	const dvs = getAllUnitsOfPos("Descriptive Verb", options, targetId).filter(v => v[DATA_SCHEMA.Id] === targetId || isInterrogative || !hasTag(v, "questionWord", "interrogative"));
 	const allNouns = getAllUnitsOfPos("Noun", options, targetId).filter(n => !hasTag(n, "measureWord", "counter") && n[DATA_SCHEMA.Korean] !== "이");
 
 	// Match tokens with their immediately following literal suffix up to the next space or token

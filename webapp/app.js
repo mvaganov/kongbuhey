@@ -116,6 +116,13 @@ class KongbuheyApp {
 			engine: this.engine,
 			onStateChange: (evt) => this.handleEngineEvent(evt)
 		}) : null;
+		const ImporterClass = (typeof TextImporterView !== 'undefined')
+			? TextImporterView
+			: (typeof require !== 'undefined' ? require('./text_importer.js').TextImporterView : null);
+		this.importerView = ImporterClass ? new ImporterClass({
+			engine: this.engine,
+			onStateChange: (evt) => this.handleEngineEvent(evt)
+		}) : null;
 		this.activeView = 'selector';
 		this.flashcardRevealed = false;
 	}
@@ -129,6 +136,11 @@ class KongbuheyApp {
 		const selectorMountEl = document.getElementById('selector-container');
 		if (selectorMountEl && this.selectorView) {
 			this.selectorView.mount(selectorMountEl);
+		}
+
+		const importerMountEl = document.getElementById('importer-container');
+		if (importerMountEl && this.importerView) {
+			this.importerView.mount(importerMountEl);
 		}
 
 		const mountEl = document.getElementById('spreadsheet-container');
@@ -271,14 +283,18 @@ class KongbuheyApp {
 		});
 
 		const selectorViewEl = document.getElementById('view-selector');
+		const importerViewEl = document.getElementById('view-importer');
 		const sheetView = document.getElementById('view-spreadsheet');
 		const practiceView = document.getElementById('view-practice');
 		if (selectorViewEl) selectorViewEl.classList.toggle('active', viewName === 'selector');
+		if (importerViewEl) importerViewEl.classList.toggle('active', viewName === 'importer');
 		if (sheetView) sheetView.classList.toggle('active', viewName === 'spreadsheet');
 		if (practiceView) practiceView.classList.toggle('active', viewName === 'practice');
 
 		if (viewName === 'selector' && this.selectorView) {
 			this.selectorView.render();
+		} else if (viewName === 'importer' && this.importerView) {
+			this.importerView.render();
 		} else if (viewName === 'spreadsheet') {
 			this.engine.renderHeader();
 			this.engine.renderViewport();
