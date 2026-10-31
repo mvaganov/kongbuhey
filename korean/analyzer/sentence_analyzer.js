@@ -1,3 +1,4 @@
+(function() {
 /**
  * korean/analyzer/sentence_analyzer.js
  *
@@ -469,3 +470,4 @@ if (typeof module !== 'undefined' && module.exports) {
 		isInformalConnective
 	};
 }
+})();

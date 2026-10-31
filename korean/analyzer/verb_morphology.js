@@ -1,3 +1,4 @@
+(function() {
 /**
  * korean/analyzer/verb_morphology.js
  *
@@ -11,7 +12,6 @@ const { DATA_SCHEMA, decomposeHangul, composeHangul, setFinal, hasBatchim } =
 	(typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 const { VERB_SUFFIX_RULES } =
 	(typeof require !== 'undefined' ? require('./verb_suffix_rules.js') : window);
-
 
 /**
  * Matches conjugated verb ending patterns and recovers the underlying dictionary stem.
@@ -660,7 +660,6 @@ function matchAdnominalEnding(word, index) {
 					}
 				}
 			}
-
 			const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
 			if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || vUnit[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) {
 				const gList = [];
@@ -680,7 +679,6 @@ function matchAdnominalEnding(word, index) {
 
 	return null;
 }
-
 if (typeof window !== 'undefined') {
 	window.VERB_SUFFIX_RULES = VERB_SUFFIX_RULES;
 	window.matchVerbSuffix = matchVerbSuffix;
@@ -694,3 +692,4 @@ if (typeof module !== 'undefined' && module.exports) {
 		matchAdnominalEnding
 	};
 }
+})();

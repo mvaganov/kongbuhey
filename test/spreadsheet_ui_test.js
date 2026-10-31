@@ -30,6 +30,7 @@ const {
 	generateSentencesForUnit,
 	UnitSelectorView
 } = require('../webapp/selector.js');
+const { TextImporterView } = require('../webapp/text_importer.js');
 const { sortPracticeSetUnits, evaluateFlashcardAttempt } = require('../webapp/app.js');
 
 let passed = 0;
@@ -536,6 +537,134 @@ async function runSuite() {
 	assert(
 		updatedUnix > 0 && Math.abs(storedSeen - nowSec) <= 5,
 		'Clicking TimeStampLastSeen representation in HUD updates it to the current Unix timestamp'
+	);
+
+	// -------------------------------------------------------------------------
+	// 11. Practice Set Management: Save, Load, Deselect All, and DB Persistence
+	// -------------------------------------------------------------------------
+	console.log(`\n--- 11. Practice Set Management: Save, Load, Clear & Persistence ---`);
+	const defaultSetName = selectorView.getDefaultSetName();
+	assert(
+		/^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}$/.test(defaultSetName),
+		`getDefaultSetName produces timestamp format 'YYYY/MM/DD hh:mm' (got: '${defaultSetName}')`
+	);
+
+	// Select initial units [0, 1, 2]
+	await selectorEngine.setBulkColumnValue([0, 1, 2], 'InSet', true);
+	assert(
+		selectorEngine.getCellValue(0, 'InSet') === true &&
+		selectorEngine.getCellValue(1, 'InSet') === true &&
+		selectorEngine.getCellValue(2, 'InSet') === true,
+		'Language units 0, 1, 2 marked InSet = true'
+	);
+
+	// Save named set
+	const savedSet = await selectorView.saveCurrentSet('My Test Practice Set');
+	assert(
+		savedSet && savedSet.name === 'My Test Practice Set' && savedSet.unitIds.length >= 3,
+		'saveCurrentSet saves named practice set with active unit IDs to database'
+	);
+
+	const dbSets = await selectorEngine.db.getSavedSets();
+	const foundSet = dbSets.find(s => s.name === 'My Test Practice Set');
+	assert(
+		foundSet && foundSet.unitIds.includes(0) && foundSet.unitIds.includes(1) && foundSet.unitIds.includes(2),
+		'getSavedSets retrieves saved practice set from IndexedDB / memory store'
+	);
+
+	// Clear current set (deselect all)
+	const clearedCount = await selectorView.clearCurrentSet();
+	assert(
+		clearedCount >= 3 &&
+		selectorEngine.getCellValue(0, 'InSet') === false &&
+		selectorEngine.getCellValue(1, 'InSet') === false &&
+		selectorEngine.getCellValue(2, 'InSet') === false &&
+		selectorView.getActiveSetUnitIds().size === 0,
+		'clearCurrentSet deselects and removes all language units from the current set'
+	);
+
+	// Load saved set back
+	const loadSuccess = await selectorView.loadSavedSet(foundSet);
+	assert(
+		loadSuccess === true &&
+		selectorEngine.getCellValue(0, 'InSet') === true &&
+		selectorEngine.getCellValue(1, 'InSet') === true &&
+		selectorEngine.getCellValue(2, 'InSet') === true,
+		'loadSavedSet reloads saved practice set and restores InSet = true for all saved unit IDs'
+	);
+
+	// Delete saved set
+	await selectorEngine.db.deleteNamedSet(foundSet.id);
+	const dbSetsAfterDelete = await selectorEngine.db.getSavedSets();
+	assert(
+		!dbSetsAfterDelete.some(s => s.id === foundSet.id),
+		'deleteNamedSet successfully removes set from database'
+	);
+
+	// -------------------------------------------------------------------------
+	// 12. Korean Text Ingestion & Passage Analysis (TextImporterView)
+	// -------------------------------------------------------------------------
+	console.log(`\n--- 12. Korean Text Ingestion & Passage Analysis (TextImporterView) ---`);
+	const importerView = new TextImporterView({
+		engine: selectorEngine,
+		onStateChange: () => {}
+	});
+	assert(typeof importerView.analyzePassageText === 'function', 'TextImporterView provides analyzePassageText method');
+
+	// Clear set before analysis test
+	await selectorView.clearCurrentSet();
+
+	const testPassage = '우리는 오늘 학교에 갑니다. 그리고 밥을 맛있게 먹었어요. 새로운 단어 블라블라.';
+	const analyzeRes = await importerView.analyzePassageText(testPassage, 'passage_demo');
+	assert(analyzeRes && analyzeRes.result, 'analyzePassageText executes without errors');
+
+	const { result, addedUnitIds } = analyzeRes;
+	assert(
+		addedUnitIds.length > 0 &&
+		result.knownVocab.length > 0 &&
+		result.knownGrammar.length > 0,
+		`analyzePassageText recognized ${result.knownVocab.length} vocab units and ${result.knownGrammar.length} grammar patterns`
+	);
+
+	// Verify recognized units are automatically marked InSet = true
+	const sampleVocabUnit = result.knownVocab[0].unit;
+	assert(
+		selectorEngine.getCellValue(sampleVocabUnit[0], 'InSet') === true,
+		`Recognized unit #${sampleVocabUnit[0]} ('${sampleVocabUnit[1]}') automatically added to practice set (InSet = true)`
+	);
+
+	// Verify missing vocabulary and grammar gaps are clearly identified
+	assert(
+		result.missingVocab.length > 0 &&
+		result.missingVocab.some(m => m.text === '새로운' || m.text === '단어' || m.text === '블라블라'),
+		'Curriculum gaps (missing vocabulary) are clearly identified'
+	);
+
+	// Verify scaffold JSON generation for tooling assistance
+	const scaffoldJsonStr = importerView._generateScaffoldJson(result.missingVocab, result.missingGrammar);
+	const parsedScaffold = JSON.parse(scaffoldJsonStr);
+	assert(
+		Array.isArray(parsedScaffold) && parsedScaffold.length >= result.missingVocab.length,
+		'_generateScaffoldJson generates valid parseable JSON array for missing units'
+	);
+	const sampleScaffoldUnit = parsedScaffold[0];
+	assert(
+		typeof sampleScaffoldUnit.Korean === 'string' &&
+		typeof sampleScaffoldUnit.English === 'string' &&
+		typeof sampleScaffoldUnit.PartofSpeech === 'string' &&
+		Array.isArray(sampleScaffoldUnit.SemanticTags) &&
+		sampleScaffoldUnit.Source === 'passage_demo',
+		'Scaffolded unit contains all mandatory schema fields (Korean, English, POS, Tags, Source)'
+	);
+
+	// Verify webapp/index.html integrates Text Importer tab and view container
+	const indexHtmlContent = fs.readFileSync(path.resolve(__dirname, '../webapp/index.html'), 'utf8');
+	assert(
+		indexHtmlContent.includes('data-view="importer"') &&
+		indexHtmlContent.includes('id="view-importer"') &&
+		indexHtmlContent.includes('id="importer-container"') &&
+		indexHtmlContent.includes('text_importer.js'),
+		'webapp/index.html includes Text Analysis tab, view container, and text_importer.js script tag'
 	);
 
 	console.log(`\n======================================================`);

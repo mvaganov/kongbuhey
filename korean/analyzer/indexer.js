@@ -1,3 +1,4 @@
+(function() {
 /**
  * korean/analyzer/indexer.js
  *
@@ -362,3 +363,4 @@ if (typeof module !== 'undefined' && module.exports) {
 		deriveInformalConnectiveEndings
 	};
 }
+})();

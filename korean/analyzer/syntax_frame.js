@@ -1,3 +1,4 @@
+(function() {
 /**
  * korean/analyzer/syntax_frame.js
  *
@@ -378,3 +379,4 @@ if (typeof module !== 'undefined' && module.exports) {
 		disambiguateCandidates
 	};
 }
+})();

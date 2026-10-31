@@ -355,6 +355,7 @@ function generateSentencesForUnit(unitId, count = 3, optionsOrRawUnits = null, d
 class UnitSelectorView {
 	constructor(options = {}) {
 		this.engine = options.engine;
+		this.db = options.db || this.engine?.db;
 		this.onStateChange = options.onStateChange || (() => {});
 
 		this.expandedSources = new Set();
@@ -382,6 +383,147 @@ class UnitSelectorView {
 			}
 		}
 		return setIds;
+	}
+
+	getDefaultSetName() {
+		const d = new Date();
+		const yyyy = d.getFullYear();
+		const mm = String(d.getMonth() + 1).padStart(2, '0');
+		const dd = String(d.getDate()).padStart(2, '0');
+		const hh = String(d.getHours()).padStart(2, '0');
+		const min = String(d.getMinutes()).padStart(2, '0');
+		return `${yyyy}/${mm}/${dd} ${hh}:${min}`;
+	}
+
+	async saveCurrentSet(customName) {
+		const activeIds = Array.from(this.getActiveSetUnitIds());
+		if (activeIds.length === 0) {
+			if (typeof alert === 'function') {
+				alert('Your Practice Set is currently empty. Add some language units to the set before saving.');
+			}
+			return null;
+		}
+		const defaultName = this.getDefaultSetName();
+		let name = customName;
+		if (name === undefined && typeof prompt === 'function') {
+			name = prompt('Enter a name for this practice set:', defaultName);
+			if (name === null) return null;
+		}
+		name = String(name || '').trim() || defaultName;
+		const db = this.db || this.engine?.db;
+		if (db && typeof db.saveNamedSet === 'function') {
+			const saved = await db.saveNamedSet(name, activeIds);
+			this.onStateChange({ type: 'selector-set-saved', set: saved });
+			return saved;
+		}
+		return null;
+	}
+
+	async clearCurrentSet() {
+		const activeIds = Array.from(this.getActiveSetUnitIds());
+		if (activeIds.length === 0) return 0;
+		await this.engine.setBulkColumnValue(activeIds, 'InSet', false);
+		this.renderSourcesList();
+		if (this.selectedUnitId !== null) {
+			this.renderDetailsPane();
+		}
+		this.onStateChange({ type: 'selector-set-cleared', clearedCount: activeIds.length });
+		return activeIds.length;
+	}
+
+	async loadSavedSet(savedSet) {
+		if (!savedSet || !Array.isArray(savedSet.unitIds)) return false;
+		const currentActive = Array.from(this.getActiveSetUnitIds());
+		if (currentActive.length > 0) {
+			await this.engine.setBulkColumnValue(currentActive, 'InSet', false);
+		}
+		if (savedSet.unitIds.length > 0) {
+			await this.engine.setBulkColumnValue(savedSet.unitIds, 'InSet', true);
+		}
+		this.renderSourcesList();
+		if (this.selectedUnitId !== null) {
+			this.renderDetailsPane();
+		}
+		this.onStateChange({ type: 'selector-set-loaded', set: savedSet });
+		return true;
+	}
+
+	async openLoadSetDialog() {
+		const db = this.db || this.engine?.db;
+		if (!db || typeof db.getSavedSets !== 'function') return;
+		const sets = await db.getSavedSets();
+
+		document.getElementById('modal-load-set')?.remove();
+
+		const modal = document.createElement('div');
+		modal.id = 'modal-load-set';
+		modal.className = 'modal-backdrop';
+		modal.setAttribute('role', 'dialog');
+		modal.setAttribute('aria-modal', 'true');
+
+		const renderContent = (currentSets) => {
+			let bodyHtml = '';
+			if (!currentSets || currentSets.length === 0) {
+				bodyHtml = '<p class="modal-helper-text" style="padding:16px 0;">No saved practice sets found. Create one by clicking "💾 Save Set".</p>';
+			} else {
+				bodyHtml = `<div class="saved-sets-list">` + currentSets.map(s => {
+					const dateStr = s.createdAt ? new Date(s.createdAt).toLocaleString() : '';
+					const count = Array.isArray(s.unitIds) ? s.unitIds.length : 0;
+					const safeName = String(s.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+					return `
+						<div class="saved-set-item" data-set-id="${s.id}">
+							<div class="saved-set-info">
+								<strong class="saved-set-name">${safeName}</strong>
+								<span class="saved-set-meta">${count} units · ${dateStr}</span>
+							</div>
+							<div class="saved-set-actions">
+								<button type="button" class="btn btn-primary btn-sm btn-load-saved-set" data-set-id="${s.id}">Load</button>
+								<button type="button" class="btn btn-ghost btn-sm btn-delete-saved-set" data-set-id="${s.id}" title="Delete set">✕</button>
+							</div>
+						</div>
+					`;
+				}).join('') + `</div>`;
+			}
+
+			modal.innerHTML = `
+				<div class="modal-card">
+					<div class="modal-header">
+						<h2>Load Saved Practice Set</h2>
+						<button type="button" class="modal-close-btn" id="btn-close-load-set-modal" aria-label="Close">×</button>
+					</div>
+					<div class="modal-body">
+						${bodyHtml}
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" id="btn-cancel-load-set">Close</button>
+					</div>
+				</div>
+			`;
+
+			modal.querySelector('#btn-close-load-set-modal')?.addEventListener('click', () => modal.remove());
+			modal.querySelector('#btn-cancel-load-set')?.addEventListener('click', () => modal.remove());
+
+			modal.querySelectorAll('.btn-load-saved-set').forEach(btn => {
+				btn.addEventListener('click', async () => {
+					const target = currentSets.find(s => s.id === btn.dataset.setId);
+					if (target) {
+						await this.loadSavedSet(target);
+						modal.remove();
+					}
+				});
+			});
+
+			modal.querySelectorAll('.btn-delete-saved-set').forEach(btn => {
+				btn.addEventListener('click', async () => {
+					await db.deleteNamedSet(btn.dataset.setId);
+					const updated = await db.getSavedSets();
+					renderContent(updated);
+				});
+			});
+		};
+
+		renderContent(sets);
+		document.body.appendChild(modal);
 	}
 
 	/**
@@ -650,6 +792,11 @@ class UnitSelectorView {
 				<button type="button" id="btn-selector-expand-all" class="btn btn-secondary" title="Expand all Sources">Expand All</button>
 				<button type="button" id="btn-selector-collapse-all" class="btn btn-ghost" title="Collapse all Sources">Collapse</button>
 			</div>
+			<div class="selector-set-actions-row">
+				<button type="button" id="btn-set-save" class="btn btn-emerald btn-sm" title="Save current Practice Set with a custom name">💾 Save Set</button>
+				<button type="button" id="btn-set-load" class="btn btn-secondary btn-sm" title="Open dialog to select and reload a saved Practice Set">📂 Load Set</button>
+				<button type="button" id="btn-set-clear" class="btn btn-ghost btn-sm" title="Deselect and remove all language units from the current set">🗑️ Deselect All</button>
+			</div>
 		`;
 		leftCol.appendChild(treeHeader);
 
@@ -683,6 +830,22 @@ class UnitSelectorView {
 		treeHeader.querySelector('#btn-selector-collapse-all')?.addEventListener('click', () => {
 			this.expandedSources.clear();
 			this.renderSourcesList();
+		});
+
+		// Bind set management buttons (Save, Load, Clear)
+		treeHeader.querySelector('#btn-set-save')?.addEventListener('click', () => {
+			this.saveCurrentSet();
+		});
+		treeHeader.querySelector('#btn-set-load')?.addEventListener('click', () => {
+			this.openLoadSetDialog();
+		});
+		treeHeader.querySelector('#btn-set-clear')?.addEventListener('click', () => {
+			const activeCount = this.getActiveSetUnitIds().size;
+			if (activeCount === 0) return;
+			const confirmed = typeof confirm !== 'function' || confirm(`Deselect all ${activeCount} language units from the practice set?`);
+			if (confirmed) {
+				this.clearCurrentSet();
+			}
 		});
 
 		this.render();

@@ -22,6 +22,9 @@
 			<button type="button" class="spa-tab active" data-view="selector" role="tab" aria-selected="true">
 				<span>✨ Unit Selector &amp; Details</span>
 			</button>
+			<button type="button" class="spa-tab" data-view="importer" role="tab" aria-selected="false">
+				<span>📖 Text Analysis &amp; Ingestion</span>
+			</button>
 			<button type="button" class="spa-tab" data-view="spreadsheet" role="tab" aria-selected="false">
 				<span>📊 Language Units Spreadsheet</span>
 			</button>
@@ -53,6 +56,13 @@
 	<!-- ===================================================================== -->
 	<main id="view-selector" class="spa-view active">
 		<section id="selector-container" class="selector-container" aria-label="Streamlined Language Unit Selector and Details"></section>
+	</main>
+
+	<!-- ===================================================================== -->
+	<!-- VIEW 1: TEXT INGESTION & PASSAGE ANALYSIS                             -->
+	<!-- ===================================================================== -->
+	<main id="view-importer" class="spa-view">
+		<section id="importer-container" class="importer-container" aria-label="Korean Text Ingestion and Passage Analysis"></section>
 	</main>
 
 	<!-- ===================================================================== -->
@@ -313,9 +323,20 @@
 	<script src="../korean/translation/natural_realizer.js"></script>
 	<script src="../korean/generation/sentence_ast.js"></script>
 	<script src="../korean/generation/unit_sentence_generator.js"></script>
+	<!-- Korean Text Analyzer Subsystem (Browser-Pure) -->
+	<script src="../korean/analyzer/indexer.js"></script>
+	<script src="../korean/analyzer/particles.js"></script>
+	<script src="../korean/analyzer/syntax_frame.js"></script>
+	<script src="../korean/analyzer/verb_suffix_rules.js"></script>
+	<script src="../korean/analyzer/verb_morphology.js"></script>
+	<script src="../korean/analyzer/token_analyzer.js"></script>
+	<script src="../korean/analyzer/sentence_analyzer.js"></script>
+	<script src="../korean/analyzer/passage_analyzer.js"></script>
+	<script src="../korean/analyzer/index.js"></script>
 	<script src="db.js"></script>
 	<script src="spreadsheet.js"></script>
 	<script src="selector.js"></script>
+	<script src="text_importer.js"></script>
 	<script src="app.js"></script>
 </body>
 </html>

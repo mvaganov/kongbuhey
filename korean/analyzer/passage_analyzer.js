@@ -1,3 +1,4 @@
+(function() {
 /**
  * korean/analyzer/passage_analyzer.js
  *
@@ -285,3 +286,4 @@ if (typeof module !== 'undefined' && module.exports) {
 		formatAnalysisReport
 	};
 }
+})();

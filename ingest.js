@@ -75,6 +75,26 @@ function registerPassageInTest(passageName) {
 	return true;
 }
 
+function printHelp() {
+	console.log(`ingest.js - Unified Curriculum Ingestion Pipeline for Kongbuhey
+
+USAGE:
+  node ingest.js [passageName] [options]
+  node ingest.js --text "<korean text>" [--source <tag>] [options]
+  node ingest.js --file <path> [--source <tag>] [options]
+  node ingest.js --draft <path> [--source <tag>] [options]
+
+OPTIONS:
+  --text "<text>"     Analyze and ingest arbitrary Korean text directly
+  --file <path>       Read Korean text or JSON draft units from file (.txt, .json)
+  --draft <path>      Insert scaffolded JSON units exported from web app or scratch/
+  --source <tag>      Curriculum source tag (default: custom_passage or filename)
+  --dry-run           Preview curriculum gaps and morphology hints without modifying data
+  --auto, -y, --yes   Non-interactive mode (automatically confirm insertions)
+  -h, --help          Display this help message and exit
+`);
+}
+
 async function promptUser(question) {
 	const rl = readline.createInterface({
 		input: process.stdin,
@@ -90,30 +110,138 @@ async function promptUser(question) {
 
 async function main() {
 	const args = process.argv.slice(2);
-	const isDryRun = args.includes('--dry-run');
-	const isAuto = args.includes('--auto') || args.includes('-y') || args.includes('--yes');
-	const targetArg = args.find(a => !a.startsWith('-'));
-
-	let passageName = targetArg || findNextUningestedPassage();
-	if (!passageName) {
-		console.log("[INGEST] All known study texts in studytexts.js are already ingested!");
+	if (args.includes('-h') || args.includes('--help')) {
+		printHelp();
 		process.exit(0);
 	}
 
-	const passageText = studytexts[passageName];
-	if (!passageText) {
-		console.error(`[ERROR] Passage "${passageName}" not found in studytexts.js.`);
-		process.exit(1);
+	const isDryRun = args.includes('--dry-run');
+	const isAuto = args.includes('--auto') || args.includes('-y') || args.includes('--yes');
+
+	const getArgVal = (flag) => {
+		const idx = args.indexOf(flag);
+		return (idx !== -1 && idx + 1 < args.length) ? args[idx + 1] : null;
+	};
+
+	const textArg = getArgVal('--text');
+	const fileArg = getArgVal('--file');
+	const draftArg = getArgVal('--draft');
+	const sourceArg = getArgVal('--source');
+
+	let passageText = '';
+	let passageName = '';
+	let directDraftUnits = null;
+
+	if (draftArg) {
+		const draftPath = path.resolve(process.cwd(), draftArg);
+		if (!fs.existsSync(draftPath)) {
+			console.error(`[ERROR] Draft file not found: ${draftPath}`);
+			process.exit(1);
+		}
+		directDraftUnits = JSON.parse(fs.readFileSync(draftPath, 'utf8'));
+		passageName = sourceArg || path.basename(draftPath, path.extname(draftPath)).replace(/^new_units_/, '') || 'custom_source';
+	} else if (fileArg) {
+		const filePath = path.resolve(process.cwd(), fileArg);
+		if (!fs.existsSync(filePath)) {
+			console.error(`[ERROR] File not found: ${filePath}`);
+			process.exit(1);
+		}
+		if (filePath.endsWith('.json')) {
+			directDraftUnits = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+			passageName = sourceArg || path.basename(filePath, path.extname(filePath)).replace(/^new_units_/, '') || 'custom_source';
+		} else {
+			passageText = fs.readFileSync(filePath, 'utf8');
+			passageName = sourceArg || path.basename(filePath, path.extname(filePath));
+		}
+	} else if (textArg) {
+		passageText = textArg;
+		passageName = sourceArg || 'custom_passage';
+	} else {
+		// Existing studytexts.js flow
+		const targetArg = args.find(a => !a.startsWith('-'));
+		passageName = targetArg || findNextUningestedPassage();
+		if (!passageName) {
+			console.log("[INGEST] All known study texts in studytexts.js are already ingested!");
+			process.exit(0);
+		}
+		passageText = studytexts[passageName];
+		if (!passageText) {
+			console.error(`[ERROR] Passage "${passageName}" not found in studytexts.js.`);
+			process.exit(1);
+		}
 	}
 
 	console.log(`======================================================`);
 	console.log(`       KONGBUHEY STUDY TEXT INGESTION PIPELINE        `);
 	console.log(`======================================================`);
-	console.log(`Target Passage: ${passageName}`);
-	console.log(`Length:         ${passageText.length} characters`);
-	if (isDryRun) console.log(`Mode:           DRY RUN (no files will be modified)`);
+	console.log(`Target Source / Passage: ${passageName}`);
+	if (passageText) console.log(`Text Length:             ${passageText.length} characters`);
+	if (directDraftUnits) console.log(`Direct Draft Units:      ${directDraftUnits.length} units`);
+	if (isDryRun) console.log(`Mode:                    DRY RUN (no files will be modified)`);
 	console.log(`------------------------------------------------------\n`);
 
+	// --- PATH A: Direct Draft Units Ingestion ---
+	if (directDraftUnits) {
+		console.log(`[1/4] Loaded ${directDraftUnits.length} scaffolded units for source "${passageName}":`);
+		for (const u of directDraftUnits) {
+			const ko = u.Korean || '';
+			const en = u.English || '';
+			const pos = u.PartofSpeech || 'Noun';
+			console.log(`  - ${ko.padEnd(16)} [${pos.padEnd(16)}] ${en}`);
+		}
+
+		if (isDryRun) {
+			console.log(`\n[DRY RUN COMPLETE] Verified ${directDraftUnits.length} draft units.`);
+			process.exit(0);
+		}
+
+		if (!isAuto) {
+			const ans = await promptUser(`\nProceed to insert ${directDraftUnits.length} units into data.js? [y/N]: `);
+			if (ans !== 'y' && ans !== 'yes') {
+				console.log("[ABORT] Ingestion cancelled by user.");
+				process.exit(0);
+			}
+		}
+
+		const scratchDir = path.resolve(__dirname, 'scratch');
+		if (!fs.existsSync(scratchDir)) fs.mkdirSync(scratchDir, { recursive: true });
+		const draftPath = path.resolve(scratchDir, `new_units_${passageName}.json`);
+		fs.writeFileSync(draftPath, JSON.stringify(directDraftUnits, null, 2), 'utf8');
+
+		console.log(`\n[2/4] Inserting units into data.js...`);
+		child_process.execFileSync(process.execPath, [
+			path.resolve(__dirname, 'select.js'),
+			'INSERT',
+			'FROMFILE',
+			draftPath,
+			'--source',
+			passageName
+		], { stdio: 'inherit' });
+
+		console.log(`[3/4] Synchronizing homonyms.js and schema summary...`);
+		child_process.execFileSync(process.execPath, [
+			HOMONYMS_PATH,
+			'update',
+			'--source',
+			passageName
+		], { stdio: 'inherit' });
+
+		updateSchemaSummary();
+
+		if (studytexts[passageName]) {
+			registerPassageInTest(passageName);
+		}
+
+		console.log(`[4/4] Running verification test suite...`);
+		child_process.execFileSync(process.execPath, [TEST_PATH, passageName], { stdio: 'inherit' });
+
+		console.log(`\n======================================================`);
+		console.log(`[COMPLETE] ${passageName} successfully ingested!`);
+		console.log(`======================================================\n`);
+		process.exit(0);
+	}
+
+	// --- PATH B: Text Decomposition Pipeline ---
 	// Step 1: Run text analyzer
 	console.log(`[1/5] Running passage decomposition...`);
 	const report = textAnalyzer.analyzePassage(passageText, passageName);
@@ -214,7 +342,13 @@ async function main() {
 			if (isDryRun) process.exit(0);
 		} else {
 			console.log(`[SUCCESS] 0 curriculum gaps! All words are fully recognized.`);
-			registerPassageInTest(passageName);
+			if (isDryRun) {
+				console.log(`\n[DRY RUN COMPLETE] 0 gaps detected in passage "${passageName}".`);
+				process.exit(0);
+			}
+			if (studytexts[passageName]) {
+				registerPassageInTest(passageName);
+			}
 			console.log(`[2/5] Running verification test suite...`);
 			child_process.execFileSync(process.execPath, [TEST_PATH, passageName], { stdio: 'inherit' });
 			console.log(`\n======================================================`);
@@ -293,7 +427,9 @@ async function main() {
 
 		updateSchemaSummary();
 
-		registerPassageInTest(passageName);
+		if (studytexts[passageName]) {
+			registerPassageInTest(passageName);
+		}
 
 		console.log(`[5/5] Running verification test suite...`);
 		child_process.execFileSync(process.execPath, [TEST_PATH, passageName], { stdio: 'inherit' });

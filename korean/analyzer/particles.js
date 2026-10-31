@@ -1,3 +1,4 @@
+(function() {
 /**
  * korean/analyzer/particles.js
  *
@@ -231,4 +232,5 @@ if (typeof module !== 'undefined' && module.exports) {
 		recognizeCompoundParticle
 	};
 }
+})();
 
