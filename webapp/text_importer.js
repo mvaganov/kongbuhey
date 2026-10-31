@@ -124,6 +124,20 @@ class TextImporterView {
 			});
 		}
 
+		const copyAgentPromptBtn = this.container.querySelector('#btn-copy-agent-prompt');
+		if (copyAgentPromptBtn) {
+			copyAgentPromptBtn.addEventListener('click', async () => {
+				const promptText = `Please review scratch/new_units_${this.sourceName}.json: normalize words to dictionary base forms (infinitives for verbs), verify Part of Speech against the 9 canonical types, add accurate English definitions and semantic tags, and ingest them using: node ingest.js --draft scratch/new_units_${this.sourceName}.json --source ${this.sourceName}`;
+				try {
+					if (navigator.clipboard && navigator.clipboard.writeText) {
+						await navigator.clipboard.writeText(promptText);
+					}
+					copyAgentPromptBtn.textContent = '✓ Copied Prompt!';
+					setTimeout(() => { copyAgentPromptBtn.textContent = '📋 Copy Agent Prompt'; }, 2000);
+				} catch (_) {}
+			});
+		}
+
 		const copyBtn = this.container.querySelector('#btn-copy-scaffold-json');
 		if (copyBtn) {
 			copyBtn.addEventListener('click', async () => {
@@ -282,10 +296,20 @@ class TextImporterView {
 
 							<div id="importer-scaffold-area" class="scaffold-area hidden">
 								<div class="scaffold-instructions">
-									<p>Save this scaffold to <code>scratch/new_units_${this.sourceName}.json</code> and execute:</p>
-									<pre class="cli-cmd-preview"><code>node select.js INSERT FROMFILE scratch/new_units_${this.sourceName}.json --source ${this.sourceName}</code></pre>
-									<p>Or ingest directly via the unified ingestion pipeline:</p>
-									<pre class="cli-cmd-preview"><code>node ingest.js --draft scratch/new_units_${this.sourceName}.json --source ${this.sourceName}</code></pre>
+									<div class="scaffold-workflow-card agent-workflow">
+										<div class="workflow-card-header">
+											<strong>🤖 Option A: Agentic LLM Workflow (Recommended)</strong>
+											<button type="button" id="btn-copy-agent-prompt" class="btn btn-secondary btn-sm">📋 Copy Agent Prompt</button>
+										</div>
+										<p>Save this scaffold to <code>scratch/new_units_${this.sourceName}.json</code> (or click Download below), then ask your AI assistant to normalize and enrich it:</p>
+										<pre class="cli-cmd-preview"><code>Please review scratch/new_units_${this.sourceName}.json: normalize words to dictionary base forms, assign canonical POS, enrich English definitions, and ingest via: node ingest.js --draft scratch/new_units_${this.sourceName}.json --source ${this.sourceName}</code></pre>
+									</div>
+
+									<div class="scaffold-workflow-card manual-workflow">
+										<strong>⚙️ Option B: Manual Curation &amp; Direct CLI Ingestion</strong>
+										<p>⚠️ <em>Do not insert raw scaffolds directly with select.js.</em> Ensure all <code>"Unknown"</code> parts of speech are replaced with one of the 9 canonical types and English definitions are curated before running:</p>
+										<pre class="cli-cmd-preview"><code>node ingest.js --draft scratch/new_units_${this.sourceName}.json --source ${this.sourceName}</code></pre>
+									</div>
 								</div>
 								<textarea id="importer-scaffold-output" class="importer-scaffold-textarea" rows="10" readonly>${this._generateScaffoldJson(missingVocab, missingGrammar)}</textarea>
 								<div class="scaffold-actions">
