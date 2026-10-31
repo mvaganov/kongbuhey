@@ -791,7 +791,10 @@ function realizePredicateKo(predNode, clauseContext = {}) {
 		const stem = getConjugatedStem(activeVerbUnit[DATA_SCHEMA.Korean], activeVerbUnit[DATA_SCHEMA.Conjugation]);
 
 		if (modality === "desire") {
-			surfaceKo = buildMoodPredicate(activeVerbUnit, "desire", politeness, { tense });
+			surfaceKo = buildMoodPredicate(activeVerbUnit, "desire", politeness, {
+				tense,
+				person: clauseContext.person || (clauseContext.isThirdPerson ? 3 : 1)
+			});
 		} else if (modality === "ability") {
 			const end = politeness === "formal_high" ? "수 있습니다" : politeness === "plain" ? "수 있다" : "수 있어요";
 			surfaceKo = resolvePureMorphology(`${stem}으/ㄹ ${end}`, state);
@@ -849,10 +852,14 @@ function realizePredicateKo(predNode, clauseContext = {}) {
 		}
 	}
 
-	predNode.surfaceKo = surfaceKo;
-	const eojeols = buildPredicateEojeols(predNode, surfaceKo);
+	if (/[?]$/.test(surfaceKo)) {
+		predNode.speechAct = "interrogative";
+	}
+	const cleanPredKo = surfaceKo.replace(/[.?!~]+$/, '');
+	predNode.surfaceKo = cleanPredKo;
+	const eojeols = buildPredicateEojeols(predNode, cleanPredKo);
 	predNode.eojeols = eojeols;
-	return { surfaceKo, eojeols };
+	return { surfaceKo: cleanPredKo, eojeols };
 }
 
 /**
@@ -880,19 +887,26 @@ function realizeKoreanFromAST(ast) {
 		const constituents = clause.constituents || [];
 		const pred = clause.predicate || null;
 
-		// Determine if subject/topic or recipient in this clause is an elder noun
+		// Determine if subject/topic or recipient in this clause is an elder noun and grammatical person
 		let isElderSubj = Boolean(clause.honorific || ast.honorific);
 		let isElderRecip = false;
+		let subjKo = "";
 
 		for (const con of constituents) {
 			const u = con.nounUnit || con.unit;
-			if ((con.role === "subject" || con.role === "topic") && u && isElderNoun(u)) {
-				isElderSubj = true;
+			if ((con.role === "subject" || con.role === "topic") && u) {
+				subjKo = u[DATA_SCHEMA.Korean] || "";
+				if (isElderNoun(u)) {
+					isElderSubj = true;
+				}
 			}
 			if (con.role === "recipient" && u && isElderNoun(u)) {
 				isElderRecip = true;
 			}
 		}
+
+		const isFirstOrSecond = ["나", "내", "저", "제", "우리", "저희", "너", "네", "당신", "자네", "너희", "여러분"].includes(subjKo);
+		const isThirdPerson = !subjKo || !isFirstOrSecond;
 
 		// If subject is elder and object is a plain noun with an honorific counterpart (e.g. 밥 -> 진지), upgrade it
 		if (isElderSubj) {
@@ -910,6 +924,8 @@ function realizeKoreanFromAST(ast) {
 		const clauseContext = {
 			honorific: isElderSubj,
 			recipientHonorific: isElderRecip,
+			isThirdPerson,
+			person: isFirstOrSecond ? 1 : 3,
 			verbUnit: pred ? pred.verbUnit : null
 		};
 

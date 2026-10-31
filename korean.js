@@ -84,6 +84,7 @@ const templateEngine = require('./korean/generation/template_engine.js');
 const semanticGenerator = require('./korean/generation/semantic_generator.js');
 const sentenceAst = require('./korean/generation/sentence_ast.js');
 const unitGenerator = require('./korean/generation/unit_sentence_generator.js');
+const sentenceValidator = require('./korean/generation/sentence_validator.js');
 
 // 6. Text Analyzer Subsystem
 const analyzer = require('./korean/analyzer/index.js');
@@ -117,7 +118,8 @@ function resetUsedUnits() {
 
 function getRandom(arr) {
 	if (!arr || arr.length === 0) return null;
-	return arr[Math.floor(Math.random() * arr.length)];
+	const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
+	return arr[Math.floor(rnd * arr.length)];
 }
 
 // Assemble unified export surface
@@ -387,6 +389,9 @@ const exportedMembers = {
 	realizeNaturalEnglish: naturalRealizer.realizeNaturalEnglish,
 	generateSentenceForUnit: unitGenerator.generateSentenceForUnit,
 	generateSentencesForUnit: unitGenerator.generateSentencesForUnit,
+	validateSentenceAST: sentenceValidator.validateSentenceAST,
+	validateSentenceString: sentenceValidator.validateSentenceString,
+	SentenceValidator: sentenceValidator,
 
 	// LUT Utilities
 	reconstructFromLanguageUnitTree: lutSerializer.reconstructFromLanguageUnitTree,
@@ -400,7 +405,12 @@ const exportedMembers = {
 	analyzeSentence: analyzer.analyzeSentence,
 	analyzeSingleToken: analyzer.analyzeSingleToken,
 	evaluateSyntaxFrame: analyzer.evaluateSyntaxFrame,
-	disambiguateCandidates: analyzer.disambiguateCandidates
+	disambiguateCandidates: analyzer.disambiguateCandidates,
+
+	// PRNG & Seeding
+	setRandomSeed: state.setRandomSeed,
+	getRandomSeed: state.getRandomSeed,
+	seededRandom: state.seededRandom
 };
 
 if (typeof window !== 'undefined') {

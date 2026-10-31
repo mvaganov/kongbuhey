@@ -1,8 +1,9 @@
-const { applyMorphology, generateTemplateOptions, getFilteredWords } = require('./korean.js');
+const { applyMorphology, generateTemplateOptions, getFilteredWords, seededRandom } = require('./korean.js');
 const { DATA_SCHEMA } = require('./data.js');
 
 function getRandom(arr) {
-	return arr[Math.floor(Math.random() * arr.length)];
+	const rnd = typeof seededRandom === 'function' ? seededRandom() : Math.random();
+	return arr[Math.floor(rnd * arr.length)];
 }
 
 function generateSentence(template) {

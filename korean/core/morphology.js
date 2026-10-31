@@ -749,7 +749,11 @@ function getNounCandidatesForVerb(verbUnit) {
 	}
 
 	if (sv && sv.req && sv.req !== 'any') {
-		const reqNouns = getFilteredWords("Noun", sv.req).filter(n => !hasTag(n, "measureWord"));
+		let reqNouns = getFilteredWords("Noun", sv.req).filter(n => !hasTag(n, "measureWord"));
+		const vKo = verbUnit[DATA_SCHEMA.Korean] || "";
+		if (!["닦다", "뽑다", "치료하다", "갈다"].includes(vKo) && !hasTag(verbUnit, "teeth")) {
+			reqNouns = reqNouns.filter(n => n[DATA_SCHEMA.Korean] !== "이" && n[DATA_SCHEMA.Id] !== 361);
+		}
 		if (reqNouns.length > 0) return cacheAndReturn(reqNouns);
 	}
 
@@ -763,12 +767,18 @@ function getNounCandidatesForVerb(verbUnit) {
 			if (words.length === 0 && spec.fallbackTag !== undefined) {
 				words = getFilteredWords("Noun", spec.fallbackTag || undefined).filter(n => !hasTag(n, "measureWord"));
 			}
-			if (words.length > 0) return cacheAndReturn(words);
+			if (words.length > 0) {
+				const vKo = verbUnit[DATA_SCHEMA.Korean] || "";
+				if (!["닦다", "뽑다", "치료하다"].includes(vKo) && !hasTag(verbUnit, "teeth")) {
+					words = words.filter(n => n[DATA_SCHEMA.Korean] !== "이");
+				}
+				if (words.length > 0) return cacheAndReturn(words);
+			}
 		}
 	}
 
-	let fallback = getFilteredWords("Noun", "object").filter(n => !hasTag(n, "measureWord"));
-	if (fallback.length === 0) fallback = getFilteredWords("Noun").filter(n => !hasTag(n, "measureWord"));
+	let fallback = getFilteredWords("Noun", "object").filter(n => !hasTag(n, "measureWord") && n[DATA_SCHEMA.Korean] !== "이");
+	if (fallback.length === 0) fallback = getFilteredWords("Noun").filter(n => !hasTag(n, "measureWord") && n[DATA_SCHEMA.Korean] !== "이");
 	return cacheAndReturn(fallback);
 }
 
@@ -799,7 +809,11 @@ function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
 	}
 
 	if (sv && sv.req && sv.req !== 'any') {
-		const reqNouns = getFilteredWords("Noun", sv.req).filter(n => !hasTag(n, "measureWord"));
+		let reqNouns = getFilteredWords("Noun", sv.req).filter(n => !hasTag(n, "measureWord"));
+		const dvKo = dvUnit[DATA_SCHEMA.Korean] || "";
+		if (!["아프다", "시리다", "좋다", "튼튼하다"].includes(dvKo) && !hasTag(dvUnit, "teeth")) {
+			reqNouns = reqNouns.filter(n => n[DATA_SCHEMA.Korean] !== "이" && n[DATA_SCHEMA.Id] !== 361);
+		}
 		if (reqNouns.length > 0) return cacheAndReturn(reqNouns);
 	}
 
@@ -813,18 +827,25 @@ function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
 			if (words.length === 0 && spec.fallbackTag !== undefined) {
 				words = getFilteredWords("Noun", spec.fallbackTag || undefined).filter(n => !hasTag(n, "measureWord"));
 			}
-			if (words.length > 0) return cacheAndReturn(words);
+			if (words.length > 0) {
+				const dvKo = dvUnit[DATA_SCHEMA.Korean] || "";
+				if (!["아프다", "시리다", "좋다", "튼튼하다"].includes(dvKo) && !hasTag(dvUnit, "teeth")) {
+					words = words.filter(n => n[DATA_SCHEMA.Korean] !== "이");
+				}
+				if (words.length > 0) return cacheAndReturn(words);
+			}
 		}
 	}
 
-	let fallback = getFilteredWords("Noun", "object").filter(n => !hasTag(n, "measureWord"));
-	if (fallback.length === 0) fallback = getFilteredWords("Noun").filter(n => !hasTag(n, "measureWord"));
+	let fallback = getFilteredWords("Noun", "object").filter(n => !hasTag(n, "measureWord") && n[DATA_SCHEMA.Korean] !== "이");
+	if (fallback.length === 0) fallback = getFilteredWords("Noun").filter(n => !hasTag(n, "measureWord") && n[DATA_SCHEMA.Korean] !== "이");
 	return cacheAndReturn(fallback);
 }
 
 function getRandom(arr) {
 	if (!arr || arr.length === 0) return null;
-	return arr[Math.floor(Math.random() * arr.length)];
+	const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
+	return arr[Math.floor(rnd * arr.length)];
 }
 
 function markUnitUsed(unit) {

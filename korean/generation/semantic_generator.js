@@ -41,9 +41,13 @@ const SemanticConfig = {
 	}
 };
 
+function prng() {
+	return (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
+}
+
 function getRandom(arr) {
 	if (!arr || arr.length === 0) return null;
-	return arr[Math.floor(Math.random() * arr.length)];
+	return arr[Math.floor(prng() * arr.length)];
 }
 
 function markUnitUsed(unit) {
@@ -57,7 +61,7 @@ function shouldApplySemanticConstraint(context) {
 	const weight = SemanticConfig.getWeight(context.logic);
 	if (weight >= 1.0) return true;
 	if (weight <= 0.0) return false;
-	return Math.random() < weight;
+	return prng() < weight;
 }
 
 let templateToGrammarMap = null;
@@ -238,7 +242,7 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 			grammarId = gu[DATA_SCHEMA.Id];
 			const formulas = Array.isArray(gu[DATA_SCHEMA.Conjugation]) ? gu[DATA_SCHEMA.Conjugation] : [];
 			if (formulas.length > 0) {
-				formulaIndex = Math.floor(Math.random() * formulas.length);
+				formulaIndex = Math.floor(prng() * formulas.length);
 				template = formulas[formulaIndex] || "";
 			}
 		} else {
@@ -249,7 +253,7 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 		grammarId = templateOrUnit[DATA_SCHEMA.Id];
 		const formulas = Array.isArray(templateOrUnit[DATA_SCHEMA.Conjugation]) ? templateOrUnit[DATA_SCHEMA.Conjugation] : [];
 		if (formulas.length > 0) {
-			formulaIndex = Math.floor(Math.random() * formulas.length);
+			formulaIndex = Math.floor(prng() * formulas.length);
 			template = formulas[formulaIndex] || "";
 		}
 	} else if (typeof templateOrUnit === 'string') {
@@ -338,8 +342,8 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 				nouns = nouns.filter(n => hasTag(n, tag));
 			}
 			if (nouns.length === 0) nouns = getWords("Noun", "object");
-			const sampledNoun = nouns[Math.floor(Math.random() * nouns.length)];
-			const count = Math.floor(Math.random() * 5) + 1;
+			const sampledNoun = nouns[Math.floor(prng() * nouns.length)];
+			const count = Math.floor(prng() * 5) + 1;
 			const classifier = getMatchingClassifier(sampledNoun);
 			const classifierUnit = state.CLASSIFIER_UNITS.get(classifier);
 
@@ -357,9 +361,9 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 		} else if (tokenType === "Spatial_Phrase" || tokenType === "Relational_Loc") {
 			let groundNouns = getWords("Noun").filter(n => hasTag(n, "place") || hasTag(n, "furniture") || (hasTag(n, "object") && !hasTag(n, "measureWord") && !hasTag(n, "counter")));
 			if (groundNouns.length === 0) groundNouns = getWords("Noun", "place");
-			const sampledGround = groundNouns[Math.floor(Math.random() * groundNouns.length)];
+			const sampledGround = groundNouns[Math.floor(prng() * groundNouns.length)];
 			const positions = getSpatialPositions();
-			const sampledPos = positions.length > 0 ? positions[Math.floor(Math.random() * positions.length)] : "위";
+			const sampledPos = positions.length > 0 ? positions[Math.floor(prng() * positions.length)] : "위";
 			const posUnit = state.SPATIAL_POSITIONS.get(sampledPos)?.unit;
 
 			let particleType = "location";
@@ -375,7 +379,7 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 		} else if (tokenType === "Deictic_NP") {
 			const proximity = tag === "medial" ? "medial" : tag === "distal" ? "distal" : tag === "interrogative" ? "interrogative" : "proximal";
 			let nouns = getWords("Noun").filter(n => !hasTag(n, "measureWord") && !hasTag(n, "counter") && !hasTag(n, "place"));
-			const sampledNoun = nouns[Math.floor(Math.random() * nouns.length)];
+			const sampledNoun = nouns[Math.floor(prng() * nouns.length)];
 			replacementKo = buildDeicticPhrase(proximity, "noun", { noun: sampledNoun });
 			const detUnit = Array.from(state.DEICTIC_DETERMINERS.values()).find(d => d.proximity === proximity)?.unit;
 			childNode = [
@@ -397,7 +401,7 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 			if (rangeMatch) {
 				const baseTag = rangeMatch[1];
 				const min = parseInt(rangeMatch[2], 10), max = parseInt(rangeMatch[3], 10);
-				const val = Math.floor(Math.random() * (max - min + 1)) + min;
+				const val = Math.floor(prng() * (max - min + 1)) + min;
 				const isFollowedByMeasureWord = /^\s*\{(?:Noun|N):.*(?:measureWord|koreanMeasureWord|counter)/i.test(afterToken) || /^\s*[가-힣]/.test(afterToken);
 				replacementKo = (baseTag === "sinoNumber") ? getSinoNumber(val) : getKoreanNumber(val, isFollowedByMeasureWord);
 				const words = getFilteredWords("Number", baseTag);
