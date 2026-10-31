@@ -24,6 +24,7 @@ if (typeof require !== 'undefined') {
 	dataModule = typeof window !== 'undefined' ? window : {};
 }
 
+const state = (typeof require !== 'undefined' ? require('../state.js') : window);
 const { decomposeHangul, composeHangul, hasBatchim, getStem } =
 	(typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 const { ERROR_CODES } =
@@ -347,12 +348,14 @@ const CLAUSAL_QUIZ_BANKS = {
 };
 
 function generateClausalQuizItem(options = {}) {
+	const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
 	const topics = ["cause_imperative", "cause_propositive", "reason_negative", "purpose_motion"];
-	const topic = options.topic || topics[Math.floor(Math.random() * topics.length)];
+	const topic = options.topic || topics[Math.floor(rnd * topics.length)];
 	const bank = CLAUSAL_QUIZ_BANKS[topic] || CLAUSAL_QUIZ_BANKS.cause_imperative;
+	const entryRnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
 	const entry = (options.index !== undefined && bank[options.index])
 		? bank[options.index]
-		: bank[Math.floor(Math.random() * bank.length)];
+		: bank[Math.floor(entryRnd * bank.length)];
 
 	let item = {};
 	if (topic === "cause_imperative") {
@@ -427,7 +430,8 @@ function generateClausalQuizItem(options = {}) {
 
 	if (options.shuffle) {
 		for (let i = item.options.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
+			const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
+			const j = Math.floor(rnd * (i + 1));
 			[item.options[i], item.options[j]] = [item.options[j], item.options[i]];
 		}
 	}

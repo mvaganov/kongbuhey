@@ -171,6 +171,8 @@ function parseSentenceToClauses(sentence) {
 		const c2 = words.slice(i + 1).join(" ");
 
 		for (const rule of state.DYNAMIC_SUFFIX_RULES) {
+			if (w === "해서" && c1Prefix && (c1Prefix.endsWith("으로") || c1Prefix.endsWith("로"))) continue;
+			if (w === "어서") continue;
 			if (w.endsWith(rule.suffix)) {
 				if (rule.isSeoRule) {
 					if (w.endsWith("께서") || w.endsWith("에게서") || w.endsWith("한테서")) continue;
@@ -181,6 +183,7 @@ function parseSentenceToClauses(sentence) {
 					if (!d || (d.final !== 0 && d.final !== 20)) continue;
 				}
 				const stem = w.slice(0, -(rule.strip || rule.suffix).length);
+				if (!stem && !c1Prefix) continue;
 				return {
 					clause1: (c1Prefix ? c1Prefix + " " : "") + stem,
 					connective: rule.connective,

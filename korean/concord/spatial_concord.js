@@ -88,7 +88,8 @@ function buildSpatialPhrase(referenceNounOrPosition, positionOrOptions = null, m
 
 	if (!posKo) {
 		const positions = getSpatialPositions();
-		posKo = positions.length > 0 ? positions[Math.floor(Math.random() * positions.length)] : "위";
+		const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
+		posKo = positions.length > 0 ? positions[Math.floor(rnd * positions.length)] : "위";
 		posUnit = state.SPATIAL_POSITIONS.get(posKo)?.unit;
 	} else if (!posUnit && state.SPATIAL_POSITIONS.has(posKo)) {
 		posUnit = state.SPATIAL_POSITIONS.get(posKo)?.unit;
@@ -217,8 +218,9 @@ function applySpatialConcord(input) {
 
 	let str = String(input);
 
-	str = str.replace(/(^|[^가-힣])이가(?=[^가-힣]|$)/g, '$1이게');
-	str = str.replace(/(^|[^가-힣])이를(?=[^가-힣]|$)/g, '$1이걸');
+	// Demonstrative contraction: 이가 -> 이게, 이를 -> 이걸 (protecting noun '이' [teeth]: 이를 닦다, 이가 아프다, etc.)
+	str = str.replace(/(^|[^가-힣])이가(?=[^가-힣]|$)(?!\s+(?:[가-힣]+\s+)?(?:아프|시리|나(?:요|았|고|서|면|다)|빠지|흔들|썩|튼튼|치료|뽑))/g, '$1이게');
+	str = str.replace(/(^|[^가-힣])이를(?=[^가-힣]|$)(?!\s+(?:[가-힣]+\s+)?(?:닦|뽑|치료|보(?:여|요|았|고|셨|시|면)|봤|갈(?:아|았|고)))/g, '$1이걸');
 	str = str.replace(/(^|[^가-힣])그가(?=[^가-힣]|$)/g, '$1그게');
 	str = str.replace(/(^|[^가-힣])그를(?=[^가-힣]|$)/g, '$1그걸');
 
@@ -226,11 +228,11 @@ function applySpatialConcord(input) {
 	if (positionsPattern) {
 		const staticStems = Array.from(state.STATIC_EXISTENCE_VERBS).map(v => v.replace(/다$/, '')).concat(['누워', '계세', '계십', '계셔', '계셨']);
 		if (staticStems.length > 0) {
-			const repRegex = new RegExp(`(${positionsPattern})에서(\\s+(?:[^.!?]*\\s+)?(?:${staticStems.join('|')}))`, 'g');
+			const repRegex = new RegExp(`(?<![가-힣])(${positionsPattern})에서(\\s+(?:[^.!?]*\\s+)?(?:${staticStems.join('|')}))`, 'g');
 			str = str.replace(repRegex, '$1에$2');
 		}
 
-		const dynamicRepRegex = new RegExp(`(${positionsPattern})에(\\s+(?:[가-힣]+[을를]\\s+)(?:만나|공부(?:하|해|했)|일(?:하|해|했)|운동(?:하|해|했)|먹|사|놀|기다(?:리|려)|마시|마셔|읽))`, 'g');
+		const dynamicRepRegex = new RegExp(`(?<![가-힣]+[은ㄴ]\\s+)(?<![가-힣]+기\\s+)(?<!(?:학기|방학|수업|회의|식사|통화|여행|휴가|공부|근무)\\s*)(?<![가-힣])(${positionsPattern})에(\\s+(?:[가-힣]+[을를]\\s+)(?:만나|공부(?:하|해|했)|일(?:하|해|했)|운동(?:하|해|했)|먹|사|놀|기다(?:리|려)|마시|마셔|읽))`, 'g');
 		str = str.replace(dynamicRepRegex, '$1에서$2');
 	}
 

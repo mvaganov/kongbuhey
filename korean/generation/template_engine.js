@@ -46,7 +46,8 @@ function setProperNames(names) {
 function getRandomProperName() {
 	const names = getProperNames();
 	if (!names || names.length === 0) return "";
-	return names[Math.floor(Math.random() * names.length)];
+	const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
+	return names[Math.floor(rnd * names.length)];
 }
 
 function getTokenOptions(token, depth = 0) {
@@ -62,7 +63,11 @@ function getTokenOptions(token, depth = 0) {
 		const seeGrammar = getFilteredWords("Grammar").find(g => hasTag(g, "properNoun", "honorific") || g[KoreanWord] === ssiSuffix) || getWords("Grammar").find(g => hasTag(g, "properNoun", "honorific") || g[KoreanWord] === ssiSuffix);
 		options = [new TokenOption(getRandomProperName() + ssiSuffix, seeGrammar ? [seeGrammar] : [])];
 	} else if (token.type === "N" || token.type === "Noun" || token.type === "N_Phrase") {
-		options = getFilteredWords("Noun", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
+		let nouns = getFilteredWords("Noun", token.tag);
+		if (token.tag !== "measureWord" && token.tag !== "counter") {
+			nouns = nouns.filter(w => !hasTag(w, "measureWord", "counter") && w[KoreanWord] !== "%");
+		}
+		options = nouns.map(w => new TokenOption(w[KoreanWord], [w]));
 	} else if (token.type === "AVst") {
 		options = getFilteredWords("Action Verb", token.tag).map(w => new TokenOption(getConjugatedStem(w[KoreanWord], w[Conjugation]), [w]));
 	} else if (token.type === "DVst") {
@@ -177,7 +182,8 @@ function getTokenOptions(token, depth = 0) {
 		if (groundNouns.length === 0) groundNouns = getFilteredWords("Noun", "furniture");
 		if (groundNouns.length === 0) groundNouns = getFilteredWords("Noun", "object");
 		groundNouns.slice(0, 5).forEach(gn => {
-			const pos = positions[Math.floor(Math.random() * positions.length)];
+			const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
+			const pos = positions[Math.floor(rnd * positions.length)];
 			const posUnit = state.SPATIAL_POSITIONS.get(pos)?.unit;
 			const phrase = `${gn[KoreanWord]} ${pos}에`;
 			options.push(new TokenOption(phrase, posUnit ? [gn, posUnit] : [gn]));
@@ -186,7 +192,8 @@ function getTokenOptions(token, depth = 0) {
 		const determiners = Array.from(state.DEICTIC_DETERMINERS.values());
 		const nouns = getFilteredWords("Noun", "object").slice(0, 5);
 		nouns.forEach(n => {
-			const det = determiners[Math.floor(Math.random() * determiners.length)];
+			const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
+			const det = determiners[Math.floor(rnd * determiners.length)];
 			const phrase = `${det.ko} ${n[KoreanWord]}`;
 			options.push(new TokenOption(phrase, [det.unit, n]));
 		});
@@ -201,7 +208,15 @@ function getTokenOptions(token, depth = 0) {
 	options = deduplicateTokenOptions(options);
 	if (!state.currentUsageFilter && options.length > 5) {
 		state.totalOptionsCutToPreventCombinatorialExplosion += options.length - 5;
-		options = options.sort(() => 0.5 - Math.random()).slice(0, 5);
+		// Deterministic Fisher-Yates shuffle
+		for (let i = options.length - 1; i > 0; i--) {
+			const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
+			const j = Math.floor(rnd * (i + 1));
+			const temp = options[i];
+			options[i] = options[j];
+			options[j] = temp;
+		}
+		options = options.slice(0, 5);
 	}
 	return options;
 }

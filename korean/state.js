@@ -28,6 +28,45 @@ const { getConjugatedStem, resolvePureMorphology } =
 // State Collections
 // =========================================================================
 
+// Pseudo-Random Number Generator (PRNG) State & Lifecycle (Mulberry32)
+let _initialSeed = 1;
+let _prngState = 1;
+
+function setRandomSeed(seed) {
+	if (typeof seed === 'string') {
+		const parsed = parseInt(seed, 10);
+		if (!isNaN(parsed)) {
+			_initialSeed = parsed;
+			_prngState = (parsed >>> 0) || 1;
+		} else {
+			let h = 0x811c9dc5;
+			for (let i = 0; i < seed.length; i++) {
+				h ^= seed.charCodeAt(i);
+				h = Math.imul(h, 0x01000193);
+			}
+			_initialSeed = seed;
+			_prngState = (h >>> 0) || 1;
+		}
+	} else if (typeof seed === 'number' && !isNaN(seed)) {
+		_initialSeed = seed;
+		_prngState = (seed >>> 0) || 1;
+	} else {
+		_initialSeed = 1;
+		_prngState = 1;
+	}
+}
+
+function getRandomSeed() {
+	return _initialSeed;
+}
+
+function seededRandom() {
+	let t = (_prngState += 0x6D2B79F5) >>> 0;
+	t = Math.imul(t ^ (t >>> 15), t | 1);
+	t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+	return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+
 // Proper Names & Usage Filter State
 let properNames = [];
 let currentUsageFilter = null;
@@ -890,6 +929,10 @@ const stateExports = {
 	PRONOUN_REPLACEMENTS,
 	TEMPLATE_TO_GRAMMAR_ID,
 	GRAMMAR_ID_TO_TEMPLATE,
+	setRandomSeed,
+	getRandomSeed,
+	seededRandom,
+	random: seededRandom,
 	initNumberSystem,
 	initSemanticSets,
 	initMorphologyData,

@@ -269,9 +269,15 @@ function resolvePureMorphology(text, stateObj = null) {
 		});
 	}
 
-	// Resolve contracted pronouns
+	// Resolve contracted pronouns (protecting 나가다 verb connective stem: 나가 보다, 나가 주다, etc.)
 	if (state && state.PRONOUN_REPLACEMENTS) {
-		state.PRONOUN_REPLACEMENTS.forEach(([pat, rep]) => { resolvedKo = resolvedKo.replace(pat, rep); });
+		state.PRONOUN_REPLACEMENTS.forEach(([pat, rep]) => {
+			if (String(pat).includes("나가")) {
+				resolvedKo = resolvedKo.replace(/(^|[^가-힣])나가(?=[^가-힣]|$)(?!\s+(?:보|주|버리|있|계시))/g, '$1내가');
+				return;
+			}
+			resolvedKo = resolvedKo.replace(pat, rep);
+		});
 	}
 
 	// Resolve 이/예요 based on batchim
@@ -298,9 +304,34 @@ function resolvePureMorphology(text, stateObj = null) {
 		return setFinal(ch, 17) + "시다";
 	});
 
-	// Resolve 아/어/았/었 vowel harmony
+	// Resolve 아/어/았/었 vowel harmony and direct vowel stem contractions
 	resolvedKo = resolvedKo.replace(/([가-힣])(아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => {
+		const d = decomposeHangul(ch);
 		const hv = getVowelHarmony(ch);
+
+		// If stem has no batchim, resolve contraction directly at insertion time
+		if (d && d.final === 0) {
+			if (ch === "하" || hv === "여") {
+				if (h === "아/어") return "해" + s;
+				if (h === "았/었") return "했" + s;
+			}
+			if (h === "아/어") {
+				if (d.medial === 0) return ch + s; // ㅏ (가, 나, 사, 자, 타)
+				if (d.medial === 8) return composeHangul(d.initial, 9, 0) + s; // ㅗ -> ㅘ (보 -> 봐, 오 -> 와)
+				if (d.medial === 13) return composeHangul(d.initial, 14, 0) + s; // ㅜ -> ㅝ (주 -> 줘, 배우 -> 배워)
+				if (d.medial === 20) return composeHangul(d.initial, 6, 0) + s; // ㅣ -> ㅕ (마시 -> 마셔, 기다리 -> 기다려)
+				if ([1, 4, 5, 6].includes(d.medial)) return ch + s; // ㅐ, ㅓ, ㅔ, ㅕ
+				if (d.medial === 18) return composeHangul(d.initial, 4, 0) + s; // ㅡ (크 -> 커, 쓰 -> 써)
+			} else if (h === "았/었") {
+				if (d.medial === 0) return composeHangul(d.initial, 0, 20) + s; // ㅏ -> 았 (갔, 났, 샀, 잤)
+				if (d.medial === 8) return composeHangul(d.initial, 9, 20) + s; // ㅗ -> 왔/봤
+				if (d.medial === 13) return composeHangul(d.initial, 14, 20) + s; // ㅜ -> 줬/배웠
+				if (d.medial === 20) return composeHangul(d.initial, 6, 20) + s; // ㅣ -> 마셨/기다렸
+				if ([1, 4, 5, 6].includes(d.medial)) return composeHangul(d.initial, d.medial, 20) + s; // 섰, 보냈, 켰
+				if (d.medial === 18) return composeHangul(d.initial, 4, 20) + s; // 컸, 썼
+			}
+		}
+
 		if (h === "았/었") {
 			return ch + (hv === '여' ? '였' : hv === '아' ? '았' : '었') + s;
 		}
@@ -349,8 +380,9 @@ function resolvePureMorphology(text, stateObj = null) {
 		return setFinal(ch, 4) + '다' + q;
 	});
 
-	// Basic Vowel Contractions
+	// Basic Vowel Contractions (exempting ㅅ-irregular roots from over-contracting)
 	resolvedKo = resolvedKo.replace(/([가-힣])아(요|서|도|야|라|)/g, (m, ch, s) => {
+		if (ch === '나' || ch === '지' || ch === '이' || ch === '저' || ch === '부' || ch === '그') return m;
 		const d = decomposeHangul(ch);
 		if (!d || d.final !== 0) return m;
 		if (d.medial === 0) return ch + s;
@@ -358,6 +390,7 @@ function resolvePureMorphology(text, stateObj = null) {
 		return m;
 	});
 	resolvedKo = resolvedKo.replace(/([가-힣])았(어요|어|다가|던|습니다|다)/g, (m, ch, s) => {
+		if (ch === '나' || ch === '지' || ch === '이' || ch === '저' || ch === '부' || ch === '그') return m;
 		const d = decomposeHangul(ch);
 		if (!d || d.final !== 0) return m;
 		if (d.medial === 0) return composeHangul(d.initial, 0, 20) + s;
@@ -371,9 +404,10 @@ function resolvePureMorphology(text, stateObj = null) {
 	resolvedKo = resolvedKo.replace(/하였(어요|어|다가|던|습니다|다)/g, (_, s) => "했" + s);
 	resolvedKo = resolvedKo.replace(/마시(아|어)(요|서|도|야|라)/g, (_, _v, s) => "마셔" + s);
 	resolvedKo = resolvedKo.replace(/크(아|어)(요|서|도|야|라)/g, (_, _v, s) => "커" + s);
-	resolvedKo = resolvedKo.replace(/이어요/g, "이에요");
+	resolvedKo = resolvedKo.replace(/([^을를\s])이어요/g, (m, ch) => hasBatchim(ch) ? ch + "이에요" : m);
 
 	resolvedKo = resolvedKo.replace(/([가-힣])어(요|서|도|야|라|지|져|졌)/g, (m, ch, s) => {
+		if (ch === '지' || ch === '이' || ch === '저' || ch === '부' || ch === '그') return m;
 		const d = decomposeHangul(ch);
 		if (!d || d.final !== 0) return m;
 		if (d.medial === 20) return composeHangul(d.initial, 6, 0) + s;
@@ -382,6 +416,7 @@ function resolvePureMorphology(text, stateObj = null) {
 		return m;
 	});
 	resolvedKo = resolvedKo.replace(/([가-힣])었(어요|어|다가|던|습니다|다)/g, (m, ch, s) => {
+		if (ch === '지' || ch === '이' || ch === '저' || ch === '부' || ch === '그') return m;
 		const d = decomposeHangul(ch);
 		if (!d || d.final !== 0) return m;
 		if (d.medial === 20) return composeHangul(d.initial, 6, 20) + s;
