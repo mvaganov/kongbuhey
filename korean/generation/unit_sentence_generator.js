@@ -146,16 +146,9 @@ function selectSubjectUnit(options = {}, targetId = null, preferElder = false) {
 	return null;
 }
 
-const INTRANSITIVE_VERB_ROOTS = new Set([
-	"가다", "오다", "도착하다", "출발하다", "다니다", "돌아오다", "돌아가다", "올라가다", "내려가다",
-	"끝나다", "시작되다", "배달되다", "고장 나다", "일어나다", "자다", "죽다", "살다", "눕다", "서다",
-	"비가 오다", "눈이 오다", "바람이 불다", "목이 쉬다", "몸이 떨리다", "떨리다", "생기다", "남다"
-]);
-
 function isIntransitiveVerb(verbUnit) {
 	if (!verbUnit) return false;
 	const ko = verbUnit[DATA_SCHEMA.Korean] || "";
-	if (INTRANSITIVE_VERB_ROOTS.has(ko)) return true;
 	if (ko.endsWith("되다")) return true;
 	if (hasTag(
 		verbUnit,
@@ -392,13 +385,17 @@ function selectAdverbUnit(isDescriptive, polarity, options = {}, targetId = null
 		if (ko === "안" || ko === "못") return false;
 		if (polarity !== "negative" && state.ALL_NPI_WORDS.has(ko)) return false;
 		if (hasTag(a, "discourse", "conjunction", "time", "temporal")) return false;
+		// Interrogative question words must not be chosen as optional decorative adverbs in declarative sentences
+		if (hasTag(a, "questionWord", "interrogative")) return false;
 		if (isDescriptive) {
-			if (state.MANNER_ADVERBS.has(ko)) return false;
+			if (state.MANNER_ADVERBS.has(ko) || hasTag(a, "manner", "adverb_manner")) return false;
 			const sv = parseSemanticData(a);
 			if (sv && sv.target_pos === "Action Verb") return false;
-			return state.DEGREE_ADVERBS.has(ko) || hasTag(a, "degree", "adverb_degree");
+			return state.DEGREE_ADVERBS.has(ko) || hasTag(a, "degree", "adverb_degree", "degree_pure");
 		}
-		return state.MANNER_ADVERBS.has(ko) || state.DEGREE_ADVERBS.has(ko) || hasTag(a, "manner", "adverb_manner");
+		// Action Verbs take MANNER adverbs, NEVER pure degree adverbs
+		if (hasTag(a, "degree_pure")) return false;
+		return state.MANNER_ADVERBS.has(ko) || hasTag(a, "manner", "adverb_manner");
 	});
 	return pickRandom(advs);
 }
@@ -1323,6 +1320,7 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 	const isManner = state.MANNER_ADVERBS.has(ko) || hasTag(unit, "manner", "adverb_manner");
 	const isDegree = state.DEGREE_ADVERBS.has(ko) && !isManner;
 	const isDiscourse = state.DISCOURSE_ADVERBS.has(ko) || hasTag(unit, "discourse", "conjunction");
+	const isQuestionWord = hasTag(unit, "questionWord", "interrogative");
 	const pol = getTemporalPolarity(unit);
 	if (pol) tense = pol;
 
@@ -1338,10 +1336,21 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 			return true;
 		});
 		chosenVerb = pickRandom(volitionalAVs) || pickRandom(avs);
+	} else if (ko === "얼마나") {
+		// 얼마나 requires gradable Descriptive Verb (degree) or duration/scalable verb (scalable)
+		const durationVerbs = avs.filter(v => hasTag(v, "scalable", "scalable_duration", "scalable_quantity", "scalable_emotion"));
+		const gradableDvs = dvs.filter(v => hasTag(v, "gradable"));
+		if (variationIndex === 1 && durationVerbs.length > 0) {
+			chosenVerb = pickRandom(durationVerbs);
+		} else {
+			chosenVerb = pickRandom(gradableDvs) || pickRandom(dvs) || pickRandom(durationVerbs) || dvs[0];
+		}
 	} else if (isManner) {
 		chosenVerb = pickRandom(avs);
 	} else if (isDegree) {
-		chosenVerb = pickRandom(dvs) || pickRandom(avs);
+		// Degree adverbs (아주, 매우, 너무, 꽤, 무척, 조금, 참) modify Descriptive Verbs or scalable psychological verbs
+		const scalableAVs = avs.filter(v => hasTag(v, "scalable", "scalable_emotion"));
+		chosenVerb = pickRandom(dvs) || (scalableAVs.length > 0 ? pickRandom(scalableAVs) : null) || dvs[0] || pickRandom(avs);
 	} else {
 		chosenVerb = pickRandom(avs) || pickRandom(dvs);
 	}
@@ -1357,8 +1366,20 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 
 	const isAction = chosenVerb[DATA_SCHEMA.PartofSpeech] === "Action Verb";
 	const constituents = [];
-	const subj = selectSubjectUnit(options, targetId, false);
-	const arg = isAction ? selectArgumentForActionVerb(chosenVerb, options, targetId) : { nounUnit: null };
+	let subj = null;
+	if (ko === "얼마나" && hasTag(chosenVerb, "scalable_duration", "scalable_quantity")) {
+		const resourceNouns = getAllUnitsOfPos("Noun", options, targetId).filter(n => hasTag(n, "resource"));
+		subj = resourceNouns.length > 0 ? (hasTag(chosenVerb, "scalable_quantity") && resourceNouns.length > 1 ? pickRandom(resourceNouns) : resourceNouns[0]) : selectSubjectUnit(options, targetId, false);
+	} else if (!isAction) {
+		const dvSubjs = filterBySet(getSubjectCandidatesForDescriptiveVerb(chosenVerb), options, targetId).filter(u => u[DATA_SCHEMA.Id] !== 361);
+		subj = dvSubjs.length > 0 ? pickRandom(dvSubjs) : selectSubjectUnit(options, targetId, false);
+	} else {
+		subj = selectSubjectUnit(options, targetId, false);
+	}
+
+	const arg = (isAction && !hasTag(chosenVerb, "scalable_duration", "scalable_quantity"))
+		? selectArgumentForActionVerb(chosenVerb, options, targetId)
+		: { nounUnit: null };
 
 	if (options.onlyFromSet && !subj && !arg.nounUnit) {
 		return {
@@ -1374,10 +1395,11 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 	}
 
 	if (subj) {
+		const subjParticle = isQuestionWord ? "subject" : "topic";
 		constituents.push({
-			role: "topic",
+			role: subjParticle,
 			nounUnit: subj,
-			particleType: "topic"
+			particleType: subjParticle
 		});
 	}
 
@@ -1399,13 +1421,14 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 
 	const polarity = (isNPI || isShortAn || isShortMot) ? "negative" : "affirmative";
 	const negationType = isShortMot ? "short_mot" : (polarity === "negative" ? "short_an" : null);
+	const speechAct = isQuestionWord ? "interrogative" : "declarative";
 
 	return {
 		ok: true,
 		ast: {
 			type: "Sentence",
 			targetUnitId: targetId,
-			speechAct: "declarative",
+			speechAct,
 			politeness,
 			tense,
 			polarity,
@@ -1419,7 +1442,7 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 					negationUnit: (isShortAn || isShortMot) ? unit : null,
 					tense,
 					politeness,
-					speechAct: "declarative",
+					speechAct,
 					polarity,
 					negationType
 				}

@@ -61,6 +61,7 @@ function getUnitNaturalPhrase(unit) {
 	if (ko === "여기" || ko === "이곳") return "here";
 	if (ko === "거기" || ko === "그곳") return "there";
 	if (ko === "저기" || ko === "저곳") return "over there";
+	if (ko === "시간" && pos === "Noun") return "time";
 
 	let raw = enMeta.nat || enMeta.lit || unit[DATA_SCHEMA.English] || "";
 	raw = String(raw)
@@ -435,6 +436,7 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 
 	let vpStr = "";
 	let questionAux = "";
+	let whFront = "";
 	let conjPrefix = "";
 	let conjSuffix = "";
 
@@ -479,7 +481,7 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 		const vKo = verbUnit[DATA_SCHEMA.Korean] || "";
 		const isAction = verbUnit[DATA_SCHEMA.PartofSpeech] === "Action Verb";
 		const forms = getVerbEnForms(verbUnit);
-		const advPre = adverbParts.length > 0 ? adverbParts.join(" ") + " " : "";
+		let advPre = adverbParts.length > 0 ? adverbParts.join(" ") + " " : "";
 		adverbParts = []; // Consumed inside VP
 
 		// Special case: 있다 / 없다
@@ -501,15 +503,48 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 			if (gKo.includes("어지다")) {
 				const getV = tense === "past" ? "became" : (agr.singular && agr.person === 3 ? "becomes" : "become");
 				vpStr = `${getV} ${advPre}${forms.adj}`;
-			} else if (speechAct === "interrogative" && !isSubordinate && tense !== "future") {
-				questionAux = beV;
-				vpStr = `${polarity === "negative" ? "not " : ""}${advPre}${forms.adj}`;
+			} else if (speechAct === "interrogative" && !isSubordinate) {
+				const isHowMuch = advPre.startsWith("how much ") || advPre.startsWith("how-much ");
+				if (isHowMuch) {
+					whFront = `how ${forms.adj}`;
+					if (tense === "future") {
+						questionAux = "will";
+						vpStr = polarity === "negative" ? "not be" : "be";
+					} else {
+						questionAux = beV;
+						vpStr = polarity === "negative" ? "not" : "";
+					}
+				} else {
+					if (tense === "future") {
+						questionAux = "will";
+						vpStr = `${polarity === "negative" ? "not " : ""}be ${advPre}${forms.adj}`;
+					} else {
+						questionAux = beV;
+						vpStr = `${polarity === "negative" ? "not " : ""}${advPre}${forms.adj}`;
+					}
+				}
 			} else {
 				const negStr = polarity === "negative" ? " not" : "";
 				vpStr = `${beV}${negStr} ${advPre}${forms.adj}`;
 			}
 		} else {
 			// Action Verb
+			if (speechAct === "interrogative" && !isSubordinate) {
+				const isHowMuch = advPre.startsWith("how much ") || advPre.startsWith("how-much ");
+				const isWhy = advPre.startsWith("why ");
+				const isHow = advPre.startsWith("how ") && !isHowMuch;
+				if (isHowMuch) {
+					const isDuration = vKo === "걸리다" || vKo === "기다리다";
+					whFront = isDuration ? "how long" : "how much";
+					advPre = advPre.replace(/^how[- ]much\s*/i, "");
+				} else if (isWhy) {
+					whFront = "why";
+					advPre = advPre.replace(/^why\s*/i, "");
+				} else if (isHow) {
+					whFront = "how";
+					advPre = advPre.replace(/^how\s*/i, "");
+				}
+			}
 			if (conjPrefix === "in order to ") {
 				subjStr = "";
 				vpStr = `${advPre}${forms.base}`;
@@ -560,8 +595,13 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 			} else if (gKo.includes("었으면 좋겠다") || gKo.includes("면 좋겠다")) {
 				vpStr = `hope to ${advPre}${forms.base}`;
 			} else if (polarity === "negative") {
-				const doAux = tense === "past" ? "did not" : (agr.singular && agr.person === 3 ? "does not" : "do not");
-				vpStr = `${doAux} ${advPre}${forms.base}`;
+				if (speechAct === "interrogative" && !isSubordinate) {
+					questionAux = tense === "past" ? "did" : (agr.singular && agr.person === 3 ? "does" : "do");
+					vpStr = `not ${advPre}${forms.base}`;
+				} else {
+					const doAux = tense === "past" ? "did not" : (agr.singular && agr.person === 3 ? "does not" : "do not");
+					vpStr = `${doAux} ${advPre}${forms.base}`;
+				}
 			} else if (tense === "past") {
 				if (speechAct === "interrogative" && !isSubordinate) {
 					questionAux = "did";
@@ -592,14 +632,21 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 	const recipStr = recipientParts.join(" ");
 	const locStr = locationParts.join(" ");
 	const timeStr = timeParts.join(" ");
-	const discStr = discourseParts.length > 0 ? discourseParts.join(", ") + ", " : "";
+	// If discourse contains "why", front as wh-question word
+	const whyIdx = discourseParts.findIndex(d => d.toLowerCase() === "why");
+	if (whyIdx !== -1 && !whFront) {
+		whFront = "why";
+		discourseParts.splice(whyIdx, 1);
+	}
 
 	let coreParts = [];
-	if (questionAux) {
-		coreParts = [questionAux, subjStr, vpStr, objStr, recipStr, locStr, timeStr];
+	if (questionAux || whFront) {
+		coreParts = [whFront, questionAux, subjStr, vpStr, objStr, recipStr, locStr, timeStr];
 	} else {
 		coreParts = [subjStr, vpStr, objStr, recipStr, locStr, timeStr];
 	}
+
+	const discStr = discourseParts.length > 0 ? discourseParts.join(", ") + ", " : "";
 
 	const assembled = discStr + topicPrefix + coreParts.filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
 	return {
