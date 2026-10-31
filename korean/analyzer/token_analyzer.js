@@ -12,7 +12,7 @@
 const { DATA_SCHEMA, decomposeHangul, hasBatchim, getStem } =
 	(typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 
-const { PARTICLE_SPECS, findExactParticle, checkBatchimRequirement } =
+const { PARTICLE_SPECS, findExactParticle, checkBatchimRequirement, matchContractedParticle, matchPlainCopula } =
 	(typeof require !== 'undefined' ? require('./particles.js') : window);
 
 const { evaluateSyntaxFrame, disambiguateCandidates } =
@@ -56,6 +56,14 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			grammar: [{ text: particleText, pos: "Particle", unit: pUnit, gloss: pUnit ? pUnit[DATA_SCHEMA.English] : particleText }]
 		};
 	}
+
+	// 0.05 Contracted topic/object enclitics on nominals (e.g. 오빤 -> 오빠+는, 땐 -> 때+는, 난 -> 나+는, 넌 -> 너+는, 날 -> 나+를)
+	const contracted = matchContractedParticle(word, index, DATA_SCHEMA);
+	if (contracted) return contracted;
+
+	// 0.08 Noun + Plain Copula (이)다 (ID 56, e.g. 이때다 -> 이때+다, 시작이다 -> 시작+이다)
+	const plainCopula = matchPlainCopula(word, index, DATA_SCHEMA, hasBatchim);
+	if (plainCopula) return plainCopula;
 
 	// 0. Standalone particle (e.g. from punctuation or source spacing)
 	const exactSpec = (word !== "이" && word !== "하고" && word !== "와") ? findExactParticle(word) : null;

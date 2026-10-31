@@ -59,6 +59,10 @@ const PARTICLE_SPECS = Object.freeze([
 	{ text: "도", ids: [366], desc: "도 (Also / Too)" },
 	{ text: "의", ids: [856, 857], desc: "의 (Possessive / Relation)" },
 	{ text: "보다", ids: [680], desc: "보다 (Comparative particle)" },
+	{ text: "만큼", ids: [1469], desc: "만큼 (Extent / Degree delimiter)" },
+	{ text: "밖에", ids: [1522], desc: "밖에 (Restriction / Only with negative verb)" },
+	{ text: "에게서", ids: [1706], desc: "에게서 (Ablative / From person formal)" },
+	{ text: "한테서", ids: [1707], desc: "한테서 (Ablative / From person informal)" },
 	{ text: "쯤", ids: [653], desc: "쯤 (Approximation particle)" },
 	{ text: "만", ids: [1402], desc: "만 (Only)" },
 	{ text: "아", ids: [1834], desc: "아 / 야 (Vocative)", batchimReq: true },
@@ -215,12 +219,180 @@ function recognizeCompoundParticle(word, vocabByKo = null, options = {}) {
 	return null;
 }
 
+/**
+ * Decomposes contracted enclitics (topic particle -ㄴ or object particle -ㄹ)
+ * on vowel-final nominal stems into base lexical unit + particle.
+ *
+ * e.g. 오빤 (오빠+는), 땐 (때+는), 난 (나+는), 넌 (너+는), 전 (저+는),
+ *      우린 (우리+는), 여긴 (여기+는), 어젠 (어제+는),
+ *      날 (나+를), 널 (너+를), 뭘 (뭐+를)
+ */
+function matchContractedParticle(word, index, DATA_SCHEMA) {
+	if (!word || word.length === 0) return null;
+	const lastCode = word.charCodeAt(word.length - 1);
+	if (lastCode < 0xAC00 || lastCode > 0xD7A3) return null;
+	const final = (lastCode - 0xAC00) % 28;
+	const unitById = index.unitById;
+	const vocabByKo = index.vocabByKo;
+
+	// 1. Contracted Topic Particle: -ㄴ (from -는, ID 36)
+	if (final === 4) { // nieun coda
+		const uncontractedLast = String.fromCharCode(lastCode - 4);
+		const stem = word.slice(0, -1) + uncontractedLast;
+		if (vocabByKo.has(stem)) {
+			const cands = vocabByKo.get(stem).filter(u =>
+				u[DATA_SCHEMA.PartofSpeech] === 'Noun' ||
+				u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' ||
+				u[DATA_SCHEMA.PartofSpeech] === 'Bound Noun' ||
+				u[DATA_SCHEMA.PartofSpeech] === 'Number'
+			);
+			if (cands.length > 0) {
+				const nUnit = cands[0];
+				const topicUnit = unitById.get(36);
+				return {
+					surface: word,
+					category: "contracted_topic",
+					lexical: {
+						text: stem,
+						pos: nUnit[DATA_SCHEMA.PartofSpeech],
+						unit: nUnit,
+						missing: false,
+						gloss: nUnit[DATA_SCHEMA.English]
+					},
+					grammar: [{
+						text: "는",
+						pos: "Particle",
+						unit: topicUnit,
+						missing: !topicUnit,
+						gloss: topicUnit ? topicUnit[DATA_SCHEMA.English] : "topic particle (contracted ㄴ ID 36)"
+					}]
+				};
+			}
+		}
+	}
+
+	// 2. Contracted Object Particle: -ㄹ (from -를, ID 173)
+	if (final === 8) { // rieul coda
+		const uncontractedLast = String.fromCharCode(lastCode - 8);
+		const stem = word.slice(0, -1) + uncontractedLast;
+		if (stem === "나" || stem === "너" || stem === "뭐" || stem === "저" || stem === "누구") {
+			const cands = (vocabByKo.get(stem) || []).filter(u =>
+				u[DATA_SCHEMA.PartofSpeech] === 'Noun' ||
+				u[DATA_SCHEMA.PartofSpeech] === 'Pronoun'
+			);
+			if (cands.length > 0) {
+				const nUnit = cands[0];
+				const objUnit = unitById.get(173);
+				return {
+					surface: word,
+					category: "contracted_object",
+					lexical: {
+						text: stem,
+						pos: nUnit[DATA_SCHEMA.PartofSpeech],
+						unit: nUnit,
+						missing: false,
+						gloss: nUnit[DATA_SCHEMA.English]
+					},
+					grammar: [{
+						text: "를",
+						pos: "Particle",
+						unit: objUnit,
+						missing: !objUnit,
+						gloss: objUnit ? objUnit[DATA_SCHEMA.English] : "object particle (contracted ㄹ ID 173)"
+					}]
+				};
+			}
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Decomposes Noun + Plain Declarative Copula -(이)다 (ID 56).
+ *
+ * e.g. 이때다 (이때 + 다), 친구다 (친구 + 다), 학생이다 (학생 + 이다), 시작이다 (시작 + 이다)
+ */
+function matchPlainCopula(word, index, DATA_SCHEMA, hasBatchimFn) {
+	if (!word || word.length < 2 || !word.endsWith("다")) return null;
+	const unitById = index.unitById;
+	const vocabByKo = index.vocabByKo;
+
+	// Do not override verbs that exist in dictionary
+	if (vocabByKo.has(word)) return null;
+
+	let copulaStem = null;
+	let copulaText = "다";
+
+	// 1. Consonant-final noun + 이다 (e.g. 학생이다 -> 학생, 시작이다 -> 시작)
+	if (word.endsWith("이다") && word.length > 2) {
+		const candidate = word.slice(0, -2);
+		const units = (vocabByKo.get(candidate) || []).filter(u =>
+			u[DATA_SCHEMA.PartofSpeech] === 'Noun' ||
+			u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' ||
+			u[DATA_SCHEMA.PartofSpeech] === 'Bound Noun'
+		);
+		if (units.length > 0) {
+			copulaStem = candidate;
+			copulaText = "이다";
+		}
+	}
+
+	// 2. Vowel-final noun + 다 (e.g. 이때다 -> 이때, 친구다 -> 친구)
+	if (!copulaStem) {
+		const candidate = word.slice(0, -1);
+		const lastSyl = candidate.slice(-1);
+		if (!hasBatchimFn(lastSyl)) {
+			const units = (vocabByKo.get(candidate) || []).filter(u =>
+				u[DATA_SCHEMA.PartofSpeech] === 'Noun' ||
+				u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' ||
+				u[DATA_SCHEMA.PartofSpeech] === 'Bound Noun'
+			);
+			if (units.length > 0) {
+				copulaStem = candidate;
+				copulaText = "다";
+			}
+		}
+	}
+
+	if (copulaStem) {
+		const stemUnits = vocabByKo.get(copulaStem) || [];
+		const nUnit = stemUnits.find(u =>
+			u[DATA_SCHEMA.PartofSpeech] === 'Noun' ||
+			u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' ||
+			u[DATA_SCHEMA.PartofSpeech] === 'Bound Noun'
+		) || stemUnits[0];
+		const copulaUnit = unitById.get(56);
+		return {
+			surface: word,
+			category: "noun_copula",
+			lexical: {
+				text: copulaStem,
+				pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun",
+				unit: nUnit,
+				missing: !nUnit,
+				gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + copulaStem + ")"
+			},
+			grammar: [{
+				text: copulaText,
+				pos: "Verb Ending",
+				unit: copulaUnit,
+				gloss: copulaUnit ? copulaUnit[DATA_SCHEMA.English] : "is/are (copula ID 56)"
+			}]
+		};
+	}
+
+	return null;
+}
+
 if (typeof window !== 'undefined') {
 	window.PARTICLE_SPECS = PARTICLE_SPECS;
 	window.findExactParticle = findExactParticle;
 	window.checkBatchimRequirement = checkBatchimRequirement;
 	window.decomposeCompoundParticle = decomposeCompoundParticle;
 	window.recognizeCompoundParticle = recognizeCompoundParticle;
+	window.matchContractedParticle = matchContractedParticle;
+	window.matchPlainCopula = matchPlainCopula;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -229,7 +401,9 @@ if (typeof module !== 'undefined' && module.exports) {
 		findExactParticle,
 		checkBatchimRequirement,
 		decomposeCompoundParticle,
-		recognizeCompoundParticle
+		recognizeCompoundParticle,
+		matchContractedParticle,
+		matchPlainCopula
 	};
 }
 })();
