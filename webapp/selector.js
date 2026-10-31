@@ -488,6 +488,39 @@ class UnitSelectorView {
 		return nextVal;
 	}
 
+	speakKoreanSentence(text, buttonEl = null) {
+		if (!text) return;
+		if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+			return;
+		}
+		try {
+			window.speechSynthesis.cancel();
+			const cleanText = String(text).replace(/\[.*?\]/g, '').trim();
+			const utterance = new SpeechSynthesisUtterance(cleanText);
+			utterance.lang = 'ko-KR';
+			utterance.rate = 0.9;
+
+			const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+			if (Array.isArray(voices) && voices.length > 0) {
+				const koVoice = voices.find(v => v.lang === 'ko-KR' || v.lang.startsWith('ko'));
+				if (koVoice) {
+					utterance.voice = koVoice;
+				}
+			}
+
+			if (buttonEl) {
+				buttonEl.classList.add('is-speaking');
+				const cleanup = () => buttonEl.classList.remove('is-speaking');
+				utterance.onend = cleanup;
+				utterance.onerror = cleanup;
+			}
+
+			window.speechSynthesis.speak(utterance);
+		} catch (err) {
+			if (buttonEl) buttonEl.classList.remove('is-speaking');
+		}
+	}
+
 	selectUnitForDetails(unitId) {
 		this.selectedUnitId = unitId;
 		this.isEditingDetails = false;
@@ -1149,8 +1182,8 @@ class UnitSelectorView {
 
 			const litBadge = document.createElement('span');
 			litBadge.className = 'trans-mode-badge badge-literal';
-			litBadge.title = 'Direct translation in Korean SOV word & morpheme order — click any English pill to toggle unit in Practice Set';
-			litBadge.textContent = 'KR Order';
+			litBadge.title = 'Direct translation in Korean SOV word & morpheme order';
+			litBadge.textContent = 'KR ORDER';
 			litRow.appendChild(litBadge);
 
 			if (eojeols.length > 0) {
@@ -1197,7 +1230,7 @@ class UnitSelectorView {
 			const natBadge = document.createElement('span');
 			natBadge.className = 'trans-mode-badge badge-natural';
 			natBadge.title = 'Natural idiomatic English translation';
-			natBadge.textContent = 'Natural EN';
+			natBadge.textContent = 'NATURAL EN';
 			natRow.appendChild(natBadge);
 
 			const natText = document.createElement('span');
@@ -1205,12 +1238,19 @@ class UnitSelectorView {
 			natText.textContent = item.enNatural || item.en;
 			natRow.appendChild(natText);
 
-			if (item.pronunciation && item.pronunciation !== item.ko) {
-				const pronSpan = document.createElement('span');
-				pronSpan.className = 'sentence-pronunciation';
-				pronSpan.title = 'Standard Korean Pronunciation (표준 발음법)';
-				pronSpan.textContent = `[${item.pronunciation}]`;
-				natRow.appendChild(pronSpan);
+			const pronText = item.pronunciation || item.ko;
+			if (pronText) {
+				const pronBtn = document.createElement('button');
+				pronBtn.type = 'button';
+				pronBtn.className = 'sentence-pronunciation-btn';
+				pronBtn.title = `Standard Korean Pronunciation: [${pronText}]\nClick to listen (Speech Synthesis)`;
+				pronBtn.setAttribute('aria-label', `Listen to sentence pronunciation: ${pronText}`);
+				pronBtn.innerHTML = `<span class="pron-speaker-icon" aria-hidden="true">🔊</span> [${pronText}]`;
+				pronBtn.addEventListener('click', (e) => {
+					e.stopPropagation();
+					this.speakKoreanSentence(item.ko || pronText, pronBtn);
+				});
+				natRow.appendChild(pronBtn);
 			}
 
 			li.appendChild(natRow);
