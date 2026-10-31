@@ -2453,6 +2453,31 @@ body {
 	margin-top: 8px;
 }
 
+.scaffold-workflow-card {
+	padding: 10px 12px;
+	border-radius: 6px;
+	margin-bottom: 8px;
+	border: 1px solid var(--border-subtle);
+}
+
+.scaffold-workflow-card.agent-workflow {
+	background: rgba(56, 189, 248, 0.05);
+	border-color: rgba(56, 189, 248, 0.3);
+}
+
+.scaffold-workflow-card.manual-workflow {
+	background: rgba(245, 158, 11, 0.04);
+	border-color: rgba(245, 158, 11, 0.25);
+}
+
+.workflow-card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 4px;
+}
+
 .scaffold-instructions p {
 	margin: 4px 0;
 	font-size: 0.78rem;
