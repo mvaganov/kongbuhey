@@ -61,6 +61,8 @@ OPTIONS:
   --tokens, --lut        Show encoded Language Unit Tree tokens for generated sentences
   --pronunciation, --pr  Show phonetic pronunciation in brackets
   --seed <number>        Deterministic PRNG seed (default: Date.now() timestamp)
+  --sentence <number>    How many sentences to generate for each unit with ASTs (default: 3)
+  --eng <mode>           How to display English translations for ASTs (choices: none, enNat, enLit, all) (default: all)
   -h, --help             Show this help message
 
 EXAMPLES:
@@ -80,7 +82,18 @@ let modeOnlyLegacy = false;
 let targetPosFilter = null;
 let requestedTags = undefined;
 let cliSeed = null;
+let showEnglishTranslations = "all";
+let sentenceCount = 3;
 
+function showEnglishTranslationsTokenParse(val) {
+	switch (val.toLowerCase()) {
+		case "none": case "": showEnglishTranslations = ""; break;
+		case "ennat": showEnglishTranslations = "enNat"; break;
+		case "enlit": showEnglishTranslations = "enLit"; break;
+		case "all": showEnglishTranslations = "all"; break;
+		default: console.log("unknown `eng` value. should be none, enNat, enLit, or all (default)"); break;
+	}
+}
 if (process.argv.length > 2) {
 	for (let i = 2; i < process.argv.length; ++i) {
 		const arg = process.argv[i];
@@ -96,6 +109,22 @@ if (process.argv.length > 2) {
 		if (arg.startsWith('--seed=')) {
 			const val = parseInt(arg.slice(7), 10);
 			if (!isNaN(val)) cliSeed = val;
+			continue;
+		}
+		if (arg === '--sentence' || arg === '-sentence') {
+			sentenceCount = parseInt(process.argv[++i], 10);
+			continue;
+		}
+		if (arg.startsWith('--sentence=')) {
+			sentenceCount = parseInt(arg.slice(11), 10);
+			continue;
+		}
+		if (arg === '--eng' || arg === '-eng') {
+			showEnglishTranslationsTokenParse(process.argv[++i]);
+			continue;
+		}
+		if (arg.startsWith('--eng=')) {
+			showEnglishTranslationsTokenParse(arg.slice(6));
 			continue;
 		}
 		if (arg === '--tokens' || arg === '--token' || arg === '--lut' || arg === 'tokens') {
@@ -242,7 +271,7 @@ if (!modeOnlyLegacy) {
 		}
 
 		markUnitUsed(unit);
-		const genRes = generateSentencesForUnit(unit, 3, { allowedUnitIds: requestedTags?._ids });
+		const genRes = generateSentencesForUnit(unit, sentenceCount, { allowedUnitIds: requestedTags?._ids });
 		if (!genRes || !Array.isArray(genRes.sentences)) return;
 
 		const unitId = unit[DATA_SCHEMA.Id];
@@ -295,7 +324,12 @@ if (!modeOnlyLegacy) {
 			if (showTokens && Array.isArray(s.unitIds)) {
 				line += ` [${encodeLanguageUnitIds(s.unitIds)}]`;
 			}
-			line += `\n        enLit: "${s.enLiteral}"\n        enNat: "${s.enNatural}"\n`;
+			line += "\n";
+			switch (showEnglishTranslations) {
+				case "enLit": line += `        enLit: "${s.enLiteral}"\n`; break;
+				case "enNat": line += `        enNat: "${s.enNatural}"\n`; break;
+				case "all": line += `        enLit: "${s.enLiteral}"\n        enNat: "${s.enNatural}"\n`; break;
+			}
 			astOutputStr += line;
 		});
 	});
@@ -493,13 +527,11 @@ function generateCoverageReport(filter) {
 	reportLines.push(`Scope: ${scopeName}`);
 	reportLines.push(`In-Scope Units:  ${totalInScope}`);
 	reportLines.push(`Used Units:      ${usedCount} (${usedPct}%)`);
-	reportLines.push(`Unused Units:    ${unusedCount} (${unusedPct}%)`);
+	//reportLines.push(`Unused Units:    ${unusedCount} (${unusedPct}%)`);
 	reportLines.push(`Total Used Across All Curriculum Units: ${usedIds.size}/${KR_EN_languageUnits.length}`);
 	reportLines.push("--------------------------------------------------");
 
-	if (unusedInScope.length === 0) {
-		reportLines.push("All in-scope language units were used in sentence generation! (100% Coverage)");
-	} else {
+	if (unusedInScope.length !== 0) {
 		reportLines.push(`Unused Language Units in Scope (${unusedInScope.length}):`);
 		unusedInScope.forEach(unit => {
 			const id = String(unit[DATA_SCHEMA.Id]).padStart(4, ' ');
@@ -512,12 +544,27 @@ function generateCoverageReport(filter) {
 			reportLines.push(`  [ID ${id}] ${ko} (${pos}, ${src}) - "${en}"${tagStr}`);
 		});
 	}
-	reportLines.push("==================================================");
 
 	return { reportLines, usedCount, unusedCount, totalInScope, scopeName };
 }
 
 const coverage = generateCoverageReport(requestedTags);
+
+function reproduceThisRunInTerminal() {
+	let command = "node exhaustive.js";
+	let explicitSeedSet = false;
+	for (let i = 2; i < process.argv.length; ++i) {
+		let arg = process.argv[i];
+		if (arg == "-seed" || arg.startsWith("--seed")) {
+			explicitSeedSet = true;
+		}
+		command += ` ${arg}`;
+	}
+	if (!explicitSeedSet) {
+		command += ` --seed ${runSeed}`;
+	}
+	return command;
+}
 
 // =========================================================================
 // Assemble Triage Dashboard & Output Files
@@ -527,7 +574,7 @@ dashboardHeader += "============================================================
 dashboardHeader += "               EXHAUSTIVE TEST & LINGUISTIC TRIAGE DASHBOARD          \n";
 dashboardHeader += "======================================================================\n";
 dashboardHeader += `Scope:                    ${coverage.scopeName}\n`;
-dashboardHeader += `Seed:                     ${runSeed} (Reproduce with: node exhaustive.js --seed ${runSeed})\n`;
+dashboardHeader += `Seed:                     ${runSeed} (Reproduce with: ${reproduceThisRunInTerminal()})\n`;
 dashboardHeader += `Total Sentences Checked:  ${validatedSentencesCount.toLocaleString()} (AST: ${astGeneratedCount}, Templates: ${legacyGeneratedCount})\n`;
 dashboardHeader += `Validation Errors:        ${validationErrors}\n`;
 dashboardHeader += `Validation Warnings:      ${validationWarnings}\n`;
@@ -535,15 +582,14 @@ dashboardHeader += `Unit Curriculum Coverage: ${coverage.usedCount}/${coverage.t
 dashboardHeader += "======================================================================\n\n";
 
 dashboardHeader += "----------------------------------------------------------------------\n";
-dashboardHeader += `>>> LLM AGENT TRIAGE QUEUE (${triageQueue.length} flagged sentences requiring inspection) <<<\n`;
+dashboardHeader += `>>> LLM AGENT TRIAGE QUEUE <<<\n`;
 if (triageQueue.length > 0) {
-	dashboardHeader += `>>> Run Seed: ${runSeed} (To reproduce: node exhaustive.js --seed ${runSeed}) <<<\n`;
+	dashboardHeader += `>>> Run Seed: ${runSeed} (To reproduce: ${reproduceThisRunInTerminal()}) <<<\n`;
 }
 dashboardHeader += "----------------------------------------------------------------------\n";
 
 if (triageQueue.length === 0) {
-	dashboardHeader += "All generated sentences passed grammatical, morphological, and valency verification.\n";
-	dashboardHeader += "No items in triage queue.\n";
+	dashboardHeader += "No items in automated triage queue.\n";
 } else {
 	triageQueue.forEach((item, qIdx) => {
 		const flag = item.errors.length > 0 ? "[FAIL]" : "[WARN]";
@@ -560,7 +606,6 @@ if (triageQueue.length === 0) {
 		});
 	});
 }
-dashboardHeader += "----------------------------------------------------------------------\n\n";
 
 let fullFileContent = dashboardHeader;
 
