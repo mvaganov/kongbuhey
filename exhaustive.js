@@ -63,6 +63,7 @@ OPTIONS:
   --seed <number>        Deterministic PRNG seed (default: Date.now() timestamp)
   --sentence <number>    How many sentences to generate for each unit with ASTs (default: 3)
   --eng <mode>           How to display English translations for ASTs (choices: none, enNat, enLit, all) (default: all)
+  -o, --output <filename>Output file
   -h, --help             Show this help message
 
 EXAMPLES:
@@ -84,6 +85,7 @@ let requestedTags = undefined;
 let cliSeed = null;
 let showEnglishTranslations = "all";
 let sentenceCount = 3;
+let outputFile = undefined;
 
 function showEnglishTranslationsTokenParse(val) {
 	switch (val.toLowerCase()) {
@@ -117,6 +119,14 @@ if (process.argv.length > 2) {
 		}
 		if (arg.startsWith('--sentence=')) {
 			sentenceCount = parseInt(arg.slice(11), 10);
+			continue;
+		}
+		if (arg === '--output' || arg === '-o') {
+			outputFile = process.argv[++i];
+			continue;
+		}
+		if (arg.startsWith('--output=')) {
+			outputFile = arg.slice(9);
 			continue;
 		}
 		if (arg === '--eng' || arg === '-eng') {
@@ -647,7 +657,8 @@ if (targetPosFilter) {
 	tagLabel += (tagLabel ? '_' : '') + targetPosFilter;
 }
 
-const outputFilename = tagLabel ? `exhaustive_output_${tagLabel}.txt` : 'exhaustive_output.txt';
+const outputFilename = outputFile ? outputFile :
+	tagLabel ? `exhaustive_output_${tagLabel}.txt` : 'exhaustive_output.txt';
 fs.writeFileSync('exhaustive_output.txt', fullFileContent, 'utf8');
 if (outputFilename !== 'exhaustive_output.txt') {
 	fs.writeFileSync(outputFilename, fullFileContent, 'utf8');
