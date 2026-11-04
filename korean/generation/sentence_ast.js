@@ -713,7 +713,9 @@ function realizeConstituentKo(constituent, clauseContext = {}) {
 				topic: particleType === "topic"
 			})
 			: primaryUnit[DATA_SCHEMA.Korean];
-		if (determinerUnit) {
+		if (constituent.modifierSurfaceKo) {
+			surfaceKo = `${constituent.modifierSurfaceKo} ${baseWithParticle}`;
+		} else if (determinerUnit) {
 			surfaceKo = `${determinerUnit[DATA_SCHEMA.Korean]} ${baseWithParticle}`;
 		} else {
 			surfaceKo = baseWithParticle;

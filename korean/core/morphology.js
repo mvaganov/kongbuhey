@@ -133,6 +133,47 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 	const nounUnit = getNounUnit(noun);
 	const nounKo = typeof noun === 'string' ? noun : (nounUnit ? nounUnit[DATA_SCHEMA.Korean] : "");
 	if (!nounKo) return "";
+	// Pronoun clitic allomorphy (저/제, 나/내, 너/네)
+	if (nounKo === "저" || nounKo === "제") {
+		if (particleType === "subject" || particleType === "nominative" || particleType === "sub") {
+			return "제가";
+		}
+		if (particleType === "topic") {
+			return "저는";
+		}
+		if (particleType === "object" || particleType === "accusative" || particleType === "obj") {
+			return "저를";
+		}
+		if (particleType === "dative" || particleType === "dative_person" || particleType === "dative_animate") {
+			return (options.spoken === true || options.formality === "spoken") ? "저한테" : "저에게";
+		}
+	} else if (nounKo === "나" || nounKo === "내") {
+		if (particleType === "subject" || particleType === "nominative" || particleType === "sub") {
+			return "내가";
+		}
+		if (particleType === "topic") {
+			return "나는";
+		}
+		if (particleType === "object" || particleType === "accusative" || particleType === "obj") {
+			return "나를";
+		}
+		if (particleType === "dative" || particleType === "dative_person" || particleType === "dative_animate") {
+			return (options.spoken === true || options.formality === "spoken") ? "나한테" : "나에게";
+		}
+	} else if (nounKo === "너" || nounKo === "네") {
+		if (particleType === "subject" || particleType === "nominative" || particleType === "sub") {
+			return "네가";
+		}
+		if (particleType === "topic") {
+			return "너는";
+		}
+		if (particleType === "object" || particleType === "accusative" || particleType === "obj") {
+			return "너를";
+		}
+		if (particleType === "dative" || particleType === "dative_person" || particleType === "dative_animate") {
+			return (options.spoken === true || options.formality === "spoken") ? "너한테" : "너에게";
+		}
+	}
 
 	const lastChar = nounKo.trim().slice(-1);
 	const hasB = hasBatchim(lastChar);
@@ -360,6 +401,20 @@ function conjugatePredicate(verbOrKo, formality = "polite", tense = "present") {
 	const verbUnit = getVerbUnit(verbOrKo);
 	const ko = typeof verbOrKo === 'string' ? verbOrKo : (verbUnit ? verbUnit[DATA_SCHEMA.Korean] : "");
 	if (!ko) return "";
+
+	if (ko === "뵙다" || ko === "뵈다") {
+		if (tense === "past") {
+			return (formality === "formal" || formality === "formal_polite") ? "뵀습니다" : "뵀어요";
+		}
+		if (tense === "future") {
+			return (formality === "formal" || formality === "formal_polite") ? "뵙겠습니다" : "뵐 거예요";
+		}
+		if (formality === "formal" || formality === "formal_polite") {
+			return "뵙습니다";
+		}
+		return "봬요";
+	}
+
 	const conj = verbUnit ? verbUnit[DATA_SCHEMA.Conjugation] : "";
 	const stem = getConjugatedStem(ko, conj);
 	const isAction = verbUnit ? verbUnit[DATA_SCHEMA.PartofSpeech] === "Action Verb" : isActionVerb(ko);
@@ -601,11 +656,20 @@ function isForbiddenForElder(wordOrKo) {
 }
 
 function isElderNoun(nounUnit, nounKo = "") {
+	// TODO is this already a set defined somewhere? could it be made into a set automatically generated on init?
+	const NON_PERSON_HONORIFICS = new Set(["말씀", "진지", "연세", "댁", "생신", "병환", "약주", "치하"]);
+	const name = nounKo || (nounUnit ? nounUnit[DATA_SCHEMA.Korean] : "");
+	if (name && NON_PERSON_HONORIFICS.has(name)) return false;
+
 	if (nounUnit) {
 		if (hasTag(nounUnit, "elder_noun", "honorific", "honorific_person", "elder", "kinship_elder")) return true;
+		if (hasTag(nounUnit, "concept", "communication", "food", "place", "attribute", "time") && !hasTag(nounUnit, "person", "family", "profession")) return false;
+		if (hasTag(nounUnit, "elder_noun", "honorific_person", "elder", "kinship_elder")) return true;
+		if (hasTag(nounUnit, "honorific") && hasTag(nounUnit, "person", "family", "profession", "subject_animate")) return true;
 		const sv = parseSemanticVector(nounUnit);
 		if (sv && sv.honorific === true) return true;
 		const name = nounUnit[DATA_SCHEMA.Korean];
+		if (sv && sv.honorific === true && hasTag(nounUnit, "person", "family", "profession", "subject_animate")) return true;
 		if (state.ELDER_NOUN_TITLES.has(name) || (name && name.endsWith('님') && hasTag(nounUnit, "person"))) return true;
 	}
 	if (nounKo) {

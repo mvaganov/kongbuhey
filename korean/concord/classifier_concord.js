@@ -97,6 +97,28 @@ function getMatchingNounsForClassifier(classifierOrUnit) {
 	const ko = typeof classifierOrUnit === 'string' ? classifierOrUnit : (classifierOrUnit ? classifierOrUnit[DATA_SCHEMA.Korean] : "");
 	const getWords = dataModule.getWords || (typeof window !== 'undefined' ? window.getWords : () => []);
 	const allNouns = getWords("Noun").filter(n => !hasTag(n, "measureWord") && !hasTag(n, "counter"));
+	if (ko === "살" || ko === "세") {
+		return allNouns.filter(n => ["아이", "아기", "조카", "동생", "남동생", "여동생", "학생", "친구", "딸", "아들"].includes(n[DATA_SCHEMA.Korean]) || (hasTag(n, "child", "junior") && !hasTag(n, "elder", "elder_noun") && !["어른", "노인", "연세", "나이"].includes(n[DATA_SCHEMA.Korean])));
+	}
+	if (ko === "대") {
+		return allNouns.filter(n => hasTag(n, "vehicle", "electronics", "machine", "appliance") && !hasTag(n, "ticket", "travel", "activity"));
+	}
+	if (ko === "채") {
+		return allNouns.filter(n => (hasTag(n, "building") || ["집", "하숙집", "빌딩", "건물", "아파트", "단독주택"].includes(n[DATA_SCHEMA.Korean])) && !hasTag(n, "finance", "currency", "money", "expense"));
+	}
+	if (ko === "호") {
+		return allNouns.filter(n => ["교실", "사무실", "호실", "연구실", "회의실", "강의실", "기숙사", "방"].includes(n[DATA_SCHEMA.Korean]) && !["욕실", "베란다", "부엌", "거실", "현관", "마당"].includes(n[DATA_SCHEMA.Korean]));
+	}
+	if (ko === "학년") {
+		return allNouns.filter(n => ["초등학교", "중학교", "고등학교", "대학교", "학생"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "school"));
+	}
+	if (ko === "편") {
+		return allNouns.filter(n => ["영화", "드라마", "시", "소설", "비디오"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "media_work", "film", "literature"));
+	}
+	if (ko === "%") {
+		return allNouns.filter(n => ["할인", "이자율", "확률", "비율", "성공률"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "rate_proportion", "discount", "finance"));
+	}
+
 	const spec = state.CLASSIFIER_NOUN_SPECS.find(s => s.classifier === ko || (s.unit && s.unit[DATA_SCHEMA.Korean] === ko));
 
 	if (!spec) {

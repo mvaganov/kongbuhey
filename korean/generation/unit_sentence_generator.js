@@ -104,7 +104,14 @@ function filterBySet(candidates, options = {}, targetId = null) {
 function getAllUnitsOfPos(pos, options = {}, targetId = null) {
 	const getWords = dataModule.getWords || (typeof window !== 'undefined' ? window.getWords : () => []);
 	const raw = getWords(pos) || [];
-	return filterBySet(raw, options, targetId);
+	let filtered = filterBySet(raw, options, targetId);
+	if (pos === "Descriptive Verb" && !options.includeCopula) {
+		filtered = filtered.filter(u => u[DATA_SCHEMA.Korean] !== "이다" && u[DATA_SCHEMA.Id] !== 55);
+	}
+	if (pos === "Noun" && !options.includeBoundNominals) {
+		filtered = filtered.filter(u => !hasTag(u, "modifier_root", "bound_noun") && u[DATA_SCHEMA.Korean] !== "데" && !u[DATA_SCHEMA.Korean].endsWith("적"));
+	}
+	return filtered;
 }
 
 /**
@@ -127,10 +134,11 @@ function selectSubjectUnit(options = {}, targetId = null, preferElder = false) {
 	if (preferElder) {
 		const elders = nouns.filter(
 			n => isElderNoun(n)
-				&& hasTag(n, "person", "family", "profession", "kinship_elder", "elder", "elder_noun", "honorific_person")
 				&& !NON_AGENT_PERSON_WORDS.has(n[DATA_SCHEMA.Korean])
 		);
 		if (elders.length > 0) return pickRandom(elders);
+		const respectNouns = nouns.filter(n => (hasTag(n, "profession", "job", "status") || n[DATA_SCHEMA.Korean].endsWith("님")) && !NON_AGENT_PERSON_WORDS.has(n[DATA_SCHEMA.Korean]));
+		if (respectNouns.length > 0) return pickRandom(respectNouns);
 	}
 
 	const personNouns = nouns.filter(
@@ -220,13 +228,31 @@ function selectArgumentForActionVerb(verbUnit, options = {}, targetId = null) {
 	const particleType = getVerbParticleType(verbUnit);
 
 	let candidates = [];
-	if (sd && sd.req === "liquid") {
+	if (["삶다", "굽다", "볶다", "튀기다", "다지다", "썰다"].includes(verbKo)) {
 		candidates = getAllUnitsOfPos("Noun", options, targetId).filter(
-			n => hasTag(n, "liquid", "drink", "water") || parseSemanticData(n).domain === "liquid"
+			n => (hasTag(n, "meat", "fish", "vegetable", "solid_food", "ingredient", "food") || ["고기", "생선", "채소", "라면", "돼지고기", "소고기", "닭고기", "달걀", "감자", "양파"].includes(n[DATA_SCHEMA.Korean])) &&
+			!hasTag(n, "drink", "liquid", "beverage", "soup", "stew", "place", "facility", "restaurant") &&
+			!["물", "주스", "콜라", "사이다", "커피", "차", "술", "맥주", "우유", "뷔페", "식당", "설렁탕", "미역국", "된장찌개", "김치찌개"].includes(n[DATA_SCHEMA.Korean])
+		);
+	} else if (verbKo === "끓이다") {
+		candidates = getAllUnitsOfPos("Noun", options, targetId).filter(
+			n => ["물", "라면", "찌개", "국", "탕", "차", "보리차", "설렁탕", "미역국", "된장찌개", "김치찌개"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "soup", "stew", "boilable_liquid")
+		);
+	} else if (verbKo === "마시다" || (sd && sd.req === "liquid")) {
+		candidates = getAllUnitsOfPos("Noun", options, targetId).filter(
+			n => hasTag(n, "liquid", "drink", "water", "beverage") || ["물", "주스", "콜라", "사이다", "커피", "차", "술", "맥주", "우유"].includes(n[DATA_SCHEMA.Korean]) || parseSemanticData(n).domain === "liquid"
+		);
+	} else if (verbKo === "깨다" || verbKo === "깨뜨리다") {
+		candidates = getAllUnitsOfPos("Noun", options, targetId).filter(
+			n => ["유리", "거울", "접시", "컵", "그릇", "달걀", "잠"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "fragile", "dish", "glasswear")
+		);
+	} else if (verbKo === "그만두다") {
+		candidates = getAllUnitsOfPos("Noun", options, targetId).filter(
+			n => ["일", "직장", "회사", "공부", "운동", "아르바이트", "담배", "술"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "job", "work", "habit", "study")
 		);
 	} else if (hasTag(verbUnit, "cooking") && !sd.collocation_filter) {
 		candidates = getAllUnitsOfPos("Noun", options, targetId).filter(
-			n => hasTag(n, "food", "drink", "cooking", "liquid", "ingredient")
+			n => hasTag(n, "food", "ingredient", "meat", "vegetable") && !hasTag(n, "drink", "liquid", "place", "facility")
 		);
 	}
 	if (candidates.length === 0) {
@@ -278,11 +304,62 @@ const GENERAL_EVALUATIVE_FALLBACK_KOREAN = new Set([
 function selectActionVerbForNoun(nounUnit, options = {}, targetId = null) {
 	const allAVs = getAllUnitsOfPos("Action Verb", options, targetId);
 	if (allAVs.length === 0) return null;
-
-	if (hasTag(nounUnit, "teeth") || nounUnit[DATA_SCHEMA.Korean] === "이") {
+	const nounKo = nounUnit[DATA_SCHEMA.Korean] || "";
+	if (hasTag(nounUnit, "teeth") || nounKo === "이") {
 		const teethAVs = allAVs.filter(av => ["닦다", "치료하다", "뽑다"].includes(av[DATA_SCHEMA.Korean]));
 		if (teethAVs.length > 0) return pickRandom(teethAVs);
 	}
+
+	if (nounKo === "잠") {
+		const sleepAVs = allAVs.filter(av => ["자다", "깨다", "줄이다"].includes(av[DATA_SCHEMA.Korean]));
+		if (sleepAVs.length > 0) return pickRandom(sleepAVs);
+	}
+
+	if (nounKo === "길이") {
+		const lengthAVs = allAVs.filter(av => ["재다", "보다", "줄이다", "늘이다", "확인하다", "측정하다"].includes(av[DATA_SCHEMA.Korean]));
+		if (lengthAVs.length > 0) return pickRandom(lengthAVs);
+	}
+
+	if (nounKo === "소화") {
+		const digestionAVs = allAVs.filter(av => ["돕다", "시키다", "확인하다"].includes(av[DATA_SCHEMA.Korean]));
+		if (digestionAVs.length > 0) return pickRandom(digestionAVs);
+	}
+
+	if (nounKo === "기온") {
+		const tempAVs = allAVs.filter(av => ["확인하다", "재다", "보다", "알아보다", "측정하다"].includes(av[DATA_SCHEMA.Korean]));
+		if (tempAVs.length > 0) return pickRandom(tempAVs);
+	}
+
+	if (nounKo === "기분") {
+		const moodAVs = allAVs.filter(av => ["풀다", "알다", "이해하다", "생각하다", "바꾸다"].includes(av[DATA_SCHEMA.Korean]));
+		if (moodAVs.length > 0) return pickRandom(moodAVs);
+	}
+
+	if (nounKo === "휴대") {
+		const carryAVs = allAVs.filter(av => ["하다", "돕다"].includes(av[DATA_SCHEMA.Korean]));
+		if (carryAVs.length > 0) return pickRandom(carryAVs);
+	}
+
+	if (nounKo === "강남스타일") {
+		const styleAVs = allAVs.filter(av => ["따라하다", "추다", "부르다", "듣다", "보다", "좋아하다"].includes(av[DATA_SCHEMA.Korean]));
+		if (styleAVs.length > 0) return pickRandom(styleAVs);
+	}
+
+	if (hasTag(nounUnit, "soup", "stew") || ["설렁탕", "미역국", "된장찌개", "김치찌개"].includes(nounKo)) {
+		const soupAVs = allAVs.filter(av => ["먹다", "끓이다", "데우다", "주문하다", "좋아하다", "맛보다"].includes(av[DATA_SCHEMA.Korean]));
+		if (soupAVs.length > 0) return pickRandom(soupAVs);
+	}
+
+	if (hasTag(nounUnit, "drink", "liquid", "beverage") || ["물", "주스", "콜라", "사이다", "커피", "차", "술", "맥주", "우유"].includes(nounKo)) {
+		const drinkAVs = allAVs.filter(av => ["마시다", "사다", "주문하다", "따르다", "좋아하다"].includes(av[DATA_SCHEMA.Korean]));
+		if (drinkAVs.length > 0) return pickRandom(drinkAVs);
+	}
+
+	const isNonCommodity = hasTag(nounUnit,
+		"abstract", "health", "dimension_metric", "bodily_process", "meteorological_metric",
+		"psychological_state", "physiological_state", "cultural_concept", "verbal_property",
+		"bodyPart", "emotion", "personality"
+	) || ["잠", "휴대", "길이", "소화", "기온", "기분", "마음", "성격", "손", "코", "얼굴", "허리", "강남스타일"].includes(nounKo);
 
 	const nounId = nounUnit[DATA_SCHEMA.Id];
 	// Find verbs whose collocation candidates include this noun
@@ -315,7 +392,10 @@ function selectActionVerbForNoun(nounUnit, options = {}, targetId = null) {
 	});
 
 	if (cleanTransitiveAVs.length > 0) {
-		const generalAVs = cleanTransitiveAVs.filter(av => GENERAL_TRANSITIVE_FALLBACK_KOREAN.has(av[DATA_SCHEMA.Korean]));
+		let generalAVs = cleanTransitiveAVs.filter(av => GENERAL_TRANSITIVE_FALLBACK_KOREAN.has(av[DATA_SCHEMA.Korean]));
+		if (isNonCommodity) {
+			generalAVs = generalAVs.filter(av => !["사다", "팔다", "바꾸다", "주문하다"].includes(av[DATA_SCHEMA.Korean]));
+		}
 		if (generalAVs.length > 0) return pickRandom(generalAVs);
 		return pickRandom(cleanTransitiveAVs);
 	}
@@ -331,9 +411,50 @@ function selectDescriptiveVerbForNoun(nounUnit, options = {}, targetId = null) {
 	const allDVs = getAllUnitsOfPos("Descriptive Verb", options, targetId);
 	if (allDVs.length === 0) return null;
 
-	if (hasTag(nounUnit, "teeth") || nounUnit[DATA_SCHEMA.Korean] === "이") {
+	const nounKo = nounUnit[DATA_SCHEMA.Korean] || "";
+	if (hasTag(nounUnit, "teeth") || nounKo === "이") {
 		const teethDVs = allDVs.filter(dv => ["아프다", "시리다", "좋다", "튼튼하다", "하얗다"].includes(dv[DATA_SCHEMA.Korean]));
 		if (teethDVs.length > 0) return pickRandom(teethDVs);
+	}
+
+	if (nounKo === "잠") {
+		const sleepDVs = allDVs.filter(dv => ["달다", "부족하다", "많다", "적다", "깊다"].includes(dv[DATA_SCHEMA.Korean]));
+		if (sleepDVs.length > 0) return pickRandom(sleepDVs);
+	}
+
+	if (nounKo === "길이") {
+		const lenDVs = allDVs.filter(dv => ["길다", "짧다", "적당하다", "좋다"].includes(dv[DATA_SCHEMA.Korean]));
+		if (lenDVs.length > 0) return pickRandom(lenDVs);
+	}
+
+	if (nounKo === "소화") {
+		const digDVs = allDVs.filter(dv => ["잘되다", "안되다", "좋다", "힘들다"].includes(dv[DATA_SCHEMA.Korean]));
+		if (digDVs.length > 0) return pickRandom(digDVs);
+	}
+
+	if (nounKo === "기온") {
+		const tempDVs = allDVs.filter(dv => ["높다", "낮다", "따뜻하다", "쌀쌀하다"].includes(dv[DATA_SCHEMA.Korean]));
+		if (tempDVs.length > 0) return pickRandom(tempDVs);
+	}
+
+	if (nounKo === "기분") {
+		const moodDVs = allDVs.filter(dv => ["좋다", "나쁘다", "상쾌하다", "괜찮다"].includes(dv[DATA_SCHEMA.Korean]));
+		if (moodDVs.length > 0) return pickRandom(moodDVs);
+	}
+
+	if (nounKo === "휴대") {
+		const carryDVs = allDVs.filter(dv => ["편하다", "쉽다", "좋다"].includes(dv[DATA_SCHEMA.Korean]));
+		if (carryDVs.length > 0) return pickRandom(carryDVs);
+	}
+
+	if (nounKo === "강남스타일") {
+		const styleDVs = allDVs.filter(dv => ["유명하다", "재미있다", "신나다"].includes(dv[DATA_SCHEMA.Korean]));
+		if (styleDVs.length > 0) return pickRandom(styleDVs);
+	}
+
+	if (hasTag(nounUnit, "soup", "stew") || ["설렁탕", "미역국", "된장찌개", "김치찌개"].includes(nounKo)) {
+		const soupDVs = allDVs.filter(dv => ["맛있다", "뜨겁다", "따뜻하다", "싱겁다", "짜다", "얼큰하다"].includes(dv[DATA_SCHEMA.Korean]));
+		if (soupDVs.length > 0) return pickRandom(soupDVs);
 	}
 
 	const nounId = nounUnit[DATA_SCHEMA.Id];
@@ -348,6 +469,9 @@ function selectDescriptiveVerbForNoun(nounUnit, options = {}, targetId = null) {
 		if (bodyDVs.length > 0) return pickRandom(bodyDVs);
 	}
 
+	const isPricingEligible = hasTag(nounUnit, "commercial_item", "commodity", "goods", "merchandise", "fee", "currency", "food", "clothing", "ticket", "commerce") ||
+		["물건", "선물", "음식", "옷", "표", "가방", "모자", "신발", "시계", "자동차"].includes(nounKo);
+
 	// Filter out human appearance/weather adjectives when falling back
 	const cleanDVs = allDVs.filter(dv => {
 		const ko = dv[DATA_SCHEMA.Korean];
@@ -358,7 +482,13 @@ function selectDescriptiveVerbForNoun(nounUnit, options = {}, targetId = null) {
 	});
 
 	if (cleanDVs.length > 0) {
-		const generalDVs = cleanDVs.filter(dv => GENERAL_EVALUATIVE_FALLBACK_KOREAN.has(dv[DATA_SCHEMA.Korean]));
+		let generalDVs = cleanDVs.filter(dv => GENERAL_EVALUATIVE_FALLBACK_KOREAN.has(dv[DATA_SCHEMA.Korean]));
+		if (!isPricingEligible) {
+			generalDVs = generalDVs.filter(dv => !["비싸다", "싸다"].includes(dv[DATA_SCHEMA.Korean]));
+		}
+		if (hasTag(nounUnit, "person", "family")) {
+			generalDVs = generalDVs.filter(dv => !["울퉁불퉁하다", "매끄럽다", "비싸다", "싸다", "맑다", "흐리다"].includes(dv[DATA_SCHEMA.Korean]));
+		}
 		if (generalDVs.length > 0) return pickRandom(generalDVs);
 		return pickRandom(cleanDVs);
 	}
@@ -445,7 +575,47 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
 		}
 	}
 
-	if (arg.nounUnit) {
+	const verbKo = verbUnit[DATA_SCHEMA.Korean] || "";
+	if (verbKo === "놓다") {
+		const furnitureOrPlace = pickRandom(getAllUnitsOfPos("Noun", options, targetId).filter(n => ["책상", "탁자", "식탁", "의자", "바닥", "침대"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "furniture", "place")));
+		const smallObj = pickRandom(getAllUnitsOfPos("Noun", options, targetId).filter(n => ["책", "가방", "모자", "휴대전화", "컵", "그릇", "열쇠"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "object")));
+		if (furnitureOrPlace && smallObj) {
+			constituents.push({
+				role: "location",
+				nounUnit: furnitureOrPlace,
+				particleType: "location_static"
+			});
+			constituents.push({
+				role: "object",
+				nounUnit: smallObj,
+				particleType: "object"
+			});
+		}
+	} else if (verbKo === "들어있다") {
+		const container = pickRandom(getAllUnitsOfPos("Noun", options, targetId).filter(n => ["가방", "상자", "주머니", "지갑", "방"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "container")));
+		const content = pickRandom(getAllUnitsOfPos("Noun", options, targetId).filter(n => ["책", "돈", "지갑", "열쇠", "편지"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "object")));
+		if (container && content) {
+			constituents.push({
+				role: "location",
+				nounUnit: container,
+				particleType: "location_static"
+			});
+			constituents.push({
+				role: "subject",
+				nounUnit: content,
+				particleType: "subject"
+			});
+		}
+	} else if (["결석하다", "출석하다", "입학하다"].includes(verbKo)) {
+		const instNoun = pickRandom(getAllUnitsOfPos("Noun", options, targetId).filter(n => ["수업", "학교", "대학교", "학원"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "school", "institution", "academic")));
+		if (instNoun) {
+			constituents.push({
+				role: "location",
+				nounUnit: instNoun,
+				particleType: "location_static"
+			});
+		}
+	} else if (arg.nounUnit) {
 		constituents.push({
 			role: arg.role,
 			nounUnit: arg.nounUnit,
@@ -498,12 +668,57 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
  */
 function buildASTForDescriptiveVerb(dvUnit, variationIndex = 0, options = {}) {
 	const targetId = dvUnit[DATA_SCHEMA.Id];
+	const dvKo = dvUnit[DATA_SCHEMA.Korean] || "";
 	const tenses = ["present", "past", "present"];
 	const tense = options.tense || tenses[variationIndex % tenses.length];
 	const politeness = options.politeness || (variationIndex === 2 ? "formal_high" : "polite");
 
+	// Copula 이다 (Unit 55) -> requires complement noun and subject
+	if (dvKo === "이다" || targetId === 55) {
+		const allNouns = getAllUnitsOfPos("Noun", options, targetId).filter(
+			n => !hasTag(n, "measureWord", "counter", "position") && n[DATA_SCHEMA.Korean] !== "이"
+		);
+		const complementCandidates = allNouns.filter(n => hasTag(n, "profession", "job", "status", "role", "object", "food", "animal", "fruit"));
+		const complementNoun = (complementCandidates.length > 0 ? pickRandom(complementCandidates) : pickRandom(allNouns));
+		const deicticOrPerson = pickRandom(getAllUnitsOfPos("Pronoun", options, targetId).filter(p => ["이것", "그것", "저것", "이거", "그거", "저거", "저", "나", "우리"].includes(p[DATA_SCHEMA.Korean]))) || selectSubjectUnit(options, targetId, false);
+		const subjUnit = deicticOrPerson || pickRandom(allNouns);
+
+		const constituents = [];
+		if (subjUnit) {
+			constituents.push({
+				role: "topic",
+				nounUnit: subjUnit,
+				particleType: "topic"
+			});
+		}
+
+		return {
+			ok: true,
+			ast: {
+				type: "Sentence",
+				targetUnitId: targetId,
+				speechAct: "declarative",
+				politeness,
+				tense,
+				polarity: "affirmative",
+				clauses: [{
+					constituents,
+					predicate: {
+						role: "predicate",
+						predType: "copula",
+						verbUnit: dvUnit,
+						copulaNounUnit: complementNoun,
+						tense,
+						politeness,
+						speechAct: "declarative",
+						polarity: "affirmative"
+					}
+				}]
+			}
+		};
+	}
+
 	let subjCandidates = filterBySet(getSubjectCandidatesForDescriptiveVerb(dvUnit), options, targetId);
-	const dvKo = dvUnit[DATA_SCHEMA.Korean] || "";
 	if (!["아프다", "시리다", "좋다", "튼튼하다"].includes(dvKo) && !hasTag(dvUnit, "teeth")) {
 		subjCandidates = subjCandidates.filter(u => u[DATA_SCHEMA.Korean] !== "이");
 	}
@@ -601,11 +816,23 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 			} else if (ko === "잔" || ko === "병") {
 				compatibleNouns = allN.filter(n => hasTag(n, "drink", "beverage", "liquid"));
 			} else if (ko === "대") {
-				compatibleNouns = allN.filter(n => hasTag(n, "vehicle", "electronics", "machine", "appliance"));
+				compatibleNouns = allN.filter(n => hasTag(n, "vehicle", "electronics", "machine", "appliance") && !hasTag(n, "ticket", "travel", "activity"));
 			} else if (ko === "벌") {
 				compatibleNouns = allN.filter(n => hasTag(n, "clothing", "clothes"));
 			} else if (ko === "켤레") {
 				compatibleNouns = allN.filter(n => hasTag(n, "footwear", "shoes"));
+			} else if (ko === "살" || ko === "세") {
+				compatibleNouns = allN.filter(n => ["아이", "아기", "학생", "동생", "조카", "친구"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "child", "junior"));
+			} else if (ko === "채") {
+				compatibleNouns = allN.filter(n => ["집", "하숙집", "빌딩", "건물", "아파트"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "building", "housing"));
+			} else if (ko === "호") {
+				compatibleNouns = allN.filter(n => ["방", "교실", "사무실", "호실"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "room", "office"));
+			} else if (ko === "학년") {
+				compatibleNouns = allN.filter(n => ["초등학교", "중학교", "고등학교", "대학교", "학생"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "school"));
+			} else if (ko === "편") {
+				compatibleNouns = allN.filter(n => ["영화", "드라마", "시", "소설", "비디오"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "media_work", "film", "literature"));
+			} else if (ko === "%") {
+				compatibleNouns = allN.filter(n => ["할인", "이자율", "확률", "비율", "성공률"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "rate_proportion", "discount", "finance"));
 			}
 			if (compatibleNouns.length === 0) {
 				compatibleNouns = allN.filter(
@@ -647,7 +874,9 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 				politeness,
 				tense: "present",
 				polarity: "affirmative",
+				honorific: false,
 				clauses: [{
+					honorific: false,
 					constituents: [{
 						role: isAction ? "object" : "subject",
 						nounUnit: itemNoun,
@@ -664,11 +893,142 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 						tense: "present",
 						politeness,
 						speechAct: "declarative",
+						polarity: "affirmative",
+						honorific: false
+					}
+				}]
+			}
+		};
+	}
+
+	// 1.5. Bound Noun 데 (Unit 2025)
+	if (ko === "데" || (hasTag(nominalUnit, "bound_noun") && ko === "데")) {
+		const actionVerbs = getAllUnitsOfPos("Action Verb", options, targetId).filter(v => ["가다", "살다", "쉬다", "만나다", "공부하다"].includes(v[DATA_SCHEMA.Korean]));
+		const descriptiveVerbs = getAllUnitsOfPos("Descriptive Verb", options, targetId).filter(v => ["좋다", "조용하다", "깨끗하다", "편하다", "따뜻하다"].includes(v[DATA_SCHEMA.Korean]));
+		const modVerb = (variationIndex % 2 === 0 ? pickRandom(descriptiveVerbs) : pickRandom(actionVerbs)) || pickRandom(descriptiveVerbs);
+		const modStem = modVerb ? getConjugatedStem(modVerb[DATA_SCHEMA.Korean], modVerb[DATA_SCHEMA.Conjugation]) : "좋";
+		const modEnding = (modVerb && modVerb[DATA_SCHEMA.PartofSpeech] === "Action Verb") ? "는" : "으/ㄴ";
+		const modKo = resolvePureMorphology(modStem + modEnding, state);
+		const subjUnit = selectSubjectUnit(options, targetId, false);
+		const mainVerb = pickRandom(getAllUnitsOfPos("Action Verb", options, targetId).filter(v => ["찾다", "가다", "좋아하다", "원하다", "알아보다"].includes(v[DATA_SCHEMA.Korean]))) || pickRandom(getAllUnitsOfPos("Action Verb", options, targetId));
+		const mainVerbKo = mainVerb ? mainVerb[DATA_SCHEMA.Korean] : "";
+		const isMotion = ["가다", "오다", "다니다", "살다"].includes(mainVerbKo);
+		const deRole = isMotion ? "location" : "object";
+		const deParticle = isMotion ? "location_static" : "object";
+
+		return {
+			ok: true,
+			ast: {
+				type: "Sentence",
+				targetUnitId: targetId,
+				speechAct: "declarative",
+				politeness,
+				tense,
+				polarity: "affirmative",
+				clauses: [{
+					constituents: [
+						{
+							role: "subject",
+							nounUnit: subjUnit,
+							particleType: "subject"
+						},
+						{
+							role: deRole,
+							nounUnit: nominalUnit,
+							modifierSurfaceKo: resolvePureMorphology(modKo, state),
+							particleType: deParticle
+						}
+					],
+					predicate: {
+						role: "predicate",
+						predType: "action",
+						verbUnit: mainVerb,
+						tense,
+						politeness,
+						speechAct: "declarative",
 						polarity: "affirmative"
 					}
 				}]
 			}
 		};
+	}
+
+	// 1.6. Sino-Korean -적 Bound Modifier Root (인간적, 감각적...)
+	if (hasTag(nominalUnit, "modifier_root") || (ko.endsWith("적") && hasTag(nominalUnit, "concept", "personality", "trait"))) {
+		const allNouns = getAllUnitsOfPos("Noun", options, targetId).filter(
+			n => !hasTag(n, "measureWord", "counter", "position") && n[DATA_SCHEMA.Korean] !== "이" && n[DATA_SCHEMA.Id] !== targetId
+		);
+		const headNounCandidates = allNouns.filter(n => hasTag(n, "person", "personality", "abstract", "art", "culture", "design", "general"));
+		const headNoun = headNounCandidates.length > 0 ? pickRandom(headNounCandidates) : pickRandom(allNouns);
+		const subjUnit = selectSubjectUnit(options, targetId, false);
+
+		if (variationIndex % 2 === 0) {
+			const adnominalKo = `${ko}인`;
+			return {
+				ok: true,
+				ast: {
+					type: "Sentence",
+					targetUnitId: targetId,
+					speechAct: "declarative",
+					politeness,
+					tense,
+					polarity: "affirmative",
+					clauses: [{
+						constituents: [
+							{
+								role: "subject",
+								nounUnit: subjUnit,
+								particleType: "subject"
+							},
+							{
+								role: "object",
+								nounUnit: headNoun,
+								modifierSurfaceKo: adnominalKo,
+								particleType: "object"
+							}
+						],
+						predicate: {
+							role: "predicate",
+							predType: "action",
+							verbUnit: pickRandom(getAllUnitsOfPos("Action Verb", options, targetId).filter(v => ["좋아하다", "원하다", "찾다", "바라다", "생각하다"].includes(v[DATA_SCHEMA.Korean]))) || selectActionVerbForNoun(headNoun, options, targetId),
+							tense,
+							politeness,
+							speechAct: "declarative",
+							polarity: "affirmative"
+						}
+					}]
+				}
+			};
+		} else {
+			return {
+				ok: true,
+				ast: {
+					type: "Sentence",
+					targetUnitId: targetId,
+					speechAct: "declarative",
+					politeness,
+					tense,
+					polarity: "affirmative",
+					clauses: [{
+						constituents: [{
+							role: "topic",
+							nounUnit: subjUnit || headNoun,
+							particleType: "topic"
+						}],
+						predicate: {
+							role: "predicate",
+							predType: "copula",
+							verbUnit: getAllUnitsOfPos("Descriptive Verb", options, targetId).find(v => v[DATA_SCHEMA.Korean] === "이다") || null,
+							copulaNounUnit: nominalUnit,
+							tense,
+							politeness,
+							speechAct: "declarative",
+							polarity: "affirmative"
+						}
+					}]
+				}
+			};
+		}
 	}
 
 	// 2. Spatial Position Noun (위, 아래, 앞, 뒤, 옆, 안, 밖, 사이)
@@ -870,10 +1230,11 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 			}
 		}
 
+		const isKyesida = verbUnit && (verbUnit[DATA_SCHEMA.Korean] === "계시다" || verbUnit[DATA_SCHEMA.Korean] === "있다");
 		constituents.push({
 			role: "location",
 			nounUnit: nominalUnit,
-			particleType: isMotionOrStatic ? "location_static" : "location_dynamic"
+			particleType: (isMotionOrStatic || isKyesida) ? "location_static" : "location_dynamic"
 		});
 
 		if (!isMotionOrStatic && arg.nounUnit && arg.nounUnit[DATA_SCHEMA.Id] !== targetId && (arg.role === "object" || arg.role === "subject")) {
@@ -913,6 +1274,8 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 	const isPersonOrPronoun = pos === "Pronoun" || hasTag(nominalUnit, "person", "family", "profession", "animal", "subject_animate");
 	if (isPersonOrPronoun && !["이것", "그것", "저것", "무엇", "뭐"].includes(ko)) {
 		const isElder = isElderNoun(nominalUnit);
+		const isFirstPerson = ["저", "나", "우리", "저희", "제", "내"].includes(ko);
+		const isJunior = hasTag(nominalUnit, "child", "junior") || ["아이", "조카", "동생", "남동생", "여동생", "사나이", "놈"].includes(ko);
 		const isInterrogative = ko === "누구" || ko === "누가";
 		const allAvs = getAllUnitsOfPos("Action Verb", options, targetId);
 		const avs = allAvs.filter(v => {
@@ -920,9 +1283,15 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 			if (vKo.includes(" ")) return false;
 			if (isIntransitiveVerb(v)) return false;
 			if (getVerbParticleType(v) !== "object") return false;
+			if ((!isElder || isFirstPerson || isJunior) && state.HONORIFIC_WORDS.has(vKo)) return false;
 			return true;
 		});
-		const dvs = getAllUnitsOfPos("Descriptive Verb", options, targetId);
+		const dvs = getAllUnitsOfPos("Descriptive Verb", options, targetId).filter(v => {
+			const vKo = v[DATA_SCHEMA.Korean] || "";
+			if ((!isElder || isFirstPerson || isJunior) && state.HONORIFIC_WORDS.has(vKo)) return false;
+			if (["울퉁불퉁하다", "매끄럽다", "비싸다", "싸다", "맑다", "흐리다"].includes(vKo)) return false;
+			return true;
+		});
 		const verbUnit = (variationIndex % 2 === 0 && avs.length > 0) ? pickRandom(avs) : (pickRandom(dvs) || pickRandom(avs));
 
 		if (!verbUnit) {
