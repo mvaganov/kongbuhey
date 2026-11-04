@@ -91,10 +91,10 @@ The curriculum of 2,045 units is partitioned into **11 Work Packages (Batches)**
 | **06** | Action Verbs (Part B) | `Action Verb` (2nd Half) | **189** | `audit/batches/batch_06_action_verbs_part_b.json` (IDs: 1102..2040) | Sino-Korean `-하다` compound verbs, abstract valency, instrument cases (`-(으)로`). | **COMPLETE** |
 | **07** | Nouns (Part A) | `Noun` (1st Fifth) | **221** | `audit/batches/batch_07_nouns_part_a.json` (IDs: 0..438) | Animacy agentivity, people/family honorific concord, basic concrete nouns. | **COMPLETE** |
 | **08** | Nouns (Part B) | `Noun` (2nd Fifth) | **221** | `audit/batches/batch_08_nouns_part_b.json` (IDs: 440..852) | Collocation with consumption/possession verbs, classifier matching (`개`, `마리`, `병`). | **COMPLETE** |
-| **09** | Nouns (Part C) | `Noun` (3rd Fifth) | **221** | `audit/batches/batch_09_nouns_part_c.json` (IDs: 853..1289) | Action verb collocation, temporal noun particles (unmarked vs `-에`). | **INCOMPLETE** |
-| **10** | Nouns (Part D) | `Noun` (4th Fifth) | **221** | `audit/batches/batch_10_nouns_part_d.json` (IDs: 1290..1690) | Abstract concepts, school/work nouns, directional/spatial noun concord. | **INCOMPLETE** |
+| **09** | Nouns (Part C) | `Noun` (3rd Fifth) | **221** | `audit/batches/batch_09_nouns_part_c.json` (IDs: 853..1289) | Action verb collocation, temporal noun particles (unmarked vs `-에`). | **COMPLETE** |
+| **10** | Nouns (Part D) | `Noun` (4th Fifth) | **221** | `audit/batches/batch_10_nouns_part_d.json` (IDs: 1290..1690) | Abstract concepts, school/work nouns, directional/spatial noun concord. | **COMPLETE** |
 | **11** | Nouns (Part E) | `Noun` (5th Fifth) | **221** | `audit/batches/batch_11_nouns_part_e.json` (IDs: 1691..2044) | Modern/tech vocabulary, loanwords, particle sandhi, recent additions. | **INCOMPLETE** |
-| **TOTAL** | **Entire Curriculum** | **All 9 POS** | **2,045** | **11 Deterministic Manifests** | **100% Curriculum Coverage Verified** | **8 / 11 Complete** |
+| **TOTAL** | **Entire Curriculum** | **All 9 POS** | **2,045** | **11 Deterministic Manifests** | **100% Curriculum Coverage Verified** | **10 / 11 Complete** |
 
 ---
 
@@ -111,8 +111,8 @@ When subagents execute batches, they must update this checklist to record active
 - [x] **Batch 06 (Action Verbs Part B)** — [`audit/reports/batch_06_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_06_report.md) | Status: **COMPLETE** | Clean: 135, Flagged: 54
 - [x] **Batch 07 (Nouns Part A)** — [`audit/reports/batch_07_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_07_report.md) | Status: **COMPLETE** | Clean: 187, Flagged: 34
 - [x] **Batch 08 (Nouns Part B)** — [`audit/reports/batch_08_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_08_report.md) | Status: **COMPLETE** | Clean: 182, Flagged: 39
-- [ ] **Batch 09 (Nouns Part C)** — `audit/reports/batch_09_report.md` | Status: `INCOMPLETE` | Clean: 0, Flagged: 0
-- [ ] **Batch 10 (Nouns Part D)** — `audit/reports/batch_10_report.md` | Status: `INCOMPLETE` | Clean: 0, Flagged: 0
+- [x] **Batch 09 (Nouns Part C)** — [`audit/reports/batch_09_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_09_report.md) | Status: **COMPLETE** | Clean: 196, Flagged: 25
+- [x] **Batch 10 (Nouns Part D)** — [`audit/reports/batch_10_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_10_report.md) | Status: **COMPLETE** | Clean: 205, Flagged: 16
 - [ ] **Batch 11 (Nouns Part E)** — `audit/reports/batch_11_report.md` | Status: `INCOMPLETE` | Clean: 0, Flagged: 0
 - [ ] **Stage 12: Master Synthesis & Specification** — `docs/linguistic_audit_specification.md` | Status: `INCOMPLETE`
 
