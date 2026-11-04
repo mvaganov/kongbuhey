@@ -380,9 +380,9 @@ function resolvePureMorphology(text, stateObj = null) {
 		return setFinal(ch, 4) + '다' + q;
 	});
 
-	// Basic Vowel Contractions (exempting ㅅ-irregular roots from over-contracting)
+	// Basic Vowel Contractions (exempting ㅅ-irregular roots from over-contracting, and ㅡ-irregular roots like 모으다)
 	resolvedKo = resolvedKo.replace(/([가-힣])아(요|서|도|야|라|)/g, (m, ch, s) => {
-		if (ch === '나' || ch === '지' || ch === '이' || ch === '저' || ch === '부' || ch === '그') return m;
+		if (ch === '나' || ch === '지' || ch === '이' || ch === '저' || ch === '부' || ch === '그' || ch === '모') return m;
 		const d = decomposeHangul(ch);
 		if (!d || d.final !== 0) return m;
 		if (d.medial === 0) return ch + s;
@@ -390,7 +390,7 @@ function resolvePureMorphology(text, stateObj = null) {
 		return m;
 	});
 	resolvedKo = resolvedKo.replace(/([가-힣])았(어요|어|다가|던|습니다|다)/g, (m, ch, s) => {
-		if (ch === '나' || ch === '지' || ch === '이' || ch === '저' || ch === '부' || ch === '그') return m;
+		if (ch === '나' || ch === '지' || ch === '이' || ch === '저' || ch === '부' || ch === '그' || ch === '모') return m;
 		const d = decomposeHangul(ch);
 		if (!d || d.final !== 0) return m;
 		if (d.medial === 0) return composeHangul(d.initial, 0, 20) + s;
