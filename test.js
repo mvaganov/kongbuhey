@@ -6,7 +6,7 @@ const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (ty
  * test.js - Unified Test Runner for Kongbuhey
  *
  * Executes the complete validation pipeline with FAIL-FAST behavior:
- *   [0/7] Code Quality & Static Hygiene (file size bounds, browser purity, FK integrity, 0 magic IDs)
+ *   [0/7] Code Quality & Static Hygiene (file size bounds, browser purity, FK integrity, 0 magic IDs, constants linter)
  *   [1/7] Schema & Data Integrity       (data.js: sequential IDs, column lengths, valid JSON vectors)
  *   [2/7] Schema Taxonomy Sync          (schema_analysis.js: taxonomy validity & cache freshness)
  *   [3/7] Homonym Dictionary Sync       (homonyms.js: 0 broken phonetic links, vocabulary coverage)
@@ -27,7 +27,7 @@ USAGE:
   node test.js [source] [options]
 
 VALIDATION STAGES (Fails fast on any error):
-  [0/7] Code Quality & Static Hygiene Enforces file size limits, browser purity (no Node fs/path in analyzer), FK integrity, 0 magic IDs
+  [0/7] Code Quality & Static Hygiene Enforces file size limits, browser purity (no Node fs/path in analyzer), FK integrity, 0 magic IDs, constants linter (0 bare string constants)
   [1/7] Schema & Data Integrity     Validates 12-col schema, sequential IDs (0..N-1), valid POS, priority scores (1-5), JSON vectors
   [2/7] Schema Taxonomy Sync        Verifies schema_summary.json freshness against data.js (auto-syncs if needed)
   [3/7] Homonym Dictionary Sync     Verifies HOMONYMS token count and ensures 0 broken phonetic (_neighbor) links
@@ -57,6 +57,7 @@ const EXHAUSTIVE_PATH = path.resolve(__dirname, 'exhaustive.js');
 const TEXT_ANALYZER_PATH = path.resolve(__dirname, 'text_analyzer.js');
 const STUDYTEXTS_PATH = path.resolve(__dirname, 'studytexts.js');
 const { validateLanguageUnitSemanticSelection } = require('./select.js');
+const { lintProject } = require('./test/count_string_literals.js');
 
 // Known fully-ingested passages that must ALWAYS have 0 gaps (regression tests)
 const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", K.STUDYTEXT22, "studytext31", "studytext41", "studytext42", "studytext51", "studytext52", "studytext61", "studytext62", "studytext71", "studytext72", "studytext81", "studytext82", "studytext101", "studytext102", "studytext111", "studytext112", "studytext121", "studytext122", "studytext131", "studytext132", "studytext141", "studytext142", "studytext151", "studytext152", "studytext161", "studytext162"];
@@ -206,7 +207,21 @@ function runTests(options = {}) {
 			}
 		}
 
-		console.log(`[ PASS ] (Limits, browser purity, FK integrity, 0 magic IDs)`);
+		// 7. Constants Linter (Ensures 0 unexempt bare string literals matching constants.js)
+		const lintRes = lintProject();
+		if (lintRes.totalRecommendations > 0) {
+			const details = lintRes.files.map(f => {
+				const samples = f.diagnostics.slice(0, 3).map(d => `"${d.value}" -> ${d.suggestedReplacement}`).join(', ');
+				const more = f.diagnostics.length > 3 ? ` (+${f.diagnostics.length - 3} more)` : '';
+				return `  - ${f.file}: ${f.totalMatches} bare string literal(s) [${samples}${more}]`;
+			}).join('\n');
+			failFast("Stage 0 (Code Quality & Static Hygiene - Constants Linter)",
+				`Found ${lintRes.totalRecommendations} unexempt bare string literal(s) matching constants.js across ${lintRes.totalFlaggedFiles} file(s):\n` +
+				details +
+				`\n\nRun 'node test/count_string_literals.js --fix' to automatically replace them, or mark exempt with '// constants-disable' comments.`);
+		}
+
+		console.log(`[ PASS ] (Limits, browser purity, FK integrity, 0 magic IDs, constants linter)`);
 	} catch (err) {
 		failFast("Stage 0 (Code Quality & Static Hygiene)", err.stack || err.message);
 	}
