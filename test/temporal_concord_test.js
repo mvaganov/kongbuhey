@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/temporal_concord_test.js - Feature 5: Temporal Tense Concord Test Suite
  *
@@ -139,12 +142,12 @@ for (const word of expectedDeicticBare) {
 	assert(isDeicticTimeWord(null, word), `isDeicticTimeWord('${word}') returns true`);
 	
 	// attachParticle with "time" must return bare word
-	const attached = attachParticle(word, "time");
+	const attached = attachParticle(word, K.TIME);
 	assert(attached === word, `attachParticle('${word}', 'time') returns bare '${word}' (not '${attached}')`);
 	assert(!attached.endsWith("에"), `attachParticle('${word}', 'time') does not end with -에`);
 
 	// attachParticle with topic: true attaches 은/는
-	const topicAttached = attachParticle(word, "time", null, { topic: true });
+	const topicAttached = attachParticle(word, K.TIME, null, { topic: true });
 	assert(topicAttached.endsWith("은") || topicAttached.endsWith("는"), `attachParticle('${word}', 'time', { topic: true }) attaches topic marker: '${topicAttached}'`);
 
 	// validateTemporalConcord flags word + 에
@@ -184,7 +187,7 @@ const nonDeicticTimeNouns = [
 
 for (const { noun, expected } of nonDeicticTimeNouns) {
 	assert(!isDeicticTimeWord(null, noun), `isDeicticTimeWord('${noun}') returns false`);
-	const attached = attachParticle(noun, "time");
+	const attached = attachParticle(noun, K.TIME);
 	assert(attached === expected, `attachParticle('${noun}', 'time') returns '${expected}': got '${attached}'`);
 
 	// Valid sentences with non-deictic time nouns + 에 should not be flagged as particle errors
@@ -283,7 +286,7 @@ for (const word of presentTestWords) {
 // -----------------------------------------------------------------------------
 console.log("\n[7/10] Word & Grammar Filtering by Tense");
 
-const allAdverbs = getWords("Adverb");
+const allAdverbs = getWords(K.POS_ADVERB);
 const pastFilteredWords = filterWordsByTense(allAdverbs, "past");
 const futureFilteredWords = filterWordsByTense(allAdverbs, "future");
 const presentFilteredWords = filterWordsByTense(allAdverbs, "present");
@@ -298,7 +301,7 @@ assert(presentFilteredWords.some(w => w[DATA_SCHEMA.Korean] === "항상"), "pres
 assert(!presentFilteredWords.some(w => w[DATA_SCHEMA.Korean] === "아까"), "presentFilteredWords excludes past '아까'");
 assert(!presentFilteredWords.some(w => w[DATA_SCHEMA.Korean] === "곧"), "presentFilteredWords excludes future '곧'");
 
-const allGrammars = getWords("Grammar");
+const allGrammars = getWords(K.POS_GRAMMAR);
 const pastFilteredGrammars = filterGrammarByTense(allGrammars, "past");
 const futureFilteredGrammars = filterGrammarByTense(allGrammars, "future");
 

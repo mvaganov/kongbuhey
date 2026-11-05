@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * particle_concord_test.js - Feature 3: Case Particle Semantic Specialization Test Suite
  *
@@ -72,17 +75,17 @@ console.log("======================================================\n");
 // -----------------------------------------------------------------------------
 console.log("[1/10] Locative Duality: Destination & Static Existence (-에)");
 
-const schoolUnit = findUnit("학교", "Noun");
-const homeUnit = findUnit("집", "Noun");
-const roomUnit = findUnit("방", "Noun");
-const mountainUnit = findUnit("산", "Noun");
-const companyUnit = findUnit("회사", "Noun");
+const schoolUnit = findUnit("학교", K.NOUN);
+const homeUnit = findUnit("집", K.NOUN);
+const roomUnit = findUnit("방", K.NOUN);
+const mountainUnit = findUnit("산", K.NOUN);
+const companyUnit = findUnit("회사", K.NOUN);
 
-const goVerb = findUnit("가다", "Action Verb");
-const comeVerb = findUnit("오다", "Action Verb");
-const attendVerb = findUnit("다니다", "Action Verb");
-const enterVerb = findUnit("들어가다", "Action Verb");
-const climbVerb = findUnit("오르다", "Action Verb");
+const goVerb = findUnit("가다", K.ACTION_VERB);
+const comeVerb = findUnit("오다", K.ACTION_VERB);
+const attendVerb = findUnit("다니다", K.ACTION_VERB);
+const enterVerb = findUnit("들어가다", K.ACTION_VERB);
+const climbVerb = findUnit("오르다", K.ACTION_VERB);
 const existVerb = findUnit("있다");
 const liveVerb = findUnit("살다");
 const sitVerb = findUnit("앉다");
@@ -113,14 +116,14 @@ assert(attachParticle(homeUnit, "location", existVerb) !== "집에서", "집 + �
 // -----------------------------------------------------------------------------
 console.log("\n[2/10] Locative Duality: Origin & Departure (-에서)");
 
-const stationUnit = findUnit("역", "Noun");
-const busUnit = findUnit("버스", "Noun");
-const airportUnit = findUnit("공항", "Noun");
-const departVerb = findUnit("출발하다", "Action Verb");
-const alightVerb = findUnit("내리다", "Action Verb");
-const leaveCountryVerb = findUnit("출국하다", "Action Verb");
-const exitVerb = findUnit("나가다", "Action Verb");
-const bornVerb = findUnit("태어나다", "Action Verb");
+const stationUnit = findUnit("역", K.NOUN);
+const busUnit = findUnit("버스", K.NOUN);
+const airportUnit = findUnit("공항", K.NOUN);
+const departVerb = findUnit("출발하다", K.ACTION_VERB);
+const alightVerb = findUnit("내리다", K.ACTION_VERB);
+const leaveCountryVerb = findUnit("출국하다", K.ACTION_VERB);
+const exitVerb = findUnit("나가다", K.ACTION_VERB);
+const bornVerb = findUnit("태어나다", K.ACTION_VERB);
 
 assert(attachParticle(stationUnit, "location", departVerb) === "역에서", "역 + 출발하다 -> 역에서");
 assert(attachParticle("서울역", "location", departVerb) === "서울역에서", "서울역 + 출발하다 -> 서울역에서");
@@ -142,21 +145,21 @@ assert(attachParticle(busUnit, "location", alightVerb) !== "버스에", "버스 
 // -----------------------------------------------------------------------------
 console.log("\n[3/10] Locative Duality: Dynamic Activity Site (-에서)");
 
-const restaurantUnit = findUnit("식당", "Noun");
-const libraryUnit = findUnit("도서관", "Noun");
-const cafeUnit = findUnit("카페", "Noun");
-const parkUnit = findUnit("공원", "Noun");
-const hotelUnit = findUnit("호텔", "Noun");
-const marketUnit = findUnit("시장", "Noun");
+const restaurantUnit = findUnit("식당", K.NOUN);
+const libraryUnit = findUnit("도서관", K.NOUN);
+const cafeUnit = findUnit("카페", K.NOUN);
+const parkUnit = findUnit("공원", K.NOUN);
+const hotelUnit = findUnit("호텔", K.NOUN);
+const marketUnit = findUnit("시장", K.NOUN);
 
-const eatVerb = findUnit("먹다", "Action Verb");
-const studyVerb = findUnit("공부하다", "Action Verb");
-const meetVerb = findUnit("만나다", "Action Verb");
-const jogVerb = findUnit("조깅하다", "Action Verb");
-const lodgeVerb = findUnit("숙박하다", "Action Verb");
-const buyVerb = findUnit("사다", "Action Verb");
-const restVerb = findUnit("쉬다", "Action Verb");
-const workVerb = findUnit("일하다", "Action Verb");
+const eatVerb = findUnit("먹다", K.ACTION_VERB);
+const studyVerb = findUnit("공부하다", K.ACTION_VERB);
+const meetVerb = findUnit("만나다", K.ACTION_VERB);
+const jogVerb = findUnit("조깅하다", K.ACTION_VERB);
+const lodgeVerb = findUnit("숙박하다", K.ACTION_VERB);
+const buyVerb = findUnit("사다", K.ACTION_VERB);
+const restVerb = findUnit("쉬다", K.ACTION_VERB);
+const workVerb = findUnit("일하다", K.ACTION_VERB);
 
 assert(attachParticle(restaurantUnit, "location", eatVerb) === "식당에서", "식당 + 먹다 -> 식당에서");
 assert(attachParticle(libraryUnit, "location", studyVerb) === "도서관에서", "도서관 + 공부하다 -> 도서관에서");
@@ -182,20 +185,20 @@ assert(attachParticle(hotelUnit, "location", lodgeVerb) !== "호텔에", "호텔
 // -----------------------------------------------------------------------------
 console.log("\n[4/10] Dative Animacy & Respect: Respected Elders (-께)");
 
-const teacherUnit = findUnit("선생님", "Noun");
-const parentsUnit = findUnit("부모님", "Noun");
-const fatherUnit = findUnit("아버지", "Noun");
-const motherUnit = findUnit("어머니", "Noun");
-const grandpaUnit = findUnit("할아버지", "Noun");
-const grandmaUnit = findUnit("할머니", "Noun");
+const teacherUnit = findUnit("선생님", K.NOUN);
+const parentsUnit = findUnit("부모님", K.NOUN);
+const fatherUnit = findUnit("아버지", K.NOUN);
+const motherUnit = findUnit("어머니", K.NOUN);
+const grandpaUnit = findUnit("할아버지", K.NOUN);
+const grandmaUnit = findUnit("할머니", K.NOUN);
 
-const giveHumble = findUnit("드리다", "Action Verb");
-const tellHumble = findUnit("말씀드리다", "Action Verb");
-const askHumble = findUnit("여쭙다", "Action Verb");
-const greetHumble = findUnit("인사드리다", "Action Verb");
-const callHumble = findUnit("전화드리다", "Action Verb");
-const generalCall = findUnit("전화하다", "Action Verb");
-const generalAsk = findUnit("묻다", "Action Verb");
+const giveHumble = findUnit("드리다", K.ACTION_VERB);
+const tellHumble = findUnit("말씀드리다", K.ACTION_VERB);
+const askHumble = findUnit("여쭙다", K.ACTION_VERB);
+const greetHumble = findUnit("인사드리다", K.ACTION_VERB);
+const callHumble = findUnit("전화드리다", K.ACTION_VERB);
+const generalCall = findUnit("전화하다", K.ACTION_VERB);
+const generalAsk = findUnit("묻다", K.ACTION_VERB);
 
 // Respected elder nouns taking dative
 assert(attachParticle(teacherUnit, "dative", giveHumble) === "선생님께", "선생님 + 드리다 -> 선생님께");
@@ -222,12 +225,12 @@ assert(attachParticle(parentsUnit, "dative", tellHumble) !== "부모님한테", 
 // -----------------------------------------------------------------------------
 console.log("\n[5/10] Dative Animacy & Respect: Inanimate Institutions (-에)");
 
-const bankUnit = findUnit("은행", "Noun");
-const hospitalUnit = findUnit("병원", "Noun");
-const postOfficeUnit = findUnit("우체국", "Noun");
+const bankUnit = findUnit("은행", K.NOUN);
+const hospitalUnit = findUnit("병원", K.NOUN);
+const postOfficeUnit = findUnit("우체국", K.NOUN);
 
-const sendVerb = findUnit("보내다", "Action Verb");
-const contactVerb = findUnit("연락하다", "Action Verb");
+const sendVerb = findUnit("보내다", K.ACTION_VERB);
+const contactVerb = findUnit("연락하다", K.ACTION_VERB);
 
 assert(attachParticle(companyUnit, "dative", generalCall) === "회사에", "회사 + 전화하다 -> 회사에");
 assert(attachParticle(bankUnit, "dative", sendVerb) === "은행에", "은행 + 보내다 -> 은행에");
@@ -249,12 +252,12 @@ assert(attachParticle(schoolUnit, "dative", generalCall) !== "학교한테", "�
 // -----------------------------------------------------------------------------
 console.log("\n[6/10] Dative Animacy & Respect: Animate Non-Elders (-에게 vs -한테)");
 
-const friendUnit = findUnit("친구", "Noun");
-const studentUnit = findUnit("학생", "Noun");
-const youngerBrother = findUnit("남동생", "Noun");
-const dogUnit = findUnit("강아지", "Noun");
-const giveVerb = findUnit("주다", "Action Verb");
-const teachVerb = findUnit("가르치다", "Action Verb");
+const friendUnit = findUnit("친구", K.NOUN);
+const studentUnit = findUnit("학생", K.NOUN);
+const youngerBrother = findUnit("남동생", K.NOUN);
+const dogUnit = findUnit("강아지", K.NOUN);
+const giveVerb = findUnit("주다", K.ACTION_VERB);
+const teachVerb = findUnit("가르치다", K.ACTION_VERB);
 
 // Formal / Written mode (-에게)
 assert(attachParticle(friendUnit, "dative", giveVerb) === "친구에게", "친구 + 주다 -> 친구에게");
@@ -277,11 +280,11 @@ assert(attachParticle(youngerBrother, "dative", generalCall) !== "남동생에",
 // -----------------------------------------------------------------------------
 console.log("\n[7/10] Instrumental -(으)로 Batchim & Coda ㄹ Exception Concord");
 
-const subwayUnit = findUnit("지하철", "Noun");
-const pencilUnit = findUnit("연필", "Noun");
-const chopsticksUnit = findUnit("젓가락", "Noun");
-const handUnit = findUnit("손", "Noun");
-const koreanLangUnit = findUnit("한국어", "Noun");
+const subwayUnit = findUnit("지하철", K.NOUN);
+const pencilUnit = findUnit("연필", K.NOUN);
+const chopsticksUnit = findUnit("젓가락", K.NOUN);
+const handUnit = findUnit("손", K.NOUN);
+const koreanLangUnit = findUnit("한국어", K.NOUN);
 
 // 1. Coda ㄹ Exception: strictly takes -로 (never -으로)
 assert(hasRieulBatchim("철"), "철 has coda ㄹ");
@@ -354,8 +357,8 @@ assert(attachParticle(teacherUnit, "subject", null, { honorific: true }) === "�
 // Standard subject and object
 assert(attachParticle(teacherUnit, "subject") === "선생님이", "선생님 subject -> 선생님이");
 assert(attachParticle(friendUnit, "subject") === "친구가", "친구 subject -> 친구가");
-assert(attachParticle(pencilUnit, "object") === "연필을", "연필 object -> 연필을");
-assert(attachParticle("사과", "object") === "사과를", "사과 object -> 사과를");
+assert(attachParticle(pencilUnit, K.OBJECT) === "연필을", "연필 object -> 연필을");
+assert(attachParticle("사과", K.OBJECT) === "사과를", "사과 object -> 사과를");
 assert(attachParticle(teacherUnit, "topic") === "선생님은", "선생님 topic -> 선생님은");
 assert(attachParticle(friendUnit, "topic") === "친구는", "친구 topic -> 친구는");
 

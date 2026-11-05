@@ -1,3 +1,6 @@
+// Universal Constants
+var { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * ============================================================================
  * webapp/db.js - Browser Database Storage Layer (IndexedDB + LocalStorage)
@@ -24,7 +27,7 @@ const DEFAULT_COLUMNS_SPEC = [
 	{ key: 'Id', schemaIndex: 0, label: 'Id', type: 'int', isDefault: true, defaultWidth: 74, editable: true },
 	{ key: 'Korean', schemaIndex: 1, label: 'Korean', type: 'string', isDefault: true, defaultWidth: 140, editable: true },
 	{ key: 'English', schemaIndex: 2, label: 'English', type: 'string', isDefault: true, defaultWidth: 220, editable: true },
-	{ key: 'PartofSpeech', schemaIndex: 3, label: 'PartofSpeech', type: 'enum', enumOptions: ['Noun', 'Pronoun', 'Exclamation', 'Descriptive Verb', 'Grammar', 'Action Verb', 'Adverb', 'Number', 'Determiner'], isDefault: true, defaultWidth: 135, editable: true },
+	{ key: 'PartofSpeech', schemaIndex: 3, label: 'PartofSpeech', type: 'enum', enumOptions: [K.NOUN, K.PRONOUN, K.EXCLAMATION, K.DESCRIPTIVE_VERB, K.POS_GRAMMAR, K.ACTION_VERB, K.POS_ADVERB, K.NUMBER, K.DETERMINER], isDefault: true, defaultWidth: 135, editable: true },
 	{ key: 'SemanticTags', schemaIndex: 4, label: 'SemanticTags', type: 'tags', isDefault: true, defaultWidth: 210, editable: true },
 	{ key: 'Disambiguation', schemaIndex: 5, label: 'Disambiguation', type: 'string', isDefault: true, defaultWidth: 180, editable: true },
 	{ key: 'Conjugation', schemaIndex: 6, label: 'Conjugation', type: 'conjugation', isDefault: true, defaultWidth: 150, editable: true },

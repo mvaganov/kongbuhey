@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * ingest.js - Unified Curriculum Ingestion Pipeline for Kongbuhey
  *
@@ -155,7 +158,7 @@ async function main() {
 		}
 	} else if (textArg) {
 		passageText = textArg;
-		passageName = sourceArg || 'custom_passage';
+		passageName = sourceArg || K.CUSTOM_PASSAGE;
 	} else {
 		// Existing studytexts.js flow
 		const targetArg = args.find(a => !a.startsWith('-'));
@@ -186,7 +189,7 @@ async function main() {
 		for (const u of directDraftUnits) {
 			const ko = u.Korean || '';
 			const en = u.English || '';
-			const pos = u.PartofSpeech || 'Noun';
+			const pos = u.PartofSpeech || K.NOUN;
 			console.log(`  - ${ko.padEnd(16)} [${pos.padEnd(16)}] ${en}`);
 		}
 
@@ -372,15 +375,15 @@ async function main() {
 			const u = scaffolded || {
 				Korean: tm.text,
 				English: tm.gloss || `<English definition of "${tm.text}">`,
-				PartofSpeech: tm.pos || "Noun",
-				SemanticTags: ["general"],
+				PartofSpeech: tm.pos || K.NOUN,
+				SemanticTags: [K.GENERAL],
 				Disambiguation: "",
-				Conjugation: tm.text.endsWith("하다") ? "hada" : "",
+				Conjugation: tm.text.endsWith("하다") ? K.HADA : "",
 				Source: passageName,
 				PriorityScore: 1,
-				FormalityLevel: "Universal",
+				FormalityLevel: K.UNIVERSAL,
 				HonorificRules: "",
-				SemanticVector: JSON.stringify({ domain: "concept", type: "general" }),
+				SemanticVector: JSON.stringify({ domain: K.CONCEPT, type: K.GENERAL }),
 				SyntaxFrame: ""
 			};
 			draftUnits.push(u);

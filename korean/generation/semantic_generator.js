@@ -1,3 +1,6 @@
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * Korean Semantic Sentence Generation Engine
  *
@@ -70,7 +73,7 @@ function initTemplateToGrammarMap() {
 	templateToGrammarMap = new Map();
 	const units = dataModule.KR_EN_languageUnits || (typeof window !== 'undefined' ? window.KR_EN_languageUnits : []);
 	if (!units) return;
-	units.filter(u => u && u[DATA_SCHEMA.PartofSpeech] === "Grammar").forEach(u => {
+	units.filter(u => u && u[DATA_SCHEMA.PartofSpeech] === K.POS_GRAMMAR).forEach(u => {
 		const formulas = u[DATA_SCHEMA.Conjugation];
 		if (Array.isArray(formulas)) {
 			formulas.forEach((f, idx) => {
@@ -131,23 +134,23 @@ function expandSemanticVerb(pos, isAction, tokenType, currentContext, applyConst
 }
 
 function expandSemanticActionVerb(tokenType, currentContext, applyConstraint) {
-	return expandSemanticVerb("Action Verb", true, tokenType, currentContext, applyConstraint);
+	return expandSemanticVerb(K.ACTION_VERB, true, tokenType, currentContext, applyConstraint);
 }
 
 function expandSemanticDescriptiveVerb(tokenType, currentContext, applyConstraint) {
-	return expandSemanticVerb("Descriptive Verb", false, tokenType, currentContext, applyConstraint);
+	return expandSemanticVerb(K.DESCRIPTIVE_VERB, false, tokenType, currentContext, applyConstraint);
 }
 
 function expandSemanticClause(depth, currentContext) {
 	const KoreanWord = DATA_SCHEMA.Korean;
 	const Conjugation = DATA_SCHEMA.Conjugation;
 
-	let grammars = getFilteredWords("Grammar").filter(g => {
+	let grammars = getFilteredWords(K.POS_GRAMMAR).filter(g => {
 		const sv = parseSemanticVector(g);
 		return hasTag(g, "declarative") && (sv.logic === "declarative" || g[KoreanWord].includes("아요") || g[KoreanWord].includes("습니다"));
 	});
-	if (grammars.length === 0) grammars = getFilteredWords("Grammar").filter(g => hasTag(g, "declarative"));
-	if (grammars.length === 0) grammars = getFilteredWords("Grammar");
+	if (grammars.length === 0) grammars = getFilteredWords(K.POS_GRAMMAR).filter(g => hasTag(g, "declarative"));
+	if (grammars.length === 0) grammars = getFilteredWords(K.POS_GRAMMAR);
 
 	if (currentContext.temporal_polarity) {
 		const tenseGrammars = filterGrammarByTense(grammars, currentContext.temporal_polarity);
@@ -171,14 +174,14 @@ function expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint)
 		return { text: getRandomProperName(), unit: null };
 	}
 	if (tokenType === "properNoun") {
-		const seeGrammar = getFilteredWords("Grammar").find(g => hasTag(g, "properNoun", "honorific") || g[DATA_SCHEMA.Korean] === ssiSuffix) || getWords("Grammar").find(g => hasTag(g, "properNoun", "honorific") || g[DATA_SCHEMA.Korean] === ssiSuffix);
+		const seeGrammar = getFilteredWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.HONORIFIC) || g[DATA_SCHEMA.Korean] === ssiSuffix) || getWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.HONORIFIC) || g[DATA_SCHEMA.Korean] === ssiSuffix);
 		return { text: getRandomProperName() + ssiSuffix, unit: seeGrammar || null };
 	}
 
-	let posToFetch = "Noun";
-	if (tokenType === "Number") posToFetch = "Number";
-	else if (tokenType === "Adv" || tokenType === "Adv_Time" || tokenType === "Adv_Degree" || tokenType === "Adv_Manner" || tokenType === "Adv_Discourse") posToFetch = "Adverb";
-	else if (tokenType === "Exclamation") posToFetch = "Exclamation";
+	let posToFetch = K.NOUN;
+	if (tokenType === K.NUMBER) posToFetch = K.NUMBER;
+	else if (tokenType === "Adv" || tokenType === "Adv_Time" || tokenType === "Adv_Degree" || tokenType === "Adv_Manner" || tokenType === "Adv_Discourse") posToFetch = K.POS_ADVERB;
+	else if (tokenType === K.EXCLAMATION) posToFetch = K.EXCLAMATION;
 
 	let words = [];
 	if (tokenType === "Adv_Degree") {
@@ -199,12 +202,12 @@ function expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint)
 		if (domainWords.length > 0) words = domainWords;
 	}
 
-	if (currentContext.temporal_polarity && (tokenType === "Adv" || tokenType === "Adv_Time" || tokenType === "Time" || tag === "time" || tag === "temporal" || tag === "adverb_time" || tag === "temporalNoun")) {
+	if (currentContext.temporal_polarity && (tokenType === "Adv" || tokenType === "Adv_Time" || tokenType === "Time" || tag === K.TIME || tag === "temporal" || tag === "adverb_time" || tag === "temporalNoun")) {
 		const tenseFiltered = filterWordsByTense(words, currentContext.temporal_polarity);
 		if (tenseFiltered.length > 0) words = tenseFiltered;
 	}
 
-	if ((tokenType === "Adv" || tokenType === "Adv_Degree" || tag === "adverb") && (currentContext.isDV || currentContext.target_pos === "Descriptive Verb")) {
+	if ((tokenType === "Adv" || tokenType === "Adv_Degree" || tag === K.ADVERB) && (currentContext.isDV || currentContext.target_pos === K.DESCRIPTIVE_VERB)) {
 		words = words.filter(w => {
 			const ko = w[DATA_SCHEMA.Korean];
 			if (state.SHORT_INABILITY_WORDS.has(ko)) return false;
@@ -214,7 +217,7 @@ function expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint)
 	}
 
 	const isNegContext = currentContext.isNegative || currentContext.negated || currentContext.mood === "inability";
-	if (!isNegContext && (tokenType.startsWith("Adv") || tag === "adverb")) {
+	if (!isNegContext && (tokenType.startsWith("Adv") || tag === K.ADVERB)) {
 		words = words.filter(w => !state.ALL_NPI_WORDS.has(w[DATA_SCHEMA.Korean]));
 	}
 
@@ -315,7 +318,7 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 			replacementKo = getRandomProperName();
 			childNode = replacementKo;
 		} else if (tokenType === "properNoun") {
-			const seeGrammar = getFilteredWords("Grammar").find(g => hasTag(g, "properNoun", "honorific") || g[DATA_SCHEMA.Korean] === ssiSuffix) || getWords("Grammar").find(g => hasTag(g, "properNoun", "honorific") || g[DATA_SCHEMA.Korean] === ssiSuffix);
+			const seeGrammar = getFilteredWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.HONORIFIC) || g[DATA_SCHEMA.Korean] === ssiSuffix) || getWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.HONORIFIC) || g[DATA_SCHEMA.Korean] === ssiSuffix);
 			const name = getRandomProperName();
 			replacementKo = name + ssiSuffix;
 			childNode = seeGrammar ? [seeGrammar[DATA_SCHEMA.Id], name] : replacementKo;
@@ -337,18 +340,18 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 			replacementKo = exp.text;
 			childNode = exp.tree;
 		} else if (tokenType === "CountPhrase" || tokenType === "Noun_Count") {
-			let nouns = getWords("Noun").filter(n => !hasTag(n, "measureWord") && !hasTag(n, "counter") && !hasTag(n, "place"));
-			if (tag && tag !== "object" && tag !== "subject" && tag !== "topic" && tag !== "AV" && tag !== "DV") {
+			let nouns = getWords(K.NOUN).filter(n => !hasTag(n, K.MEASUREWORD) && !hasTag(n, "counter") && !hasTag(n, K.PLACE));
+			if (tag && tag !== K.OBJECT && tag !== "subject" && tag !== "topic" && tag !== "AV" && tag !== "DV") {
 				nouns = nouns.filter(n => hasTag(n, tag));
 			}
-			if (nouns.length === 0) nouns = getWords("Noun", "object");
+			if (nouns.length === 0) nouns = getWords(K.NOUN, K.OBJECT);
 			const sampledNoun = nouns[Math.floor(prng() * nouns.length)];
 			const count = Math.floor(prng() * 5) + 1;
 			const classifier = getMatchingClassifier(sampledNoun);
 			const classifierUnit = state.CLASSIFIER_UNITS.get(classifier);
 
 			let particle = null;
-			if (tag === "object" || tag === "AV" || /을|를/.test(token)) particle = "object";
+			if (tag === K.OBJECT || tag === "AV" || /을|를/.test(token)) particle = K.OBJECT;
 			else if (tag === "subject" || tag === "DV" || /이|가/.test(token)) particle = "subject";
 			else if (tag === "topic" || /은|는/.test(token)) particle = "topic";
 
@@ -359,8 +362,8 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 				classifierUnit ? classifierUnit[DATA_SCHEMA.Id] : classifier
 			];
 		} else if (tokenType === "Spatial_Phrase" || tokenType === "Relational_Loc") {
-			let groundNouns = getWords("Noun").filter(n => hasTag(n, "place") || hasTag(n, "furniture") || (hasTag(n, "object") && !hasTag(n, "measureWord") && !hasTag(n, "counter")));
-			if (groundNouns.length === 0) groundNouns = getWords("Noun", "place");
+			let groundNouns = getWords(K.NOUN).filter(n => hasTag(n, K.PLACE) || hasTag(n, "furniture") || (hasTag(n, K.OBJECT) && !hasTag(n, K.MEASUREWORD) && !hasTag(n, "counter")));
+			if (groundNouns.length === 0) groundNouns = getWords(K.NOUN, K.PLACE);
 			const sampledGround = groundNouns[Math.floor(prng() * groundNouns.length)];
 			const positions = getSpatialPositions();
 			const sampledPos = positions.length > 0 ? positions[Math.floor(prng() * positions.length)] : "위";
@@ -378,7 +381,7 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 			];
 		} else if (tokenType === "Deictic_NP") {
 			const proximity = tag === "medial" ? "medial" : tag === "distal" ? "distal" : tag === "interrogative" ? "interrogative" : "proximal";
-			let nouns = getWords("Noun").filter(n => !hasTag(n, "measureWord") && !hasTag(n, "counter") && !hasTag(n, "place"));
+			let nouns = getWords(K.NOUN).filter(n => !hasTag(n, K.MEASUREWORD) && !hasTag(n, "counter") && !hasTag(n, K.PLACE));
 			const sampledNoun = nouns[Math.floor(prng() * nouns.length)];
 			replacementKo = buildDeicticPhrase(proximity, "noun", { noun: sampledNoun });
 			const detUnit = Array.from(state.DEICTIC_DETERMINERS.values()).find(d => d.proximity === proximity)?.unit;
@@ -388,7 +391,7 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 			];
 		} else if (tokenType === "Deictic_Loc") {
 			const proximity = tag === "medial" ? "medial" : tag === "distal" ? "distal" : tag === "interrogative" ? "interrogative" : "proximal";
-			replacementKo = buildDeicticPhrase(proximity, "place");
+			replacementKo = buildDeicticPhrase(proximity, K.PLACE);
 			const locUnit = Array.from(state.DEICTIC_LOCATIVES.values()).find(l => l.proximity === proximity && l.ko === replacementKo)?.unit;
 			childNode = locUnit ? locUnit[DATA_SCHEMA.Id] : replacementKo;
 		} else if (tokenType === "Deictic_Pronoun") {
@@ -396,7 +399,7 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 			replacementKo = buildDeicticPhrase(proximity, "thing");
 			const proUnit = Array.from(state.DEICTIC_PRONOUNS.values()).find(p => p.proximity === proximity && p.ko === replacementKo)?.unit;
 			childNode = proUnit ? proUnit[DATA_SCHEMA.Id] : replacementKo;
-		} else if (tokenType === "Number" && tag && tag.includes("(")) {
+		} else if (tokenType === K.NUMBER && tag && tag.includes("(")) {
 			const rangeMatch = tag.match(/^([a-zA-Z_]+)\((\d+)\s*,\s*(\d+)\)$/);
 			if (rangeMatch) {
 				const baseTag = rangeMatch[1];
@@ -404,7 +407,7 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 				const val = Math.floor(prng() * (max - min + 1)) + min;
 				const isFollowedByMeasureWord = /^\s*\{(?:Noun|N):.*(?:measureWord|koreanMeasureWord|counter)/i.test(afterToken) || /^\s*[가-힣]/.test(afterToken);
 				replacementKo = (baseTag === "sinoNumber") ? getSinoNumber(val) : getKoreanNumber(val, isFollowedByMeasureWord);
-				const words = getFilteredWords("Number", baseTag);
+				const words = getFilteredWords(K.NUMBER, baseTag);
 				const matchedUnit = words.find(w => w[DATA_SCHEMA.Korean] === replacementKo);
 				if (matchedUnit) {
 					markUnitUsed(matchedUnit);

@@ -1,4 +1,7 @@
 (function() {
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * korean/generation/sentence_ast.js
  *
@@ -83,36 +86,36 @@ function getGrammarRegistry() {
 	}
 
 	const getWords = dataModule.getWords || (typeof window !== 'undefined' ? window.getWords : () => []);
-	const grammars = getWords("Grammar") || [];
+	const grammars = getWords(K.POS_GRAMMAR) || [];
 
 	const findG = (predicate) => grammars.find(g => g && predicate(g)) || null;
 
 	const particles = {
-		topic: findG(g => hasTag(g, "particle") && hasTag(g, "topic") && !hasTag(g, "honorific")),
-		topic_honorific: findG(g => hasTag(g, "particle") && hasTag(g, "topic") && hasTag(g, "honorific")),
-		subject: findG(g => hasTag(g, "particle") && hasTag(g, "subject") && !hasTag(g, "honorific")),
-		subject_honorific: findG(g => hasTag(g, "particle") && hasTag(g, "subject") && hasTag(g, "honorific") && !hasTag(g, "topic")),
-		object: findG(g => hasTag(g, "particle") && hasTag(g, "object")),
-		location_static: findG(g => hasTag(g, "particle") && hasTag(g, "location")),
-		location_dynamic: findG(g => hasTag(g, "particle") && hasTag(g, "location_action")),
-		direction: findG(g => hasTag(g, "particle") && hasTag(g, "direction")),
-		direction_ro: findG(g => hasTag(g, "particle") && hasTag(g, "directional")),
-		instrumental: findG(g => hasTag(g, "particle") && hasTag(g, "instrumental")),
-		time: findG(g => hasTag(g, "particle") && hasTag(g, "time") && !hasTag(g, "starting_point") && !hasTag(g, "duration")),
-		dative: findG(g => hasTag(g, "particle") && hasTag(g, "dative") && !hasTag(g, "honorific")),
-		dative_honorific: findG(g => hasTag(g, "particle") && hasTag(g, "dative") && hasTag(g, "honorific")),
-		comitative: findG(g => hasTag(g, "particle") && (hasTag(g, "comitative") || g[DATA_SCHEMA.Korean].includes("와 / 과") || g[DATA_SCHEMA.Korean].includes("(이)랑"))),
-		possessive: findG(g => hasTag(g, "particle") && hasTag(g, "possessive")),
-		also: findG(g => hasTag(g, "particle") && hasTag(g, "also")),
-		exclusive: findG(g => hasTag(g, "particle") && hasTag(g, "exclusive")),
-		comparison: findG(g => hasTag(g, "particle") && hasTag(g, "comparison") && !hasTag(g, "degree")),
-		from: findG(g => hasTag(g, "particle") && hasTag(g, "starting_point")),
-		until: findG(g => hasTag(g, "particle") && hasTag(g, "endpoint")),
-		each: findG(g => hasTag(g, "particle") && g[DATA_SCHEMA.Korean] === "마다")
+		topic: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "topic") && !hasTag(g, K.HONORIFIC)),
+		topic_honorific: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "topic") && hasTag(g, K.HONORIFIC)),
+		subject: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "subject") && !hasTag(g, K.HONORIFIC)),
+		subject_honorific: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "subject") && hasTag(g, K.HONORIFIC) && !hasTag(g, "topic")),
+		object: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, K.OBJECT)),
+		location_static: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "location")),
+		location_dynamic: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "location_action")),
+		direction: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "direction")),
+		direction_ro: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "directional")),
+		instrumental: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "instrumental")),
+		time: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, K.TIME) && !hasTag(g, "starting_point") && !hasTag(g, "duration")),
+		dative: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "dative") && !hasTag(g, K.HONORIFIC)),
+		dative_honorific: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "dative") && hasTag(g, K.HONORIFIC)),
+		comitative: findG(g => hasTag(g, K.PARTICLE) && (hasTag(g, "comitative") || g[DATA_SCHEMA.Korean].includes("와 / 과") || g[DATA_SCHEMA.Korean].includes("(이)랑"))),
+		possessive: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "possessive")),
+		also: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "also")),
+		exclusive: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "exclusive")),
+		comparison: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "comparison") && !hasTag(g, K.DEGREE)),
+		from: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "starting_point")),
+		until: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "endpoint")),
+		each: findG(g => hasTag(g, K.PARTICLE) && g[DATA_SCHEMA.Korean] === "마다")
 	};
 
 	const endings = {
-		polite_present: findG(g => hasTag(g, "verbal_ending") && hasTag(g, "present") && !hasTag(g, "honorific") && g[DATA_SCHEMA.Korean].includes("아요")),
+		polite_present: findG(g => hasTag(g, "verbal_ending") && hasTag(g, "present") && !hasTag(g, K.HONORIFIC) && g[DATA_SCHEMA.Korean].includes("아요")),
 		formal_present: findG(g => hasTag(g, "verbal_ending") && hasTag(g, "present") && g[DATA_SCHEMA.Korean].includes("습니다")),
 		polite_past: findG(g => hasTag(g, "past") && g[DATA_SCHEMA.Korean].includes("았/었어요")),
 		formal_past: findG(g => hasTag(g, "past") && g[DATA_SCHEMA.Korean].includes("았/었습니다")),
@@ -130,7 +133,7 @@ function getGrammarRegistry() {
 		intimate_declarative: findG(g => hasTag(g, "informal") && g[DATA_SCHEMA.Korean].includes("-아/어")),
 		formal_interrogative: findG(g => hasTag(g, "interrogative") && g[DATA_SCHEMA.Korean].includes("습니까")),
 		polite_interrogative_na: findG(g => hasTag(g, "interrogative") && g[DATA_SCHEMA.Korean].includes("나요")),
-		honorific_infix: findG(g => hasTag(g, "honorific") && g[DATA_SCHEMA.Korean].includes("시"))
+		honorific_infix: findG(g => hasTag(g, K.HONORIFIC) && g[DATA_SCHEMA.Korean].includes("시"))
 	};
 
 	const modals = {
@@ -188,7 +191,7 @@ function resolveParticleUnit(particleType, nounUnit = null, options = {}) {
 		case "subject":
 		case "nominative":
 			return (isElder && reg.subject_honorific) ? reg.subject_honorific : reg.subject;
-		case "object":
+		case K.OBJECT:
 		case "accusative":
 		case "obj":
 			return reg.object;
@@ -204,12 +207,12 @@ function resolveParticleUnit(particleType, nounUnit = null, options = {}) {
 		case "instrumental":
 		case "means":
 			return reg.instrumental || reg.direction_ro;
-		case "time":
+		case K.TIME:
 		case "temporal":
 			return reg.time || reg.location_static;
 		case "dative":
 		case "dative_person":
-			return (isElder || options.dativeType === "honorific") ? (reg.dative_honorific || reg.dative) : reg.dative;
+			return (isElder || options.dativeType === K.HONORIFIC) ? (reg.dative_honorific || reg.dative) : reg.dative;
 		case "comitative":
 		case "companion":
 			return reg.comitative;
@@ -242,7 +245,7 @@ function resolveEndingUnit(predSpec) {
 
 	const reg = getGrammarRegistry();
 	const {
-		predType = "action",
+		predType = K.ACTION,
 		tense = "present",
 		politeness = "polite",
 		speechAct = "declarative",
@@ -338,7 +341,7 @@ function splitNounAndParticleSegments(surfaceKo, nounUnit, particleUnit, role) {
 		return [makeSegment(surfaceKo, nounUnit, "lexical", role)];
 	}
 	if (!nounUnit) {
-		return [makeSegment(surfaceKo, particleUnit, "particle", role)];
+		return [makeSegment(surfaceKo, particleUnit, K.PARTICLE, role)];
 	}
 
 	const nounKo = nounUnit[DATA_SCHEMA.Korean] || "";
@@ -347,7 +350,7 @@ function splitNounAndParticleSegments(surfaceKo, nounUnit, particleUnit, role) {
 		const particlePart = surfaceKo.slice(nounKo.length);
 		return [
 			makeSegment(stemPart, nounUnit, "lexical", role),
-			makeSegment(particlePart, particleUnit, "particle", role)
+			makeSegment(particlePart, particleUnit, K.PARTICLE, role)
 		];
 	}
 
@@ -355,7 +358,7 @@ function splitNounAndParticleSegments(surfaceKo, nounUnit, particleUnit, role) {
 	if ((surfaceKo === "내가" || surfaceKo === "제가" || surfaceKo === "누가") && surfaceKo.length === 2) {
 		return [
 			makeSegment(surfaceKo[0], nounUnit, "lexical", role),
-			makeSegment(surfaceKo[1], particleUnit, "particle", role)
+			makeSegment(surfaceKo[1], particleUnit, K.PARTICLE, role)
 		];
 	}
 
@@ -372,18 +375,18 @@ function splitNounAndParticleSegments(surfaceKo, nounUnit, particleUnit, role) {
  */
 function splitSingleVerbWordSegments(wordKo, headUnit, endingUnit, role = "predicate") {
 	if (!endingUnit || !headUnit) {
-		return [makeSegment(wordKo, headUnit || endingUnit, headUnit ? "lexical" : "grammar", role)];
+		return [makeSegment(wordKo, headUnit || endingUnit, headUnit ? "lexical" : K.GRAMMAR, role)];
 	}
 
 	const headKo = headUnit[DATA_SCHEMA.Korean] || "";
 	const headPos = headUnit[DATA_SCHEMA.PartofSpeech] || "";
 
 	// Copula: noun + 이에요/예요/입니다/이야/야
-	if (headPos === "Noun" || headPos === "Pronoun") {
+	if (headPos === K.NOUN || headPos === K.PRONOUN) {
 		if (headKo && wordKo.startsWith(headKo) && wordKo.length > headKo.length) {
 			return [
 				makeSegment(wordKo.slice(0, headKo.length), headUnit, "lexical", role),
-				makeSegment(wordKo.slice(headKo.length), endingUnit, "grammar", role)
+				makeSegment(wordKo.slice(headKo.length), endingUnit, K.GRAMMAR, role)
 			];
 		}
 	}
@@ -397,19 +400,19 @@ function splitSingleVerbWordSegments(wordKo, headUnit, endingUnit, role = "predi
 	if (wordKo.startsWith(rawStem) && wordKo.length > rawStem.length) {
 		return [
 			makeSegment(wordKo.slice(0, rawStem.length), headUnit, "lexical", role),
-			makeSegment(wordKo.slice(rawStem.length), endingUnit, "grammar", role)
+			makeSegment(wordKo.slice(rawStem.length), endingUnit, K.GRAMMAR, role)
 		];
 	}
 
 	// Case 2: b_irregular glide expansion (e.g. 춥다 -> 추워요 / 추워서 / 추운)
 	const conj = headUnit[DATA_SCHEMA.Conjugation] || "";
 	const stemLen = rawStem.length;
-	if (conj === "b_irregular" && wordKo.length > stemLen + 1) {
+	if (conj === K.B_IRREGULAR && wordKo.length > stemLen + 1) {
 		const glideSyllable = wordKo[stemLen];
 		if (/^[워와웠왔우운울]$/.test(glideSyllable)) {
 			return [
 				makeSegment(wordKo.slice(0, stemLen + 1), headUnit, "lexical", role),
-				makeSegment(wordKo.slice(stemLen + 1), endingUnit, "grammar", role)
+				makeSegment(wordKo.slice(stemLen + 1), endingUnit, K.GRAMMAR, role)
 			];
 		}
 	}
@@ -419,7 +422,7 @@ function splitSingleVerbWordSegments(wordKo, headUnit, endingUnit, role = "predi
 	if (wordKo.length > stemLen) {
 		return [
 			makeSegment(wordKo.slice(0, stemLen), headUnit, "lexical", role),
-			makeSegment(wordKo.slice(stemLen), endingUnit, "grammar", role)
+			makeSegment(wordKo.slice(stemLen), endingUnit, K.GRAMMAR, role)
 		];
 	}
 
@@ -427,7 +430,7 @@ function splitSingleVerbWordSegments(wordKo, headUnit, endingUnit, role = "predi
 	if (wordKo.length === stemLen && stemLen > 1) {
 		return [
 			makeSegment(wordKo.slice(0, stemLen - 1), headUnit, "lexical", role),
-			makeSegment(wordKo.slice(stemLen - 1), endingUnit, "grammar", role)
+			makeSegment(wordKo.slice(stemLen - 1), endingUnit, K.GRAMMAR, role)
 		];
 	}
 
@@ -623,17 +626,17 @@ function buildPredicateEojeols(predNode, surfaceKo) {
 					particleUnitId: null,
 					grammarUnitId: negUnit[DATA_SCHEMA.Id],
 					unitIds: [negUnit[DATA_SCHEMA.Id]],
-					segments: [makeSegment(w, negUnit, "grammar", "negation")]
+					segments: [makeSegment(w, negUnit, K.GRAMMAR, "negation")]
 				});
 			} else if (i < negIdx) {
 				eojeols.push({
 					surfaceKo: w,
-					role: "object",
+					role: K.OBJECT,
 					headUnitId: headUnit ? headUnit[DATA_SCHEMA.Id] : null,
 					particleUnitId: null,
 					grammarUnitId: null,
 					unitIds: headUnit ? [headUnit[DATA_SCHEMA.Id]] : [],
-					segments: [makeSegment(w, headUnit, "lexical", "object")]
+					segments: [makeSegment(w, headUnit, "lexical", K.OBJECT)]
 				});
 			} else if (i === negIdx + 1) {
 				const verbSegs = splitSingleVerbWordSegments(w, headUnit, endingUnit, "predicate");
@@ -647,7 +650,7 @@ function buildPredicateEojeols(predNode, surfaceKo) {
 					segments: verbSegs
 				});
 			} else {
-				const seg = makeSegment(w, endingUnit || headUnit, endingUnit ? "grammar" : "lexical", "predicate_aux");
+				const seg = makeSegment(w, endingUnit || headUnit, endingUnit ? K.GRAMMAR : "lexical", "predicate_aux");
 				eojeols.push({
 					surfaceKo: w,
 					role: "predicate_aux",
@@ -677,7 +680,7 @@ function buildPredicateEojeols(predNode, surfaceKo) {
 
 	for (let i = 1; i < words.length; i++) {
 		const w = words[i];
-		const seg = makeSegment(w, endingUnit || headUnit, endingUnit ? "grammar" : "lexical", "predicate_aux");
+		const seg = makeSegment(w, endingUnit || headUnit, endingUnit ? K.GRAMMAR : "lexical", "predicate_aux");
 		eojeols.push({
 			surfaceKo: w,
 			role: "predicate_aux",
@@ -751,7 +754,7 @@ function realizeConstituentKo(constituent, clauseContext = {}) {
 	}
 
 	// If time word is deictic and took no particle, clear particleUnit
-	if ((particleType === "time" || particleType === "temporal") && primaryUnit && isDeicticTimeWord(primaryUnit)) {
+	if ((particleType === K.TIME || particleType === "temporal") && primaryUnit && isDeicticTimeWord(primaryUnit)) {
 		if (!surfaceKo.endsWith("에") && !surfaceKo.endsWith("은") && !surfaceKo.endsWith("는")) {
 			constituent.particleUnit = null;
 		}
@@ -942,7 +945,7 @@ function realizeKoreanFromAST(ast) {
 		// If subject is elder and object is a plain noun with an honorific counterpart (e.g. 밥 -> 진지), upgrade it
 		if (isElderSubj) {
 			for (const con of constituents) {
-				if (con.role === "object" && con.nounUnit) {
+				if (con.role === K.OBJECT && con.nounUnit) {
 					const honNounKo = getHonorificNoun(con.nounUnit);
 					if (honNounKo) {
 						const honNounUnit = getNounUnit(honNounKo);

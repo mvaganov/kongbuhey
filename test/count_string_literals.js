@@ -9,7 +9,7 @@
  * 1. DEFAULT MODE: Project Constants Linter (Dry-Run by default)
  *    - Scans project source files for string literals defined in constants.js.
  *    - Aggregates occurrences per file and reports total counts for each literal.
- *    - Recommends replacement with associated constant expressions (e.g. K.POS.ACTION_VERB, AV, etc.).
+ *    - Recommends replacement with associated constant expressions (e.g. K.ACTION_VERB, AV, etc.).
  *    - Supports automated search/replace via the `--fix` / `--replace` CLI option.
  *
  * 2. FREQUENCY ANALYSIS MODE (--analyze / --freq)
@@ -50,16 +50,96 @@ const path = require('path');
 const { K } = require('../constants.js');
 
 // ============================================================================
-// 1. High-Precision JavaScript String Lexer
+// 1. High-Precision JavaScript String Lexer & Comment Exemption Engine
 // ============================================================================
+
+/**
+ * Discovers code exemption ranges defined by inline comments:
+ *   - Block disable:
+ *       // constants-disable ... // constants-enable
+ *       /* constants-disable * / ... /* constants-enable * /
+ *       // constants-ignore-start ... // constants-ignore-end
+ *   - Next line disable:
+ *       // constants-disable-next-line
+ *       /* constants-disable-next-line * /
+ *   - Current line disable:
+ *       // constants-disable-line
+ *       // constants-ignore
+ *       /* constants-ignore * /
+ *
+ * @param {string} sourceCode - Raw JavaScript source code
+ * @returns {{ exemptLines: Set<number>, exemptRanges: Array<{ start: number, end: number }> }}
+ */
+function extractExemptionDirectives(sourceCode) {
+  const exemptLines = new Set();
+  const exemptRanges = [];
+  const lines = sourceCode.split('\n');
+
+  const reNext = /(?:\/\/\s*|\/\*\s*)constants-(?:disable-next-line|ignore-next-line)/;
+  const reLine = /(?:\/\/\s*|\/\*\s*)constants-(?:disable-line|ignore-line|ignore)(?:$|\s|\*\/)/;
+  const reStart = /(?:\/\/\s*|\/\*\s*)constants-(?:disable|ignore-start)(?:$|\s|\*\/)/;
+  const reEnd = /(?:\/\/\s*|\/\*\s*)constants-(?:enable|ignore-end)(?:$|\s|\*\/)/;
+
+  let inDisableBlock = false;
+  let blockStartIndex = 0;
+  let currentOffset = 0;
+
+  for (let lineNum = 1; lineNum <= lines.length; lineNum++) {
+    const lineText = lines[lineNum - 1];
+    const lineLength = lineText.length + 1; // + 1 for \n
+
+    if (reNext.test(lineText)) {
+      exemptLines.add(lineNum + 1);
+    }
+    if (reLine.test(lineText)) {
+      exemptLines.add(lineNum);
+    }
+    if (reStart.test(lineText)) {
+      if (!inDisableBlock) {
+        inDisableBlock = true;
+        blockStartIndex = currentOffset;
+      }
+    }
+    if (reEnd.test(lineText)) {
+      if (inDisableBlock) {
+        inDisableBlock = false;
+        exemptRanges.push({ start: blockStartIndex, end: currentOffset + lineLength });
+      }
+    }
+
+    if (inDisableBlock) {
+      exemptLines.add(lineNum);
+    }
+
+    currentOffset += lineLength;
+  }
+
+  if (inDisableBlock) {
+    exemptRanges.push({ start: blockStartIndex, end: sourceCode.length });
+  }
+
+  return { exemptLines, exemptRanges };
+}
+
+function isOffsetExempt(offset, line, exemptions) {
+  if (!exemptions) return false;
+  if (line && exemptions.exemptLines && exemptions.exemptLines.has(line)) return true;
+  if (exemptions.exemptRanges) {
+    for (const range of exemptions.exemptRanges) {
+      if (offset >= range.start && offset < range.end) return true;
+    }
+  }
+  return false;
+}
 
 /**
  * Extracts all string literals from JavaScript source code.
  *
  * @param {string} sourceCode - Raw JavaScript source code
- * @returns {Array<{ value: string, raw: string, quote: "'"|'"'|'`', line: number, col: number, start: number, end: number, isTypeofComparison: boolean }>}
+ * @returns {Array<{ value: string, raw: string, quote: "'"|'"'|'`', line: number, col: number, start: number, end: number, isTypeofComparison: boolean, isExempt: boolean }>}
  */
 function extractStringLiterals(sourceCode) {
+  const exemptions = extractExemptionDirectives(sourceCode);
   const literals = [];
   const len = sourceCode.length;
   let i = 0;
@@ -245,7 +325,8 @@ function extractStringLiterals(sourceCode) {
           col: startCol,
           start: startIndex,
           end: i + 1,
-          isTypeofComparison: checkTypeofContext(startIndex, i + 1)
+          isTypeofComparison: checkTypeofContext(startIndex, i + 1),
+          isExempt: isOffsetExempt(startIndex, startLine, exemptions)
         });
         state = 'CODE';
         prevTokenChar = "'";
@@ -275,7 +356,8 @@ function extractStringLiterals(sourceCode) {
           col: startCol,
           start: startIndex,
           end: i + 1,
-          isTypeofComparison: checkTypeofContext(startIndex, i + 1)
+          isTypeofComparison: checkTypeofContext(startIndex, i + 1),
+          isExempt: isOffsetExempt(startIndex, startLine, exemptions)
         });
         state = 'CODE';
         prevTokenChar = '"';
@@ -321,7 +403,8 @@ function extractStringLiterals(sourceCode) {
           col: startCol,
           start: startIndex,
           end: i + 1,
-          isTypeofComparison: checkTypeofContext(startIndex, i + 1)
+          isTypeofComparison: checkTypeofContext(startIndex, i + 1),
+          isExempt: isOffsetExempt(startIndex, startLine, exemptions)
         });
         state = 'CODE';
         prevTokenChar = '`';
@@ -377,7 +460,7 @@ function unescapeJsString(str) {
  * Automatically discovers:
  *   - Category names (POS, CONJ, FORMALITY, TAG, SRC, and any future added categories)
  *   - Category validation Sets (posValues, conjValues, etc.)
- *   - Value-to-constant reverse mapping (value -> K.POS.ACTION_VERB)
+ *   - Value-to-constant reverse mapping (value -> K.ACTION_VERB)
  *   - Canonical names vs shorthand aliases (AV, DV, N, etc.)
  *
  * @param {object} [constantsRoot] - The root K object (defaults to imported K)
@@ -469,7 +552,23 @@ function buildSchemaFromK(constantsRoot) {
   const safeShorthands = {};
 
   for (const entry of allEntries) {
-    const recommended = `K.${entry.cat}.${entry.canonicalKey}`;
+    // Resolve flattened key directly on K
+    let flatKey = entry.canonicalKey;
+    if (root[flatKey] !== entry.val) {
+      if (entry.cat === 'POS' && root[`POS_${entry.canonicalKey}`] === entry.val) {
+        flatKey = `POS_${entry.canonicalKey}`;
+      } else if (entry.cat === 'TAG' && root[`TAG_${entry.canonicalKey}`] === entry.val) {
+        flatKey = `TAG_${entry.canonicalKey}`;
+      } else {
+        for (const k of Reflect.ownKeys(root)) {
+          if (typeof k === 'string' && root[k] === entry.val && !['POS', 'CONJ', 'FORMALITY', 'TAG', 'SRC', 'SAFE_SHORTHANDS'].includes(k)) {
+            flatKey = k;
+            break;
+          }
+        }
+      }
+    }
+    const recommended = `K.${flatKey}`;
     let shorthand = entry.candidateShorthand;
     let hasCollision = false;
 
@@ -492,7 +591,7 @@ function buildSchemaFromK(constantsRoot) {
     }
 
     if (hasCollision) {
-      // Prevent shorthand: fallback to namespaced K.{CAT}.{KEY}
+      // Prevent shorthand: fallback to compact namespaced K.{KEY}
       shorthand = recommended;
     } else {
       safeShorthands[shorthand] = entry.val;
@@ -501,7 +600,7 @@ function buildSchemaFromK(constantsRoot) {
     valueToMetadata.set(entry.val, {
       value: entry.val,
       category: entry.cat,
-      key: entry.canonicalKey,
+      key: flatKey,
       recommended,
       namespaced: recommended,
       shorthand,
@@ -641,15 +740,73 @@ function isObjectKeyToken(sourceCode, token) {
   if (afterIdx >= sourceCode.length || sourceCode[afterIdx] !== ':') {
     return false;
   }
-  // If followed by ':', ensure it's not a ternary operator branch
+
+  // Look backward skipping whitespace to find preceding non-whitespace character
   let beforeIdx = token.start - 1;
   while (beforeIdx >= 0 && /\s/.test(sourceCode[beforeIdx])) {
     beforeIdx--;
   }
-  if (beforeIdx >= 0 && sourceCode[beforeIdx] === '?') {
+  if (beforeIdx < 0) return false;
+
+  const prevChar = sourceCode[beforeIdx];
+  // An uncomputed object key can ONLY be preceded by '{' or ','
+  if (prevChar !== '{' && prevChar !== ',') {
     return false;
   }
+
+  // Ensure it's not preceded by 'case' keyword or a ternary operator
+  const textBefore = sourceCode.slice(Math.max(0, beforeIdx - 20), beforeIdx + 1);
+  if (/\bcase\s*$/.test(textBefore)) return false;
+
   return true;
+}
+
+/**
+ * Ensures K (and any shorthand constants) is imported in a modified file.
+ */
+function ensureConstantsImport(content, filePath, rootDir, options = {}) {
+  // If the file already requires constants.js, do not re-import
+  if (content.includes("constants.js")) {
+    return content;
+  }
+
+  const fileDir = path.dirname(filePath);
+  const targetConstantsPath = path.join(rootDir, 'constants.js');
+  let relPath = path.relative(fileDir, targetConstantsPath).replace(/\\/g, '/');
+  if (!relPath.startsWith('.')) relPath = './' + relPath;
+
+  let importBindings = 'K';
+  if (options.shorthand) {
+    const schema = buildSchemaFromK(K);
+    const shorthandKeys = Object.keys(schema.safeShorthands);
+    importBindings = `K,\n  ` + shorthandKeys.join(', ');
+  }
+
+  // Case 2: File is wrapped in IIFE (function() { or (function(global) {
+  const iifeMatch = content.match(/\(function\s*\([^)]*\)\s*\{/);
+  // Files wrapped in IIFEs can use locally-scoped 'const'.
+  // Files running in global/script scope (browser without bundler) must use 'var'
+  // so multiple script tags importing K do not cause SyntaxError: Identifier 'K' has already been declared.
+  const declKeyword = iifeMatch ? 'const' : 'var';
+
+  const importLine = `// Universal Constants\n${declKeyword} { ${importBindings} } = (typeof require !== 'undefined') ? require('${relPath}') : (typeof window !== 'undefined' ? window : {});\n`;
+
+  // Case 1: File starts with shebang
+  if (content.startsWith('#!')) {
+    const firstNewline = content.indexOf('\n');
+    if (firstNewline !== -1) {
+      return content.slice(0, firstNewline + 1) + '\n' + importLine + content.slice(firstNewline + 1);
+    }
+    return content + '\n' + importLine;
+  }
+
+  if (iifeMatch) {
+    const insertIdx = iifeMatch.index + iifeMatch[0].length;
+    return content.slice(0, insertIdx) + '\n' + importLine + content.slice(insertIdx);
+  }
+
+  // Case 3: Standard module / script
+  return importLine + '\n' + content;
 }
 
 /**
@@ -675,8 +832,8 @@ function lintFile(filePath, registry, options = {}) {
   const matchedTokensMap = new Map();
 
   for (const token of tokens) {
-    // Skip JS typeof comparisons (e.g. typeof x === "object")
-    if (token.isTypeofComparison) continue;
+    // Skip JS typeof comparisons (e.g. typeof x === "object") and exempt tokens
+    if (token.isTypeofComparison || token.isExempt) continue;
 
     if (registry.has(token.value)) {
       const info = registry.get(token.value);
@@ -691,11 +848,61 @@ function lintFile(filePath, registry, options = {}) {
     }
   }
 
+  // Also scan for unflattened verbose constants: K.(POS|TAG|CONJ|FORMALITY|SRC).[A-Z0-9_]+
+  const verboseRegex = /\bK\.(POS|TAG|CONJ|FORMALITY|SRC)\.([A-Z0-9_]+)\b/g;
+  const exemptions = extractExemptionDirectives(content);
+  let verboseMatch;
+  while ((verboseMatch = verboseRegex.exec(content)) !== null) {
+    if (isOffsetExempt(verboseMatch.index, null, exemptions)) continue;
+
+    const raw = verboseMatch[0];
+    const cat = verboseMatch[1];
+    const key = verboseMatch[2];
+
+    if (options.category && cat.toLowerCase() !== options.category.toLowerCase()) {
+      continue;
+    }
+
+    let flatKey = key;
+    if (cat === 'POS' && key === 'GRAMMAR') flatKey = 'POS_GRAMMAR';
+    else if (cat === 'POS' && key === 'ADVERB') flatKey = 'POS_ADVERB';
+    else if (cat === 'TAG' && key === 'GRAMMAR') flatKey = 'GRAMMAR';
+    else if (cat === 'TAG' && key === 'ADVERB') flatKey = 'ADVERB';
+
+    const replacement = `K.${flatKey}`;
+    const token = {
+      value: raw,
+      raw: raw,
+      start: verboseMatch.index,
+      end: verboseMatch.index + raw.length,
+      isVerboseConstant: true,
+      replacement: replacement,
+      flatKey: flatKey,
+      category: cat
+    };
+
+    if (!matchedTokensMap.has(raw)) {
+      matchedTokensMap.set(raw, []);
+    }
+    matchedTokensMap.get(raw).push(token);
+  }
+
   const matches = [];
   let totalMatches = 0;
 
   for (const [val, tokenList] of matchedTokensMap.entries()) {
-    const info = registry.get(val);
+    let info = registry.get(val);
+    if (!info && tokenList[0] && tokenList[0].isVerboseConstant) {
+      info = {
+        value: val,
+        category: tokenList[0].category,
+        key: tokenList[0].flatKey,
+        recommended: tokenList[0].replacement,
+        namespaced: tokenList[0].replacement,
+        shorthand: tokenList[0].flatKey,
+        hasCollision: false
+      };
+    }
     totalMatches += tokenList.length;
     matches.push({
       value: val,
@@ -765,11 +972,13 @@ function applyFixesToFile(fileResult, options = {}) {
   for (const match of fileResult.matches) {
     for (const token of match.tokens) {
       let replacement = match.info.recommended;
-      if (options.shorthand && match.info.shorthand) {
+      if (token.isVerboseConstant) {
+        replacement = token.replacement;
+      } else if (options.shorthand && match.info.shorthand) {
         replacement = match.info.shorthand;
       }
-      // If the string literal is an object key, wrap it in computed brackets: [K.POS.NOUN]: 'N'
-      if (isObjectKeyToken(content, token)) {
+      // If the string literal is an object key, wrap it in computed brackets: [K.NOUN]: 'N'
+      if (!token.isVerboseConstant && isObjectKeyToken(content, token)) {
         replacement = `[${replacement}]`;
       }
       allTokens.push({
@@ -791,33 +1000,9 @@ function applyFixesToFile(fileResult, options = {}) {
     content = content.slice(0, tok.start) + tok.replacement + content.slice(tok.end);
   }
 
-  // If fixing data.js, ensure universal constants and safe shorthand imports are present
-  const isDataJs = fileResult.file === 'data.js' || fileResult.file.endsWith('/data.js');
-  if (isDataJs && !content.includes("require('./constants.js')")) {
-    const schema = buildSchemaFromK(K);
-    const shorthandKeys = Object.keys(schema.safeShorthands);
-    const importHeader =
-      `// --- Universal Constants & Compact Shorthand Imports ---\n` +
-      `const {\n` +
-      `  K,\n  ` +
-      shorthandKeys.join(', ') + `\n` +
-      `} = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});\n\n`;
-
-    const schemaIdx = content.indexOf('const DATA_SCHEMA = {');
-    if (schemaIdx !== -1) {
-      content = content.slice(0, schemaIdx) + importHeader + content.slice(schemaIdx);
-    } else {
-      content = importHeader + content;
-    }
-
-    // Ensure K is also exported at the bottom of data.js if not already present
-    if (!content.includes('K, DATA_SCHEMA') && !content.includes('DATA_SCHEMA, hasTag, K')) {
-      content = content.replace(
-        'module.exports = { KR_EN_languageUnits, addLearningUnit, getWords, rebuildCache, getPartOfSpeechCached, cache, DATA_SCHEMA, hasTag };',
-        'module.exports = { KR_EN_languageUnits, addLearningUnit, getWords, rebuildCache, getPartOfSpeechCached, cache, DATA_SCHEMA, hasTag, K };'
-      );
-    }
-  }
+  // Ensure constants import is present in the modified file
+  const rootDir = path.resolve(__dirname, '..');
+  content = ensureConstantsImport(content, fileResult.fullPath, rootDir, options);
 
   fs.writeFileSync(fileResult.fullPath, content, 'utf8');
   const bytesAfter = Buffer.byteLength(content, 'utf8');
@@ -964,7 +1149,7 @@ function analyzeFile(filePath, options = {}) {
     throw new Error(`File does not exist: ${resolvedPath}`);
   }
   const sourceCode = fs.readFileSync(resolvedPath, 'utf8');
-  const tokens = extractStringLiterals(sourceCode);
+  const tokens = extractStringLiterals(sourceCode).filter(t => !t.isExempt);
   const counted = countStringLiterals(tokens);
   const minCount = options.minCount !== undefined ? options.minCount : 5;
 
@@ -1035,7 +1220,7 @@ ARGUMENTS:
 
 OPTIONS:
   -f, --fix, --replace     Automatically apply search/replace across matched files
-  -s, --shorthand          Use short aliases (e.g. AV, DV, N) instead of K.POS.ACTION_VERB
+  -s, --shorthand          Use short aliases (e.g. AV, DV, N) instead of K.ACTION_VERB
   -c, --category <cat>     Filter by category: POS, CONJ, FORMALITY, TAG, SRC
   -j, --json               Output raw report in machine-readable JSON format
   -h, --help               Display this help guide

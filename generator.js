@@ -1,3 +1,6 @@
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
+
 const { applyMorphology, generateTemplateOptions, getFilteredWords, seededRandom } = require('./korean.js');
 const { DATA_SCHEMA } = require('./data.js');
 
@@ -20,7 +23,7 @@ function generateSentence(template) {
 }
 
 console.log("=== Random Korean Phrase Generator (Semantic Testing) ===\n");
-const grammarUnits = getFilteredWords("Grammar");
+const grammarUnits = getFilteredWords(K.POS_GRAMMAR);
 const testTemplates = [];
 grammarUnits.forEach(entry => {
 	entry[DATA_SCHEMA.Conjugation].forEach(formula => {

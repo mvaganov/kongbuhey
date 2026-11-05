@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/counter_concord_test.js
  *
@@ -280,12 +283,12 @@ for (const { noun, cls, phrase } of incompatibleCategoryPairs) {
 // -----------------------------------------------------------------------------
 console.log("\n[6/10] Counting Phrase Builder (buildCountingPhrase)");
 
-assert(buildCountingPhrase("사과", 3, { particle: "object" }) === "사과 세 개를", "사과 3 object: '사과 세 개를'");
+assert(buildCountingPhrase("사과", 3, { particle: K.OBJECT }) === "사과 세 개를", "사과 3 object: '사과 세 개를'");
 assert(buildCountingPhrase("학생", 2, { particle: "subject" }) === "학생 두 명이", "학생 2 subject: '학생 두 명이'");
 assert(buildCountingPhrase("고양이", 1, { particle: "subject" }) === "고양이 한 마리가", "고양이 1 subject: '고양이 한 마리가'");
-assert(buildCountingPhrase("커피", 2, { particle: "object" }) === "커피 두 잔을", "커피 2 object: '커피 두 잔을'");
-assert(buildCountingPhrase("구두", 1, { particle: "object" }) === "구두 한 켤레를", "구두 1 object: '구두 한 켤레를'");
-assert(buildCountingPhrase("옷", 2, { particle: "object" }) === "옷 두 벌을", "옷 2 object: '옷 두 벌을'");
+assert(buildCountingPhrase("커피", 2, { particle: K.OBJECT }) === "커피 두 잔을", "커피 2 object: '커피 두 잔을'");
+assert(buildCountingPhrase("구두", 1, { particle: K.OBJECT }) === "구두 한 켤레를", "구두 1 object: '구두 한 켤레를'");
+assert(buildCountingPhrase("옷", 2, { particle: K.OBJECT }) === "옷 두 벌을", "옷 2 object: '옷 두 벌을'");
 assert(buildCountingPhrase("선생님", 2, { particle: "subject" }) === "선생님 두 분이", "선생님 2 subject: '선생님 두 분이'");
 assert(buildCountingPhrase("책", 3, { prenominal: true }) === "세 권의 책", "책 3 prenominal: '세 권의 책'");
 assert(buildCountingPhrase("학생", 5, { prenominal: true }) === "다섯 명의 학생", "학생 5 prenominal: '다섯 명의 학생'");
@@ -387,7 +390,7 @@ const testNouns = [
 let validCount = 0;
 for (const { n } of testNouns) {
 	for (let c = 1; c <= 5; c++) {
-		const s = buildCountingPhrase(n, c, { particle: "object" }) + " 샀어요";
+		const s = buildCountingPhrase(n, c, { particle: K.OBJECT }) + " 샀어요";
 		const res = validateCounterConcord(s);
 		assert(res.valid, `Valid Cartesian phrase: '${s}'`);
 		validCount++;

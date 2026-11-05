@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/spatial_concord_test.js - Feature 7: Deictic Demonstratives & Spatial Relational Test Suite
  *
@@ -155,7 +158,7 @@ console.log("\n[3/10] Determiner + Noun Syntax & Illegal Particle Prevention");
 assert(buildDeicticPhrase("proximal", "noun", { noun: "책" }) === "이 책", "Proximal NP: '이 책'");
 assert(buildDeicticPhrase("medial", "noun", { noun: "사람" }) === "그 사람", "Medial NP: '그 사람'");
 assert(buildDeicticPhrase("distal", "noun", { noun: "건물" }) === "저 건물", "Distal NP: '저 건물'");
-assert(buildDeicticPhrase("proximal", "noun", { noun: "가방", particle: "object" }) === "이 가방을", "NP with object particle: '이 가방을'");
+assert(buildDeicticPhrase("proximal", "noun", { noun: "가방", particle: K.OBJECT }) === "이 가방을", "NP with object particle: '이 가방을'");
 assert(buildDeicticPhrase("medial", "noun", { noun: "학생", particle: "subject" }) === "그 학생이", "NP with subject particle: '그 학생이'");
 
 // Bare determiner particle prohibition (*이가, *이를, *그을, *어느를)
@@ -265,9 +268,9 @@ assert(buildDeicticPhrase("medial", "thing", { particle: "topic" }) === "그건"
 assert(buildDeicticPhrase("distal", "thing", { particle: "topic" }) === "저건", "저것 + 은 -> 저건");
 
 // Object contractions (-을/를)
-assert(buildDeicticPhrase("proximal", "thing", { particle: "object" }) === "이걸", "이것 + 을 -> 이걸");
-assert(buildDeicticPhrase("medial", "thing", { particle: "object" }) === "그걸", "그것 + 을 -> 그걸");
-assert(buildDeicticPhrase("distal", "thing", { particle: "object" }) === "저걸", "저것 + 을 -> 저걸");
+assert(buildDeicticPhrase("proximal", "thing", { particle: K.OBJECT }) === "이걸", "이것 + 을 -> 이걸");
+assert(buildDeicticPhrase("medial", "thing", { particle: K.OBJECT }) === "그걸", "그것 + 을 -> 그걸");
+assert(buildDeicticPhrase("distal", "thing", { particle: K.OBJECT }) === "저걸", "저것 + 을 -> 저걸");
 
 // Morphology engine automatic sandhi verification
 assert(applyMorphology("이것이 좋아요") === "이게 좋아요", "applyMorphology resolves 이것이 -> 이게");

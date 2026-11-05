@@ -1,4 +1,7 @@
 (function() {
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * ============================================================================
  * korean/core/lexicon_index.js - Unified O(1) Lexicon & Candidate Cache Index
@@ -59,12 +62,12 @@ function buildLexiconIndex(dm = dataModule) {
 		if (!unitsByPos.has(pos)) unitsByPos.set(pos, []);
 		unitsByPos.get(pos).push(u);
 
-		if (pos === 'Noun' || pos === 'Pronoun') {
+		if (pos === K.NOUN || pos === K.PRONOUN) {
 			if (!nounByKo.has(ko)) nounByKo.set(ko, u);
 			if (!allNounsByKo.has(ko)) allNounsByKo.set(ko, []);
 			allNounsByKo.get(ko).push(u);
 
-			if (!hasTag(u, 'measureWord')) {
+			if (!hasTag(u, K.MEASUREWORD)) {
 				nonMeasureNounsAll.push(u);
 				const tags = u[DATA_SCHEMA.SemanticTags];
 				if (tags) {
@@ -74,8 +77,8 @@ function buildLexiconIndex(dm = dataModule) {
 					}
 				}
 			}
-		} else if (pos === 'Action Verb' || pos === 'Descriptive Verb') {
-			if (!verbByKo.has(ko) || (pos === 'Action Verb' && verbByKo.get(ko)[DATA_SCHEMA.PartofSpeech] !== 'Action Verb')) {
+		} else if (pos === K.ACTION_VERB || pos === K.DESCRIPTIVE_VERB) {
+			if (!verbByKo.has(ko) || (pos === K.ACTION_VERB && verbByKo.get(ko)[DATA_SCHEMA.PartofSpeech] !== K.ACTION_VERB)) {
 				verbByKo.set(ko, u);
 			}
 		}

@@ -1,3 +1,6 @@
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * homonyms.js
  * 
@@ -237,7 +240,7 @@ function extractEntriesForUnit(unit, map) {
     const idSubject = grammarSubject ? grammarSubject[DATA_SCHEMA.Id] : 96;
 
     // 1. Direct lexical form (skip grammar template names with ~, -, / and handle Grammar units in step 4)
-    if (pos !== 'Grammar') {
+    if (pos !== K.POS_GRAMMAR) {
         const cleanLexical = ko.replace(/\s*\([^)]*\)/g, '').trim();
         if (!cleanLexical.startsWith('~') && !cleanLexical.startsWith('-') && !cleanLexical.includes('/')) {
             addHomonymEntry(map, cleanLexical, id);
@@ -245,7 +248,7 @@ function extractEntriesForUnit(unit, map) {
     }
 
     // 2. Irregular particle forms for Pronouns
-    if (pos === 'Pronoun') {
+    if (pos === K.PRONOUN) {
         if (ko === '누구') {
             addHomonymEntry(map, '누가', [idSubject, [id]]);
         } else if (ko === '저') {
@@ -258,13 +261,13 @@ function extractEntriesForUnit(unit, map) {
     }
 
     // 3. Verbs / Descriptive Verbs (Stems, Allomorphs & Portmanteaus)
-    if (pos === 'Action Verb' || pos === 'Descriptive Verb') {
+    if (pos === K.ACTION_VERB || pos === K.DESCRIPTIVE_VERB) {
         const stem = getStem(ko);
         if (stem) {
             addHomonymEntry(map, stem, id);
         }
 
-        const conjTag = (conj && conj !== 'regular' && conj !== '') ? `[${conj}]` : '';
+        const conjTag = (conj && conj !== K.REGULAR && conj !== '') ? `[${conj}]` : '';
 
         // A. Polite ending (~아/어요)
         try {
@@ -304,7 +307,7 @@ function extractEntriesForUnit(unit, map) {
     }
 
     // 4. Grammar units (extract actual surface particles and slash variants)
-    if (pos === 'Grammar') {
+    if (pos === K.POS_GRAMMAR) {
         const cleanKo = ko.replace(/\s*\([^)]*\)/g, '').trim();
         if (cleanKo.includes('/')) {
             const parts = cleanKo.split('/').map(p => p.trim().replace(/^[~-]/, '')).filter(Boolean);

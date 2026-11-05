@@ -1,4 +1,7 @@
 (function() {
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * Korean Number Generators (Sino-Korean & Native/Pure-Korean)
  *
@@ -51,7 +54,7 @@ function getFilteredWords(pos, tag) {
 			const id = w[DATA_SCHEMA.Id];
 			if (currentUsageFilter._ids && currentUsageFilter._ids.has(id)) return true;
 			const source = w[DATA_SCHEMA.Source];
-			let isAllowed = currentUsageFilter[source] || hasTag(w, "devtest");
+			let isAllowed = currentUsageFilter[source] || hasTag(w, K.DEVTEST);
 			if (!isAllowed) {
 				const tags = w[DATA_SCHEMA.SemanticTags];
 				if (tags) {
@@ -102,7 +105,7 @@ function getKoreanNumber(n, isAttributive = false) {
 function getNumberTokenOptions(baseTag, min, max, isAttributive) {
 	const options = [];
 	const KoreanWord = DATA_SCHEMA.Korean;
-	const words = getFilteredWords("Number", baseTag);
+	const words = getFilteredWords(K.NUMBER, baseTag);
 
 	if (max - min + 1 <= 10) {
 		for (let i = min; i <= max; i++) {

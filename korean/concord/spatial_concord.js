@@ -1,3 +1,6 @@
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * Feature 7: Deictic Demonstratives & Spatial Relational Noun Phrase Syntax
  *
@@ -39,7 +42,7 @@ function getDeicticDemonstratives(options = {}) {
 	const mapsToSearch = [];
 	if (!filterType || filterType === "determiner") mapsToSearch.push(state.DEICTIC_DETERMINERS);
 	if (!filterType || filterType === "thing" || filterType === "pronoun") mapsToSearch.push(state.DEICTIC_PRONOUNS);
-	if (!filterType || filterType === "place" || filterType === "locative") mapsToSearch.push(state.DEICTIC_LOCATIVES);
+	if (!filterType || filterType === K.PLACE || filterType === "locative") mapsToSearch.push(state.DEICTIC_LOCATIVES);
 	if (!filterType || filterType === "direction") mapsToSearch.push(state.DEICTIC_DIRECTIONS);
 
 	for (const m of mapsToSearch) {
@@ -142,7 +145,7 @@ function buildDeicticPhrase(proximity = "proximal", targetType = "noun", options
 		return baseKo;
 	}
 
-	if (targetType === "place" || targetType === "locative") {
+	if (targetType === K.PLACE || targetType === "locative") {
 		const formal = options.formal === true;
 		const candidates = Array.from(state.DEICTIC_LOCATIVES.values()).filter(l => l.proximity === proximity);
 		const entry = candidates.find(c => formal ? c.ko.endsWith("곳") : !c.ko.endsWith("곳")) || candidates[0];
@@ -184,7 +187,14 @@ function validateSpatialConcord(input, context = {}) {
 	// 2. Spatial Relational Frame Static vs Dynamic Verb Particle Harmony
 	const positionsPattern = Array.from(state.SPATIAL_POSITIONS.keys()).join('|');
 	if (positionsPattern) {
-		const staticStems = Array.from(state.STATIC_EXISTENCE_VERBS).map(v => v.replace(/다$/, '')).concat(['누워', '계세', '계십', '계셔', '계셨']);
+		const staticStems = Array.from(state.STATIC_EXISTENCE_VERBS)
+			.filter(v => typeof v === 'string' && v.endsWith('다'))
+			.map(v => {
+				const stem = v.replace(/다$/, '');
+				if (stem === '서') return '서(?=[^가-힣]|요|었|았|어|고|면|서|다|ㅂ|습|ㄴ다|는)';
+				return stem;
+			})
+			.concat(['누워', '계세', '계십', '계셔', '계셨']);
 		if (staticStems.length > 0) {
 			const staticErrorRegex = new RegExp(`(?:${positionsPattern})에서\\s+(?:[^.!?]*\\s+)?(?:${staticStems.join('|')})`);
 			if (staticErrorRegex.test(text)) {
@@ -193,10 +203,26 @@ function validateSpatialConcord(input, context = {}) {
 			}
 		}
 
-		const dynamicActionErrorRegex = new RegExp(`(?:${positionsPattern})에\\s+(?:[가-힣]+[을를]\\s+)(?:만나|공부(?:하|해|했)|일(?:하|해|했)|운동(?:하|해|했)|먹|사|놀|기다(?:리|려)|마시|마셔|읽)`);
-		if (dynamicActionErrorRegex.test(text)) {
-			errors.push(`Spatial position noun takes '-에서' (not '-에') with dynamic action verb in: "${text}"`);
-			errorCodes.push(ERROR_CODES.SPATIAL_RELATION_MISMATCH);
+		const dynamicActionErrorRegex = new RegExp(`(?<![가-힣])(${positionsPattern})에\\s+(?:[가-힣]+[을를]\\s+)(?:만나|공부(?:하|해|했)|일(?:하|해|했)|운동(?:하|해|했)|먹|사|놀|기다(?:리|려)|마시|마셔|읽)`);
+		const dynMatch = dynamicActionErrorRegex.exec(text);
+		if (dynMatch) {
+			const preceding = text.slice(0, dynMatch.index).trim();
+			let isTemporal = false;
+			if (preceding) {
+				const lastWord = preceding.split(/\s+/).pop();
+				if (lastWord) {
+					const lastChar = lastWord[lastWord.length - 1];
+					const code = lastChar.charCodeAt(0) - 0xAC00;
+					const batchim = (code >= 0 && code <= 11171) ? (code % 28) : 0;
+					if (batchim === 4 || lastWord.endsWith('기') || /(?:학기|방학|수업|회의|식사|통화|여행|휴가|공부|근무)$/.test(lastWord)) {
+						isTemporal = true;
+					}
+				}
+			}
+			if (!isTemporal) {
+				errors.push(`Spatial position noun takes '-에서' (not '-에') with dynamic action verb in: "${text}"`);
+				errorCodes.push(ERROR_CODES.SPATIAL_RELATION_MISMATCH);
+			}
 		}
 	}
 
@@ -226,14 +252,36 @@ function applySpatialConcord(input) {
 
 	const positionsPattern = Array.from(state.SPATIAL_POSITIONS.keys()).join('|');
 	if (positionsPattern) {
-		const staticStems = Array.from(state.STATIC_EXISTENCE_VERBS).map(v => v.replace(/다$/, '')).concat(['누워', '계세', '계십', '계셔', '계셨']);
+		const staticStems = Array.from(state.STATIC_EXISTENCE_VERBS)
+			.filter(v => typeof v === 'string' && v.endsWith('다'))
+			.map(v => {
+				const stem = v.replace(/다$/, '');
+				if (stem === '서') return '서(?=[^가-힣]|요|었|았|어|고|면|서|다|ㅂ|습|ㄴ다|는)';
+				return stem;
+			})
+			.concat(['누워', '계세', '계십', '계셔', '계셨']);
 		if (staticStems.length > 0) {
 			const repRegex = new RegExp(`(?<![가-힣])(${positionsPattern})에서(\\s+(?:[^.!?]*\\s+)?(?:${staticStems.join('|')}))`, 'g');
 			str = str.replace(repRegex, '$1에$2');
 		}
 
-		const dynamicRepRegex = new RegExp(`(?<![가-힣]+[은ㄴ]\\s+)(?<![가-힣]+기\\s+)(?<!(?:학기|방학|수업|회의|식사|통화|여행|휴가|공부|근무)\\s*)(?<![가-힣])(${positionsPattern})에(\\s+(?:[가-힣]+[을를]\\s+)(?:만나|공부(?:하|해|했)|일(?:하|해|했)|운동(?:하|해|했)|먹|사|놀|기다(?:리|려)|마시|마셔|읽))`, 'g');
-		str = str.replace(dynamicRepRegex, '$1에서$2');
+		const dynamicRepRegex = new RegExp(`(?<![가-힣])(${positionsPattern})에(\\s+(?:[가-힣]+[을를]\\s+)(?:만나|공부(?:하|해|했)|일(?:하|해|했)|운동(?:하|해|했)|먹|사|놀|기다(?:리|려)|마시|마셔|읽))`, 'g');
+		str = str.replace(dynamicRepRegex, (m, posWord, rest, offset) => {
+			const preceding = str.slice(0, offset).trim();
+			if (preceding) {
+				const lastWord = preceding.split(/\s+/).pop();
+				if (lastWord) {
+					// Temporal adnominal modifier -(으)ㄴ 뒤/후 (e.g. 일한 뒤에, 먹은 뒤에)
+					const lastChar = lastWord[lastWord.length - 1];
+					const code = lastChar.charCodeAt(0) - 0xAC00;
+					const batchim = (code >= 0 && code <= 11171) ? (code % 28) : 0;
+					if (batchim === 4) return m; // ㄴ coda
+					if (lastWord.endsWith('기')) return m;
+					if (/(?:학기|방학|수업|회의|식사|통화|여행|휴가|공부|근무)$/.test(lastWord)) return m;
+				}
+			}
+			return posWord + '에서' + rest;
+		});
 	}
 
 	return str;

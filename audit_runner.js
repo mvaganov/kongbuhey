@@ -1,3 +1,6 @@
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * audit_runner.js - CLI Assistant for Curriculum-Wide Linguistic Audit
  *
@@ -32,31 +35,31 @@ const BATCH_SPECS = [
 		id: "01",
 		name: "closed_classes",
 		label: "Closed Modifiers & Deictics",
-		filter: u => ['Pronoun', 'Determiner', 'Number', 'Exclamation'].includes(u[DATA_SCHEMA.PartofSpeech])
+		filter: u => [K.PRONOUN, K.DETERMINER, K.NUMBER, K.EXCLAMATION].includes(u[DATA_SCHEMA.PartofSpeech])
 	},
 	{
 		id: "02",
 		name: "adverbs",
 		label: "Adverbs & Discourse",
-		filter: u => u[DATA_SCHEMA.PartofSpeech] === 'Adverb'
+		filter: u => u[DATA_SCHEMA.PartofSpeech] === K.POS_ADVERB
 	},
 	{
 		id: "03",
 		name: "descriptive_verbs",
 		label: "Statives & Adjectives",
-		filter: u => u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb'
+		filter: u => u[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB
 	},
 	{
 		id: "04",
-		name: "grammar",
+		name: K.GRAMMAR,
 		label: "Particles & Grammar",
-		filter: u => u[DATA_SCHEMA.PartofSpeech] === 'Grammar'
+		filter: u => u[DATA_SCHEMA.PartofSpeech] === K.POS_GRAMMAR
 	},
 	{
 		id: "05",
 		name: "action_verbs_part_a",
 		label: "Action Verbs (Part A)",
-		partitionFrom: 'Action Verb',
+		partitionFrom: K.ACTION_VERB,
 		sliceIndex: 0,
 		sliceCount: 190
 	},
@@ -64,7 +67,7 @@ const BATCH_SPECS = [
 		id: "06",
 		name: "action_verbs_part_b",
 		label: "Action Verbs (Part B)",
-		partitionFrom: 'Action Verb',
+		partitionFrom: K.ACTION_VERB,
 		sliceIndex: 190,
 		sliceCount: 189
 	},
@@ -72,7 +75,7 @@ const BATCH_SPECS = [
 		id: "07",
 		name: "nouns_part_a",
 		label: "Nouns (Part A)",
-		partitionFrom: 'Noun',
+		partitionFrom: K.NOUN,
 		sliceIndex: 0,
 		sliceCount: 221
 	},
@@ -80,7 +83,7 @@ const BATCH_SPECS = [
 		id: "08",
 		name: "nouns_part_b",
 		label: "Nouns (Part B)",
-		partitionFrom: 'Noun',
+		partitionFrom: K.NOUN,
 		sliceIndex: 221,
 		sliceCount: 221
 	},
@@ -88,7 +91,7 @@ const BATCH_SPECS = [
 		id: "09",
 		name: "nouns_part_c",
 		label: "Nouns (Part C)",
-		partitionFrom: 'Noun',
+		partitionFrom: K.NOUN,
 		sliceIndex: 442,
 		sliceCount: 221
 	},
@@ -96,7 +99,7 @@ const BATCH_SPECS = [
 		id: "10",
 		name: "nouns_part_d",
 		label: "Nouns (Part D)",
-		partitionFrom: 'Noun',
+		partitionFrom: K.NOUN,
 		sliceIndex: 663,
 		sliceCount: 221
 	},
@@ -104,7 +107,7 @@ const BATCH_SPECS = [
 		id: "11",
 		name: "nouns_part_e",
 		label: "Nouns (Part E)",
-		partitionFrom: 'Noun',
+		partitionFrom: K.NOUN,
 		sliceIndex: 884,
 		sliceCount: 221
 	}
@@ -129,8 +132,8 @@ function initBatches() {
 	ensureDirs();
 	console.log("[Init] Partitioning curriculum into 11 batches...");
 
-	const actionVerbs = KR_EN_languageUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Action Verb');
-	const nouns = KR_EN_languageUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun');
+	const actionVerbs = KR_EN_languageUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB);
+	const nouns = KR_EN_languageUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === K.NOUN);
 
 	let totalAssigned = 0;
 	const manifest = [];
@@ -139,9 +142,9 @@ function initBatches() {
 		let units = [];
 		if (spec.filter) {
 			units = KR_EN_languageUnits.filter(spec.filter);
-		} else if (spec.partitionFrom === 'Action Verb') {
+		} else if (spec.partitionFrom === K.ACTION_VERB) {
 			units = actionVerbs.slice(spec.sliceIndex, spec.sliceIndex + spec.sliceCount);
-		} else if (spec.partitionFrom === 'Noun') {
+		} else if (spec.partitionFrom === K.NOUN) {
 			units = nouns.slice(spec.sliceIndex, spec.sliceIndex + spec.sliceCount);
 		}
 

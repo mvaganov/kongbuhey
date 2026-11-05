@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/honorific_concord_test.js - Feature 4: Speech Register & Honorific Concord Test Suite
  *
@@ -105,16 +108,16 @@ console.log("   FEATURE 4: SPEECH REGISTER & HONORIFICS CONCORD   ");
 console.log("======================================================");
 
 // Fetch sample units from data.js
-const teacherUnit = getWords("Noun").find(w => w[DATA_SCHEMA.Korean] === "선생님");
-const grandmaUnit = getWords("Noun").find(w => w[DATA_SCHEMA.Korean] === "할머니");
-const grandpaUnit = getWords("Noun").find(w => w[DATA_SCHEMA.Korean] === "할아버지");
-const parentsUnit = getWords("Noun").find(w => w[DATA_SCHEMA.Korean] === "부모님");
-const fatherUnit = getWords("Noun").find(w => w[DATA_SCHEMA.Korean] === "아버지");
-const motherUnit = getWords("Noun").find(w => w[DATA_SCHEMA.Korean] === "어머니");
-const profUnit = getWords("Noun").find(w => w[DATA_SCHEMA.Korean] === "교수님");
-const bossUnit = getWords("Noun").find(w => w[DATA_SCHEMA.Korean] === "사장님");
-const friendUnit = getWords("Noun").find(w => w[DATA_SCHEMA.Korean] === "친구");
-const studentUnit = getWords("Noun").find(w => w[DATA_SCHEMA.Korean] === "학생");
+const teacherUnit = getWords(K.NOUN).find(w => w[DATA_SCHEMA.Korean] === "선생님");
+const grandmaUnit = getWords(K.NOUN).find(w => w[DATA_SCHEMA.Korean] === "할머니");
+const grandpaUnit = getWords(K.NOUN).find(w => w[DATA_SCHEMA.Korean] === "할아버지");
+const parentsUnit = getWords(K.NOUN).find(w => w[DATA_SCHEMA.Korean] === "부모님");
+const fatherUnit = getWords(K.NOUN).find(w => w[DATA_SCHEMA.Korean] === "아버지");
+const motherUnit = getWords(K.NOUN).find(w => w[DATA_SCHEMA.Korean] === "어머니");
+const profUnit = getWords(K.NOUN).find(w => w[DATA_SCHEMA.Korean] === "교수님");
+const bossUnit = getWords(K.NOUN).find(w => w[DATA_SCHEMA.Korean] === "사장님");
+const friendUnit = getWords(K.NOUN).find(w => w[DATA_SCHEMA.Korean] === "친구");
+const studentUnit = getWords(K.NOUN).find(w => w[DATA_SCHEMA.Korean] === "학생");
 
 // -----------------------------------------------------------------------------
 // [Suite 1] Subject Honorific Concord & Particle Suppletion (-께서 / -께서는)
@@ -373,10 +376,10 @@ assert(validCheck5.valid, "Accepts: 저희가 부모님께 말씀드렸어요");
 // -----------------------------------------------------------------------------
 console.log("\n[9/10] Phrase Builders Integration");
 
-const sleepVerb = getWords("Action Verb").find(w => w[DATA_SCHEMA.Korean] === "자다");
-const eatVerb = getWords("Action Verb").find(w => w[DATA_SCHEMA.Korean] === "먹다");
-const giveVerb = getWords("Action Verb").find(w => w[DATA_SCHEMA.Korean] === "주다");
-const sickVerb = getWords("Descriptive Verb").find(w => w[DATA_SCHEMA.Korean] === "아프다");
+const sleepVerb = getWords(K.ACTION_VERB).find(w => w[DATA_SCHEMA.Korean] === "자다");
+const eatVerb = getWords(K.ACTION_VERB).find(w => w[DATA_SCHEMA.Korean] === "먹다");
+const giveVerb = getWords(K.ACTION_VERB).find(w => w[DATA_SCHEMA.Korean] === "주다");
+const sickVerb = getWords(K.DESCRIPTIVE_VERB).find(w => w[DATA_SCHEMA.Korean] === "아프다");
 
 // Elder subject in buildActionVerbPhrase triggers verb suppletion (자다 -> 주무시다)
 const sleepPhraseHon = buildActionVerbPhrase(sleepVerb, getStem("자다"), null, { honorific: true, subject: grandmaUnit });
@@ -384,7 +387,7 @@ assert(sleepPhraseHon.verb && sleepPhraseHon.verb[DATA_SCHEMA.Korean] === "주�
 assert(sleepPhraseHon.text.includes("주무시"), `Generated text contains 주무시: "${sleepPhraseHon.text}"`);
 
 // Elder subject with 밥 triggers noun suppletion to 진지
-const riceNoun = getWords("Noun").find(w => w[DATA_SCHEMA.Korean] === "밥");
+const riceNoun = getWords(K.NOUN).find(w => w[DATA_SCHEMA.Korean] === "밥");
 const eatPhraseHon = buildActionVerbPhrase(eatVerb, getStem("먹다"), riceNoun, { honorific: true, subject: teacherUnit });
 assert(eatPhraseHon.verb && eatPhraseHon.verb[DATA_SCHEMA.Korean] === "드시다", "buildActionVerbPhrase suppletes 먹다 to 드시다 for teacher");
 assert(eatPhraseHon.noun && eatPhraseHon.noun[DATA_SCHEMA.Korean] === "진지", "buildActionVerbPhrase suppletes 밥 to 진지 for teacher");

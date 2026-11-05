@@ -1,4 +1,7 @@
 (function() {
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * korean/analyzer/passage_analyzer.js
  *
@@ -79,7 +82,7 @@ function analyzePassage(passageText, passageName = "Passage", explicitIndex = nu
 							knownVocab.get(id).count++;
 						} else if (comp.missing) {
 							const k = comp.text;
-							if (!missingVocab.has(k)) missingVocab.set(k, { text: k, pos: "Noun", gloss: comp.gloss, count: 0, contexts: [] });
+							if (!missingVocab.has(k)) missingVocab.set(k, { text: k, pos: K.NOUN, gloss: comp.gloss, count: 0, contexts: [] });
 							missingVocab.get(k).count++;
 							missingVocab.get(k).contexts.push(`Sent ${sent.sentenceIndex}: ${t.surface}`);
 						}

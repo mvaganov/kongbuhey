@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * scripts/enrich_language_metadata.js
  *
@@ -107,7 +110,7 @@ const IRREGULAR_EN_VERBS = {
 // ============================================================================
 const GRAMMAR_METADATA_BY_ID = {
 	23: { kind: 'suffix', lit: '-Mr./Ms.', nat: 'Mr./Ms.' },
-	36: { kind: 'particle', role: 'TOPIC', lit: '-[topic]', nat: '' },
+	36: { kind: K.PARTICLE, role: 'TOPIC', lit: '-[topic]', nat: '' },
 	37: { kind: 'copula', lit: '-is/am/are', nat: 'be', tense: 'present', formality: 'polite' },
 	49: { kind: 'ending', lit: '', nat: '', tense: 'present', formality: 'polite' },
 	50: { kind: 'ending', lit: '', nat: '', tense: 'present', formality: 'formal' },
@@ -118,18 +121,18 @@ const GRAMMAR_METADATA_BY_ID = {
 	56: { kind: 'copula', lit: '-is/am/are', nat: 'be', tense: 'present', formality: 'formal' },
 	57: { kind: 'pattern', lit: '', nat: '' },
 	95: { kind: 'copula_neg', lit: '-[subj] not-be', nat: 'be not', tense: 'present', formality: 'polite' },
-	96: { kind: 'particle', role: 'SUBJECT', lit: '-[subj]', nat: '' },
-	132: { kind: 'particle', role: 'LOC_STATIC', lit: '-at/in', prep: 'at' },
-	173: { kind: 'particle', role: 'OBJECT', lit: '-[obj]', nat: '' },
-	199: { kind: 'particle', role: 'LOC_DYNAMIC', lit: '-at/from', prep: 'at', sourcePrep: 'from' },
-	200: { kind: 'particle', role: 'LOC_GOAL', lit: '-to', prep: 'to' },
+	96: { kind: K.PARTICLE, role: 'SUBJECT', lit: '-[subj]', nat: '' },
+	132: { kind: K.PARTICLE, role: 'LOC_STATIC', lit: '-at/in', prep: 'at' },
+	173: { kind: K.PARTICLE, role: 'OBJECT', lit: '-[obj]', nat: '' },
+	199: { kind: K.PARTICLE, role: 'LOC_DYNAMIC', lit: '-at/from', prep: 'at', sourcePrep: 'from' },
+	200: { kind: K.PARTICLE, role: 'LOC_GOAL', lit: '-to', prep: 'to' },
 	274: { kind: 'auxiliary', lit: '-not', polarity: 'negative', nat: 'not' },
-	275: { kind: 'particle', role: 'TIME', lit: '-at/on', prep: 'at' },
-	276: { kind: 'particle', role: 'COMITATIVE', lit: '-with/and', prep: 'with', conj: 'and' },
+	275: { kind: K.PARTICLE, role: 'TIME', lit: '-at/on', prep: 'at' },
+	276: { kind: K.PARTICLE, role: 'COMITATIVE', lit: '-with/and', prep: 'with', conj: 'and' },
 	335: { kind: 'ending', lit: '-past', nat: '', tense: 'past', formality: 'polite' },
 	336: { kind: 'connective', lit: '-and', frame: '{C1}, and {C2}', logic: 'parallel' },
-	366: { kind: 'particle', role: 'ADDITIVE', lit: '-also', adv: 'also' },
-	367: { kind: 'particle', role: 'COMITATIVE', lit: '-with/and', prep: 'with', conj: 'and' },
+	366: { kind: K.PARTICLE, role: 'ADDITIVE', lit: '-also', adv: 'also' },
+	367: { kind: K.PARTICLE, role: 'COMITATIVE', lit: '-with/and', prep: 'with', conj: 'and' },
 	416: { kind: 'ending', lit: '-please(imp)', mood: 'imperative', formality: 'polite' },
 	417: { kind: 'auxiliary', lit: '-want-to', modal: 'want to' },
 	459: { kind: 'connective', lit: '-and-then/because', frame: 'Because {C1}, {C2}' },
@@ -143,19 +146,19 @@ const GRAMMAR_METADATA_BY_ID = {
 	572: { kind: 'auxiliary', lit: '-may', modal: 'may' },
 	573: { kind: 'auxiliary', lit: '-must-not', modal: 'must not', polarity: 'negative' },
 	574: { kind: 'auxiliary', lit: '-must', modal: 'have to' },
-	618: { kind: 'particle', role: 'DATIVE', lit: '-to(person)', prep: 'to' },
+	618: { kind: K.PARTICLE, role: 'DATIVE', lit: '-to(person)', prep: 'to' },
 	619: { kind: 'connective', lit: '-if/when', frame: 'If {C1}, {C2}', logic: 'condition' },
 	620: { kind: 'connective', lit: '-and/but', frame: '{C1}, and {C2}' },
 	621: { kind: 'connective', lit: '-and/but', frame: '{C1}, but {C2}' },
 	644: { kind: 'adnominal', lit: '-[past/state-mod]', tense: 'past_or_state' },
 	645: { kind: 'adnominal', lit: '-[pres-mod]', tense: 'present' },
 	646: { kind: 'adnominal', lit: '-[fut-mod]', tense: 'future' },
-	647: { kind: 'particle', role: 'DATIVE', lit: '-to(hon)', prep: 'to', honorific: true },
-	648: { kind: 'particle', role: 'SUBJECT', lit: '-[subj-hon]', nat: '', honorific: true },
-	653: { kind: 'particle', lit: '-approx', prep: 'around' },
+	647: { kind: K.PARTICLE, role: 'DATIVE', lit: '-to(hon)', prep: 'to', honorific: true },
+	648: { kind: K.PARTICLE, role: 'SUBJECT', lit: '-[subj-hon]', nat: '', honorific: true },
+	653: { kind: K.PARTICLE, lit: '-approx', prep: 'around' },
 	678: { kind: 'infix', lit: '-(hon)', honorific: true },
 	679: { kind: 'auxiliary', lit: '-past-experience-exist', modal: 'have (ever)' },
-	680: { kind: 'particle', role: 'COMPARATIVE', lit: '-more-than', prep: 'more than' },
+	680: { kind: K.PARTICLE, role: 'COMPARATIVE', lit: '-more-than', prep: 'more than' },
 	710: { kind: 'connective', lit: '-after/before', frame: 'After {C1}, {C2}' },
 	711: { kind: 'connective', lit: '-while', frame: 'While {C1}, {C2}' },
 	738: { kind: 'nominalizer', lit: '-ing(noun)', nat: '-ing' },
@@ -167,9 +170,9 @@ const GRAMMAR_METADATA_BY_ID = {
 	838: { kind: 'ending', lit: '-will(intent)', modal: 'will', tense: 'future' },
 	839: { kind: 'ending', lit: '-indeed!', mood: 'exclamatory' },
 	855: { kind: 'connective', lit: '-when', frame: 'When {C1}, {C2}' },
-	856: { kind: 'particle', role: 'GENITIVE', lit: "-'s/of", prep: 'of' },
-	857: { kind: 'particle', role: 'GENITIVE', lit: "-of", prep: 'of' },
-	877: { kind: 'particle', lit: '-after(duration)', prep: 'after' },
+	856: { kind: K.PARTICLE, role: 'GENITIVE', lit: "-'s/of", prep: 'of' },
+	857: { kind: K.PARTICLE, role: 'GENITIVE', lit: "-of", prep: 'of' },
+	877: { kind: K.PARTICLE, lit: '-after(duration)', prep: 'after' },
 	878: { kind: 'auxiliary', lit: '-try-doing', modal: 'try to' },
 	879: { kind: 'auxiliary', lit: '-tried-doing', modal: 'have tried', tense: 'past' },
 	892: { kind: 'connective', lit: '-because-of', frame: 'Because {C1}, {C2}' },
@@ -184,8 +187,8 @@ const GRAMMAR_METADATA_BY_ID = {
 	957: { kind: 'connective', lit: '-but', frame: '{C1}, but {C2}' },
 	958: { kind: 'auxiliary', lit: '-try-doing', modal: 'try to' },
 	959: { kind: 'auxiliary', lit: '-tried-doing', modal: 'have tried', tense: 'past' },
-	995: { kind: 'particle', role: 'LOC_GOAL', lit: '-onto/in', prep: 'into' },
-	996: { kind: 'particle', role: 'ADDITIVE', lit: '-in-addition-to', prep: 'in addition to' },
+	995: { kind: K.PARTICLE, role: 'LOC_GOAL', lit: '-onto/in', prep: 'into' },
+	996: { kind: K.PARTICLE, role: 'ADDITIVE', lit: '-in-addition-to', prep: 'in addition to' },
 	997: { kind: 'auxiliary', lit: '-past-experience-exist', modal: 'have (ever)' },
 	1019: { kind: 'ending', lit: '-will', tense: 'future', modal: 'will' },
 	1020: { kind: 'ending', lit: '-probably-will', tense: 'future', modal: 'will probably' },
@@ -214,21 +217,21 @@ const GRAMMAR_METADATA_BY_ID = {
 	1211: { kind: 'auxiliary', lit: '-know-whether', modal: 'know whether' },
 	1212: { kind: 'connective', lit: '-but(formal)', frame: '{C1}, however {C2}' },
 	1239: { kind: 'connective', lit: '-while-doing', frame: 'While {C1}, {C2}' },
-	1240: { kind: 'particle', role: 'LOC_GOAL', lit: '-toward', prep: 'toward' },
-	1241: { kind: 'particle', role: 'INSTRUMENT', lit: '-by/with', prep: 'by' },
-	1242: { kind: 'particle', role: 'COMPLEMENT', lit: '-into/as', prep: 'into' },
+	1240: { kind: K.PARTICLE, role: 'LOC_GOAL', lit: '-toward', prep: 'toward' },
+	1241: { kind: K.PARTICLE, role: 'INSTRUMENT', lit: '-by/with', prep: 'by' },
+	1242: { kind: K.PARTICLE, role: 'COMPLEMENT', lit: '-into/as', prep: 'into' },
 	1259: { kind: 'connective', lit: '-if-intending-to', frame: 'If you want to {C1_inf}, {C2}' },
-	1260: { kind: 'particle', role: 'INSTRUMENT', lit: '-via', prep: 'via' },
+	1260: { kind: K.PARTICLE, role: 'INSTRUMENT', lit: '-via', prep: 'via' },
 	1276: { kind: 'connective', lit: '-only-if', frame: 'Only if {C1}, {C2}' },
 	1277: { kind: 'auxiliary', lit: '-if-then-fine', modal: 'just need to' },
 	1291: { kind: 'connective', lit: '-or', frame: '{C1} or {C2}' },
 	1292: { kind: 'ending', lit: '-(background)', formality: 'polite' },
 	1293: { kind: 'ending', lit: '-(contrast)', formality: 'polite' },
 	1311: { kind: 'connective', lit: '-while', frame: 'While {C1}, {C2}' },
-	1312: { kind: 'particle', role: 'LOC_SOURCE', lit: '-from', prep: 'from' },
+	1312: { kind: K.PARTICLE, role: 'LOC_SOURCE', lit: '-from', prep: 'from' },
 	1332: { kind: 'ending', lit: '-will-you?', tense: 'future', mood: 'interrogative' },
-	1333: { kind: 'particle', lit: '-or', conj: 'or' },
-	1334: { kind: 'particle', lit: '-as-many-as', adv: 'as many as' },
+	1333: { kind: K.PARTICLE, lit: '-or', conj: 'or' },
+	1334: { kind: K.PARTICLE, lit: '-as-many-as', adv: 'as many as' },
 	1346: { kind: 'ending', lit: '-asked-whether', modal: 'ask whether' },
 	1347: { kind: 'ending', lit: '-said-that', modal: 'say that' },
 	1362: { kind: 'ending', lit: '-told-to', modal: 'tell to' },
@@ -236,39 +239,39 @@ const GRAMMAR_METADATA_BY_ID = {
 	1383: { kind: 'ending', lit: '-asked-to-give', modal: 'ask for' },
 	1384: { kind: 'ending', lit: '-asked-to-do-for', modal: 'ask to help' },
 	1385: { kind: 'connective', lit: '-because-is', frame: 'Because it is {C1}, {C2}' },
-	1402: { kind: 'particle', lit: '-only', adv: 'only' },
-	1403: { kind: 'particle', lit: '-in(elapsed)', prep: 'in' },
+	1402: { kind: K.PARTICLE, lit: '-only', adv: 'only' },
+	1403: { kind: K.PARTICLE, lit: '-in(elapsed)', prep: 'in' },
 	1404: { kind: 'adnominal', lit: '-[past-retro-mod]', tense: 'past' },
 	1432: { kind: 'connective', lit: '-in-addition-to', frame: 'In addition to {C1}, {C2}' },
-	1453: { kind: 'particle', lit: '-at-least/even', adv: 'at least' },
+	1453: { kind: K.PARTICLE, lit: '-at-least/even', adv: 'at least' },
 	1454: { kind: 'auxiliary', lit: '-must', modal: 'must' },
-	1469: { kind: 'particle', lit: '-as-much-as', prep: 'as much as' },
+	1469: { kind: K.PARTICLE, lit: '-as-much-as', prep: 'as much as' },
 	1470: { kind: 'connective', lit: '-even-if', frame: 'Even if {C1}, {C2}' },
 	1490: { kind: 'adnominal', lit: '-[used-to-mod]', tense: 'past' },
 	1491: { kind: 'auxiliary', lit: '-know-how-to', modal: 'know how to' },
 	1506: { kind: 'ending', lit: '-(recalled)', tense: 'past' },
-	1507: { kind: 'particle', lit: '-whichever', adv: 'any' },
-	1522: { kind: 'particle', lit: '-only(neg)', adv: 'only' },
+	1507: { kind: K.PARTICLE, lit: '-whichever', adv: 'any' },
+	1522: { kind: K.PARTICLE, lit: '-only(neg)', adv: 'only' },
 	1523: { kind: 'auxiliary', lit: '-thought-that', modal: 'thought that', tense: 'past' },
 	1543: { kind: 'connective', lit: '-after', frame: 'After {C1}, {C2}' },
-	1544: { kind: 'particle', lit: '-or', conj: 'or' },
-	1545: { kind: 'particle', lit: '-as-many-as', adv: 'as many as' },
+	1544: { kind: K.PARTICLE, lit: '-or', conj: 'or' },
+	1545: { kind: K.PARTICLE, lit: '-as-many-as', adv: 'as many as' },
 	1557: { kind: 'auxiliary', lit: '-decided-to', modal: 'decide to' },
 	1558: { kind: 'connective', lit: '-as-soon-as', frame: 'As soon as {C1}, {C2}' },
 	1579: { kind: 'connective', lit: '-since-they-say', frame: 'Since they say {C1}, {C2}' },
 	1580: { kind: 'connective', lit: '-do-not-and-instead', frame: 'Instead of {C1}, {C2}' },
 	1601: { kind: 'connective', lit: '-since-will', frame: 'Since {C1}, {C2}' },
-	1624: { kind: 'particle', role: 'COMITATIVE', lit: '-with/and', prep: 'with', conj: 'and' },
+	1624: { kind: K.PARTICLE, role: 'COMITATIVE', lit: '-with/and', prep: 'with', conj: 'and' },
 	1625: { kind: 'auxiliary', lit: '-wants-to', modal: 'want to' },
 	1644: { kind: 'ending', lit: '-please(formal-imp)', mood: 'imperative', formality: 'formal' },
 	1645: { kind: 'ending', lit: '-I-see!', mood: 'exclamatory' },
 	1646: { kind: 'ending', lit: '-hope-that', modal: 'hope that' },
 	1702: { kind: 'infix', lit: '-(hon)', honorific: true },
-	1703: { kind: 'particle', role: 'TOPIC', lit: '-[topic-hon]', nat: '', honorific: true },
-	1704: { kind: 'particle', role: 'DATIVE', lit: '-to(person)', prep: 'to' },
-	1705: { kind: 'particle', role: 'DATIVE', lit: '-to(person)', prep: 'to' },
-	1706: { kind: 'particle', role: 'LOC_SOURCE', lit: '-from(person)', prep: 'from' },
-	1707: { kind: 'particle', role: 'LOC_SOURCE', lit: '-from(person)', prep: 'from' },
+	1703: { kind: K.PARTICLE, role: 'TOPIC', lit: '-[topic-hon]', nat: '', honorific: true },
+	1704: { kind: K.PARTICLE, role: 'DATIVE', lit: '-to(person)', prep: 'to' },
+	1705: { kind: K.PARTICLE, role: 'DATIVE', lit: '-to(person)', prep: 'to' },
+	1706: { kind: K.PARTICLE, role: 'LOC_SOURCE', lit: '-from(person)', prep: 'from' },
+	1707: { kind: K.PARTICLE, role: 'LOC_SOURCE', lit: '-from(person)', prep: 'from' },
 	1710: { kind: 'auxiliary', lit: '-ing(prog)', aspect: 'progressive' },
 	1711: { kind: 'ending', lit: '-past', tense: 'past', formality: 'formal' },
 	1712: { kind: 'auxiliary', lit: '-plan-to', modal: 'plan to' },
@@ -279,13 +282,13 @@ const GRAMMAR_METADATA_BY_ID = {
 	1745: { kind: 'connective', lit: '-due-to', frame: 'Because {C1}, {C2}' },
 	1746: { kind: 'connective', lit: '-therefore', frame: 'Because {C1}, {C2}' },
 	1773: { kind: 'ending', lit: '-right?', mood: 'interrogative' },
-	1797: { kind: 'particle', lit: '-every', det: 'every' },
+	1797: { kind: K.PARTICLE, lit: '-every', det: 'every' },
 	1815: { kind: 'nominalizer', lit: '-ing(noun)', nat: '-ing' },
-	1826: { kind: 'particle', role: 'LOC_GOAL', lit: '-until/to', prep: 'until' },
+	1826: { kind: K.PARTICLE, role: 'LOC_GOAL', lit: '-until/to', prep: 'until' },
 	1833: { kind: 'copula', lit: '-is/am/are', nat: 'be', tense: 'present', formality: 'casual' },
-	1834: { kind: 'particle', lit: '-(vocative)', nat: '' },
+	1834: { kind: K.PARTICLE, lit: '-(vocative)', nat: '' },
 	1855: { kind: 'ending', lit: '-?', mood: 'interrogative', formality: 'formal' },
-	1865: { kind: 'particle', lit: '-called/quoting', prep: 'called' },
+	1865: { kind: K.PARTICLE, lit: '-called/quoting', prep: 'called' },
 	1949: { kind: 'ending', lit: '-I-see!', mood: 'exclamatory', formality: 'plain' },
 	1987: { kind: 'connective', lit: '-whether', frame: '{C2} whether {C1}' },
 	1994: { kind: 'auxiliary', lit: '-dislike-doing', modal: 'hate to', polarity: 'negative' }
@@ -462,7 +465,7 @@ function buildNominalOrModifierEnglishMeta(unit, pos, rawEn) {
 	const ko = unit[DATA_SCHEMA.Korean];
 	const sense = extractPrimaryEnglishSense(rawEn);
 
-	if (pos === 'Pronoun') {
+	if (pos === K.PRONOUN) {
 		const PRONOUN_MAP = {
 			'저': { lit: 'I(humble)', nat: 'I', obj: 'me', poss: 'my', person: 1, number: 'sg' },
 			'나': { lit: 'I', nat: 'I', obj: 'me', poss: 'my', person: 1, number: 'sg' },
@@ -502,16 +505,16 @@ function buildNominalOrModifierEnglishMeta(unit, pos, rawEn) {
 		return { lit: toHyphenatedLiteral(sense), nat: sense, count: 'p' };
 	}
 
-	if (pos === 'Determiner') {
+	if (pos === K.DETERMINER) {
 		return { lit: toHyphenatedLiteral(sense), nat: sense };
 	}
 
-	if (pos === 'Adverb' || pos === 'Exclamation' || pos === 'Number') {
+	if (pos === K.POS_ADVERB || pos === K.EXCLAMATION || pos === K.NUMBER) {
 		return { lit: toHyphenatedLiteral(sense), nat: sense };
 	}
 
 	// Noun (including counters, proper nouns, kinship, uncountable, countable)
-	if (hasTag(unit, 'measureWord', 'sinoMeasureWord', 'koreanMeasureWord', 'counter')) {
+	if (hasTag(unit, K.MEASUREWORD, 'sinoMeasureWord', 'koreanMeasureWord', 'counter')) {
 		return {
 			lit: `-${toHyphenatedLiteral(sense)}(${ko})`,
 			nat: sense,
@@ -520,11 +523,11 @@ function buildNominalOrModifierEnglishMeta(unit, pos, rawEn) {
 	}
 
 	let count = 'c';
-	if (hasTag(unit, 'proper_noun', 'name', 'country', 'city')) {
+	if (hasTag(unit, K.PROPER_NOUN, 'name', 'country', 'city')) {
 		count = 'p';
-	} else if (hasTag(unit, 'time', 'weather', 'language', 'academic_subject', 'drink', 'liquid')) {
+	} else if (hasTag(unit, K.TIME, K.WEATHER, 'language', 'academic_subject', 'drink', 'liquid')) {
 		count = 'u';
-	} else if (hasTag(unit, 'family', 'kinship', 'kinship_elder')) {
+	} else if (hasTag(unit, K.FAMILY, 'kinship', 'kinship_elder')) {
 		count = 'k';
 	}
 
@@ -559,21 +562,21 @@ function runEnrichment() {
 
 		// Ensure required domain or logic exists for Stage 1 test integrity
 		if (!sd.domain && !sd.logic) {
-			sd.domain = pos === 'Grammar' ? 'grammar' : 'general';
+			sd.domain = pos === K.POS_GRAMMAR ? K.GRAMMAR : K.GENERAL;
 		}
 
 		// Compute `en` metadata by POS
 		let enMeta = null;
-		if (pos === 'Grammar') {
+		if (pos === K.POS_GRAMMAR) {
 			if (GRAMMAR_METADATA_BY_ID[id]) {
 				enMeta = GRAMMAR_METADATA_BY_ID[id];
 			} else {
 				const clean = extractPrimaryEnglishSense(rawEn);
 				enMeta = { kind: 'pattern', lit: `-${toHyphenatedLiteral(clean)}`, nat: clean };
 			}
-		} else if (pos === 'Action Verb') {
+		} else if (pos === K.ACTION_VERB) {
 			enMeta = buildVerbEnglishMeta(unit, rawEn);
-		} else if (pos === 'Descriptive Verb') {
+		} else if (pos === K.DESCRIPTIVE_VERB) {
 			enMeta = buildDescriptiveVerbEnglishMeta(unit, rawEn);
 		} else {
 			enMeta = buildNominalOrModifierEnglishMeta(unit, pos, rawEn);

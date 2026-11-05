@@ -1,4 +1,7 @@
 (function() {
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * ============================================================================
  * korean/core/stem_engine.js - Unified Pure Korean Stem & Allomorph Engine
@@ -27,7 +30,7 @@ const {
  */
 function getConjugatedStem(koreanWord, conjugation) {
 	let stem = getStem(koreanWord);
-	if (conjugation && conjugation !== "regular" && conjugation !== "" && /^[a-z_]+$/.test(conjugation)) {
+	if (conjugation && conjugation !== K.REGULAR && conjugation !== "" && /^[a-z_]+$/.test(conjugation)) {
 		stem += `[${conjugation}]`;
 	}
 	return stem;
@@ -41,9 +44,9 @@ function getConjugatedStem(koreanWord, conjugation) {
  * @param {string} [conjRule='regular'] - Conjugation class from data.js
  * @returns {string} Realized -아/어 stem (e.g. '먹어', '가', '공부해', '추워', '걸어', '몰라')
  */
-function conjugateAoStem(rawStem, conjRule = 'regular') {
+function conjugateAoStem(rawStem, conjRule = K.REGULAR) {
 	if (!rawStem) return '';
-	const rule = String(conjRule || 'regular').toLowerCase();
+	const rule = String(conjRule || K.REGULAR).toLowerCase();
 	const stem = rawStem.replace(/다$/, '').replace(/\[[^\]]+\]/g, '');
 	if (!stem) return '';
 
@@ -52,12 +55,12 @@ function conjugateAoStem(rawStem, conjRule = 'regular') {
 	const d = decomposeHangul(lastChar);
 	if (!d) return stem + '어';
 
-	if (lastChar === '하' || rule.includes('hada')) {
+	if (lastChar === '하' || rule.includes(K.HADA)) {
 		return prefix + '해';
 	}
 
 	// 1. ㅂ irregular (춥다 -> 추워, 돕다 -> 도와, 곱다 -> 고와)
-	if (rule.includes('b_irregular') || rule.includes('p_irregular')) {
+	if (rule.includes(K.B_IRREGULAR) || rule.includes(K.P_IRREGULAR)) {
 		if (d.final === 17) {
 			const base = setFinal(lastChar, 0);
 			const isBrightO = (lastChar === '돕' || lastChar === '곱');
@@ -66,21 +69,21 @@ function conjugateAoStem(rawStem, conjRule = 'regular') {
 	}
 
 	// 2. ㄷ irregular (걷다 -> 걸어, 묻다 -> 물어, 듣다 -> 들어)
-	if (rule.includes('d_irregular') && d.final === 7) {
+	if (rule.includes(K.D_IRREGULAR) && d.final === 7) {
 		const withL = setFinal(lastChar, 8);
 		const vh = getVowelHarmony(withL);
 		return prefix + withL + vh;
 	}
 
 	// 3. ㅅ irregular (낫다 -> 나아, 짓다 -> 지어, 붓다 -> 부어)
-	if (rule.includes('s_irregular') && d.final === 19) {
+	if (rule.includes(K.S_IRREGULAR) && d.final === 19) {
 		const base = setFinal(lastChar, 0);
 		const vh = getVowelHarmony(base);
 		return prefix + base + vh;
 	}
 
 	// 4. ㅎ irregular (어떻다 -> 어때, 파랗다 -> 파래, 노랗다 -> 노래)
-	if (rule.includes('h_irregular') && d.final === 27) {
+	if (rule.includes(K.H_IRREGULAR) && d.final === 27) {
 		const medial = (lastChar === '렇' || lastChar === '떻') ? 1 : 1; // ㅐ
 		return prefix + composeHangul(d.initial, medial, 0);
 	}
@@ -91,7 +94,7 @@ function conjugateAoStem(rawStem, conjRule = 'regular') {
 	}
 
 	// 6. 르 irregular (모르다 -> 몰라, 빠르다 -> 빨라, 부르다 -> 불러)
-	if ((rule.includes('reu_irregular') || lastChar === '르') && lastChar === '르' && prefix.length > 0 && !rule.includes('regular')) {
+	if ((rule.includes(K.REU_IRREGULAR) || lastChar === '르') && lastChar === '르' && prefix.length > 0 && !rule.includes(K.REGULAR)) {
 		const prevChar = prefix.slice(-1);
 		const prevPrefix = prefix.slice(0, -1);
 		const prevVh = getVowelHarmony(prevChar);
@@ -151,26 +154,26 @@ function deriveConnectiveEndings(ko, conjRule = '') {
 		return results;
 	}
 
-	if (stem.endsWith('르') && stem.length >= 2 && !String(conjRule).includes('regular')) {
-		results.add(conjugateAoStem(stem, 'reu_irregular'));
+	if (stem.endsWith('르') && stem.length >= 2 && !String(conjRule).includes(K.REGULAR)) {
+		results.add(conjugateAoStem(stem, K.REU_IRREGULAR));
 	}
 
 	const lastChar = stem.slice(-1);
 	const d = decomposeHangul(lastChar);
 	if (d && d.final === 17) {
-		results.add(conjugateAoStem(stem, 'b_irregular'));
+		results.add(conjugateAoStem(stem, K.B_IRREGULAR));
 	}
 	if (d && d.final === 7) {
-		results.add(conjugateAoStem(stem, 'd_irregular'));
+		results.add(conjugateAoStem(stem, K.D_IRREGULAR));
 	}
 	if (d && d.final === 19) {
-		results.add(conjugateAoStem(stem, 's_irregular'));
+		results.add(conjugateAoStem(stem, K.S_IRREGULAR));
 	}
 	if (d && d.final === 27) {
-		results.add(conjugateAoStem(stem, 'h_irregular'));
+		results.add(conjugateAoStem(stem, K.H_IRREGULAR));
 	}
 
-	results.add(conjugateAoStem(stem, conjRule || 'regular'));
+	results.add(conjugateAoStem(stem, conjRule || K.REGULAR));
 	return results;
 }
 
@@ -273,7 +276,7 @@ function resolvePureMorphology(text, stateObj = null) {
 	if (state && state.PRONOUN_REPLACEMENTS) {
 		state.PRONOUN_REPLACEMENTS.forEach(([pat, rep]) => {
 			if (String(pat).includes("나가")) {
-				resolvedKo = resolvedKo.replace(/(^|[^가-힣])나가(?=[^가-힣]|$)(?!\s+(?:보|주|버리|있|계시))/g, '$1내가');
+				resolvedKo = resolvedKo.replace(/(^|[^가-힣])나가(?=[^가-힣]|$)(?!\s+(?:보|봐|봤|본|볼|주|줘|줬|준|줄|버리|버려|버렸|버린|버릴|있|계시|계셔|계셨|계세|계신|계실|가지|오|와|왔|온|올|가|갔|간|갈|두|둬|뒀|둔|둘|놓|놔|놨|대|댔|내|냈))/g, '$1내가');
 				return;
 			}
 			resolvedKo = resolvedKo.replace(pat, rep);

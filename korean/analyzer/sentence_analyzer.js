@@ -1,4 +1,7 @@
 (function() {
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * korean/analyzer/sentence_analyzer.js
  *
@@ -174,7 +177,7 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 				}
 			} else if (stem.endsWith("이") && stem.length > 1) { // copula -이다 on noun (e.g. 디자인이기 -> 디자인 + 이다)
 				const nounStem = stem.slice(0, -1);
-				const nUnits = (vocabByKo.get(nounStem) || []).filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+				const nUnits = (vocabByKo.get(nounStem) || []).filter(u => u[DATA_SCHEMA.PartofSpeech] === K.NOUN || u[DATA_SCHEMA.PartofSpeech] === K.PRONOUN);
 				if (nUnits.length > 0) {
 					baseVerb = nounStem;
 					const copCandidates = (index.grammarByKo && (index.grammarByKo.get("입니다") || index.grammarByKo.get("이다"))) || [];
@@ -234,7 +237,7 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 			baseVerb = w1.slice(0, -1) + "다";
 		}
 		const vUnit = baseVerb && vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
-		lexical = { text: baseVerb || w1, pos: vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : "Descriptive Verb", unit: vUnit, missing: !vUnit, gloss: vUnit ? vUnit[DATA_SCHEMA.English] : "" };
+		lexical = { text: baseVerb || w1, pos: vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : K.DESCRIPTIVE_VERB, unit: vUnit, missing: !vUnit, gloss: vUnit ? vUnit[DATA_SCHEMA.English] : "" };
 	} else if (match.lexicalType === "self_unit") {
 		lexical = { text: unit[DATA_SCHEMA.Korean], pos: unit[DATA_SCHEMA.PartofSpeech], unit, gloss: unit[DATA_SCHEMA.English] };
 	} else if (match.lexical !== undefined) {
@@ -421,7 +424,7 @@ function analyzeSentence(sentText, sentenceIndex = 1, explicitIndex = null) {
 	for (let k = rawWords.length - 1; k >= 0; k--) {
 		const cw = rawWords[k].replace(/[^\w가-힣]+/g, '');
 		for (const [stem, units] of vocabByKo.entries()) {
-			const verbUnits = units.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb');
+			const verbUnits = units.filter(u => u[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || u[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB);
 			if (verbUnits.length > 0 && (cw.startsWith(stem) || cw.includes(stem))) {
 				clausePredicate = verbUnits[0];
 				break;

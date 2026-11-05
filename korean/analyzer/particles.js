@@ -1,4 +1,7 @@
 (function() {
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * korean/analyzer/particles.js
  *
@@ -241,10 +244,10 @@ function matchContractedParticle(word, index, DATA_SCHEMA) {
 		const stem = word.slice(0, -1) + uncontractedLast;
 		if (vocabByKo.has(stem)) {
 			const cands = vocabByKo.get(stem).filter(u =>
-				u[DATA_SCHEMA.PartofSpeech] === 'Noun' ||
-				u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' ||
+				u[DATA_SCHEMA.PartofSpeech] === K.NOUN ||
+				u[DATA_SCHEMA.PartofSpeech] === K.PRONOUN ||
 				u[DATA_SCHEMA.PartofSpeech] === 'Bound Noun' ||
-				u[DATA_SCHEMA.PartofSpeech] === 'Number'
+				u[DATA_SCHEMA.PartofSpeech] === K.NUMBER
 			);
 			if (cands.length > 0) {
 				const nUnit = cands[0];
@@ -277,8 +280,8 @@ function matchContractedParticle(word, index, DATA_SCHEMA) {
 		const stem = word.slice(0, -1) + uncontractedLast;
 		if (stem === "나" || stem === "너" || stem === "뭐" || stem === "저" || stem === "누구") {
 			const cands = (vocabByKo.get(stem) || []).filter(u =>
-				u[DATA_SCHEMA.PartofSpeech] === 'Noun' ||
-				u[DATA_SCHEMA.PartofSpeech] === 'Pronoun'
+				u[DATA_SCHEMA.PartofSpeech] === K.NOUN ||
+				u[DATA_SCHEMA.PartofSpeech] === K.PRONOUN
 			);
 			if (cands.length > 0) {
 				const nUnit = cands[0];
@@ -328,8 +331,8 @@ function matchPlainCopula(word, index, DATA_SCHEMA, hasBatchimFn) {
 	if (word.endsWith("이다") && word.length > 2) {
 		const candidate = word.slice(0, -2);
 		const units = (vocabByKo.get(candidate) || []).filter(u =>
-			u[DATA_SCHEMA.PartofSpeech] === 'Noun' ||
-			u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' ||
+			u[DATA_SCHEMA.PartofSpeech] === K.NOUN ||
+			u[DATA_SCHEMA.PartofSpeech] === K.PRONOUN ||
 			u[DATA_SCHEMA.PartofSpeech] === 'Bound Noun'
 		);
 		if (units.length > 0) {
@@ -344,8 +347,8 @@ function matchPlainCopula(word, index, DATA_SCHEMA, hasBatchimFn) {
 		const lastSyl = candidate.slice(-1);
 		if (!hasBatchimFn(lastSyl)) {
 			const units = (vocabByKo.get(candidate) || []).filter(u =>
-				u[DATA_SCHEMA.PartofSpeech] === 'Noun' ||
-				u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' ||
+				u[DATA_SCHEMA.PartofSpeech] === K.NOUN ||
+				u[DATA_SCHEMA.PartofSpeech] === K.PRONOUN ||
 				u[DATA_SCHEMA.PartofSpeech] === 'Bound Noun'
 			);
 			if (units.length > 0) {
@@ -358,8 +361,8 @@ function matchPlainCopula(word, index, DATA_SCHEMA, hasBatchimFn) {
 	if (copulaStem) {
 		const stemUnits = vocabByKo.get(copulaStem) || [];
 		const nUnit = stemUnits.find(u =>
-			u[DATA_SCHEMA.PartofSpeech] === 'Noun' ||
-			u[DATA_SCHEMA.PartofSpeech] === 'Pronoun' ||
+			u[DATA_SCHEMA.PartofSpeech] === K.NOUN ||
+			u[DATA_SCHEMA.PartofSpeech] === K.PRONOUN ||
 			u[DATA_SCHEMA.PartofSpeech] === 'Bound Noun'
 		) || stemUnits[0];
 		const copulaUnit = unitById.get(56);
@@ -368,7 +371,7 @@ function matchPlainCopula(word, index, DATA_SCHEMA, hasBatchimFn) {
 			category: "noun_copula",
 			lexical: {
 				text: copulaStem,
-				pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : "Noun",
+				pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : K.NOUN,
 				unit: nUnit,
 				missing: !nUnit,
 				gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + copulaStem + ")"

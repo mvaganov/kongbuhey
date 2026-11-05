@@ -1,4 +1,7 @@
 (function() {
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * Korean Engine Semantic and Grammar Tag Constants
  *
@@ -20,9 +23,9 @@ const GRAMMAR_TAGS = Object.freeze({
 
 	// Adverbial & Polarity (Feature 9)
 	ADVERB_DISCOURSE: "adverb_discourse",
-	DISCOURSE: "discourse",
+	DISCOURSE: K.DISCOURSE,
 	ADVERB_DEGREE: "adverb_degree",
-	DEGREE: "degree",
+	DEGREE: K.DEGREE,
 	ADVERB_MANNER: "adverb_manner",
 	MANNER: "manner",
 	NEGATIVE_POLARITY: "negative_polarity",
@@ -47,10 +50,10 @@ const GRAMMAR_TAGS = Object.freeze({
 	DISTAL: "distal",
 	DIRECTION: "direction",
 	LOCATION: "location",
-	PLACE: "place",
+	PLACE: K.PLACE,
 
 	// Classifiers / Counters (Feature 6)
-	MEASURE_WORD: "measureWord",
+	MEASURE_WORD: K.MEASUREWORD,
 	COUNTER: "counter",
 	KOREAN_MEASURE_WORD: "koreanMeasureWord",
 	SINO_MEASURE_WORD: "sinoMeasureWord",
@@ -64,7 +67,7 @@ const GRAMMAR_TAGS = Object.freeze({
 	// Honorific & Social Hierarchy
 	ELDER_NOUN: "elder_noun",
 	INANIMATE_INSTITUTION: "inanimate_institution",
-	HONORIFIC: "honorific",
+	HONORIFIC: K.HONORIFIC,
 	HUMBLE: "humble",
 	HONORIFIC_VERB: "honorificVerb",
 	HUMBLE_VERB: "humbleVerb",
