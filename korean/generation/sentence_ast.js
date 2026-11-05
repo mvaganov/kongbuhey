@@ -609,29 +609,57 @@ function buildPredicateEojeols(predNode, surfaceKo) {
 	}
 
 	// Multi-word predicate cases:
-	// Case A: Short negation ("안 먹어요", "못 가요") where words[0] is "안" or "못"
-	if (words.length === 2 && (words[0] === "안" || words[0] === "못") && negUnit) {
-		const verbSegs = splitSingleVerbWordSegments(words[1], headUnit, endingUnit, "predicate");
-		return [
-			{
-				surfaceKo: words[0],
-				role: "negation",
-				headUnitId: negUnit[DATA_SCHEMA.Id],
-				particleUnitId: null,
-				grammarUnitId: negUnit[DATA_SCHEMA.Id],
-				unitIds: [negUnit[DATA_SCHEMA.Id]],
-				segments: [makeSegment(words[0], negUnit, "grammar", "negation")]
-			},
-			{
-				surfaceKo: words[1],
-				role: "predicate",
-				headUnitId: headUnit ? headUnit[DATA_SCHEMA.Id] : null,
-				particleUnitId: null,
-				grammarUnitId: endingUnit ? endingUnit[DATA_SCHEMA.Id] : null,
-				unitIds: Array.from(new Set(verbSegs.map(s => s.unitId).filter(id => id !== null))),
-				segments: verbSegs
+	// Case A: Short negation ("안 먹어요", "못 가요", "그림을 안 그려요", "사진을 못 찍을 거예요")
+	const negIdx = negUnit ? words.findIndex(w => w === "안" || w === "못") : -1;
+	if (negIdx !== -1) {
+		const eojeols = [];
+		for (let i = 0; i < words.length; i++) {
+			const w = words[i];
+			if (i === negIdx) {
+				eojeols.push({
+					surfaceKo: w,
+					role: "negation",
+					headUnitId: negUnit[DATA_SCHEMA.Id],
+					particleUnitId: null,
+					grammarUnitId: negUnit[DATA_SCHEMA.Id],
+					unitIds: [negUnit[DATA_SCHEMA.Id]],
+					segments: [makeSegment(w, negUnit, "grammar", "negation")]
+				});
+			} else if (i < negIdx) {
+				eojeols.push({
+					surfaceKo: w,
+					role: "object",
+					headUnitId: headUnit ? headUnit[DATA_SCHEMA.Id] : null,
+					particleUnitId: null,
+					grammarUnitId: null,
+					unitIds: headUnit ? [headUnit[DATA_SCHEMA.Id]] : [],
+					segments: [makeSegment(w, headUnit, "lexical", "object")]
+				});
+			} else if (i === negIdx + 1) {
+				const verbSegs = splitSingleVerbWordSegments(w, headUnit, endingUnit, "predicate");
+				eojeols.push({
+					surfaceKo: w,
+					role: "predicate",
+					headUnitId: headUnit ? headUnit[DATA_SCHEMA.Id] : null,
+					particleUnitId: null,
+					grammarUnitId: endingUnit ? endingUnit[DATA_SCHEMA.Id] : null,
+					unitIds: Array.from(new Set(verbSegs.map(s => s.unitId).filter(id => id !== null))),
+					segments: verbSegs
+				});
+			} else {
+				const seg = makeSegment(w, endingUnit || headUnit, endingUnit ? "grammar" : "lexical", "predicate_aux");
+				eojeols.push({
+					surfaceKo: w,
+					role: "predicate_aux",
+					headUnitId: endingUnit ? endingUnit[DATA_SCHEMA.Id] : (headUnit ? headUnit[DATA_SCHEMA.Id] : null),
+					particleUnitId: null,
+					grammarUnitId: endingUnit ? endingUnit[DATA_SCHEMA.Id] : null,
+					unitIds: seg.unitId !== null ? [seg.unitId] : [],
+					segments: [seg]
+				});
 			}
-		];
+		}
+		return eojeols;
 	}
 
 	// Case B: Auxiliary / Periphrastic construction (e.g. "공부하고 싶어요", "먹을 거예요", "먹지 않아요", "갈 수 있어요")
@@ -843,13 +871,14 @@ function realizePredicateKo(predNode, clauseContext = {}) {
 				tense
 			});
 		} else {
-			if (isElderSubj && !state.HONORIFIC_WORDS.has(activeVerbUnit[DATA_SCHEMA.Korean]) && !state.HUMBLE_WORDS.has(activeVerbUnit[DATA_SCHEMA.Korean])) {
+			const isLexicalHon = state.HONORIFIC_WORDS.has(activeVerbUnit[DATA_SCHEMA.Korean]) && activeVerbUnit[DATA_SCHEMA.Korean].includes("시");
+			if (isElderSubj && !isLexicalHon && !state.HUMBLE_WORDS.has(activeVerbUnit[DATA_SCHEMA.Korean])) {
 				const honEnding = tense === "past"
 					? (politeness === "formal_high" ? "으/셨습니다" : "으/셨어요")
 					: (politeness === "formal_high" ? "으/십니다" : "으/세요");
 				surfaceKo = resolvePureMorphology(stem + honEnding, state);
 			} else {
-				surfaceKo = conjugatePredicate(activeVerbUnit, politeness, tense, { honorific: isElderSubj });
+				surfaceKo = conjugatePredicate(activeVerbUnit, politeness, tense);
 			}
 		}
 	}

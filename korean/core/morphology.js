@@ -368,8 +368,11 @@ function canTakeMood(verbOrKo, mood) {
 		return false;
 	}
 
+	const isInvoluntary = (verbUnit && hasTag(verbUnit, "involuntary", "passive", "weather"))
+		|| ["끝나다", "시작되다", "고장 나다", "죽다", "생기다", "열리다", "닫히다"].some(k => ko.includes(k));
+
 	if (normalizedMood === "imperative" || normalizedMood === "prohibition" || normalizedMood === "propositive" || normalizedMood === "suggestion") {
-		return isAction && !isDescriptive;
+		return isAction && !isDescriptive && !isInvoluntary;
 	}
 
 	if (normalizedMood === "inability" || normalizedMood === "short_inability" || normalizedMood === "long_inability") {
@@ -377,7 +380,7 @@ function canTakeMood(verbOrKo, mood) {
 	}
 
 	if (normalizedMood === "volitional" || normalizedMood === "desire") {
-		return isAction && !isDescriptive;
+		return isAction && !isDescriptive && !isInvoluntary;
 	}
 
 	if (normalizedMood === "negation" || normalizedMood === "short_general" || normalizedMood === "long_general") {
@@ -413,6 +416,30 @@ function conjugatePredicate(verbOrKo, formality = "polite", tense = "present") {
 			return "뵙습니다";
 		}
 		return "봬요";
+	}
+
+	// Nominal Copula Predicates (통화중이다, 오랜만이다, 유행이다, 이다...)
+	if (ko.endsWith("이다") && (verbUnit ? verbUnit[DATA_SCHEMA.PartofSpeech] === "Descriptive Verb" : true) && !["보이다", "끓이다", "모이다", "줄이다", "속이다", "붙이다", "움직이다"].includes(ko)) {
+		const baseNoun = ko.slice(0, -2); // e.g. "통화중", "오랜만", "유행"
+		if (baseNoun) {
+			const hasB = hasBatchim(baseNoun.slice(-1));
+			if (tense === "past") {
+				if (formality === "formal" || formality === "formal_polite") {
+					return `${baseNoun}${hasB ? "이었습니다" : "였습니다"}`;
+				}
+				return `${baseNoun}${hasB ? "이었어요" : "였어요"}`;
+			}
+			if (tense === "future") {
+				if (formality === "formal" || formality === "formal_polite") {
+					return `${baseNoun}일 것입니다`;
+				}
+				return `${baseNoun}일 거예요`;
+			}
+			if (formality === "formal" || formality === "formal_polite") {
+				return `${baseNoun}입니다`;
+			}
+			return `${baseNoun}${hasB ? "이에요" : "예요"}`;
+		}
 	}
 
 	const conj = verbUnit ? verbUnit[DATA_SCHEMA.Conjugation] : "";
@@ -484,7 +511,12 @@ function buildNegatedPredicate(verbOrKo, options = {}) {
 		if (isLong) {
 			return applyMorphology(stem + "지 " + conjugatePredicate("못하다", formality, tense));
 		} else {
-			return "못 " + conjugatePredicate(verbOrKo, formality, tense);
+			const baseConj = conjugatePredicate(verbOrKo, formality, tense);
+			if (ko.includes(" ")) {
+				const parts = baseConj.split(" ");
+				return `${parts[0]} 못 ${parts.slice(1).join(" ")}`;
+			}
+			return "못 " + baseConj;
 		}
 	}
 
@@ -493,7 +525,12 @@ function buildNegatedPredicate(verbOrKo, options = {}) {
 	if (isLong) {
 		return applyMorphology(stem + "지 " + conjugatePredicate("않다", formality, tense));
 	} else {
-		return "안 " + conjugatePredicate(verbOrKo, formality, tense);
+		const baseConj = conjugatePredicate(verbOrKo, formality, tense);
+		if (ko.includes(" ")) {
+			const parts = baseConj.split(" ");
+			return `${parts[0]} 안 ${parts.slice(1).join(" ")}`;
+		}
+		return "안 " + baseConj;
 	}
 }
 
@@ -806,7 +843,11 @@ function getNounCandidatesForVerb(verbUnit) {
 		if (filterFn) {
 			const allNouns = getFilteredWords("Noun");
 			const matched = allNouns.filter(n => {
-				try { return filterFn(n, hasTag); } catch (e) { return false; }
+				try {
+					const curV = typeof dvUnit !== 'undefined' ? dvUnit : verbUnit;
+					if (hasTag(curV, "descriptive_emotion") && ["스트레스", "여유", "나이"].includes(n[DATA_SCHEMA.Korean])) return false;
+					return filterFn(n, hasTag);
+				} catch (e) { return false; }
 			});
 			if (matched.length > 0) return cacheAndReturn(matched);
 		}
@@ -866,7 +907,11 @@ function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
 		if (filterFn) {
 			const allNouns = getFilteredWords("Noun");
 			const matched = allNouns.filter(n => {
-				try { return filterFn(n, hasTag); } catch (e) { return false; }
+				try {
+					const curV = typeof dvUnit !== 'undefined' ? dvUnit : verbUnit;
+					if (hasTag(curV, "descriptive_emotion") && ["스트레스", "여유", "나이"].includes(n[DATA_SCHEMA.Korean])) return false;
+					return filterFn(n, hasTag);
+				} catch (e) { return false; }
 			});
 			if (matched.length > 0) return cacheAndReturn(matched);
 		}

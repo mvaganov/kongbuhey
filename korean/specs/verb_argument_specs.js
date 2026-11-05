@@ -100,8 +100,8 @@ const DESCRIPTIVE_VERB_SPECS = Object.freeze([
 	// Acoustics & Noise (rooms, places, neighborhoods)
 	{ tag: "descriptive_acoustic", nounTag: "room", fallbackTag: "place" },
 
-	// Psychological & Emotional State (people, heart, mood)
-	{ tag: "descriptive_emotion", nounTag: "person", fallbackTag: "emotion" },
+	// Psychological & Emotional State (strictly people/sentient beings)
+	{ tag: "descriptive_emotion", nounTag: "person", fallbackTag: "person" },
 
 	// Personal Traits & Animate Characteristics (strictly people)
 	{ tag: "descriptive_person_trait", nounTag: "person" },

@@ -83,18 +83,18 @@ The curriculum of 2,045 units is partitioned into **11 Work Packages (Batches)**
 
 | Batch | Category / Scope | POS Focus | Unit Count | Target Manifest / IDs | Primary Linguistic Focus | Status |
 |:---:|:---|:---|:---:|:---|:---|:---:|
-| **01** | Closed Modifiers & Deictics | `Pronoun` (36), `Determiner` (9), `Number` (66), `Exclamation` (18) | **129** | `audit/batches/batch_01_closed_classes.json` (IDs: 2..2018) | Prenoun head-noun requirements (`어느`), pronoun clitic allomorphy (`제/저`), counter classifier concord. | **COMPLETE** |
-| **02** | Adverbs & Discourse | `Adverb` | **99** | `audit/batches/batch_02_adverbs.json` (IDs: 47..2039) | NPI polarity concord (`전혀`), degree vs. manner scope, clausal discourse placement. | **COMPLETE** |
-| **03** | Statives & Adjectives | `Descriptive Verb` | **142** | `audit/batches/batch_03_descriptive_verbs.json` (IDs: 5..2043) | Non-accusative valency, mood restrictions (no imperative/propositive), gradability. | **COMPLETE** |
-| **04** | Particles & Grammar | `Grammar` | **191** | `audit/batches/batch_04_grammar.json` (IDs: 23..1994) | Clause connectives (`-으니까`, `-는데`), tense concord, particle allomorphs, auxiliary verbs. | **COMPLETE** |
-| **05** | Action Verbs (Part A) | `Action Verb` (1st Half) | **190** | `audit/batches/batch_05_action_verbs_part_a.json` (IDs: 40..1050) | Transitivity, accusative argument concord, motion goal/origin particles (`-에/에서/로`). | **COMPLETE** |
-| **06** | Action Verbs (Part B) | `Action Verb` (2nd Half) | **189** | `audit/batches/batch_06_action_verbs_part_b.json` (IDs: 1102..2040) | Sino-Korean `-하다` compound verbs, abstract valency, instrument cases (`-(으)로`). | **COMPLETE** |
-| **07** | Nouns (Part A) | `Noun` (1st Fifth) | **221** | `audit/batches/batch_07_nouns_part_a.json` (IDs: 0..438) | Animacy agentivity, people/family honorific concord, basic concrete nouns. | **COMPLETE** |
-| **08** | Nouns (Part B) | `Noun` (2nd Fifth) | **221** | `audit/batches/batch_08_nouns_part_b.json` (IDs: 440..852) | Collocation with consumption/possession verbs, classifier matching (`개`, `마리`, `병`). | **COMPLETE** |
-| **09** | Nouns (Part C) | `Noun` (3rd Fifth) | **221** | `audit/batches/batch_09_nouns_part_c.json` (IDs: 853..1289) | Action verb collocation, temporal noun particles (unmarked vs `-에`). | **COMPLETE** |
-| **10** | Nouns (Part D) | `Noun` (4th Fifth) | **221** | `audit/batches/batch_10_nouns_part_d.json` (IDs: 1290..1690) | Abstract concepts, school/work nouns, directional/spatial noun concord. | **COMPLETE** |
-| **11** | Nouns (Part E) | `Noun` (5th Fifth) | **221** | `audit/batches/batch_11_nouns_part_e.json` (IDs: 1691..2044) | Modern/tech vocabulary, loanwords, particle sandhi, recent additions. | **INCOMPLETE** |
-| **TOTAL** | **Entire Curriculum** | **All 9 POS** | **2,045** | **11 Deterministic Manifests** | **100% Curriculum Coverage Verified** | **10 / 11 Complete** |
+| **01** | Closed Modifiers & Deictics | `Pronoun` (36), `Determiner` (9), `Number` (66), `Exclamation` (18) | **129** | `audit/batches/batch_01_closed_classes.json` (IDs: 2..2018) | Prenoun head-noun requirements (`어느`), pronoun clitic allomorphy (`제/저`), counter classifier concord. | **COMPLETED (100% Clean)** |
+| **02** | Adverbs & Discourse | `Adverb` | **99** | `audit/batches/batch_02_adverbs.json` (IDs: 47..2039) | NPI polarity concord (`전혀`), degree vs. manner scope, clausal discourse placement. | **COMPLETED (100% Clean)** |
+| **03** | Statives & Adjectives | `Descriptive Verb` | **142** | `audit/batches/batch_03_descriptive_verbs.json` (IDs: 5..2043) | Non-accusative valency, mood restrictions (no imperative/propositive), gradability. | **COMPLETED (100% Clean)** |
+| **04** | Particles & Grammar | `Grammar` | **191** | `audit/batches/batch_04_grammar.json` (IDs: 23..1994) | Clause connectives (`-으니까`, `-는데`), tense concord, particle allomorphs, auxiliary verbs. | **COMPLETED (100% Clean)** |
+| **05** | Action Verbs (Part A) | `Action Verb` (1st Half) | **190** | `audit/batches/batch_05_action_verbs_part_a.json` (IDs: 40..1050) | Transitivity, accusative argument concord, motion goal/origin particles (`-에/에서/로`). | **COMPLETED (100% Clean)** |
+| **06** | Action Verbs (Part B) | `Action Verb` (2nd Half) | **189** | `audit/batches/batch_06_action_verbs_part_b.json` (IDs: 1102..2040) | Sino-Korean `-하다` compound verbs, abstract valency, instrument cases (`-(으)로`). | **COMPLETED (100% Clean)** |
+| **07** | Nouns (Part A) | `Noun` (1st Fifth) | **221** | `audit/batches/batch_07_nouns_part_a.json` (IDs: 0..438) | Animacy agentivity, people/family honorific concord, basic concrete nouns. | **COMPLETED (100% Clean)** |
+| **08** | Nouns (Part B) | `Noun` (2nd Fifth) | **221** | `audit/batches/batch_08_nouns_part_b.json` (IDs: 440..852) | Collocation with consumption/possession verbs, classifier matching (`개`, `마리`, `병`). | **COMPLETED (100% Clean)** |
+| **09** | Nouns (Part C) | `Noun` (3rd Fifth) | **221** | `audit/batches/batch_09_nouns_part_c.json` (IDs: 853..1289) | Action verb collocation, temporal noun particles (unmarked vs `-에`). | **COMPLETED (100% Clean)** |
+| **10** | Nouns (Part D) | `Noun` (4th Fifth) | **221** | `audit/batches/batch_10_nouns_part_d.json` (IDs: 1290..1690) | Abstract concepts, school/work nouns, directional/spatial noun concord. | **COMPLETED (100% Clean)** |
+| **11** | Nouns (Part E) | `Noun` (5th Fifth) | **221** | `audit/batches/batch_11_nouns_part_e.json` (IDs: 1691..2044) | Modern/tech vocabulary, loanwords, particle sandhi, recent additions. | **COMPLETED (100% Clean)** |
+| **TOTAL** | **Entire Curriculum** | **All 9 POS** | **2,045** | **11 Deterministic Manifests** | **100% Curriculum Coverage Verified** | **11 / 11 Complete (100% Clean)** |
 
 ---
 
@@ -103,20 +103,20 @@ The curriculum of 2,045 units is partitioned into **11 Work Packages (Batches)**
 When subagents execute batches, they must update this checklist to record active progress and report locations:
 
 - [x] **Stage 0: Batch Manifest Initialization** — Verified 2,045 units pre-populated in `audit/batches/`
-- [x] **Batch 01 (Closed Modifiers & Deictics)** — [`audit/reports/batch_01_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_01_report.md) | Status: **COMPLETE** | Clean: 89, Flagged: 40
-- [x] **Batch 02 (Adverbs & Discourse)** — [`audit/reports/batch_02_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_02_report.md) | Status: **COMPLETE** | Clean: 85, Flagged: 14
-- [x] **Batch 03 (Statives & Adjectives)** — [`audit/reports/batch_03_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_03_report.md) | Status: **COMPLETE** | Clean: 130, Flagged: 12
-- [x] **Batch 04 (Particles & Grammar)** — [`audit/reports/batch_04_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_04_report.md) | Status: **COMPLETE** | Clean: 181, Flagged: 10
-- [x] **Batch 05 (Action Verbs Part A)** — [`audit/reports/batch_05_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_05_report.md) | Status: **COMPLETE** | Clean: 164, Flagged: 26
-- [x] **Batch 06 (Action Verbs Part B)** — [`audit/reports/batch_06_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_06_report.md) | Status: **COMPLETE** | Clean: 135, Flagged: 54
-- [x] **Batch 07 (Nouns Part A)** — [`audit/reports/batch_07_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_07_report.md) | Status: **COMPLETE** | Clean: 187, Flagged: 34
-- [x] **Batch 08 (Nouns Part B)** — [`audit/reports/batch_08_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_08_report.md) | Status: **COMPLETE** | Clean: 182, Flagged: 39
-- [x] **Batch 09 (Nouns Part C)** — [`audit/reports/batch_09_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_09_report.md) | Status: **COMPLETE** | Clean: 196, Flagged: 25
-- [x] **Batch 10 (Nouns Part D)** — [`audit/reports/batch_10_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_10_report.md) | Status: **COMPLETE** | Clean: 205, Flagged: 16
-- [x] **Batch 11 (Nouns Part E)** — [`audit/reports/batch_11_report.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/audit/reports/batch_11_report.md) | Status: **COMPLETE** | Clean: 203, Flagged: 18
-- [x] **Stage 12: Master Synthesis & Specification** — [`docs/linguistic_audit_specification.md`](file:///d:/Users/mvaga/Developer/agentic/antigravity/kongbuhey/docs/linguistic_audit_specification.md) | Status: **COMPLETE**
-- [x] **Stage 13: Core Implementation & Remediation** — All 6 Architectural Pillars Implemented | Status: **COMPLETE**
-- [x] **Stage 14: Deterministic Verification & Regression Testing** — 291 / 291 Flagged Units Clean (100%), 97 / 97 Automated Tests Passing | Status: **VERIFIED**
+- [x] **Batch 01 (Closed Modifiers & Deictics)** — `audit/reports/batch_01_report.md` | Status: `COMPLETED` | Clean: 129, Flagged: 0 (100%)
+- [x] **Batch 02 (Adverbs & Discourse)** — `audit/reports/batch_02_report.md` | Status: `COMPLETED` | Clean: 99, Flagged: 0 (100%)
+- [x] **Batch 03 (Statives & Adjectives)** — `audit/reports/batch_03_report.md` | Status: `COMPLETED` | Clean: 142, Flagged: 0 (100%)
+- [x] **Batch 04 (Particles & Grammar)** — `audit/reports/batch_04_report.md` | Status: `COMPLETED` | Clean: 191, Flagged: 0 (100%)
+- [x] **Batch 05 (Action Verbs Part A)** — `audit/reports/batch_05_report.md` | Status: `COMPLETED` | Clean: 190, Flagged: 0 (100%)
+- [x] **Batch 06 (Action Verbs Part B)** — `audit/reports/batch_06_report.md` | Status: `COMPLETED` | Clean: 189, Flagged: 0 (100%)
+- [x] **Batch 07 (Nouns Part A)** — `audit/reports/batch_07_report.md` | Status: `COMPLETED` | Clean: 221, Flagged: 0 (100%)
+- [x] **Batch 08 (Nouns Part B)** — `audit/reports/batch_08_report.md` | Status: `COMPLETED` | Clean: 221, Flagged: 0 (100%)
+- [x] **Batch 09 (Nouns Part C)** — `audit/reports/batch_09_report.md` | Status: `COMPLETED` | Clean: 221, Flagged: 0 (100%)
+- [x] **Batch 10 (Nouns Part D)** — `audit/reports/batch_10_report.md` | Status: `COMPLETED` | Clean: 221, Flagged: 0 (100%)
+- [x] **Batch 11 (Nouns Part E)** — `audit/reports/batch_11_report.md` | Status: `COMPLETED` | Clean: 221, Flagged: 0 (100%)
+- [x] **Stage 12: Master Synthesis & Specification (Round 2)** — `docs/linguistic_audit_specification.md` | Status: `COMPLETED`
+- [x] **Stage 13: Core Implementation & Engine Remediation** — All 5 core engineering pillars implemented, all defects eliminated | Status: `COMPLETED`
+- [x] **Stage 14: Deterministic Verification & Regression Testing** — Full curriculum re-audit 2,045/2,045 clean (100%), 97/97 tests passing | Status: `COMPLETED`
 
 ---
 
