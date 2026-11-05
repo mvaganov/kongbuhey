@@ -2055,7 +2055,12 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 
 	let chosenVerb = null;
 	if (isShortMot) {
-		const volitionalAVs = avs.filter(v => canTakeMood(v, "inability"));
+		const volitionalAVs = avs.filter(v => {
+			const vKo = v[DATA_SCHEMA.Korean] || "";
+			if (["낫다", "걸리다", "끝나다", "시작되다", "고장 나다", "죽다", "생기다", "열리다", "닫히다"].some(k => vKo.includes(k))) return false;
+			if (hasTag(v, "involuntary", "passive", K.WEATHER)) return false;
+			return true;
+		});
 		chosenVerb = pickRandom(volitionalAVs) || pickRandom(avs);
 	} else if (ko === "얼마나") {
 		// 얼마나 requires gradable Descriptive Verb (degree) or duration/scalable verb (scalable)
