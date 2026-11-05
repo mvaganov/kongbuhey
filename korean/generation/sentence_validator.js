@@ -154,8 +154,12 @@ function validateSentenceAST(ast, realized) {
 					message: `Descriptive verb '${verbKo}' cannot take accusative direct object '${objKo}' in: "${ko}"`
 				});
 			} else if (verbKo) {
+				const isCognateAccusative =
+					(verbKo === "자다" && objKo === "잠") ||
+					(verbKo === "꾸다" && objKo === "꿈") ||
+					(verbKo === "추다" && objKo === "춤");
 				const isIntrans = verbUnit && hasTag(verbUnit, "intransitive", "intransitive_general", "intransitive_motion", "intransitive_place", "intransitive_person", "intransitive_state", "passive", "weather") && !hasTag(verbUnit, "transitive");
-				if (isIntrans) {
+				if (isIntrans && !isCognateAccusative) {
 					errors.push({
 						code: "VALENCY_TRANSITIVITY_MISMATCH",
 						message: `Intransitive verb '${verbKo}' cannot take accusative direct object '${objKo}' in: "${ko}"`

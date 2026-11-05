@@ -172,6 +172,73 @@
     DET: POS.DETERMINER,
   });
 
+  // ============================================================================
+  // Dynamic Reflection Engine for Safe Shorthand Constants
+  // ============================================================================
+  // Discovers all non-colliding shorthand variables across categories at runtime.
+  // Prevents shorthand implementation for any variable that would cause a
+  // namespace collision across categories (e.g. GRAMMAR / ADVERB between POS and TAG)
+  // or collide with JavaScript reserved keywords.
+
+  const JS_RESERVED = new Set([
+    'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'default',
+    'delete', 'do', 'else', 'export', 'extends', 'finally', 'for', 'function',
+    'if', 'import', 'in', 'instanceof', 'new', 'return', 'super', 'switch',
+    'this', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'yield',
+    'let', 'static', 'enum', 'await', 'implements', 'package', 'protected',
+    'interface', 'private', 'public', 'null', 'true', 'false', 'NaN', 'Infinity', 'undefined'
+  ]);
+
+  const categories = [POS, CONJ, FORMALITY, TAG, SRC];
+  const catNames = ['POS', 'CONJ', 'FORMALITY', 'TAG', 'SRC'];
+
+  // Detect key collisions across categories where values differ
+  const keyRegistry = new Map();
+  for (let i = 0; i < categories.length; i++) {
+    const catObj = categories[i];
+    const catName = catNames[i];
+    for (const key of Object.keys(catObj)) {
+      if (!keyRegistry.has(key)) keyRegistry.set(key, []);
+      keyRegistry.get(key).push({ cat: catName, val: catObj[key] });
+    }
+  }
+
+  const collidingKeys = new Set();
+  for (const [key, owners] of keyRegistry.entries()) {
+    if (owners.length > 1) {
+      const vals = new Set(owners.map(o => o.val));
+      if (vals.size > 1) collidingKeys.add(key);
+    }
+  }
+
+  const SAFE_SHORTHANDS = {};
+
+  // 1. POS canonical ergonomic shorthands
+  const posShorthands = {
+    N: POS.NOUN,
+    AV: POS.ACTION_VERB,
+    DV: POS.DESCRIPTIVE_VERB,
+    G: POS.GRAMMAR,
+    ADV: POS.ADVERB,
+    NUM: POS.NUMBER,
+    PRON: POS.PRONOUN,
+    EXCL: POS.EXCLAMATION,
+    DET: POS.DETERMINER,
+  };
+  for (const [k, v] of Object.entries(posShorthands)) {
+    SAFE_SHORTHANDS[k] = v;
+  }
+
+  // 2. CONJ, FORMALITY, TAG, SRC shorthands (filtering out collisions and reserved keywords)
+  for (let i = 1; i < categories.length; i++) {
+    const catObj = categories[i];
+    for (const [key, val] of Object.entries(catObj)) {
+      if (collidingKeys.has(key)) continue;
+      if (JS_RESERVED.has(key) || JS_RESERVED.has(key.toLowerCase())) continue;
+      SAFE_SHORTHANDS[key] = val;
+    }
+  }
+
   // Shorthand Aliases for data.js rows and compact scripts
   const N = POS.NOUN;
   const AV = POS.ACTION_VERB;
@@ -186,15 +253,15 @@
   // Browser global export
   if (typeof window !== 'undefined') {
     window.K = K;
-    window.N = N;
-    window.AV = AV;
-    window.DV = DV;
-    window.G = G;
-    window.ADV = ADV;
-    window.NUM = NUM;
-    window.PRON = PRON;
-    window.DET = DET;
-    window.EXCL = EXCL;
+    window.POS = POS;
+    window.CONJ = CONJ;
+    window.FORMALITY = FORMALITY;
+    window.TAG = TAG;
+    window.SRC = SRC;
+    window.SAFE_SHORTHANDS = SAFE_SHORTHANDS;
+    for (const [k, v] of Object.entries(SAFE_SHORTHANDS)) {
+      window[k] = v;
+    }
   }
 
   // Node.js CommonJS export
@@ -206,15 +273,8 @@
       FORMALITY,
       TAG,
       SRC,
-      N,
-      AV,
-      DV,
-      G,
-      ADV,
-      NUM,
-      PRON,
-      DET,
-      EXCL,
+      SAFE_SHORTHANDS,
+      ...SAFE_SHORTHANDS,
     };
   }
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : global));

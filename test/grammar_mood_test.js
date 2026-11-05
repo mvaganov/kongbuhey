@@ -422,13 +422,24 @@ const allDescriptiveVerbs = allUnits.filter(u => u && u[DATA_SCHEMA.PartofSpeech
 
 console.log(`Auditing ${allActionVerbs.length} Action Verbs and ${allDescriptiveVerbs.length} Descriptive Verbs...`);
 
-// 1. All Action Verbs must be permitted for imperative and propositive moods
+// 1. Action Verbs: Voluntary verbs permitted for imperative, propositive, inability, volitional moods.
+// Involuntary, passive, and meteorological action verbs are forbidden from imperative, propositive, and volitional.
 for (const avUnit of allActionVerbs) {
 	const ko = avUnit[DATA_SCHEMA.Korean];
-	assert(canTakeMood(avUnit, "imperative") === true, `Action Verb '${ko}' permitted for imperative`);
-	assert(canTakeMood(avUnit, "propositive") === true, `Action Verb '${ko}' permitted for propositive`);
-	assert(canTakeMood(avUnit, "inability") === true, `Action Verb '${ko}' permitted for inability`);
-	assert(canTakeMood(avUnit, "volitional") === true, `Action Verb '${ko}' permitted for volitional`);
+	const isInv = (hasTag(avUnit, "involuntary", "passive", "weather") && ko !== "우산을 쓰다")
+		|| ["끝나다", "시작되다", "고장 나다", "죽다", "생기다", "열리다", "닫히다"].some(k => ko.includes(k));
+
+	if (isInv) {
+		assert(canTakeMood(avUnit, "imperative") === false, `Involuntary Action Verb '${ko}' forbidden from imperative`);
+		assert(canTakeMood(avUnit, "propositive") === false, `Involuntary Action Verb '${ko}' forbidden from propositive`);
+		assert(canTakeMood(avUnit, "inability") === true, `Involuntary Action Verb '${ko}' permitted for inability`);
+		assert(canTakeMood(avUnit, "volitional") === false, `Involuntary Action Verb '${ko}' forbidden from volitional`);
+	} else {
+		assert(canTakeMood(avUnit, "imperative") === true, `Voluntary Action Verb '${ko}' permitted for imperative`);
+		assert(canTakeMood(avUnit, "propositive") === true, `Voluntary Action Verb '${ko}' permitted for propositive`);
+		assert(canTakeMood(avUnit, "inability") === true, `Voluntary Action Verb '${ko}' permitted for inability`);
+		assert(canTakeMood(avUnit, "volitional") === true, `Voluntary Action Verb '${ko}' permitted for volitional`);
+	}
 }
 
 // 2. All Descriptive Verbs must be forbidden from imperative, propositive, inability, and volitional moods
