@@ -388,12 +388,25 @@ function buildSchemaFromK(constantsRoot) {
   const categorySets = new Map();
   const valueToMetadata = new Map();
 
+  const JS_RESERVED = new Set([
+    'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'default',
+    'delete', 'do', 'else', 'export', 'extends', 'finally', 'for', 'function',
+    'if', 'import', 'in', 'instanceof', 'new', 'return', 'super', 'switch',
+    'this', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'yield',
+    'let', 'static', 'enum', 'await', 'implements', 'package', 'protected',
+    'interface', 'private', 'public', 'null', 'true', 'false', 'NaN', 'Infinity', 'undefined'
+  ]);
+
   // Reflect over all own keys of K to find category sub-objects
   const categoryNames = Reflect.ownKeys(root).filter(key => {
     if (typeof key !== 'string') return false;
     const val = root[key];
     return val && typeof val === 'object' && !Array.isArray(val);
   });
+
+  // 1. Gather all keys and values per category
+  const allEntries = [];
+  const keyRegistry = new Map();
 
   for (const cat of categoryNames) {
     const subObj = root[cat];
@@ -410,48 +423,104 @@ function buildSchemaFromK(constantsRoot) {
         valSet.add(v);
         if (!valToKeys.has(v)) valToKeys.set(v, []);
         valToKeys.get(v).push(key);
+
+        if (!keyRegistry.has(key)) keyRegistry.set(key, []);
+        keyRegistry.get(key).push({ cat, val: v });
       }
     }
 
-    // Automatically resolve canonical name vs shorthand alias via reflection
     for (const [val, matchedKeys] of valToKeys.entries()) {
-      // Longest key is the canonical constant name (e.g. ACTION_VERB); shortest is shorthand (e.g. AV)
       matchedKeys.sort((a, b) => b.length - a.length || a.localeCompare(b));
       const canonicalKey = matchedKeys[0];
-      const shorthandKey = matchedKeys.length > 1 ? matchedKeys[matchedKeys.length - 1] : canonicalKey;
-
-      valueToMetadata.set(val, {
-        value: val,
-        category: cat,
-        key: canonicalKey,
-        recommended: `K.${cat}.${canonicalKey}`,
-        namespaced: `K.${cat}.${canonicalKey}`,
-        shorthand: shorthandKey
-      });
+      const candidateShorthand = matchedKeys.length > 1 ? matchedKeys[matchedKeys.length - 1] : canonicalKey;
+      allEntries.push({ cat, val, canonicalKey, candidateShorthand, matchedKeys });
     }
   }
 
-  // Also reflect over top-level own keys on K directly (e.g. K.AV, K.DV, K.EMPTY)
-  const topKeys = Reflect.ownKeys(root).filter(k => typeof k === 'string');
-  for (const key of topKeys) {
-    const val = root[key];
-    if (typeof val === 'string') {
-      if (val === '') {
-        valueToMetadata.set('', {
-          value: '',
-          category: 'EMPTY',
-          key: key,
-          recommended: `K.${key}`,
-          namespaced: `K.${key}`,
-          shorthand: key
-        });
-      } else if (valueToMetadata.has(val)) {
-        const meta = valueToMetadata.get(val);
-        // If a shorter direct key exists on K (e.g. K.AV for 'Action Verb'), use it as primary shorthand
-        if (key.length < meta.shorthand.length) {
-          meta.shorthand = key;
-        }
+  // Detect key collisions across categories where values differ (e.g. GRAMMAR / ADVERB)
+  const collidingKeys = new Set();
+  for (const [key, owners] of keyRegistry.entries()) {
+    if (owners.length > 1) {
+      const distinctVals = new Set(owners.map(o => o.val));
+      if (distinctVals.size > 1) {
+        collidingKeys.add(key);
       }
+    }
+  }
+
+  // Also reflect over top-level own keys on K directly (e.g. K.AV, K.DV)
+  for (const entry of allEntries) {
+    for (const key of Reflect.ownKeys(root)) {
+      if (typeof key !== 'string') continue;
+      if (root[key] === entry.val && key.length < entry.candidateShorthand.length) {
+        entry.candidateShorthand = key;
+      }
+    }
+  }
+
+  // 2. Collision detection and shorthand resolution
+  const shorthandToEntries = new Map();
+  for (const entry of allEntries) {
+    const sh = entry.candidateShorthand;
+    if (!shorthandToEntries.has(sh)) shorthandToEntries.set(sh, []);
+    shorthandToEntries.get(sh).push(entry);
+  }
+
+  const safeShorthands = {};
+
+  for (const entry of allEntries) {
+    const recommended = `K.${entry.cat}.${entry.canonicalKey}`;
+    let shorthand = entry.candidateShorthand;
+    let hasCollision = false;
+
+    // Check collision conditions:
+    // a) Key collides across categories with differing values
+    if (collidingKeys.has(entry.candidateShorthand) || (collidingKeys.has(entry.canonicalKey) && entry.candidateShorthand === entry.canonicalKey)) {
+      hasCollision = true;
+    }
+    // b) Shorthand matches a JS reserved keyword
+    if (JS_RESERVED.has(shorthand) || JS_RESERVED.has(shorthand.toLowerCase())) {
+      hasCollision = true;
+    }
+    // c) Multiple entries share the same candidate shorthand with differing values
+    const sharing = shorthandToEntries.get(shorthand) || [];
+    if (sharing.length > 1) {
+      const distinct = new Set(sharing.map(s => s.val));
+      if (distinct.size > 1) {
+        hasCollision = true;
+      }
+    }
+
+    if (hasCollision) {
+      // Prevent shorthand: fallback to namespaced K.{CAT}.{KEY}
+      shorthand = recommended;
+    } else {
+      safeShorthands[shorthand] = entry.val;
+    }
+
+    valueToMetadata.set(entry.val, {
+      value: entry.val,
+      category: entry.cat,
+      key: entry.canonicalKey,
+      recommended,
+      namespaced: recommended,
+      shorthand,
+      hasCollision
+    });
+  }
+
+  // Handle empty string if present on root
+  for (const key of Reflect.ownKeys(root)) {
+    if (typeof key === 'string' && root[key] === '') {
+      valueToMetadata.set('', {
+        value: '',
+        category: 'EMPTY',
+        key: key,
+        recommended: `K.${key}`,
+        namespaced: `K.${key}`,
+        shorthand: key,
+        hasCollision: false
+      });
     }
   }
 
@@ -459,6 +528,8 @@ function buildSchemaFromK(constantsRoot) {
     categoryNames,
     categorySets,
     valueToMetadata,
+    safeShorthands,
+    collidingKeys,
     getCategoryValues: (name) => categorySets.get(name) || new Set(),
     get posValues() { return categorySets.get('POS') || new Set(); },
     get conjValues() { return categorySets.get('CONJ') || new Set(); },
@@ -718,6 +789,34 @@ function applyFixesToFile(fileResult, options = {}) {
 
   for (const tok of allTokens) {
     content = content.slice(0, tok.start) + tok.replacement + content.slice(tok.end);
+  }
+
+  // If fixing data.js, ensure universal constants and safe shorthand imports are present
+  const isDataJs = fileResult.file === 'data.js' || fileResult.file.endsWith('/data.js');
+  if (isDataJs && !content.includes("require('./constants.js')")) {
+    const schema = buildSchemaFromK(K);
+    const shorthandKeys = Object.keys(schema.safeShorthands);
+    const importHeader =
+      `// --- Universal Constants & Compact Shorthand Imports ---\n` +
+      `const {\n` +
+      `  K,\n  ` +
+      shorthandKeys.join(', ') + `\n` +
+      `} = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});\n\n`;
+
+    const schemaIdx = content.indexOf('const DATA_SCHEMA = {');
+    if (schemaIdx !== -1) {
+      content = content.slice(0, schemaIdx) + importHeader + content.slice(schemaIdx);
+    } else {
+      content = importHeader + content;
+    }
+
+    // Ensure K is also exported at the bottom of data.js if not already present
+    if (!content.includes('K, DATA_SCHEMA') && !content.includes('DATA_SCHEMA, hasTag, K')) {
+      content = content.replace(
+        'module.exports = { KR_EN_languageUnits, addLearningUnit, getWords, rebuildCache, getPartOfSpeechCached, cache, DATA_SCHEMA, hasTag };',
+        'module.exports = { KR_EN_languageUnits, addLearningUnit, getWords, rebuildCache, getPartOfSpeechCached, cache, DATA_SCHEMA, hasTag, K };'
+      );
+    }
   }
 
   fs.writeFileSync(fileResult.fullPath, content, 'utf8');

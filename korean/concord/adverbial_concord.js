@@ -159,8 +159,10 @@ function applyAdverbConcord(input, options = {}) {
 	// 2. Repair NPI without negative predicate
 	for (const npi of state.ALL_NPI_WORDS) {
 		const npiRegex = new RegExp(`(^|[^가-힣])${npi}\\s+([가-힣]+)(?=[^가-힣]|$)`, 'g');
-		str = str.replace(npiRegex, (m, p1, targetWord) => {
+		str = str.replace(npiRegex, (m, p1, targetWord, offset) => {
 			if (targetWord === "안" || targetWord === "못" || isNegativePredicate(targetWord)) return m;
+			const afterNpi = str.substring(offset + m.length - targetWord.length);
+			if (isNegativePredicate(afterNpi)) return m;
 
 			if (options.prefer_affirmative || options.repair_mode === "replace_adverb") {
 				const repAdverb = options.affirmative_adverb || "아주";

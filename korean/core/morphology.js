@@ -368,7 +368,7 @@ function canTakeMood(verbOrKo, mood) {
 		return false;
 	}
 
-	const isInvoluntary = (verbUnit && hasTag(verbUnit, "involuntary", "passive", "weather"))
+	const isInvoluntary = (verbUnit && hasTag(verbUnit, "involuntary", "passive", "weather") && ko !== "우산을 쓰다")
 		|| ["끝나다", "시작되다", "고장 나다", "죽다", "생기다", "열리다", "닫히다"].some(k => ko.includes(k));
 
 	if (normalizedMood === "imperative" || normalizedMood === "prohibition" || normalizedMood === "propositive" || normalizedMood === "suggestion") {
