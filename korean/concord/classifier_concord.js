@@ -110,13 +110,21 @@ function getMatchingNounsForClassifier(classifierOrUnit) {
 		return allNouns.filter(n => ["교실", "사무실", "호실", "연구실", "회의실", "강의실", "기숙사", "방"].includes(n[DATA_SCHEMA.Korean]) && !["욕실", "베란다", "부엌", "거실", "현관", "마당"].includes(n[DATA_SCHEMA.Korean]));
 	}
 	if (ko === "학년") {
-		return allNouns.filter(n => ["초등학교", "중학교", "고등학교", "대학교", "학생"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "school"));
+		return allNouns.filter(n => ["초등학교", "중학교", "고등학교", "대학교", "대학원", "학생"].includes(n[DATA_SCHEMA.Korean]) || (hasTag(n, "school") && !hasTag(n, "place", "facility", "room", "hall", "activity", "event") && !["대강당", "강당", "교실", "학원", "오리엔테이션", "숙제", "공부"].includes(n[DATA_SCHEMA.Korean])));
 	}
 	if (ko === "편") {
 		return allNouns.filter(n => ["영화", "드라마", "시", "소설", "비디오"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "media_work", "film", "literature"));
 	}
 	if (ko === "%") {
 		return allNouns.filter(n => ["할인", "이자율", "확률", "비율", "성공률"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "rate_proportion", "discount", "finance"));
+	}
+	if (ko === "개") {
+		return allNouns.filter(n => {
+			if (hasTag(n, "language", "academic", "academic_fee", "finance", "currency", "money", "place", "facility", "institution", "restaurant", "media_work", "music", "film", "drama", "uncountable", "mass_noun", "liquid", "drink", "soup", "stew", "abstract", "time", "temporal", "person")) return false;
+			const nKo = n[DATA_SCHEMA.Korean];
+			if (["한국말", "영어", "일본말", "중국말", "프랑스말", "베트남말", "음악", "영화", "드라마", "밥", "국", "찌개", "돈", "뭘", "뭐", "무엇", "이거", "것", "북경반점", "식당", "빵집", "컴퓨터공학", "교육학", "법학", "곡류", "파스타", "신문", "면", "고기"].includes(nKo)) return false;
+			return hasTag(n, "object", "item", "stationery", "clothing", "fruit", "food_ingredient", "appliance", "tool", "container", "discrete_object") || ["사과", "공책", "핸드백", "냄비", "시계", "선물", "인형", "상자", "지우개", "볼펜", "가방", "우산", "모자", "컵", "달걀", "토마토"].includes(nKo);
+		});
 	}
 
 	const spec = state.CLASSIFIER_NOUN_SPECS.find(s => s.classifier === ko || (s.unit && s.unit[DATA_SCHEMA.Korean] === ko));

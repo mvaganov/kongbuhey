@@ -192,14 +192,21 @@ function realizeNaturalConstituent(con, clauseContext = {}) {
 		return `${adj}ly`;
 	}
 
-	// 4. Determiner + Noun (e.g. 이 책 -> "this book")
+	// 4. Determiner + Noun (e.g. 이 책 -> "this book", 제 가방 -> "my bag")
 	if (determinerUnit) {
 		const detEn = getUnitNaturalPhrase(determinerUnit);
 		const nounEn = getUnitNaturalPhrase(primaryUnit);
-		if (["every", "all", "other", "another"].includes(detEn.toLowerCase()) || ["이", "그", "저", "어느", "무슨", "어떤", "모든", "각"].includes(determinerUnit[DATA_SCHEMA.Korean])) {
+		const detLower = detEn.toLowerCase();
+		const isDefiniteOrPossessive = ["my", "our", "your", "his", "her", "their", "whose", "every", "all", "each", "this", "that", "these", "those", "which", "what"].includes(detLower) ||
+			hasTag(determinerUnit, "possessive", "demonstrative", "deictic") ||
+			["이", "그", "저", "어느", "무슨", "어떤", "모든", "각", "제", "내"].includes(determinerUnit[DATA_SCHEMA.Korean]);
+
+		if (isDefiniteOrPossessive) {
 			return `${detEn} ${nounEn}`;
 		}
-		return `a ${detEn} ${nounEn}`;
+		if (detLower === "other") return `another ${nounEn}`;
+		const article = /^[aeiou]/i.test(detEn) ? "an" : "a";
+		return `${article} ${detEn} ${nounEn}`;
 	}
 
 	// 5. Pronouns in object/recipient role

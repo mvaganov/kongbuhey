@@ -232,6 +232,7 @@ function generateBatchSentences(batchId, customSeed = null) {
 	combinedOutput += `======================================================================\n\n`;
 
 	batch.units.forEach((uInfo, idx) => {
+		setRandomSeed(seed);
 		const unit = KR_EN_languageUnits[uInfo.id];
 		const genRes = generateSentencesForUnit(unit, 10);
 		let unitText = `----------------------------------------------------------------------\n`;

@@ -305,7 +305,7 @@ function resolvePureMorphology(text, stateObj = null) {
 	});
 
 	// Resolve 아/어/았/었 vowel harmony and direct vowel stem contractions
-	resolvedKo = resolvedKo.replace(/([가-힣])(아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => {
+	resolvedKo = resolvedKo.replace(/([가-힣])(아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (match, ch, h, s, offset) => {
 		const d = decomposeHangul(ch);
 		const hv = getVowelHarmony(ch);
 
@@ -314,6 +314,13 @@ function resolvePureMorphology(text, stateObj = null) {
 			if (ch === "하" || hv === "여") {
 				if (h === "아/어") return "해" + s;
 				if (h === "았/었") return "했" + s;
+			}
+			// Nominal copula coda sandhi: e.g. "통화중이-", "학생이-", "오랜만이-" followed by 아/어 or 았/었
+			// Verbal stems ending in 이 (e.g. 줄이-, 끓이-, 움직이-, 붙이-, 속이-) contract normally (줄여, 끓여)
+			const isVerbStem = /(?:줄|끓|직|붙|먹|죽|속|높|닫|열|풀|잡|업|깎)이$/.test(resolvedKo.slice(0, offset + 1));
+			if (ch === "이" && offset > 0 && hasBatchim(resolvedKo[offset - 1]) && !isVerbStem) {
+				if (h === "아/어") return "이어" + s;
+				if (h === "았/었") return "이었" + s;
 			}
 			if (h === "아/어") {
 				if (d.medial === 0) return ch + s; // ㅏ (가, 나, 사, 자, 타)
@@ -405,6 +412,13 @@ function resolvePureMorphology(text, stateObj = null) {
 	resolvedKo = resolvedKo.replace(/마시(아|어)(요|서|도|야|라)/g, (_, _v, s) => "마셔" + s);
 	resolvedKo = resolvedKo.replace(/크(아|어)(요|서|도|야|라)/g, (_, _v, s) => "커" + s);
 	resolvedKo = resolvedKo.replace(/([^을를\s])이어요/g, (m, ch) => hasBatchim(ch) ? ch + "이에요" : m);
+	resolvedKo = resolvedKo.replace(/([가-힣])(이었|였)(어요|어|다가|던|습니다|다)/g, (m, ch, cop, s) => {
+		// When noun + copula past inflects, consonant coda must be 이었-, open syllable (vowel) is 였-
+		// (exempt native verb stems ending in 였 like 보였, 다녔, 시켰, 줄였, 끓였, 움직였, etc.)
+		if (["보", "시", "다", "빠", "가", "느", "바", "헤", "모", "채", "지", "줄", "끓", "직", "붙", "먹", "죽", "속", "높", "닫", "열", "풀", "잡", "업", "깎"].includes(ch)) return m;
+		const hasB = hasBatchim(ch);
+		return ch + (hasB ? "이었" : "였") + s;
+	});
 
 	resolvedKo = resolvedKo.replace(/([가-힣])어(요|서|도|야|라|지|져|졌)/g, (m, ch, s) => {
 		if (ch === '지' || ch === '이' || ch === '저' || ch === '부' || ch === '그') return m;
