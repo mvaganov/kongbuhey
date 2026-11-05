@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/grammar_mood_test.js - Feature 8: Predicate Mood, Speech Act & Negation Restrictions
  *
@@ -417,8 +420,8 @@ assert(applyMoodConcord("저는 커피를 마시고 싶어합니다") === "저�
 console.log("\n[10/10] Exhaustive Cross-Validation across All Action Verbs vs Descriptive Verbs");
 
 const allUnits = KR_EN_languageUnits || [];
-const allActionVerbs = allUnits.filter(u => u && u[DATA_SCHEMA.PartofSpeech] === "Action Verb");
-const allDescriptiveVerbs = allUnits.filter(u => u && u[DATA_SCHEMA.PartofSpeech] === "Descriptive Verb");
+const allActionVerbs = allUnits.filter(u => u && u[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB);
+const allDescriptiveVerbs = allUnits.filter(u => u && u[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB);
 
 console.log(`Auditing ${allActionVerbs.length} Action Verbs and ${allDescriptiveVerbs.length} Descriptive Verbs...`);
 
@@ -426,7 +429,7 @@ console.log(`Auditing ${allActionVerbs.length} Action Verbs and ${allDescriptive
 // Involuntary, passive, and meteorological action verbs are forbidden from imperative, propositive, and volitional.
 for (const avUnit of allActionVerbs) {
 	const ko = avUnit[DATA_SCHEMA.Korean];
-	const isInv = (hasTag(avUnit, "involuntary", "passive", "weather") && ko !== "우산을 쓰다")
+	const isInv = (hasTag(avUnit, "involuntary", "passive", K.WEATHER) && ko !== "우산을 쓰다")
 		|| ["끝나다", "시작되다", "고장 나다", "죽다", "생기다", "열리다", "닫히다"].some(k => ko.includes(k));
 
 	if (isInv) {

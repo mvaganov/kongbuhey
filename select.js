@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * select.js - SQL-like query and data manipulation CLI tool for kongbuhey's data.js.
  *
@@ -119,6 +122,7 @@ try {
 	}
 } catch (_) { }
 
+// constants-disable
 const COLUMN_ALIASES = {
 	"korean": "Korean", "ko": "Korean",
 	"english": "English", "en": "English",
@@ -134,6 +138,7 @@ const COLUMN_ALIASES = {
 	"semanticvector": "SemanticData", "vector": "SemanticData", "semantic_vector": "SemanticData", "sv": "SemanticData",
 	"id": "Id", "index": "Id", "rowid": "Id", "id_num": "Id"
 };
+// constants-enable
 
 function normalizeColumnName(col) {
 	if (!col) return null;
@@ -290,7 +295,7 @@ function buildUnitFromRecord(rec, resolvedSource, newId = 0, schemaCols = SCHEMA
 			return tagsArr;
 		}
 		if (col.name === 'PartofSpeech') {
-			return rec.PartofSpeech || rec.PartOfSpeech || rec.pos || "Noun";
+			return rec.PartofSpeech || rec.PartOfSpeech || rec.pos || K.NOUN;
 		}
 		if (col.name === 'SemanticData') {
 			return rec.SemanticData !== undefined ? rec.SemanticData : (rec.SemanticVector !== undefined ? rec.SemanticVector : "");
@@ -318,16 +323,16 @@ function getVerbSemanticConstraint(unit, schemaCols = SCHEMA_COLUMNS) {
 	let sv = {};
 	try { sv = typeof sdVal === 'string' ? JSON.parse(sdVal) : sdVal; } catch (_) { }
 
-	const pos = posIdx >= 0 ? unit[posIdx] : "Noun";
+	const pos = posIdx >= 0 ? unit[posIdx] : K.NOUN;
 	const tagsVal = tagsIdx >= 0 ? unit[tagsIdx] : [];
 	const tags = tagsVal instanceof Set ? Array.from(tagsVal) : (Array.isArray(tagsVal) ? tagsVal : []);
 
 	// Prioritize the specific semantic selection tag responsible for the restriction
 	let specTag = null;
-	if (pos === "Descriptive Verb") {
+	if (pos === K.DESCRIPTIVE_VERB) {
 		const spec = DESCRIPTIVE_VERB_SPECS.find(s => tags.includes(s.tag));
 		if (spec) specTag = spec.tag;
-	} else if (pos === "Action Verb") {
+	} else if (pos === K.ACTION_VERB) {
 		const spec = ACTION_VERB_SPECS.find(s => tags.includes(s.tag));
 		if (spec) specTag = spec.tag;
 	}
@@ -370,8 +375,8 @@ function detectUndifferentiatedHomonym(unit, schemaCols = SCHEMA_COLUMNS) {
 	const tagsIdx = getIdx("SemanticTags");
 	const svIdx = getIdx("SemanticData") >= 0 ? getIdx("SemanticData") : getIdx("SemanticVector");
 
-	const pos = posIdx >= 0 ? unit[posIdx] : "Noun";
-	if (pos !== "Action Verb" && pos !== "Descriptive Verb") return null;
+	const pos = posIdx >= 0 ? unit[posIdx] : K.NOUN;
+	if (pos !== K.ACTION_VERB && pos !== K.DESCRIPTIVE_VERB) return null;
 
 	const id = idIdx >= 0 ? unit[idIdx] : "?";
 	const ko = koIdx >= 0 ? unit[koIdx] : "?";
@@ -389,10 +394,10 @@ function detectUndifferentiatedHomonym(unit, schemaCols = SCHEMA_COLUMNS) {
 
 	// TODO create some better data structure defining tag incompatability. a matrix, or a dictionary of sets, or something. this collection of specific bools and if-statement block has a code smell.
 	// 1. Cross-Domain Conflations in Tags
-	const hasWeather = tags.includes('weather') || (sv && sv.domain === 'weather');
-	const hasWearable = tags.includes('wearable') || tags.includes('clothing') || tags.includes('footwear') || tags.includes('handwear') || (sv && sv.domain === 'clothing');
-	const hasFood = tags.includes('food') || tags.includes('drink') || tags.includes('cooking') || (sv && sv.domain === 'food');
-	const hasTransport = tags.includes('transportation') || tags.includes('vehicle') || (sv && sv.domain === 'transportation');
+	const hasWeather = tags.includes(K.WEATHER) || (sv && sv.domain === K.WEATHER);
+	const hasWearable = tags.includes(K.WEARABLE) || tags.includes(K.CLOTHING) || tags.includes('footwear') || tags.includes('handwear') || (sv && sv.domain === K.CLOTHING);
+	const hasFood = tags.includes(K.FOOD) || tags.includes('drink') || tags.includes('cooking') || (sv && sv.domain === K.FOOD);
+	const hasTransport = tags.includes(K.TRANSPORTATION) || tags.includes('vehicle') || (sv && sv.domain === K.TRANSPORTATION);
 	const hasSports = tags.includes('sports') || selTags.includes('transitive_sports');
 	const hasInstrument = tags.includes('instrument') || tags.includes('music') || selTags.includes('transitive_instrument');
 	const hasPostal = tags.includes('postal') || (sv && sv.domain === 'postal');
@@ -420,10 +425,10 @@ function detectUndifferentiatedHomonym(unit, schemaCols = SCHEMA_COLUMNS) {
 
 	// 2. Domain vs Selection Tag Contradiction
 	if (sv && sv.domain) {
-		if (sv.domain === 'weather' && selTags.some(t => t.includes('handwear') || t.includes('clothing') || t.includes('footwear') || t.includes('neckwear'))) {
+		if (sv.domain === K.WEATHER && selTags.some(t => t.includes('handwear') || t.includes(K.CLOTHING) || t.includes('footwear') || t.includes('neckwear'))) {
 			issues.push(`SemanticVector domain '${sv.domain}' contradicts wearable selection tag: ${selTags.join(', ')}`);
 		}
-		if (sv.domain === 'clothing' && tags.includes('weather')) {
+		if (sv.domain === K.CLOTHING && tags.includes(K.WEATHER)) {
 			issues.push(`SemanticVector domain '${sv.domain}' contradicts 'weather' tag`);
 		}
 	}
@@ -449,7 +454,7 @@ function detectUndifferentiatedHomonym(unit, schemaCols = SCHEMA_COLUMNS) {
 	const distinctParens = [...new Set(((en + ' ' + dis).match(/\(([^)]+)\)/g) || []).map(p => p.toLowerCase()))];
 	if (distinctParens.length >= 2 && (specificTrans.length > 0 || (sv && sv.collocation_filter))) {
 		const isCrossDomainParen = (
-			(distinctParens.some(p => p.includes('weather') || p.includes('rain') || p.includes('fog')) &&
+			(distinctParens.some(p => p.includes(K.WEATHER) || p.includes('rain') || p.includes('fog')) &&
 				distinctParens.some(p => p.includes('cloth') || p.includes('ring') || p.includes('glove') || p.includes('bag') || p.includes('bedding'))) ||
 			(distinctParens.some(p => p.includes('sport') || p.includes('tennis')) &&
 				distinctParens.some(p => p.includes('piano') || p.includes('instrument')))
@@ -496,7 +501,7 @@ function validateLanguageUnitSemanticSelection(unit, allUnits, schemaCols = SCHE
 	const tagsIdx = getIdx("SemanticTags");
 	const svIdx = getIdx("SemanticData") >= 0 ? getIdx("SemanticData") : getIdx("SemanticVector");
 
-	const pos = posIdx >= 0 ? unit[posIdx] : "Noun";
+	const pos = posIdx >= 0 ? unit[posIdx] : K.NOUN;
 	const id = idIdx >= 0 ? unit[idIdx] : "?";
 	const ko = koIdx >= 0 ? unit[koIdx] : "?";
 	const tagsVal = tagsIdx >= 0 ? unit[tagsIdx] : [];
@@ -532,7 +537,7 @@ function validateLanguageUnitSemanticSelection(unit, allUnits, schemaCols = SCHE
 	}
 
 	// 3. Validate Descriptive Verbs
-	if (pos === "Descriptive Verb") {
+	if (pos === K.DESCRIPTIVE_VERB) {
 		const descriptiveTags = new Set(DESCRIPTIVE_VERB_SPECS.map(s => s.tag));
 		for (const tag of tags) {
 			if (tag.startsWith("descriptive_") && !descriptiveTags.has(tag)) {
@@ -571,7 +576,7 @@ function validateLanguageUnitSemanticSelection(unit, allUnits, schemaCols = SCHE
 	}
 
 	// 4. Validate Action Verbs
-	if (pos === "Action Verb") {
+	if (pos === K.ACTION_VERB) {
 		const actionTags = new Set(ACTION_VERB_SPECS.map(s => s.tag));
 		for (const tag of tags) {
 			if ((tag.startsWith("transitive_") || tag.startsWith("intransitive_") || tag.startsWith("dative_")) && !actionTags.has(tag)) {
@@ -585,7 +590,7 @@ function validateLanguageUnitSemanticSelection(unit, allUnits, schemaCols = SCHE
 			}
 		}
 
-		const isPureIntransitive = hasTag(unit, "intransitive_general") || hasTag(unit, "intransitive_food");
+		const isPureIntransitive = hasTag(unit, K.INTRANSITIVE_GENERAL) || hasTag(unit, "intransitive_food");
 		if (!isPureIntransitive) {
 			const hasSuppressDiversity = tags.some(t => {
 				const u = String(t).toUpperCase();
@@ -639,7 +644,7 @@ function auditSemanticRules(options = {}) {
 		const ko = unit[DATA_SCHEMA.Korean];
 		const tags = Array.from(unit[DATA_SCHEMA.SemanticTags] || []);
 
-		if (pos === "Descriptive Verb" || pos === "Action Verb") {
+		if (pos === K.DESCRIPTIVE_VERB || pos === K.ACTION_VERB) {
 			verbCount++;
 			const ambig = detectUndifferentiatedHomonym(unit, DATA_SCHEMA);
 			if (ambig && ambig.length > 0) {
@@ -653,7 +658,7 @@ function auditSemanticRules(options = {}) {
 			return u === 'SUPPRESS_SEMANTIC_DIVERSITY_WARNING' || u === 'SUPRESS_SEMANTIC_DIVERSITY_WARNING';
 		});
 
-		if (pos === "Descriptive Verb") {
+		if (pos === K.DESCRIPTIVE_VERB) {
 			for (const t of tags) {
 				if (t.startsWith("descriptive_") && !descriptiveTags.has(t)) {
 					unregTagCount++;
@@ -669,14 +674,14 @@ function auditSemanticRules(options = {}) {
 				lowDiversityCount++;
 				console.warn(`[LOW DIVERSITY] Descriptive Verb '${ko}' (Id: ${id}) has only ${cands.length} candidate(s): ${cands.map(c => c[DATA_SCHEMA.Korean]).join(', ')} under constraint '${constraint}'`);
 			}
-		} else if (pos === "Action Verb") {
+		} else if (pos === K.ACTION_VERB) {
 			for (const t of tags) {
 				if ((t.startsWith("transitive_") || t.startsWith("intransitive_") || t.startsWith("dative_")) && !actionTags.has(t)) {
 					unregTagCount++;
 					console.warn(`[UNREGISTERED TAG] Action Verb '${ko}' (Id: ${id}): tag '${t}' not in ACTION_VERB_SPECS in korean.js`);
 				}
 			}
-			const isPureIntransitive = hasTag(unit, "intransitive_general") || hasTag(unit, "intransitive_food");
+			const isPureIntransitive = hasTag(unit, K.INTRANSITIVE_GENERAL) || hasTag(unit, "intransitive_food");
 			if (!isPureIntransitive) {
 				const cands = getNounCandidatesForVerb(unit);
 				const constraint = getVerbSemanticConstraint(unit, DATA_SCHEMA);

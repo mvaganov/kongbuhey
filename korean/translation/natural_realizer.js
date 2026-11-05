@@ -1,4 +1,7 @@
 (function() {
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * korean/translation/natural_realizer.js
  *
@@ -22,10 +25,10 @@ const {
 
 const UNCOUNTABLE_EN_NOUNS = new Set([
 	"water", "coffee", "tea", "milk", "juice", "beer", "alcohol", "wine",
-	"rice", "cooked rice", "meal", "food", "bread", "meat", "beef", "pork", "chicken", "fish",
-	"kimchi", "ramen", "soup", "salt", "sugar", "money", "cash", "time", "homework",
-	"work", "music", "weather", "rain", "snow", "wind", "air", "fire", "love",
-	"happiness", "peace", "health", "information", "news", "furniture", "luggage",
+	"rice", "cooked rice", "meal", K.FOOD, "bread", "meat", "beef", "pork", "chicken", "fish",
+	"kimchi", "ramen", "soup", "salt", "sugar", "money", "cash", K.TIME, "homework",
+	"work", "music", K.WEATHER, "rain", "snow", "wind", "air", "fire", "love",
+	"happiness", "peace", K.HEALTH, "information", "news", "furniture", "luggage",
 	"traffic", "advice", "research", "korean", "english", "japanese", "chinese", "french",
 	"spanish", "german", "history", "math", "science", "medicine", "exercise", "sleep"
 ]);
@@ -49,7 +52,7 @@ function getUnitNaturalPhrase(unit) {
 	if (ko === "나" || ko === "저") return "I";
 	if (ko === "우리" || ko === "저희") return "we";
 	if (ko === "너" || ko === "당신") return "you";
-	if (ko === "그" && pos === "Pronoun") return "he";
+	if (ko === "그" && pos === K.PRONOUN) return "he";
 	if (ko === "그녀") return "she";
 	if (ko === "누구" || ko === "누가") return "who";
 	if (ko === "무엇" || ko === "뭐") return "what";
@@ -61,7 +64,7 @@ function getUnitNaturalPhrase(unit) {
 	if (ko === "여기" || ko === "이곳") return "here";
 	if (ko === "거기" || ko === "그곳") return "there";
 	if (ko === "저기" || ko === "저곳") return "over there";
-	if (ko === "시간" && pos === "Noun") return "time";
+	if (ko === "시간" && pos === K.NOUN) return K.TIME;
 
 	let raw = enMeta.nat || enMeta.lit || unit[DATA_SCHEMA.English] || "";
 	raw = String(raw)
@@ -70,7 +73,7 @@ function getUnitNaturalPhrase(unit) {
 		.split(/[;,/]/)[0]
 		.trim();
 
-	if (pos === "Action Verb" || pos === "Descriptive Verb") {
+	if (pos === K.ACTION_VERB || pos === K.DESCRIPTIVE_VERB) {
 		raw = raw.replace(/^to\s+/i, "").trim();
 	}
 	return raw;
@@ -83,7 +86,7 @@ function pluralizeEnglishNoun(nounStr, count = 2) {
 	if (!nounStr || count <= 1) return nounStr;
 	const lower = nounStr.toLowerCase();
 	if (UNCOUNTABLE_EN_NOUNS.has(lower)) return nounStr;
-	if (lower === "person") return "people";
+	if (lower === K.PERSON) return "people";
 	if (lower === "child") return "children";
 	if (lower === "man") return "men";
 	if (lower === "woman") return "women";
@@ -109,7 +112,7 @@ function withEnglishArticle(nounStr, unit = null, definite = true) {
 	if (UNCOUNTABLE_EN_NOUNS.has(lower) || PROPER_OR_BARE_PLACES.has(lower)) {
 		return trimmed;
 	}
-	if (unit && (hasTag(unit, "language", "country", "nationality", "properName", "proper_name", "time", "temporal") || unit[DATA_SCHEMA.PartofSpeech] === "Pronoun")) {
+	if (unit && (hasTag(unit, "language", "country", "nationality", "properName", "proper_name", K.TIME, "temporal") || unit[DATA_SCHEMA.PartofSpeech] === K.PRONOUN)) {
 		return trimmed;
 	}
 	if (/^[A-Z]/.test(trimmed)) {
@@ -183,7 +186,7 @@ function realizeNaturalConstituent(con, clauseContext = {}) {
 	}
 
 	// 3. Adverbialized Descriptive Verb ("{DVst}게" -> "nicely / in a [adj] way")
-	if (role === "adverbial" && primaryUnit[DATA_SCHEMA.PartofSpeech] === "Descriptive Verb") {
+	if (role === "adverbial" && primaryUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB) {
 		const sd = parseSemanticData(primaryUnit);
 		const adj = (sd && sd.en && sd.en.adj) || getUnitNaturalPhrase(primaryUnit).replace(/^be\s+/i, "");
 		if (adj.endsWith("y")) return adj.slice(0, -1) + "ily";
@@ -210,7 +213,7 @@ function realizeNaturalConstituent(con, clauseContext = {}) {
 	}
 
 	// 5. Pronouns in object/recipient role
-	if (primaryUnit[DATA_SCHEMA.PartofSpeech] === "Pronoun" && (role === "object" || role === "recipient" || role === "companion")) {
+	if (primaryUnit[DATA_SCHEMA.PartofSpeech] === K.PRONOUN && (role === K.OBJECT || role === "recipient" || role === "companion")) {
 		if (ko === "나" || ko === "저") return role === "recipient" ? "to me" : "me";
 		if (ko === "우리" || ko === "저희") return role === "recipient" ? "to us" : "us";
 		if (ko === "너" || ko === "당신") return role === "recipient" ? "to you" : "you";
@@ -237,7 +240,7 @@ function realizeNaturalConstituent(con, clauseContext = {}) {
 		return `at ${np}`;
 	}
 
-	if (role === "time" || particleType === "time" || particleType === "temporal") {
+	if (role === K.TIME || particleType === K.TIME || particleType === "temporal") {
 		const lower = basePhrase.toLowerCase();
 		if (/^(?:today|yesterday|tomorrow|now|recently|always|often|sometimes|usually|soon|later|already|still|every|last|next|this)/i.test(lower)) {
 			return basePhrase;
@@ -267,7 +270,7 @@ function realizeNaturalConstituent(con, clauseContext = {}) {
 		if (pKo.includes("의")) return `${withEnglishArticle(basePhrase, primaryUnit, true)}'s`;
 	}
 
-	if (primaryUnit[DATA_SCHEMA.PartofSpeech] === "Noun") {
+	if (primaryUnit[DATA_SCHEMA.PartofSpeech] === K.NOUN) {
 		const definite = role === "topic" || role === "subject";
 		return withEnglishArticle(basePhrase, primaryUnit, definite);
 	}
@@ -365,14 +368,14 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 
 	for (const con of constituents) {
 		const role = con.role || "modifier";
-		if (role === "discourse") {
+		if (role === K.DISCOURSE) {
 			const d = getUnitNaturalPhrase(con.unit || con.nounUnit);
 			if (d) discourseParts.push(d);
 		} else if (role === "topic" && !topicCon) {
 			topicCon = con;
 		} else if (role === "subject" && !subjectCon) {
 			subjectCon = con;
-		} else if (role === "object" || role === "noun_phrase") {
+		} else if (role === K.OBJECT || role === "noun_phrase") {
 			const o = realizeNaturalConstituent(con, clauseContext);
 			if (o) objectParts.push(o);
 		} else if (role === "recipient") {
@@ -381,10 +384,10 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 		} else if (role === "location") {
 			const l = realizeNaturalConstituent(con, clauseContext);
 			if (l) locationParts.push(l);
-		} else if (role === "time") {
+		} else if (role === K.TIME) {
 			const t = realizeNaturalConstituent(con, clauseContext);
 			if (t) timeParts.push(t);
-		} else if (role === "adverb" || role === "adverbial") {
+		} else if (role === K.ADVERB || role === "adverbial") {
 			const a = realizeNaturalConstituent(con, clauseContext);
 			if (a) adverbParts.push(a);
 		}
@@ -406,7 +409,7 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 		// Special possession pattern with 있다/없다 (e.g. 학생은 책이 있어요 -> "The student has a book")
 		if (verbUnit && (verbUnit[DATA_SCHEMA.Korean] === "있다" || verbUnit[DATA_SCHEMA.Korean] === "없다")) {
 			subjStr = topNP;
-			const possessedObj = realizeNaturalConstituent({ ...subjectCon, role: "object" }, clauseContext);
+			const possessedObj = realizeNaturalConstituent({ ...subjectCon, role: K.OBJECT }, clauseContext);
 			objectParts.unshift(possessedObj);
 		} else {
 			topicPrefix = `As for ${topNP}, `;
@@ -423,7 +426,7 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 			subjStr = "you";
 		} else if (clauseContext.honorific) {
 			subjStr = "they";
-		} else if (verbUnit && verbUnit[DATA_SCHEMA.PartofSpeech] === "Descriptive Verb") {
+		} else if (verbUnit && verbUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB) {
 			subjStr = "it";
 		} else {
 			subjStr = "I";
@@ -486,7 +489,7 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 		}
 	} else if (verbUnit) {
 		const vKo = verbUnit[DATA_SCHEMA.Korean] || "";
-		const isAction = verbUnit[DATA_SCHEMA.PartofSpeech] === "Action Verb";
+		const isAction = verbUnit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB;
 		const forms = getVerbEnForms(verbUnit);
 		let advPre = adverbParts.length > 0 ? adverbParts.join(" ") + " " : "";
 		adverbParts = []; // Consumed inside VP

@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test.js - Unified Test Runner for Kongbuhey
  *
@@ -56,7 +59,7 @@ const STUDYTEXTS_PATH = path.resolve(__dirname, 'studytexts.js');
 const { validateLanguageUnitSemanticSelection } = require('./select.js');
 
 // Known fully-ingested passages that must ALWAYS have 0 gaps (regression tests)
-const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", "studytext22", "studytext31", "studytext41", "studytext42", "studytext51", "studytext52", "studytext61", "studytext62", "studytext71", "studytext72", "studytext81", "studytext82", "studytext101", "studytext102", "studytext111", "studytext112", "studytext121", "studytext122", "studytext131", "studytext132", "studytext141", "studytext142", "studytext151", "studytext152", "studytext161", "studytext162"];
+const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", K.STUDYTEXT22, "studytext31", "studytext41", "studytext42", "studytext51", "studytext52", "studytext61", "studytext62", "studytext71", "studytext72", "studytext81", "studytext82", "studytext101", "studytext102", "studytext111", "studytext112", "studytext121", "studytext122", "studytext131", "studytext132", "studytext141", "studytext142", "studytext151", "studytext152", "studytext161", "studytext162"];
 
 function failFast(stageName, errorDetail) {
 	console.error(`\n======================================================`);
@@ -134,7 +137,7 @@ function runTests(options = {}) {
 				if (!u) {
 					failFast("Stage 0 (Code Quality & Static Hygiene)", `Broken foreign key in PARTICLE_SPECS: ID ${id} for particle '${spec.text}' does not exist in data.js.`);
 				}
-				if (u[DATA_SCHEMA.PartofSpeech] !== 'Grammar') {
+				if (u[DATA_SCHEMA.PartofSpeech] !== K.POS_GRAMMAR) {
 					failFast("Stage 0 (Code Quality & Static Hygiene)", `Invalid POS in PARTICLE_SPECS: ID ${id} ('${u[DATA_SCHEMA.Korean]}') is '${u[DATA_SCHEMA.PartofSpeech]}' instead of 'Grammar' for particle '${spec.text}'.`);
 				}
 			}
@@ -222,7 +225,7 @@ function runTests(options = {}) {
 
 		const expectedColCount = Object.keys(DATA_SCHEMA).length;
 		const idSet = new Set();
-		const validPosSet = new Set(["Noun", "Pronoun", "Exclamation", "Descriptive Verb", "Grammar", "Action Verb", "Adverb", "Number", "Determiner"]);
+		const validPosSet = new Set([K.NOUN, K.PRONOUN, K.EXCLAMATION, K.DESCRIPTIVE_VERB, K.POS_GRAMMAR, K.ACTION_VERB, K.POS_ADVERB, K.NUMBER, K.DETERMINER]);
 
 		for (let i = 0; i < KR_EN_languageUnits.length; i++) {
 			const unit = KR_EN_languageUnits[i];
@@ -275,7 +278,7 @@ function runTests(options = {}) {
 			}
 
 			// Semantic argument selection rules & collocation filter validation
-			if (pos === "Descriptive Verb" || pos === "Action Verb") {
+			if (pos === K.DESCRIPTIVE_VERB || pos === K.ACTION_VERB) {
 				try {
 					validateLanguageUnitSemanticSelection(unit, KR_EN_languageUnits, DATA_SCHEMA, { strict: true, strictAmbiguity: true });
 				} catch (selErr) {

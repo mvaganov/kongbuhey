@@ -1,3 +1,6 @@
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * exhaustive.js - Comprehensive Sentence Generation Engine & Linguistic Triage Dashboard
  *
@@ -239,7 +242,7 @@ function registerTriageIssue(item) {
 
 // --- Semantic Vector Integrity Check ---
 function validateSemanticVectors() {
-	const allPos = ["Noun", "Action Verb", "Descriptive Verb", "Adverb", "Grammar"];
+	const allPos = [K.NOUN, K.ACTION_VERB, K.DESCRIPTIVE_VERB, K.POS_ADVERB, K.POS_GRAMMAR];
 	let totalCount = 0;
 	let taggedCount = 0;
 	let invalidCount = 0;
@@ -353,7 +356,7 @@ let legacyOutputStr = "";
 let legacyGeneratedCount = 0;
 
 if (!modeOnlyUnit) {
-	const grammarUnits = getFilteredWords("Grammar");
+	const grammarUnits = getFilteredWords(K.POS_GRAMMAR);
 	let activeGrammarUnits = grammarUnits;
 	if (requestedTags && requestedTags._ids && requestedTags._ids.size > 0) {
 		const requestedGrammars = grammarUnits.filter(g => requestedTags._ids.has(g[DATA_SCHEMA.Id]));
@@ -398,7 +401,7 @@ if (!modeOnlyUnit) {
 				registerTriageIssue({
 					unitId: grammarUnit[DATA_SCHEMA.Id],
 					unitKo: grammarUnit[DATA_SCHEMA.Korean],
-					unitPos: "Grammar",
+					unitPos: K.POS_GRAMMAR,
 					unitEn: grammarUnit[DATA_SCHEMA.English],
 					variationIndex: 0,
 					ko: rawKo,
@@ -453,7 +456,7 @@ function runSemanticTests() {
 				registerTriageIssue({
 					unitId: null,
 					unitKo: t.template,
-					unitPos: "Grammar",
+					unitPos: K.POS_GRAMMAR,
 					unitEn: t.name,
 					variationIndex: i,
 					ko: resolved,

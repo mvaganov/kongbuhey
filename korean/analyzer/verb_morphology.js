@@ -1,4 +1,7 @@
 (function() {
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * korean/analyzer/verb_morphology.js
  *
@@ -34,7 +37,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 			if (rule.stemType === 'fixed_base') {
 				const root = word.slice(0, -rule.suffix.length);
 				baseVerb = root ? root + rule.baseVerb : rule.baseVerb;
-			} else if (rule.stemType === 'hada') {
+			} else if (rule.stemType === K.HADA) {
 				const root = word.slice(0, -rule.suffix.length);
 				baseVerb = root ? root + "하다" : "하다";
 			} else if (rule.stemType === 'stem_da') {
@@ -85,7 +88,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 				if (word.length <= rule.suffix.length) continue;
 				const stem = word.slice(0, -rule.suffix.length);
 				const sUnits = vocabByKo.get(stem) || [];
-				const nounUnits = sUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Noun' || u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+				const nounUnits = sUnits.filter(u => u[DATA_SCHEMA.PartofSpeech] === K.NOUN || u[DATA_SCHEMA.PartofSpeech] === K.PRONOUN);
 				if (nounUnits.length > 0) {
 					const nUnit = nounUnits[0];
 					return {
@@ -110,7 +113,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 				if (d && d.final === 0) {
 					const baseCandidate = stem + "다";
 					if (vocabByKo.has(baseCandidate)) {
-						const vUnits = (vocabByKo.get(baseCandidate) || []).filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb');
+						const vUnits = (vocabByKo.get(baseCandidate) || []).filter(u => u[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || u[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB);
 						if (vUnits.length > 0) {
 							baseVerb = baseCandidate;
 						}
@@ -345,7 +348,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 					continue;
 				}
 
-				const pos = vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : "Action Verb";
+				const pos = vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : K.ACTION_VERB;
 				const grammarList = rule.grammar.map(g => {
 					const u = unitById.get(g.id) || null;
 					return {
@@ -499,7 +502,7 @@ function matchAdnominalEnding(word, index) {
 		return {
 			surface: word,
 			category: "adnominal_modifier",
-			lexical: { text: baseVerb, pos: "Action Verb", unit: vUnit, missing: !vUnit, gloss: vUnit ? vUnit[DATA_SCHEMA.English] : "" },
+			lexical: { text: baseVerb, pos: K.ACTION_VERB, unit: vUnit, missing: !vUnit, gloss: vUnit ? vUnit[DATA_SCHEMA.English] : "" },
 			grammar: [{ text: "-(으)ㄴ", pos: "Adnominal Ending", unit: unitById.get(644), gloss: "past adnominal (ID 644)" }]
 		};
 	}
@@ -509,7 +512,7 @@ function matchAdnominalEnding(word, index) {
 		return {
 			surface: word,
 			category: "adnominal_modifier",
-			lexical: { text: baseVerb, pos: vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : "Descriptive Verb", unit: vUnit, missing: !vUnit, gloss: vUnit ? vUnit[DATA_SCHEMA.English] : "" },
+			lexical: { text: baseVerb, pos: vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : K.DESCRIPTIVE_VERB, unit: vUnit, missing: !vUnit, gloss: vUnit ? vUnit[DATA_SCHEMA.English] : "" },
 			grammar: [{ text: "-(으)ㄹ", pos: "Adnominal Ending", unit: unitById.get(646), gloss: "prospective adnominal (ID 646)" }]
 		};
 	}
@@ -517,7 +520,7 @@ function matchAdnominalEnding(word, index) {
 		const stem = word.slice(0, -1);
 		const baseVerb = stem + "다";
 		const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
-		if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb' || vUnit[DATA_SCHEMA.PartofSpeech] === 'Action Verb')) {
+		if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB || vUnit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB)) {
 			return {
 				surface: word,
 				category: "adnominal_modifier",
@@ -543,7 +546,7 @@ function matchAdnominalEnding(word, index) {
 				}
 			}
 		}
-		if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || vUnit[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) {
+		if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || vUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB)) {
 			return {
 				surface: word,
 				category: "adnominal_modifier",
@@ -565,7 +568,7 @@ function matchAdnominalEnding(word, index) {
 				const cookingUnit = (vocabByKo.get("부치다") || []).find(u => u[DATA_SCHEMA.Id] === 1658);
 				vUnit = cookingUnit || vUnit;
 			}
-			if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || vUnit[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) {
+			if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || vUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB)) {
 				return {
 					surface: word,
 					category: "adnominal_modifier",
@@ -578,14 +581,14 @@ function matchAdnominalEnding(word, index) {
 			// Candidate 1: Base stem already ends in ㄹ (놀다, 살다, 알다, 만들다)
 			const lBaseVerb = word + "다";
 			const lUnits = vocabByKo.get(lBaseVerb) || [];
-			const lUnit = lUnits.find(u => u[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb') || null;
+			const lUnit = lUnits.find(u => u[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || u[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB) || null;
 
 			// Candidate 2: Open stem + ㄹ (할 -> 하다, 갈 -> 가다, 쓸 -> 쓰다, 볼 -> 보다)
 			const strippedChar = setFinal(word.slice(-1), 0);
 			const stem = word.slice(0, -1) + strippedChar;
 			const openBaseVerb = stem + "다";
 			const openUnits = vocabByKo.get(openBaseVerb) || [];
-			const openUnit = openUnits.find(u => u[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb') || null;
+			const openUnit = openUnits.find(u => u[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || u[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB) || null;
 
 			let chosenVerb = null;
 			let chosenUnit = null;
@@ -661,7 +664,7 @@ function matchAdnominalEnding(word, index) {
 				}
 			}
 			const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
-			if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || vUnit[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) {
+			if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || vUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB)) {
 				const gList = [];
 				if (pastInfixUnit) {
 					gList.push({ text: "-았/었-", pos: "Tense Infix", unit: pastInfixUnit, gloss: pastInfixUnit[DATA_SCHEMA.English] });

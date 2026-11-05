@@ -1,4 +1,7 @@
 (function() {
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * korean/analyzer/indexer.js
  *
@@ -54,7 +57,7 @@ function buildInformalConnectives(units) {
 		const ko = u[DATA_SCHEMA.Korean];
 
 		// 1. Infer from Grammar units (verbal endings, clausal connectives)
-		if (pos === 'Grammar' && typeof ko === 'string') {
+		if (pos === K.POS_GRAMMAR && typeof ko === 'string') {
 			if (ko.includes('아/어') || ko.includes('아요') || ko.includes('어요')) {
 				endings.add('아');
 				endings.add('어');
@@ -82,7 +85,7 @@ function buildInformalConnectives(units) {
 		}
 
 		// 2. Generate from Action & Descriptive Verbs via phonological morphology
-		if ((pos === 'Action Verb' || pos === 'Descriptive Verb') && typeof ko === 'string' && ko.endsWith('다')) {
+		if ((pos === K.ACTION_VERB || pos === K.DESCRIPTIVE_VERB) && typeof ko === 'string' && ko.endsWith('다')) {
 			const derived = deriveInformalConnectiveEndings(ko);
 			for (const e of derived) {
 				endings.add(e);
@@ -155,7 +158,7 @@ function getIndex(languageUnits) {
 			if (sv.deictic_type) tags.add(sv.deictic_type);
 			if (Array.isArray(sv.aliases)) {
 				for (const a of sv.aliases) {
-					if (pos === 'Grammar') {
+					if (pos === K.POS_GRAMMAR) {
 						if (!grammarByKo.has(a)) grammarByKo.set(a, []);
 						grammarByKo.get(a).push(u);
 					} else {
@@ -168,7 +171,7 @@ function getIndex(languageUnits) {
 		semanticTagsByUnitId.set(id, tags);
 
 		// Index vocabulary vs grammar
-		if (pos === 'Grammar') {
+		if (pos === K.POS_GRAMMAR) {
 			if (!grammarByKo.has(ko)) grammarByKo.set(ko, []);
 			grammarByKo.get(ko).push(u);
 		} else {
@@ -176,7 +179,7 @@ function getIndex(languageUnits) {
 			vocabByKo.get(ko).push(u);
 
 			// Index dictionary stem for verbs & adjectives
-			if ((pos === 'Action Verb' || pos === 'Descriptive Verb') && typeof ko === 'string' && ko.endsWith('다')) {
+			if ((pos === K.ACTION_VERB || pos === K.DESCRIPTIVE_VERB) && typeof ko === 'string' && ko.endsWith('다')) {
 				const stem = getStem(ko);
 				if (!vocabByKo.has(stem)) vocabByKo.set(stem, []);
 				vocabByKo.get(stem).push(u);
@@ -185,7 +188,7 @@ function getIndex(languageUnits) {
 				if (tags.has('locative_goal') || tags.has('locative_origin') || tags.has('intransitive_motion') || tags.has('movement')) {
 					motionVerbStems.add(stem);
 				}
-				if (pos === 'Descriptive Verb' || tags.has('stative') || tags.has('existence') || tags.has('locative_static')) {
+				if (pos === K.DESCRIPTIVE_VERB || tags.has('stative') || tags.has('existence') || tags.has('locative_static')) {
 					stativeVerbStems.add(stem);
 				}
 
@@ -198,7 +201,7 @@ function getIndex(languageUnits) {
 		}
 
 		// Ingest pronoun sandhi rules dynamically from SemanticVector
-		if (pos === 'Pronoun' && sv && Array.isArray(sv.sandhi)) {
+		if (pos === K.PRONOUN && sv && Array.isArray(sv.sandhi)) {
 			for (const rule of sv.sandhi) {
 				if (rule.pattern && rule.replacement) {
 					// Identify clean surface replacement (e.g. "$1제가$2" -> "제가", "$1내가$2" -> "내가")
@@ -226,17 +229,17 @@ function getIndex(languageUnits) {
 
 	// Fallback for standard pronominal allomorphs (저+가->제가, 나+가->내가, 너+가->네가)
 	if (!pronounSandhiMap.has("제")) {
-		const jeoCandidates = (vocabByKo.get("저") || []).filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const jeoCandidates = (vocabByKo.get("저") || []).filter(u => u[DATA_SCHEMA.PartofSpeech] === K.PRONOUN);
 		const jeoUnit = jeoCandidates[0] || null;
 		pronounSandhiMap.set("제", { baseId: jeoUnit ? jeoUnit[DATA_SCHEMA.Id] : 2, baseWord: "저", particleId: 96, particleWord: "가", surfaceForm: "제가" });
 	}
 	if (!pronounSandhiMap.has("내")) {
-		const naCandidates = (vocabByKo.get("나") || []).filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const naCandidates = (vocabByKo.get("나") || []).filter(u => u[DATA_SCHEMA.PartofSpeech] === K.PRONOUN);
 		const naUnit = naCandidates[0] || null;
 		pronounSandhiMap.set("내", { baseId: naUnit ? naUnit[DATA_SCHEMA.Id] : 2, baseWord: naUnit ? "나" : "저", particleId: 96, particleWord: "가", surfaceForm: "내가" });
 	}
 	if (!pronounSandhiMap.has("네")) {
-		const neoCandidates = (vocabByKo.get("너") || []).filter(u => u[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const neoCandidates = (vocabByKo.get("너") || []).filter(u => u[DATA_SCHEMA.PartofSpeech] === K.PRONOUN);
 		const neoUnit = neoCandidates[0] || null;
 		pronounSandhiMap.set("네", { baseId: neoUnit ? neoUnit[DATA_SCHEMA.Id] : 2, baseWord: neoUnit ? "너" : "저", particleId: 96, particleWord: "가", surfaceForm: "네가" });
 	}
@@ -294,7 +297,7 @@ function getIndex(languageUnits) {
 				unit: u,
 				id,
 				text: canonicalText,
-				pos: u[DATA_SCHEMA.PartofSpeech] === 'Grammar' ? 'Verb Ending' : u[DATA_SCHEMA.PartofSpeech],
+				pos: u[DATA_SCHEMA.PartofSpeech] === K.POS_GRAMMAR ? 'Verb Ending' : u[DATA_SCHEMA.PartofSpeech],
 				gloss: `${canonicalText} (${u[DATA_SCHEMA.English]}, ID ${id})`
 			});
 		}

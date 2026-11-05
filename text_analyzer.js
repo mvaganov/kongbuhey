@@ -1,3 +1,6 @@
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * text_analyzer.js
  * 
@@ -49,21 +52,21 @@ function analyzePassage(passageText, passageName = "Passage") {
 			const draftUnits = [];
 			for (const mv of result.missingVocab) {
 				const u = scaffoldFn ? scaffoldFn(mv.text, passageName, {
-					isDescriptive: mv.pos === 'Descriptive Verb',
+					isDescriptive: mv.pos === K.DESCRIPTIVE_VERB,
 					isCounter: mv.pos && mv.pos.includes('Counter'),
 					disambiguation: mv.gloss || ""
 				}, schemaTax) : {
 					Korean: mv.text,
 					English: mv.gloss || `<English definition of "${mv.text}">`,
-					PartofSpeech: mv.pos || "Noun",
-					SemanticTags: ["general"],
+					PartofSpeech: mv.pos || K.NOUN,
+					SemanticTags: [K.GENERAL],
 					Disambiguation: "",
-					Conjugation: mv.text.endsWith("하다") ? "hada" : "",
+					Conjugation: mv.text.endsWith("하다") ? K.HADA : "",
 					Source: passageName,
 					PriorityScore: 1,
-					FormalityLevel: "Universal",
+					FormalityLevel: K.UNIVERSAL,
 					HonorificRules: "",
-					SemanticVector: JSON.stringify({ domain: "concept", type: "general" }),
+					SemanticVector: JSON.stringify({ domain: K.CONCEPT, type: K.GENERAL }),
 					SyntaxFrame: ""
 				};
 				if (u) draftUnits.push(u);
@@ -76,15 +79,15 @@ function analyzePassage(passageText, passageName = "Passage") {
 				}, schemaTax) : {
 					Korean: mg.text,
 					English: mg.gloss || `<English explanation of "${mg.text}">`,
-					PartofSpeech: "Grammar",
-					SemanticTags: ["grammar"],
+					PartofSpeech: K.POS_GRAMMAR,
+					SemanticTags: [K.GRAMMAR],
 					Disambiguation: "",
 					Conjugation: ["{VP_AVst}"],
 					Source: passageName,
 					PriorityScore: 2,
-					FormalityLevel: "Universal",
+					FormalityLevel: K.UNIVERSAL,
 					HonorificRules: "",
-					SemanticVector: JSON.stringify({ domain: "grammar", type: "verb_ending" }),
+					SemanticVector: JSON.stringify({ domain: K.GRAMMAR, type: "verb_ending" }),
 					SyntaxFrame: ""
 				};
 				if (gu) draftUnits.push(gu);

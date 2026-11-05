@@ -1,4 +1,7 @@
 (function() {
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * korean/translation/literal_realizer.js
  *
@@ -46,9 +49,9 @@ function cleanRawEnglishGloss(rawEn, pos = "") {
 		.split(/[;,/]/)[0]
 		.trim();
 
-	if (pos === "Action Verb" || pos === "Descriptive Verb") {
+	if (pos === K.ACTION_VERB || pos === K.DESCRIPTIVE_VERB) {
 		s = s.replace(/^to\s+/i, "").trim();
-		if (pos === "Descriptive Verb") {
+		if (pos === K.DESCRIPTIVE_VERB) {
 			s = s.replace(/^be\s+/i, "").trim();
 		}
 	}
@@ -66,19 +69,19 @@ function getUnitLiteralStem(unit) {
 	const enMeta = (sd && sd.en) || {};
 
 	// Special high-frequency disambiguations for Korean learners
-	if (ko === "있다" && pos === "Descriptive Verb") return "exist/have";
-	if (ko === "없다" && pos === "Descriptive Verb") return "not-exist";
+	if (ko === "있다" && pos === K.DESCRIPTIVE_VERB) return "exist/have";
+	if (ko === "없다" && pos === K.DESCRIPTIVE_VERB) return "not-exist";
 	if (ko === "이다") return "be";
 	if (ko === "아니다") return "not-be";
-	if (ko === "안" && pos === "Adverb") return "not";
-	if (ko === "못" && pos === "Adverb") return "cannot";
+	if (ko === "안" && pos === K.POS_ADVERB) return "not";
+	if (ko === "못" && pos === K.POS_ADVERB) return "cannot";
 
-	if (pos === "Action Verb") {
+	if (pos === K.ACTION_VERB) {
 		const base = enMeta.base || enMeta.lit || cleanRawEnglishGloss(unit[DATA_SCHEMA.English], pos);
 		return String(base).trim().replace(/\s+/g, "-");
 	}
 
-	if (pos === "Descriptive Verb") {
+	if (pos === K.DESCRIPTIVE_VERB) {
 		const adj = enMeta.adj || enMeta.lit || enMeta.base || cleanRawEnglishGloss(unit[DATA_SCHEMA.English], pos);
 		return String(adj).trim().replace(/\s+/g, "-");
 	}
@@ -105,7 +108,7 @@ function getParticleLiteralTag(particleType, particleUnit = null, clauseContext 
 		case "subject":
 		case "nominative":
 			return clauseContext.honorific ? "-[subj:hon]" : "-[subj]";
-		case "object":
+		case K.OBJECT:
 		case "accusative":
 		case "obj":
 			return "-[obj]";
@@ -120,7 +123,7 @@ function getParticleLiteralTag(particleType, particleUnit = null, clauseContext 
 		case "instrumental":
 		case "means":
 			return "-by/with";
-		case "time":
+		case K.TIME:
 		case "temporal":
 			return "-at/on";
 		case "dative":
@@ -193,7 +196,7 @@ function getGrammarEndingLiteralSuffix(predNode) {
 	if (!predNode) return "";
 	const grammarUnit = predNode.grammarUnit || predNode.endingUnit || predNode.connectiveUnit || null;
 	const {
-		predType = "action",
+		predType = K.ACTION,
 		tense = "present",
 		politeness = "polite",
 		speechAct = "declarative",

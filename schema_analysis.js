@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * schema_analysis.js - Curriculum schema and metadata taxonomy engine for data.js
  *
@@ -47,7 +50,7 @@ function analyzeSchema(dataPath = DEFAULT_DATA_PATH) {
 		totalUnits++;
 
 		// 1. Part of Speech
-		const pos = unit[DATA_SCHEMA.PartofSpeech] || "Noun";
+		const pos = unit[DATA_SCHEMA.PartofSpeech] || K.NOUN;
 		posSet.add(pos);
 		posCounts[pos] = (posCounts[pos] || 0) + 1;
 
@@ -89,7 +92,7 @@ function analyzeSchema(dataPath = DEFAULT_DATA_PATH) {
 
 			if (parsed && typeof parsed === 'object') {
 				validVectorCount++;
-				const domain = parsed.domain || "general";
+				const domain = parsed.domain || K.GENERAL;
 				if (!domainTaxonomy[domain]) {
 					domainTaxonomy[domain] = { types: new Set(), actions: new Set(), traits: new Set() };
 				}
@@ -108,7 +111,7 @@ function analyzeSchema(dataPath = DEFAULT_DATA_PATH) {
 					} else {
 						vectorKeyValues[k].add(v);
 						if (k === 'type') domainTaxonomy[domain].types.add(String(v));
-						if (k === 'action') domainTaxonomy[domain].actions.add(String(v));
+						if (k === K.ACTION) domainTaxonomy[domain].actions.add(String(v));
 					}
 				}
 			}
@@ -215,7 +218,7 @@ function deduceExistingVerbStem(surface, dataPath = DEFAULT_DATA_PATH) {
 	const { KR_EN_languageUnits, DATA_SCHEMA } = require(path.resolve(dataPath));
 	const verbMap = new Map();
 	for (const u of KR_EN_languageUnits) {
-		if (u && (u[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb')) {
+		if (u && (u[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || u[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB)) {
 			verbMap.set(u[DATA_SCHEMA.Korean], u);
 		}
 	}
@@ -416,7 +419,7 @@ function generateVerbSuffixSnippet(morph) {
 			else { suffix = surface; stemType = "fixed_base"; baseVerbField = baseVerb; }
 		}
 	} else if (isHada && (surface.includes("하") || surface.includes("해") || surface.includes("했"))) {
-		stemType = "hada";
+		stemType = K.HADA;
 		if (surface.includes("하")) {
 			suffix = surface.slice(surface.lastIndexOf("하"));
 		} else if (surface.includes("했")) {
@@ -642,10 +645,10 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 
 	const tax = summary || getSchemaSummary();
 
-	let pos = "Noun";
-	let tags = ["general"];
+	let pos = K.NOUN;
+	let tags = [K.GENERAL];
 	let conjugation = "";
-	let vector = { domain: "concept", type: "general" };
+	let vector = { domain: K.CONCEPT, type: K.GENERAL };
 	let syntaxFrame = "";
 	let english = `<English definition of "${word}">`;
 
@@ -653,9 +656,9 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 	const nameCandidate = detectProperNameCandidate(word, context.passageText || context.passage || "");
 	if (context.isName || context.isProperNoun || nameCandidate) {
 		const baseName = nameCandidate ? nameCandidate.baseName : (context.baseName || word);
-		pos = "Noun";
-		tags = ["name", "proper_noun"];
-		vector = { domain: "person", type: "name" };
+		pos = K.NOUN;
+		tags = ["name", K.PROPER_NOUN];
+		vector = { domain: K.PERSON, type: "name" };
 		english = context.english || `<Person name "${baseName}">`;
 		return {
 			Korean: baseName,
@@ -666,7 +669,7 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 			Conjugation: "",
 			Source: source,
 			PriorityScore: context.priorityScore || 1,
-			FormalityLevel: "Universal",
+			FormalityLevel: K.UNIVERSAL,
 			HonorificRules: "",
 			SemanticData: JSON.stringify(vector),
 			SemanticVector: JSON.stringify(vector),
@@ -676,58 +679,58 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 
 	// Part of Speech inference from morphological markers or context
 	if (context.isVerbEnding || word.startsWith("-") || word.startsWith("~")) {
-		pos = "Grammar";
-		tags = ["grammar"];
+		pos = K.POS_GRAMMAR;
+		tags = [K.GRAMMAR];
 		conjugation = ["{VP_AVst}"];
-		vector = { domain: "grammar", type: "verb_ending" };
+		vector = { domain: K.GRAMMAR, type: "verb_ending" };
 	} else if (word.endsWith("하다")) {
 		// Action Verb vs Descriptive Verb inference
 		if (context.isDescriptive || ["지루하다", "따뜻하다", "친절하다", "시원하다"].some(w => word.includes(w))) {
-			pos = "Descriptive Verb";
-			tags = ["state", "emotion", "descriptive_general"];
-			conjugation = "hada";
+			pos = K.DESCRIPTIVE_VERB;
+			tags = ["state", K.EMOTION, K.DESCRIPTIVE_GENERAL];
+			conjugation = K.HADA;
 			vector = { domain: "state", polarity: 1 };
 		} else {
-			pos = "Action Verb";
-			tags = ["action", "general"];
-			conjugation = "hada";
-			vector = { domain: "action", action: word.slice(0, -2) };
+			pos = K.ACTION_VERB;
+			tags = [K.ACTION, K.GENERAL];
+			conjugation = K.HADA;
+			vector = { domain: K.ACTION, action: word.slice(0, -2) };
 		}
 	} else if (word.endsWith("다") && word.length >= 2) {
-		pos = context.isDescriptive ? "Descriptive Verb" : "Action Verb";
-		tags = [context.isDescriptive ? "descriptive_general" : "action"];
-		conjugation = "regular";
-		vector = { domain: context.isDescriptive ? "state" : "action" };
+		pos = context.isDescriptive ? K.DESCRIPTIVE_VERB : K.ACTION_VERB;
+		tags = [context.isDescriptive ? K.DESCRIPTIVE_GENERAL : K.ACTION];
+		conjugation = K.REGULAR;
+		vector = { domain: context.isDescriptive ? "state" : K.ACTION };
 	} else if (context.isCounter || ["개월", "년", "월", "일", "시", "분", "명", "마리", "개", "번", "권", "장"].includes(word)) {
-		pos = "Noun";
-		tags = ["counter", context.isTime ? "time" : "measurement"];
-		vector = { domain: context.isTime ? "time" : "measurement", type: "counter" };
+		pos = K.NOUN;
+		tags = ["counter", context.isTime ? K.TIME : "measurement"];
+		vector = { domain: context.isTime ? K.TIME : "measurement", type: "counter" };
 		syntaxFrame = "{Number}\\s*_";
 	} else if (context.isTimeNoun || ["전", "후", "때", "날", "아침", "오후", "저녁", "밤", "새벽"].includes(word)) {
-		pos = "Noun";
-		tags = ["time", "calendar"];
-		vector = { domain: "time", type: "relative" };
+		pos = K.NOUN;
+		tags = [K.TIME, "calendar"];
+		vector = { domain: K.TIME, type: "relative" };
 		if (word === "전" || word === "후") {
 			syntaxFrame = "({Number}\\s*{Counter:time}|{Noun:time})\\s*_";
 		}
 	} else if (context.isLanguage || word.endsWith("어") || word.endsWith("말")) {
-		pos = "Noun";
+		pos = K.NOUN;
 		tags = ["language", "education"];
 		vector = { domain: "language", type: "natural_language" };
 	} else if (context.isPlace || context.attachedParticle === "에서" || context.attachedParticle === "에") {
-		pos = "Noun";
-		tags = ["place", "place_indoor"];
-		vector = { domain: "geography", type: "place" };
+		pos = K.NOUN;
+		tags = [K.PLACE, "place_indoor"];
+		vector = { domain: "geography", type: K.PLACE };
 	} else if (context.isAdnominalFollower || ["일", "분", "것", "사람"].includes(word)) {
-		pos = "Noun";
-		tags = ["concept", "activity"];
-		vector = { domain: "concept", type: "abstract" };
+		pos = K.NOUN;
+		tags = [K.CONCEPT, K.ACTIVITY];
+		vector = { domain: K.CONCEPT, type: K.ABSTRACT };
 		syntaxFrame = "{VP_adnominal}\\s*_";
 	}
 
 	// Ensure tags are in taxonomy
 	const validTags = tags.filter(t => tax.semanticTags.includes(t));
-	if (validTags.length === 0) validTags.push("general");
+	if (validTags.length === 0) validTags.push(K.GENERAL);
 
 	return {
 		Korean: word,
@@ -738,7 +741,7 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 		Conjugation: conjugation,
 		Source: source,
 		PriorityScore: context.priorityScore || 1,
-		FormalityLevel: context.formality || "Universal",
+		FormalityLevel: context.formality || K.UNIVERSAL,
 		HonorificRules: context.honorific || "",
 		SemanticData: JSON.stringify(vector),
 		SemanticVector: JSON.stringify(vector),

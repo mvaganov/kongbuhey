@@ -1,3 +1,6 @@
+// Universal Constants
+var { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * webapp/text_importer.js
  *
@@ -20,7 +23,7 @@ class TextImporterView {
 
 		this.container = null;
 		this.lastResult = null;
-		this.sourceName = 'custom_passage';
+		this.sourceName = K.CUSTOM_PASSAGE;
 		this.inputText = '';
 	}
 
@@ -83,7 +86,7 @@ class TextImporterView {
 
 		if (srcInput) {
 			srcInput.addEventListener('input', () => {
-				this.sourceName = srcInput.value.trim() || 'custom_passage';
+				this.sourceName = srcInput.value.trim() || K.CUSTOM_PASSAGE;
 			});
 		}
 
@@ -100,7 +103,7 @@ class TextImporterView {
 					alert('Please enter or paste Korean text to analyze.');
 					return;
 				}
-				const src = (srcInput ? srcInput.value.trim() : '') || 'custom_passage';
+				const src = (srcInput ? srcInput.value.trim() : '') || K.CUSTOM_PASSAGE;
 				await this.analyzePassageText(text, src);
 			});
 		}
@@ -341,7 +344,7 @@ class TextImporterView {
 				id: u[0],
 				ko: u[1],
 				en: u[2],
-				pos: u[3] || 'Noun',
+				pos: u[3] || K.NOUN,
 				count: v.count || 1,
 				isGrammar: false
 			});
@@ -353,7 +356,7 @@ class TextImporterView {
 				id: u[0],
 				ko: u[1],
 				en: u[2],
-				pos: u[3] || 'Grammar',
+				pos: u[3] || K.POS_GRAMMAR,
 				count: g.count || 1,
 				isGrammar: true
 			});
@@ -382,7 +385,7 @@ class TextImporterView {
 				<div class="missing-item-row">
 					<div class="missing-main-info">
 						<strong class="missing-text">${m.text}</strong>
-						<span class="missing-pos-badge badge-vocab">${m.pos || 'Noun'}</span>
+						<span class="missing-pos-badge badge-vocab">${m.pos || K.NOUN}</span>
 						<span class="missing-count">×${m.count || 1}</span>
 					</div>
 					${ctx ? `<div class="missing-context-line">${ctx}</div>` : ''}
@@ -396,7 +399,7 @@ class TextImporterView {
 				<div class="missing-item-row">
 					<div class="missing-main-info">
 						<strong class="missing-text">${g.text}</strong>
-						<span class="missing-pos-badge badge-grammar">${g.pos || 'Grammar'}</span>
+						<span class="missing-pos-badge badge-grammar">${g.pos || K.POS_GRAMMAR}</span>
 						<span class="missing-count">×${g.count || 1}</span>
 					</div>
 					${ctx ? `<div class="missing-context-line">${ctx}</div>` : ''}
@@ -423,18 +426,18 @@ class TextImporterView {
 			if (!word || seenWords.has(word)) continue;
 			seenWords.add(word);
 
-			let pos = m.pos || 'Noun';
+			let pos = m.pos || K.NOUN;
 			let conj = '';
-			let tags = ['general'];
+			let tags = [K.GENERAL];
 
 			if (word.endsWith('하다')) {
-				pos = 'Action Verb';
-				conj = 'hada';
-				tags = ['action', 'general'];
+				pos = K.ACTION_VERB;
+				conj = K.HADA;
+				tags = [K.ACTION, K.GENERAL];
 			} else if (word.endsWith('다')) {
-				pos = 'Action Verb';
+				pos = K.ACTION_VERB;
 				conj = '{AVst}';
-				tags = ['action', 'general'];
+				tags = [K.ACTION, K.GENERAL];
 			}
 
 			scaffoldList.push({
@@ -446,9 +449,9 @@ class TextImporterView {
 				Conjugation: conj,
 				Source: this.sourceName,
 				PriorityScore: 1,
-				FormalityLevel: 'Universal',
+				FormalityLevel: K.UNIVERSAL,
 				HonorificRules: '',
-				SemanticVector: JSON.stringify({ domain: 'concept', type: 'general' }),
+				SemanticVector: JSON.stringify({ domain: K.CONCEPT, type: K.GENERAL }),
 				SyntaxFrame: ''
 			});
 		}
@@ -461,15 +464,15 @@ class TextImporterView {
 			scaffoldList.push({
 				Korean: word,
 				English: g.gloss || `<Grammar description of "${word}">`,
-				PartofSpeech: 'Grammar',
-				SemanticTags: ['grammar'],
+				PartofSpeech: K.POS_GRAMMAR,
+				SemanticTags: [K.GRAMMAR],
 				Disambiguation: '',
 				Conjugation: '{VP_AVst}',
 				Source: this.sourceName,
 				PriorityScore: 1,
-				FormalityLevel: 'Universal',
+				FormalityLevel: K.UNIVERSAL,
 				HonorificRules: '',
-				SemanticVector: JSON.stringify({ domain: 'grammar', type: 'verb_ending' }),
+				SemanticVector: JSON.stringify({ domain: K.GRAMMAR, type: 'verb_ending' }),
 				SyntaxFrame: ''
 			});
 		}

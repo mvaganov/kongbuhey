@@ -1,4 +1,7 @@
 (function() {
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * Feature 6: Numeral-Classifier Matrix & Attributive Measure Word Syntax
  *
@@ -32,7 +35,7 @@ function isClassifier(wordOrUnit) {
 	const ko = typeof wordOrUnit === 'string' ? wordOrUnit : (Array.isArray(wordOrUnit) ? wordOrUnit[DATA_SCHEMA.Korean] : "");
 	if (ko && (state.KOREAN_CLASSIFIERS.has(ko) || state.SINO_CLASSIFIERS.has(ko))) return true;
 	if (typeof wordOrUnit === 'object' && Array.isArray(wordOrUnit)) {
-		if (hasTag(wordOrUnit, "measureWord", "counter", "koreanMeasureWord", "sinoMeasureWord")) return true;
+		if (hasTag(wordOrUnit, K.MEASUREWORD, "counter", "koreanMeasureWord", "sinoMeasureWord")) return true;
 		const sv = parseSemanticVector(wordOrUnit);
 		if (sv && sv.counter === true) return true;
 	}
@@ -69,7 +72,7 @@ function getMatchingClassifier(nounOrUnit) {
 		if (spec.generalObject) continue;
 
 		if (spec.honorificPerson) {
-			if (isElderNoun(unit, ko) || (unit && hasTag(unit, "elder_noun", "elder", "honorific"))) {
+			if (isElderNoun(unit, ko) || (unit && hasTag(unit, "elder_noun", "elder", K.HONORIFIC))) {
 				return spec.classifier;
 			}
 			continue;
@@ -96,12 +99,12 @@ function getMatchingClassifier(nounOrUnit) {
 function getMatchingNounsForClassifier(classifierOrUnit) {
 	const ko = typeof classifierOrUnit === 'string' ? classifierOrUnit : (classifierOrUnit ? classifierOrUnit[DATA_SCHEMA.Korean] : "");
 	const getWords = dataModule.getWords || (typeof window !== 'undefined' ? window.getWords : () => []);
-	const allNouns = getWords("Noun").filter(n => !hasTag(n, "measureWord") && !hasTag(n, "counter"));
+	const allNouns = getWords(K.NOUN).filter(n => !hasTag(n, K.MEASUREWORD) && !hasTag(n, "counter"));
 	if (ko === "살" || ko === "세") {
 		return allNouns.filter(n => ["아이", "아기", "조카", "동생", "남동생", "여동생", "학생", "친구", "딸", "아들"].includes(n[DATA_SCHEMA.Korean]) || (hasTag(n, "child", "junior") && !hasTag(n, "elder", "elder_noun") && !["어른", "노인", "연세", "나이"].includes(n[DATA_SCHEMA.Korean])));
 	}
 	if (ko === "대") {
-		return allNouns.filter(n => hasTag(n, "vehicle", "electronics", "machine", "appliance") && !hasTag(n, "ticket", "travel", "activity"));
+		return allNouns.filter(n => hasTag(n, "vehicle", "electronics", "machine", "appliance") && !hasTag(n, "ticket", K.TRAVEL, K.ACTIVITY));
 	}
 	if (ko === "채") {
 		return allNouns.filter(n => (hasTag(n, "building") || ["집", "하숙집", "빌딩", "건물", "아파트", "단독주택"].includes(n[DATA_SCHEMA.Korean])) && !hasTag(n, "finance", "currency", "money", "expense"));
@@ -110,7 +113,7 @@ function getMatchingNounsForClassifier(classifierOrUnit) {
 		return allNouns.filter(n => ["교실", "사무실", "호실", "연구실", "회의실", "강의실", "기숙사", "방"].includes(n[DATA_SCHEMA.Korean]) && !["욕실", "베란다", "부엌", "거실", "현관", "마당"].includes(n[DATA_SCHEMA.Korean]));
 	}
 	if (ko === "학년") {
-		return allNouns.filter(n => ["초등학교", "중학교", "고등학교", "대학교", "대학원", "학생"].includes(n[DATA_SCHEMA.Korean]) || (hasTag(n, "school") && !hasTag(n, "place", "facility", "room", "hall", "activity", "event") && !["대강당", "강당", "교실", "학원", "오리엔테이션", "숙제", "공부"].includes(n[DATA_SCHEMA.Korean])));
+		return allNouns.filter(n => ["초등학교", "중학교", "고등학교", "대학교", "대학원", "학생"].includes(n[DATA_SCHEMA.Korean]) || (hasTag(n, "school") && !hasTag(n, K.PLACE, K.FACILITY, "room", "hall", K.ACTIVITY, "event") && !["대강당", "강당", "교실", "학원", "오리엔테이션", "숙제", "공부"].includes(n[DATA_SCHEMA.Korean])));
 	}
 	if (ko === "편") {
 		return allNouns.filter(n => ["영화", "드라마", "시", "소설", "비디오"].includes(n[DATA_SCHEMA.Korean]) || hasTag(n, "media_work", "film", "literature"));
@@ -120,17 +123,17 @@ function getMatchingNounsForClassifier(classifierOrUnit) {
 	}
 	if (ko === "개") {
 		return allNouns.filter(n => {
-			if (hasTag(n, "language", "academic", "academic_fee", "finance", "currency", "money", "place", "facility", "institution", "restaurant", "media_work", "music", "film", "drama", "uncountable", "mass_noun", "liquid", "drink", "soup", "stew", "abstract", "time", "temporal", "person")) return false;
+			if (hasTag(n, "language", K.ACADEMIC, "academic_fee", "finance", "currency", "money", K.PLACE, K.FACILITY, "institution", "restaurant", "media_work", "music", "film", "drama", "uncountable", "mass_noun", "liquid", "drink", "soup", "stew", K.ABSTRACT, K.TIME, "temporal", K.PERSON)) return false;
 			const nKo = n[DATA_SCHEMA.Korean];
 			if (["한국말", "영어", "일본말", "중국말", "프랑스말", "베트남말", "음악", "영화", "드라마", "밥", "국", "찌개", "돈", "뭘", "뭐", "무엇", "이거", "것", "북경반점", "식당", "빵집", "컴퓨터공학", "교육학", "법학", "곡류", "파스타", "신문", "면", "고기"].includes(nKo)) return false;
-			return hasTag(n, "object", "item", "stationery", "clothing", "fruit", "food_ingredient", "appliance", "tool", "container", "discrete_object") || ["사과", "공책", "핸드백", "냄비", "시계", "선물", "인형", "상자", "지우개", "볼펜", "가방", "우산", "모자", "컵", "달걀", "토마토"].includes(nKo);
+			return hasTag(n, K.OBJECT, "item", "stationery", K.CLOTHING, "fruit", "food_ingredient", "appliance", "tool", "container", "discrete_object") || ["사과", "공책", "핸드백", "냄비", "시계", "선물", "인형", "상자", "지우개", "볼펜", "가방", "우산", "모자", "컵", "달걀", "토마토"].includes(nKo);
 		});
 	}
 
 	const spec = state.CLASSIFIER_NOUN_SPECS.find(s => s.classifier === ko || (s.unit && s.unit[DATA_SCHEMA.Korean] === ko));
 
 	if (!spec) {
-		return allNouns.filter(n => hasTag(n, "object") || hasTag(n, "item"));
+		return allNouns.filter(n => hasTag(n, K.OBJECT) || hasTag(n, "item"));
 	}
 
 	let matched = allNouns.filter(n => {
@@ -191,7 +194,7 @@ function isCompatibleNounAndClassifier(nounOrUnit, classifierOrUnit) {
 		}
 
 		if (spec.honorificPerson) {
-			return isElderNoun(nounUnit, nounKo) || hasTag(nounUnit, "elder_noun", "elder", "honorific");
+			return isElderNoun(nounUnit, nounKo) || hasTag(nounUnit, "elder_noun", "elder", K.HONORIFIC);
 		}
 
 		if (spec.plainPerson) {

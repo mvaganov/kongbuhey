@@ -1,3 +1,6 @@
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * Feature 11: Clausal Connective Parsing & Concord Validation
  *
@@ -86,6 +89,14 @@ function detectClauseMood(clause) {
 		if (clean.endsWith(entry.suffix)) {
 			if (entry.excludeWords && entry.excludeWords.some(w => clean.endsWith(w))) {
 				continue;
+			}
+			if (entry.mood === "imperative" && (entry.suffix === "세요" || entry.suffix === "십시오")) {
+				const lastWord = clean.split(/\s+/).pop();
+				const dvKo = state.FORBIDDEN_DV_IMPERATIVE_FORMS ? state.FORBIDDEN_DV_IMPERATIVE_FORMS.get(lastWord) : null;
+				if (dvKo && dvKo !== "싸다" && dvKo !== "낫다") {
+					// Descriptive verbs ending in -(으)세요 / -(으)십시오 are subject honorific declaratives, NOT imperatives
+					continue;
+				}
 			}
 			if (entry.requiresRieul) {
 				const prevChar = clean.slice(-entry.suffix.length - 1, -entry.suffix.length);
@@ -248,10 +259,10 @@ function canConnectiveJoin(clause1, connectiveTextOrId, clause2, options = {}) {
 			const isAV = isActionVerb(lastC1Word.endsWith("다") ? lastC1Word : lastC1Word + "다") ||
 				(!isDV && lastC1Word.endsWith("하"));
 
-			if (isDV && !allowedPos.has("Descriptive Verb")) {
+			if (isDV && !allowedPos.has(K.DESCRIPTIVE_VERB)) {
 				errors.push(`Connective '${connName}' requires an Action Verb in Clause 1, but found descriptive verb: "${lastC1Word}"`);
 				errorCodes.push(ERROR_CODES.CLAUSE1_INVALID_POS);
-			} else if (isAV && !allowedPos.has("Action Verb")) {
+			} else if (isAV && !allowedPos.has(K.ACTION_VERB)) {
 				errors.push(`Connective '${connName}' requires a Descriptive Verb in Clause 1, but found action verb: "${lastC1Word}"`);
 				errorCodes.push(ERROR_CODES.CLAUSE1_INVALID_POS);
 			}

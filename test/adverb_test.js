@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/adverb_test.js - Feature 9: Adverbial Sub-Typing & Syntactic Placement
  *
@@ -326,7 +329,7 @@ for (const opt of mannerOptions) {
 }
 
 // 3. Adv_Manner with Descriptive Verb returns empty
-const mannerDVOptions = getTokenOptions({ type: "Adv_Manner", target_pos: "Descriptive Verb" }, 0);
+const mannerDVOptions = getTokenOptions({ type: "Adv_Manner", target_pos: K.DESCRIPTIVE_VERB }, 0);
 assert(mannerDVOptions.length === 0, "Adv_Manner with target_pos 'Descriptive Verb' returns 0 options");
 
 // 4. Adv_Discourse options
@@ -337,7 +340,7 @@ for (const opt of discourseOptions) {
 }
 
 // 5. General Adv with DV target excludes manner-only adverbs and inability 못
-const generalAdvDVOptions = getTokenOptions({ type: "Adv", target_pos: "Descriptive Verb" }, 0);
+const generalAdvDVOptions = getTokenOptions({ type: "Adv", target_pos: K.DESCRIPTIVE_VERB }, 0);
 assert(generalAdvDVOptions.length > 0, "General Adv with DV returns valid options");
 for (const opt of generalAdvDVOptions) {
 	assert(!korean.SHORT_INABILITY_WORDS.has(opt.text), `General Adv with DV excludes 못 ('${opt.text}')`);
@@ -399,8 +402,8 @@ assert(applyMorphology("열심히 예뻐요") === "아주 예뻐요", "applyMorp
 // -----------------------------------------------------------------------------
 console.log("\n[10/10] Exhaustive Dataset Coverage & Collocation Stress Test");
 
-const allDescriptiveUnits = getWords("Descriptive Verb");
-const allActionUnits = getWords("Action Verb");
+const allDescriptiveUnits = getWords(K.DESCRIPTIVE_VERB);
+const allActionUnits = getWords(K.ACTION_VERB);
 
 // 1. Validate that all manner adverbs reject all descriptive verbs
 const mannerAdverbList = Array.from(MANNER_ADVERBS.keys()).filter(m => !isDegreeAdverb(m));

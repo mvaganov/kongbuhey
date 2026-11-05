@@ -1,3 +1,6 @@
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * Language Unit Tree (LUT) Reconstruction & Serialization Utilities
  *
@@ -113,9 +116,9 @@ function reconstructFromLanguageUnitTree(tree, phraseBuilders = {}) {
 						if (type === 'Clause' && !Array.isArray(child)) return false;
 						const unitId = typeof child === 'number' ? child : (Array.isArray(child) && typeof child[0] === 'number' ? child[0] : null);
 						const u = (unitId !== null && units) ? units[unitId] : null;
-						if (type === 'Adv' && u && u[DATA_SCHEMA.PartofSpeech] !== 'Adverb') return false;
-						if ((type === 'VP_AVst' || type === 'AVst') && u && u[DATA_SCHEMA.PartofSpeech] !== 'Action Verb') return false;
-						if ((type === 'VP_DVst' || type === 'DVst') && u && u[DATA_SCHEMA.PartofSpeech] !== 'Descriptive Verb') return false;
+						if (type === 'Adv' && u && u[DATA_SCHEMA.PartofSpeech] !== K.POS_ADVERB) return false;
+						if ((type === 'VP_AVst' || type === 'AVst') && u && u[DATA_SCHEMA.PartofSpeech] !== K.ACTION_VERB) return false;
+						if ((type === 'VP_DVst' || type === 'DVst') && u && u[DATA_SCHEMA.PartofSpeech] !== K.DESCRIPTIVE_VERB) return false;
 					}
 					return true;
 				});
@@ -126,8 +129,8 @@ function reconstructFromLanguageUnitTree(tree, phraseBuilders = {}) {
 					const firstChild = children[0];
 					const firstId = typeof firstChild === 'number' ? firstChild : (Array.isArray(firstChild) && typeof firstChild[0] === 'number' ? firstChild[0] : null);
 					const u = (firstId !== null && units) ? units[firstId] : null;
-					const isAV = u && u[DATA_SCHEMA.PartofSpeech] === 'Action Verb';
-					const isDV = u && u[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb';
+					const isAV = u && u[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB;
+					const isDV = u && u[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB;
 					template = isAV ? (formulas.find(f => f.includes('AVst')) || formulas[0])
 						: isDV ? (formulas.find(f => f.includes('DVst')) || formulas[0])
 							: formulas[0];
@@ -175,11 +178,11 @@ function reconstructFromLanguageUnitTree(tree, phraseBuilders = {}) {
 			if (verb) {
 				let stem = getStem(verb[DATA_SCHEMA.Korean]);
 				const conj = verb[DATA_SCHEMA.Conjugation];
-				if (conj && conj !== "regular" && conj !== "") stem += `[${conj}]`;
+				if (conj && conj !== K.REGULAR && conj !== "") stem += `[${conj}]`;
 				if (tokenType === "AVst" || tokenType === "DVst") {
 					replacement = stem;
 				} else {
-					const isVerbAction = verb[DATA_SCHEMA.PartofSpeech] === 'Action Verb';
+					const isVerbAction = verb[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB;
 					const phrase = isVerbAction && buildAction ? buildAction(verb, stem, noun)
 						: isVerbAction ? { text: stem }
 						: buildDescriptive ? buildDescriptive(verb, stem, noun)
@@ -197,7 +200,7 @@ function reconstructFromLanguageUnitTree(tree, phraseBuilders = {}) {
 			const classifierUnit = (typeof child[2] === 'number' && units) ? units[child[2]] : null;
 			const classifier = classifierUnit ? classifierUnit[DATA_SCHEMA.Korean] : (typeof child[2] === 'string' ? child[2] : '개');
 			let particle = null;
-			if (tag === "object" || tag === "AV" || /을|를/.test(token)) particle = "object";
+			if (tag === K.OBJECT || tag === "AV" || /을|를/.test(token)) particle = K.OBJECT;
 			else if (tag === "subject" || tag === "DV" || /이|가/.test(token)) particle = "subject";
 			else if (tag === "topic" || /은|는/.test(token)) particle = "topic";
 			replacement = buildCounting(noun, count, { classifier, particle });

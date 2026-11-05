@@ -1,3 +1,6 @@
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * Automated Linguistic Validator for Korean Sentence Generation
  *
@@ -34,15 +37,15 @@ const {
 
 // Numeral classifier category rules
 const CLASSIFIER_DOMAIN_RULES = {
-	"명": { allowedTags: ["person", "human", "family", "profession", "job", "honorific_person", "kinship_plain"], name: "people" },
-	"분": { allowedTags: ["person", "human", "family", "profession", "elder", "elder_noun", "honorific_person"], name: "honored people" },
+	"명": { allowedTags: [K.PERSON, "human", K.FAMILY, "profession", "job", "honorific_person", "kinship_plain"], name: "people" },
+	"분": { allowedTags: [K.PERSON, "human", K.FAMILY, "profession", "elder", "elder_noun", "honorific_person"], name: "honored people" },
 	"마리": { allowedTags: ["animal", "pet", "fish", "bird", "insect"], name: "animals" },
 	"권": { allowedTags: ["book", "publication", "paper", "document"], name: "books/publications" },
 	"잔": { allowedTags: ["drink", "beverage", "liquid"], name: "beverages" },
 	"병": { allowedTags: ["drink", "beverage", "liquid", "bottle"], name: "bottles" },
 	"송이": { allowedTags: ["flower", "plant", "fruit"], name: "flowers/bunches" },
 	"대": { allowedTags: ["vehicle", "electronics", "machine", "appliance", "car"], name: "vehicles/machines" },
-	"벌": { allowedTags: ["clothing", "clothes"], name: "clothing items" },
+	"벌": { allowedTags: [K.CLOTHING, "clothes"], name: "clothing items" },
 	"켤레": { allowedTags: ["footwear", "shoes", "socks", "gloves"], name: "footwear pairs" },
 	"쪽": { allowedTags: ["book", "paper", "document", "publication"], name: "pages/paper items" }
 };
@@ -128,7 +131,7 @@ function validateSentenceAST(ast, realized) {
 		const pred = clause.predicate || {};
 		const verbUnit = pred.verbUnit || null;
 		const verbKo = verbUnit ? (verbUnit[DATA_SCHEMA.Korean] || "") : "";
-		const predType = pred.predType || (verbUnit && verbUnit[DATA_SCHEMA.PartofSpeech] === "Descriptive Verb" ? "descriptive" : "action");
+		const predType = pred.predType || (verbUnit && verbUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB ? "descriptive" : K.ACTION);
 
 		// Find constituents by role
 		let subjCon = null;
@@ -138,9 +141,9 @@ function validateSentenceAST(ast, realized) {
 
 		for (const con of constituents) {
 			if (con.role === "subject" || con.role === "topic") subjCon = con;
-			if (con.role === "object" || con.particleType === "object" || con.particleType === "accusative") objCon = con;
+			if (con.role === K.OBJECT || con.particleType === K.OBJECT || con.particleType === "accusative") objCon = con;
 			if (con.numeralUnit || con.classifierUnit) numCon = con;
-			if (con.role === "adverb" || con.particleType === "adverb") advCon = con;
+			if (con.role === K.ADVERB || con.particleType === K.ADVERB) advCon = con;
 		}
 
 		// A. VALENCY_TRANSITIVITY_MISMATCH
@@ -158,7 +161,21 @@ function validateSentenceAST(ast, realized) {
 					(verbKo === "자다" && objKo === "잠") ||
 					(verbKo === "꾸다" && objKo === "꿈") ||
 					(verbKo === "추다" && objKo === "춤");
-				const isIntrans = verbUnit && hasTag(verbUnit, "intransitive", "intransitive_general", "intransitive_motion", "intransitive_place", "intransitive_person", "intransitive_state", "passive", "weather") && !hasTag(verbUnit, "transitive");
+				const hasTransitiveTag = verbUnit && (
+					hasTag(verbUnit, "transitive", K.TRANSITIVE_GENERAL) ||
+					Array.from(verbUnit[DATA_SCHEMA.SemanticTags] || []).some(t => typeof t === "string" && t.startsWith("transitive"))
+				);
+				const isIntrans = verbUnit && !hasTransitiveTag && hasTag(
+					verbUnit,
+					K.INTRANSITIVE,
+					K.INTRANSITIVE_GENERAL,
+					"intransitive_motion",
+					"intransitive_place",
+					"intransitive_person",
+					"intransitive_state",
+					"passive",
+					K.WEATHER
+				);
 				if (isIntrans && !isCognateAccusative) {
 					errors.push({
 						code: "VALENCY_TRANSITIVITY_MISMATCH",
@@ -185,7 +202,7 @@ function validateSentenceAST(ast, realized) {
 			if (subjUnit) {
 				const subjKo = subjUnit[DATA_SCHEMA.Korean] || "";
 				const isStrictHumanVerb = hasTag(verbUnit, "volitional_human");
-				const isInanimate = hasTag(subjUnit, "inanimate", "abstract", "academic", "concept", "facility")
+				const isInanimate = hasTag(subjUnit, "inanimate", K.ABSTRACT, K.ACADEMIC, K.CONCEPT, K.FACILITY)
 					|| ["신분증", "경제학", "의자", "공항버스", "수업", "회의", "가구"].includes(subjKo);
 
 				if (isStrictHumanVerb && isInanimate) {
@@ -216,7 +233,7 @@ function validateSentenceAST(ast, realized) {
 		}
 
 		// E. DEGREE_ADVERB_ACTION_VERB_MISMATCH
-		if (advCon && predType === "action" && verbKo) {
+		if (advCon && predType === K.ACTION && verbKo) {
 			const advUnit = advCon.unit || advCon.nounUnit;
 			const advKo = advUnit ? advUnit[DATA_SCHEMA.Korean] : "";
 			const isDegreeAdv = hasTag(advUnit, "degree_pure");

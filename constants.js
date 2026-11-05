@@ -152,33 +152,13 @@
     STUDYTEXT22: "studytext22",
   });
 
-  // Master Frozen Container K
-  const K = Object.freeze({
-    POS,
-    CONJ,
-    FORMALITY,
-    TAG,
-    SRC,
-
-    // Direct top-level ergonomic accessors
-    N: POS.NOUN,
-    AV: POS.ACTION_VERB,
-    DV: POS.DESCRIPTIVE_VERB,
-    G: POS.GRAMMAR,
-    ADV: POS.ADVERB,
-    NUM: POS.NUMBER,
-    PRON: POS.PRONOUN,
-    EXCL: POS.EXCLAMATION,
-    DET: POS.DETERMINER,
-  });
-
   // ============================================================================
-  // Dynamic Reflection Engine for Safe Shorthand Constants
+  // Dynamic Reflection Engine for Flattened & Safe Shorthand Constants
   // ============================================================================
-  // Discovers all non-colliding shorthand variables across categories at runtime.
-  // Prevents shorthand implementation for any variable that would cause a
-  // namespace collision across categories (e.g. GRAMMAR / ADVERB between POS and TAG)
-  // or collide with JavaScript reserved keywords.
+  // Discovers all non-colliding constants across categories at runtime.
+  // Flattens constants directly onto K (e.g. K.NOUN, K.OBJECT, K.REGULAR, K.UNIVERSAL)
+  // to eliminate character-count bloat while preserving taxonomy containers (K.POS, K.TAG).
+  // Prevents shorthand collision for variables differing across categories (GRAMMAR/ADVERB).
 
   const JS_RESERVED = new Set([
     'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'default',
@@ -238,6 +218,56 @@
       SAFE_SHORTHANDS[key] = val;
     }
   }
+
+  // 3. Master Flattened & Frozen Container K
+  const flattenedK = {
+    // Sub-objects preserved for taxonomy, reflection, and backward compatibility
+    POS,
+    CONJ,
+    FORMALITY,
+    TAG,
+    SRC,
+    SAFE_SHORTHANDS,
+
+    // Direct POS ergonomic accessors
+    N: POS.NOUN,
+    AV: POS.ACTION_VERB,
+    DV: POS.DESCRIPTIVE_VERB,
+    G: POS.GRAMMAR,
+    ADV: POS.ADVERB,
+    NUM: POS.NUMBER,
+    PRON: POS.PRONOUN,
+    EXCL: POS.EXCLAMATION,
+    DET: POS.DETERMINER,
+  };
+
+  // Populate POS canonical keys
+  for (const [key, val] of Object.entries(POS)) {
+    if (key === 'GRAMMAR') {
+      flattenedK.POS_GRAMMAR = val;
+    } else if (key === 'ADVERB') {
+      flattenedK.POS_ADVERB = val;
+    } else {
+      flattenedK[key] = val;
+    }
+  }
+
+  // Populate other categories (CONJ, FORMALITY, TAG, SRC) directly on K
+  for (const catObj of [CONJ, FORMALITY, TAG, SRC]) {
+    for (const [key, val] of Object.entries(catObj)) {
+      if (key === 'GRAMMAR') {
+        flattenedK.TAG_GRAMMAR = val;
+        flattenedK.GRAMMAR = val; // Default K.GRAMMAR to semantic tag "grammar"
+      } else if (key === 'ADVERB') {
+        flattenedK.TAG_ADVERB = val;
+        flattenedK.ADVERB = val; // Default K.ADVERB to semantic tag "adverb"
+      } else {
+        flattenedK[key] = val;
+      }
+    }
+  }
+
+  const K = Object.freeze(flattenedK);
 
   // Shorthand Aliases for data.js rows and compact scripts
   const N = POS.NOUN;

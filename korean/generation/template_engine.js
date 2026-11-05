@@ -1,3 +1,6 @@
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * Korean Sentence Template Token Parsing & Slot Expansion Engine
  *
@@ -60,32 +63,32 @@ function getTokenOptions(token, depth = 0) {
 		options = [new TokenOption(getRandomProperName(), [])];
 	} else if (token.type === "properNoun") {
 		const ssiSuffix = state.TITLE_SUFFIX_SSI || "씨";
-		const seeGrammar = getFilteredWords("Grammar").find(g => hasTag(g, "properNoun", "honorific") || g[KoreanWord] === ssiSuffix) || getWords("Grammar").find(g => hasTag(g, "properNoun", "honorific") || g[KoreanWord] === ssiSuffix);
+		const seeGrammar = getFilteredWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.HONORIFIC) || g[KoreanWord] === ssiSuffix) || getWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.HONORIFIC) || g[KoreanWord] === ssiSuffix);
 		options = [new TokenOption(getRandomProperName() + ssiSuffix, seeGrammar ? [seeGrammar] : [])];
-	} else if (token.type === "N" || token.type === "Noun" || token.type === "N_Phrase") {
-		let nouns = getFilteredWords("Noun", token.tag);
-		if (token.tag !== "measureWord" && token.tag !== "counter") {
-			nouns = nouns.filter(w => !hasTag(w, "measureWord", "counter") && w[KoreanWord] !== "%");
+	} else if (token.type === "N" || token.type === K.NOUN || token.type === "N_Phrase") {
+		let nouns = getFilteredWords(K.NOUN, token.tag);
+		if (token.tag !== K.MEASUREWORD && token.tag !== "counter") {
+			nouns = nouns.filter(w => !hasTag(w, K.MEASUREWORD, "counter") && w[KoreanWord] !== "%");
 		}
 		options = nouns.map(w => new TokenOption(w[KoreanWord], [w]));
 	} else if (token.type === "AVst") {
-		options = getFilteredWords("Action Verb", token.tag).map(w => new TokenOption(getConjugatedStem(w[KoreanWord], w[Conjugation]), [w]));
+		options = getFilteredWords(K.ACTION_VERB, token.tag).map(w => new TokenOption(getConjugatedStem(w[KoreanWord], w[Conjugation]), [w]));
 	} else if (token.type === "DVst") {
-		options = getFilteredWords("Descriptive Verb", token.tag).map(w => new TokenOption(getConjugatedStem(w[KoreanWord], w[Conjugation]), [w]));
-	} else if (token.type === "Number") {
+		options = getFilteredWords(K.DESCRIPTIVE_VERB, token.tag).map(w => new TokenOption(getConjugatedStem(w[KoreanWord], w[Conjugation]), [w]));
+	} else if (token.type === K.NUMBER) {
 		const rangeMatch = token.tag ? token.tag.match(/^([a-zA-Z_]+)\((\d+)\s*,\s*(\d+)\)$/) : null;
 		if (rangeMatch) {
 			options = getNumberTokenOptions(rangeMatch[1], parseInt(rangeMatch[2], 10), parseInt(rangeMatch[3], 10), !!token.isFollowedByMeasureWord);
 		} else {
-			let words = getFilteredWords("Number", token.tag);
+			let words = getFilteredWords(K.NUMBER, token.tag);
 			words = words.filter(w => token.isFollowedByMeasureWord
 				? (!hasTag(w, "counting") || hasTag(w, "attributive"))
 				: (!hasTag(w, "attributive") || hasTag(w, "counting")));
 			options = words.map(w => new TokenOption(w[KoreanWord], [w]));
 		}
-	} else if (token.type === "Adv_Degree" || (token.type === "Adv" && token.tag === "degree")) {
+	} else if (token.type === "Adv_Degree" || (token.type === "Adv" && token.tag === K.DEGREE)) {
 		let words = Array.from(state.DEGREE_ADVERBS.values()).map(info => info.unit);
-		if (token.tag && token.tag !== "degree") {
+		if (token.tag && token.tag !== K.DEGREE) {
 			words = words.filter(w => hasTag(w, token.tag));
 		}
 		if (token.affirmative || token.polarity === 1 || (!token.negated && !token.isNegative)) {
@@ -97,19 +100,19 @@ function getTokenOptions(token, depth = 0) {
 		if (token.tag && token.tag !== "manner") {
 			words = words.filter(w => hasTag(w, token.tag));
 		}
-		if (token.target_pos === "Descriptive Verb" || token.isDV) {
+		if (token.target_pos === K.DESCRIPTIVE_VERB || token.isDV) {
 			words = [];
 		}
 		options = words.map(w => new TokenOption(w[KoreanWord], [w]));
-	} else if (token.type === "Adv_Discourse" || (token.type === "Adv" && (token.tag === "discourse" || token.tag === "conjunction"))) {
+	} else if (token.type === "Adv_Discourse" || (token.type === "Adv" && (token.tag === K.DISCOURSE || token.tag === "conjunction"))) {
 		let words = Array.from(state.DISCOURSE_ADVERBS.values()).map(info => info.unit);
-		if (token.tag && token.tag !== "discourse" && token.tag !== "conjunction") {
+		if (token.tag && token.tag !== K.DISCOURSE && token.tag !== "conjunction") {
 			words = words.filter(w => hasTag(w, token.tag));
 		}
 		options = words.map(w => new TokenOption(w[KoreanWord], [w]));
 	} else if (token.type === "Adv") {
-		let words = getFilteredWords("Adverb", token.tag);
-		if (token.target_pos === "Descriptive Verb" || token.isDV) {
+		let words = getFilteredWords(K.POS_ADVERB, token.tag);
+		if (token.target_pos === K.DESCRIPTIVE_VERB || token.isDV) {
 			words = words.filter(w => {
 				const ko = w[KoreanWord];
 				if (state.SHORT_INABILITY_WORDS.has(ko)) return false;
@@ -121,15 +124,15 @@ function getTokenOptions(token, depth = 0) {
 			words = words.filter(w => !state.ALL_NPI_WORDS.has(w[KoreanWord]));
 		}
 		options = words.map(w => new TokenOption(w[KoreanWord], [w]));
-	} else if (token.type === "Det" || token.type === "Determiner") {
-		options = getFilteredWords("Determiner", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
-	} else if (token.type === "Exclamation") {
-		options = getFilteredWords("Exclamation", token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
+	} else if (token.type === "Det" || token.type === K.DETERMINER) {
+		options = getFilteredWords(K.DETERMINER, token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
+	} else if (token.type === K.EXCLAMATION) {
+		options = getFilteredWords(K.EXCLAMATION, token.tag).map(w => new TokenOption(w[KoreanWord], [w]));
 	} else if (token.type === "Clause" || token.type === "VP") {
 		if (depth > 0) {
 			options = [new TokenOption("갑니다"), new TokenOption("좋아요")];
 		} else {
-			const grammars = getFilteredWords("Grammar").filter(g => hasTag(g, "declarative", "suggestion"));
+			const grammars = getFilteredWords(K.POS_GRAMMAR).filter(g => hasTag(g, "declarative", "suggestion"));
 			if (grammars.length > 0) {
 				grammars.forEach(g => {
 					g[Conjugation].forEach(formula => {
@@ -143,15 +146,15 @@ function getTokenOptions(token, depth = 0) {
 			}
 		}
 	} else if (token.type === "VP_AVst") {
-		getFilteredWords("Action Verb", token.tag).forEach(av => {
+		getFilteredWords(K.ACTION_VERB, token.tag).forEach(av => {
 			const stem = getConjugatedStem(av[KoreanWord], av[Conjugation]);
-			const isPureIntransitive = (hasTag(av, "intransitive_general") || hasTag(av, "intransitive_motion") || hasTag(av, "intransitive_place"))
-				&& !ACTION_VERB_SPECS.some(s => s.particle === "object" && hasTag(av, s.tag))
+			const isPureIntransitive = (hasTag(av, K.INTRANSITIVE_GENERAL) || hasTag(av, "intransitive_motion") || hasTag(av, "intransitive_place"))
+				&& !ACTION_VERB_SPECS.some(s => s.particle === K.OBJECT && hasTag(av, s.tag))
 				&& !parseSemanticVector(av).collocation_filter;
 
 			if (isPureIntransitive) {
 				if (hasTag(av, "intransitive_motion") || hasTag(av, "intransitive_place")) {
-					getFilteredWords("Noun", "place").forEach(n => {
+					getFilteredWords(K.NOUN, K.PLACE).forEach(n => {
 						options.push(new TokenOption(`${attachParticle(n, "location", av)} ${stem}`, [av, n]));
 					});
 				} else {
@@ -168,7 +171,7 @@ function getTokenOptions(token, depth = 0) {
 			});
 		});
 	} else if (token.type === "VP_DVst") {
-		getFilteredWords("Descriptive Verb", token.tag).forEach(dv => {
+		getFilteredWords(K.DESCRIPTIVE_VERB, token.tag).forEach(dv => {
 			const stem = getConjugatedStem(dv[KoreanWord], dv[Conjugation]);
 			const candidates = getSubjectCandidatesForDescriptiveVerb(dv);
 			candidates.forEach(n => {
@@ -178,9 +181,9 @@ function getTokenOptions(token, depth = 0) {
 		});
 	} else if (token.type === "Spatial_Phrase" || token.type === "Relational_Loc") {
 		const positions = getSpatialPositions();
-		let groundNouns = getFilteredWords("Noun", "place");
-		if (groundNouns.length === 0) groundNouns = getFilteredWords("Noun", "furniture");
-		if (groundNouns.length === 0) groundNouns = getFilteredWords("Noun", "object");
+		let groundNouns = getFilteredWords(K.NOUN, K.PLACE);
+		if (groundNouns.length === 0) groundNouns = getFilteredWords(K.NOUN, "furniture");
+		if (groundNouns.length === 0) groundNouns = getFilteredWords(K.NOUN, K.OBJECT);
 		groundNouns.slice(0, 5).forEach(gn => {
 			const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
 			const pos = positions[Math.floor(rnd * positions.length)];
@@ -190,7 +193,7 @@ function getTokenOptions(token, depth = 0) {
 		});
 	} else if (token.type === "Deictic_NP") {
 		const determiners = Array.from(state.DEICTIC_DETERMINERS.values());
-		const nouns = getFilteredWords("Noun", "object").slice(0, 5);
+		const nouns = getFilteredWords(K.NOUN, K.OBJECT).slice(0, 5);
 		nouns.forEach(n => {
 			const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
 			const det = determiners[Math.floor(rnd * determiners.length)];

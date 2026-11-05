@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/analyzer_modular_test.js
  *
@@ -141,7 +144,7 @@ check("matchVerbSuffix deconstructs irregular and compound inflected verbs", () 
 	const v1 = analyzer.matchVerbSuffix("어려웠어요", "", "", index, analyzer.evaluateSyntaxFrame);
 	assert.ok(v1, "어려웠어요 must match verb suffix");
 	assert.strictEqual(v1.lexical.text, "어렵다");
-	assert.strictEqual(v1.lexical.pos, "Descriptive Verb");
+	assert.strictEqual(v1.lexical.pos, K.DESCRIPTIVE_VERB);
 
 	// Inchoative: 익숙해졌어요 -> 익숙하다 + -어지다 (801)
 	const v2 = analyzer.matchVerbSuffix("익숙해졌어요", "", "", index, analyzer.evaluateSyntaxFrame);
@@ -363,10 +366,10 @@ check("scaffoldUnit automatically scaffolds proper names with taxonomy tags", ()
 	});
 	assert.ok(unit, "scaffoldUnit must generate unit");
 	assert.strictEqual(unit.Korean, "수현");
-	assert.strictEqual(unit.PartofSpeech, "Noun");
-	assert.deepStrictEqual(unit.SemanticTags, ["name", "proper_noun"]);
+	assert.strictEqual(unit.PartofSpeech, K.NOUN);
+	assert.deepStrictEqual(unit.SemanticTags, ["name", K.PROPER_NOUN]);
 	const vector = JSON.parse(unit.SemanticVector);
-	assert.strictEqual(vector.domain, "person");
+	assert.strictEqual(vector.domain, K.PERSON);
 	assert.strictEqual(vector.type, "name");
 });
 

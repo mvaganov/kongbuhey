@@ -1,3 +1,6 @@
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * Feature 9: Adverbial Sub-Typing & Syntactic Placement Concord
  *
@@ -53,7 +56,7 @@ function isNegativePredicate(text) {
 	if (/(^|[^가-힣])(?:안|못)\s+[가-힣]+(?=[^가-힣]|$)/.test(text)) return true;
 	if (/(?:지\s+(?:않|못|말|마)[가-힣]*)/.test(text)) return true;
 	if (/(?:몰라(?:요|서|도)?|모릅니다|몰랐(?:어요|습니다)|모른다|모르고|모르면)(?=[^가-힣]|$)/.test(text)) return true;
-	if (/(?:없(?:어요|어서|어도|습니다|었다|었어요|었습니다|고|으면|는))(?=[^가-힣]|$)/.test(text)) return true;
+	if (/(?:없[가-힣]*)(?=[^가-힣]|$)/.test(text)) return true;
 	if (/(?:아니(?:에요|요|라|어서|면|었습니다|었어|다))|아닙니다(?=[^가-힣]|$)/.test(text)) return true;
 	return false;
 }
@@ -107,7 +110,7 @@ function validateAdverbConcord(text, context = {}) {
 
 	// 2. Manner Adverbs paired with Descriptive Verbs
 	for (const [mannerKo, info] of state.MANNER_ADVERBS.entries()) {
-		if (info.target_pos !== "Action Verb") continue;
+		if (info.target_pos !== K.ACTION_VERB) continue;
 		const mannerRegex = new RegExp(`(^|[^가-힣])${mannerKo}\\s+([가-힣]+)(?:\\[[^\\]]+\\])?(?=[^가-힣]|$)`, 'g');
 		let match;
 		while ((match = mannerRegex.exec(text)) !== null) {
@@ -142,7 +145,7 @@ function applyAdverbConcord(input, options = {}) {
 
 	// 1. Repair Manner Adverb with Descriptive Verb
 	for (const [mannerKo, info] of state.MANNER_ADVERBS.entries()) {
-		if (info.target_pos !== "Action Verb") continue;
+		if (info.target_pos !== K.ACTION_VERB) continue;
 		const mannerRegex = new RegExp(`(^|[^가-힣])${mannerKo}\\s+([가-힣]+)(?:\\[[^\\]]+\\])?(?=[^가-힣]|$)`, 'g');
 		str = str.replace(mannerRegex, (m, p1, targetWord) => {
 			const dvUnit = state.DESCRIPTIVE_SURFACE_MAP.get(targetWord);

@@ -1,4 +1,7 @@
 (function() {
+// Universal Constants
+const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * korean/analyzer/syntax_frame.js
  *
@@ -12,14 +15,14 @@ const { DATA_SCHEMA, decomposeHangul, getStem } =
 	(typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 
 const SEMANTIC_ONTOLOGY = Object.freeze({
-	place: new Set(["place", "country", "place_indoor", "place_outdoor", "location", "institution", "world"]),
-	time: new Set(["time", "duration", "frequency", "point_in_time", "counter", "past", "present", "future"]),
-	tool: new Set(["tool", "vehicle", "language", "material", "device", "transportation", "instrument"]),
-	role: new Set(["role", "profession", "person", "family", "social"]),
-	abstract: new Set(["abstract", "concept", "culture", "cognition", "emotion"]),
-	movement: new Set(["movement", "motion", "travel", "intransitive_motion", "entry"]),
+	place: new Set([K.PLACE, "country", "place_indoor", "place_outdoor", "location", "institution", "world"]),
+	time: new Set([K.TIME, "duration", "frequency", "point_in_time", "counter", "past", "present", "future"]),
+	tool: new Set(["tool", "vehicle", "language", "material", "device", K.TRANSPORTATION, "instrument"]),
+	role: new Set(["role", "profession", K.PERSON, K.FAMILY, K.SOCIAL]),
+	abstract: new Set([K.ABSTRACT, K.CONCEPT, "culture", "cognition", K.EMOTION]),
+	movement: new Set(["movement", "motion", K.TRAVEL, "intransitive_motion", "entry"]),
 	stative: new Set(["stative", "existence", "property", "state", "descriptive"]),
-	cognition: new Set(["cognition", "mental", "emotion", "communication"])
+	cognition: new Set(["cognition", "mental", K.EMOTION, K.COMMUNICATION])
 });
 
 /**
@@ -101,7 +104,7 @@ function evaluateSyntaxFrame(unit, context = {}, index = null) {
 	// Pattern 1: Standalone word preceding a Noun: ^_\s+{Noun}
 	if (frame.includes("^") && frame.includes("{Noun}")) {
 		const isStandalone = !attachedParticle && !attachedEnding;
-		const nextIsNoun = nextUnit && (nextUnit[DATA_SCHEMA.PartofSpeech] === 'Noun' || nextUnit[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const nextIsNoun = nextUnit && (nextUnit[DATA_SCHEMA.PartofSpeech] === K.NOUN || nextUnit[DATA_SCHEMA.PartofSpeech] === K.PRONOUN);
 		const nextLooksLikeNoun = nextWord && /^[가-힣]+/.test(nextWord);
 
 		if (isStandalone && (nextIsNoun || nextLooksLikeNoun)) {
@@ -117,7 +120,7 @@ function evaluateSyntaxFrame(unit, context = {}, index = null) {
 	// Pattern 1b: Standalone modifier preceding a Verb Phrase: _\\s+{VP} or ^_\\s+{VP}
 	if (frame.includes("{VP}") && !frame.includes("\\+")) {
 		const isStandalone = !attachedParticle && !attachedEnding;
-		const nextIsVerbUnit = nextUnit && (nextUnit[DATA_SCHEMA.PartofSpeech] === 'Action Verb' || nextUnit[DATA_SCHEMA.PartofSpeech] === 'Descriptive Verb');
+		const nextIsVerbUnit = nextUnit && (nextUnit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || nextUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB);
 		const nextStem = nextWord ? getStem(nextWord) : "";
 		const nextIsVerbStem = Boolean(nextWord && (
 			(index && index.actionVerbStems && (index.actionVerbStems.has(nextStem) || index.actionVerbStems.has(nextWord.slice(0, 1)))) ||
@@ -136,7 +139,7 @@ function evaluateSyntaxFrame(unit, context = {}, index = null) {
 
 	// Pattern 1c: Preceded by a Noun: {Noun}\\s+_
 	if (frame.includes("{Noun}\\s+_")) {
-		const prevIsNoun = prevUnit && (prevUnit[DATA_SCHEMA.PartofSpeech] === 'Noun' || prevUnit[DATA_SCHEMA.PartofSpeech] === 'Pronoun');
+		const prevIsNoun = prevUnit && (prevUnit[DATA_SCHEMA.PartofSpeech] === K.NOUN || prevUnit[DATA_SCHEMA.PartofSpeech] === K.PRONOUN);
 		const prevLooksNoun = prevWord && /^[가-힣]+/.test(prevWord);
 		if (prevIsNoun || prevLooksNoun) {
 			return {
@@ -174,7 +177,7 @@ function evaluateSyntaxFrame(unit, context = {}, index = null) {
 		}
 		if (frame.includes("{Number}\\s*_")) {
 			const cleanPrev = prevWord ? prevWord.replace(/[^\w가-힣]+/g, '') : "";
-			const precededByNum = prevWord && (/\d+$/.test(prevWord) || /\d/.test(cleanPrev) || (prevUnit && prevUnit[DATA_SCHEMA.PartofSpeech] === 'Number'));
+			const precededByNum = prevWord && (/\d+$/.test(prevWord) || /\d/.test(cleanPrev) || (prevUnit && prevUnit[DATA_SCHEMA.PartofSpeech] === K.NUMBER));
 			if (precededByNum || context.isNumericPhrase) {
 				return {
 					matches: true,
@@ -184,7 +187,7 @@ function evaluateSyntaxFrame(unit, context = {}, index = null) {
 			}
 		}
 		if (frame.includes("{Counter}")) {
-			const followedByCounter = nextUnit && (nextUnit[DATA_SCHEMA.PartofSpeech] === 'Noun' && getUnitSemanticTags(nextUnit, index).has('counter'));
+			const followedByCounter = nextUnit && (nextUnit[DATA_SCHEMA.PartofSpeech] === K.NOUN && getUnitSemanticTags(nextUnit, index).has('counter'));
 			if (followedByCounter) {
 				return {
 					matches: true,
@@ -224,7 +227,7 @@ function evaluateSyntaxFrame(unit, context = {}, index = null) {
 
 		// Direction: {Noun:place}\+에\s+.*{Verb:movement}
 		if (frame.includes("{Verb:movement}")) {
-			const isPlace = targetNoun && matchesSemanticCategory(targetNoun, "place", index);
+			const isPlace = targetNoun && matchesSemanticCategory(targetNoun, K.PLACE, index);
 			const isMotionPred = pred && (matchesSemanticCategory(pred, "movement", index) || isMotionStem);
 			if (isPlace && isMotionPred) {
 				return {
@@ -239,8 +242,8 @@ function evaluateSyntaxFrame(unit, context = {}, index = null) {
 
 		// Static Location / Reference: {Noun:place}\+에\s+.*{Verb:stative}|{Noun:abstract}\+에
 		if (frame.includes("{Verb:stative}") || frame.includes("{Noun:abstract}")) {
-			const isPlace = targetNoun && matchesSemanticCategory(targetNoun, "place", index);
-			const isAbstract = targetNoun && matchesSemanticCategory(targetNoun, "abstract", index);
+			const isPlace = targetNoun && matchesSemanticCategory(targetNoun, K.PLACE, index);
+			const isAbstract = targetNoun && matchesSemanticCategory(targetNoun, K.ABSTRACT, index);
 			const isStativePred = pred && (matchesSemanticCategory(pred, "stative", index) || isStativeStem);
 
 			if (isAbstract) {
@@ -268,7 +271,7 @@ function evaluateSyntaxFrame(unit, context = {}, index = null) {
 
 		// Time: {Noun:time}\+에
 		if (frame.includes("{Noun:time}")) {
-			const isTime = targetNoun && matchesSemanticCategory(targetNoun, "time", index);
+			const isTime = targetNoun && matchesSemanticCategory(targetNoun, K.TIME, index);
 			if (isTime) {
 				return {
 					matches: true,
