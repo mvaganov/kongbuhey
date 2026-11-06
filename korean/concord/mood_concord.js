@@ -64,7 +64,8 @@ function validateMoodConcord(text, context = {}) {
 
 	// 3. Long Inability Negation on Descriptive Verbs: [DV]-지 못하다
 	for (const [form, dvKo] of state.FORBIDDEN_DV_LONG_INABILITY_FORMS.entries()) {
-		if (text.includes(form)) {
+		const formRegex = new RegExp(`(?:^|\\s)${form}(?=[^가-힣]|$)`);
+		if (formRegex.test(text)) {
 			errors.push(`Descriptive verb '${dvKo}' cannot take inability negation '-지 못하다' in: "${text}"`);
 			errorCodes.push(ERROR_CODES.DV_LONG_INABILITY);
 		}
@@ -72,7 +73,8 @@ function validateMoodConcord(text, context = {}) {
 
 	// 4. Imperative Mood on Descriptive Verbs: [DV]-(으)십시오, [DV]-(으)세요, [DV]-아/어라, [DV]-지 마(세요)
 	for (const [form, dvKo] of state.FORBIDDEN_DV_IMPERATIVE_FORMS.entries()) {
-		if (text.includes(form)) {
+		const formRegex = new RegExp(`(?:^|\\s)${form}(?=[^가-힣]|$)`);
+		if (formRegex.test(text)) {
 			errors.push(`Descriptive verb '${dvKo}' cannot take imperative/prohibitive ending in: "${text}"`);
 			errorCodes.push(ERROR_CODES.DV_IMPERATIVE_MOOD);
 		}
@@ -80,7 +82,8 @@ function validateMoodConcord(text, context = {}) {
 
 	// 5. Propositive Mood on Descriptive Verbs: [DV]-(으)ㅂ시다, [DV]-자, [DV]-세
 	for (const [form, dvKo] of state.FORBIDDEN_DV_PROPOSITIVE_FORMS.entries()) {
-		if (text.includes(form)) {
+		const formRegex = new RegExp(`(?:^|\\s)${form}(?=[^가-힣]|$)`);
+		if (formRegex.test(text)) {
 			errors.push(`Descriptive verb '${dvKo}' cannot take propositive ending in: "${text}"`);
 			errorCodes.push(ERROR_CODES.DV_PROPOSITIVE_MOOD);
 		}
@@ -88,7 +91,8 @@ function validateMoodConcord(text, context = {}) {
 
 	// 6. Volitional Mood on Descriptive Verbs: [DV]-고 싶다 / [DV]-고 싶어하다
 	for (const [form, dvKo] of state.FORBIDDEN_DV_VOLITIONAL_FORMS.entries()) {
-		if (text.includes(form)) {
+		const formRegex = new RegExp(`(?:^|\\s)${form}(?=[^가-힣]|$)`);
+		if (formRegex.test(text)) {
 			errors.push(`Descriptive verb '${dvKo}' cannot take volitional ending directly in: "${text}"`);
 			errorCodes.push(ERROR_CODES.DV_VOLITIONAL_MOOD);
 		}
@@ -160,7 +164,8 @@ function applyMoodConcord(input, options = {}) {
 
 	// 4. Repair [DV]-지 못하다 -> [DV]-지 않다
 	for (const [form, dvKo] of state.FORBIDDEN_DV_LONG_INABILITY_FORMS.entries()) {
-		if (str.includes(form)) {
+		const formRegex = new RegExp(`(^|\\s)${form}(?=[^가-힣]|$)`, 'g');
+		if (formRegex.test(str)) {
 			const rep = form.replace(/지\s*못(해요|합니다|하다|했다|했어요|했습니다)/, '지 않$1')
 			                .replace(/지 않해요/, '지 않아요')
 			                .replace(/지 않합니다/, '지 않습니다')
@@ -168,7 +173,7 @@ function applyMoodConcord(input, options = {}) {
 			                .replace(/지 않했다/, '지 않았다')
 			                .replace(/지 않했어요/, '지 않았어요')
 			                .replace(/지 않했습니다/, '지 않았습니다');
-			str = str.split(form).join(rep);
+			str = str.replace(formRegex, `$1${rep}`);
 		}
 	}
 

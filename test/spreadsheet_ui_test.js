@@ -33,7 +33,7 @@ const {
 } = require('../webapp/selector.js');
 const { TextImporterView } = require('../webapp/text_importer.js');
 const { VerifiedSentencesView } = require('../webapp/verified_sentences_view.js');
-const { VERIFIED_SENTENCES } = require('../verified_sentences.js');
+const { VERIFIED_SENTENCES, VERIFIED_TEMPLATE_SCHEMA, VERIFIED_SLOT_SCHEMA } = require('../verified_sentences.js');
 const verifiedGen = require('../korean/generation/verified_sentence_generator.js');
 const { sortPracticeSetUnits, evaluateFlashcardAttempt } = require('../webapp/app.js');
 
@@ -682,7 +682,12 @@ async function runSuite() {
 		Array.isArray(VERIFIED_SENTENCES) && VERIFIED_SENTENCES.length >= 300,
 		`verified_sentences.js exports static VERIFIED_SENTENCES array (${VERIFIED_SENTENCES.length} templates discovered from study texts)`
 	);
-	const firstStaticVs = VERIFIED_SENTENCES[0];
+	const rawFirstVs = VERIFIED_SENTENCES[0];
+	assert(
+		Array.isArray(rawFirstVs) && rawFirstVs.length >= 6,
+		'Each raw Verified Sentence row is an array matching VERIFIED_TEMPLATE_SCHEMA'
+	);
+	const firstStaticVs = verifiedGen.hydrateVerifiedSentence(rawFirstVs);
 	assert(
 		firstStaticVs &&
 		typeof firstStaticVs.id === 'string' &&
@@ -716,7 +721,7 @@ async function runSuite() {
 	);
 
 	// Select a hardcoded entry and test random sentence generation & regeneration
-	const hardcodedTarget = VERIFIED_SENTENCES[0];
+	const hardcodedTarget = firstStaticVs;
 	verifiedView.selectEntry(hardcodedTarget.id);
 	const testSent1 = verifiedView.generateTestSentence(hardcodedTarget.id, { seedOffset: 1, varyMode: 'all' });
 	const testSent2 = verifiedView.generateTestSentence(hardcodedTarget.id, { seedOffset: 19, varyMode: 'all' });
@@ -937,6 +942,8 @@ async function runSuite() {
 	const mockWindow = {
 		Math, Date, Set, Map, Array, Object, String, Number, Boolean, JSON,
 		VERIFIED_SENTENCES,
+		VERIFIED_TEMPLATE_SCHEMA,
+		VERIFIED_SLOT_SCHEMA,
 		KR_EN_languageUnits,
 		DATA_SCHEMA
 	};
