@@ -32,7 +32,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -58,7 +62,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1603,
 				"originalKo": "독일",
 				"originalEn": "Germany",
-				"tags": [],
+				"tags": [
+					"country",
+					"place",
+					"geography"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -76,7 +84,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 487,
 				"originalKo": "대학교",
 				"originalEn": "college",
-				"tags": [],
+				"tags": [
+					"place",
+					"school",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -102,7 +114,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1604,
 				"originalKo": "영어학",
 				"originalEn": "English linguistics, English studies",
-				"tags": [],
+				"tags": [
+					"education",
+					"linguistics",
+					"academic_field",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -128,7 +145,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 813,
 				"originalKo": "전공하다",
 				"originalEn": "to major in",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"academic"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -182,7 +202,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1510,
 				"originalKo": "고등학교",
 				"originalEn": "high school",
-				"tags": [],
+				"tags": [
+					"facility",
+					"education",
+					"institution",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -200,7 +225,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1605,
 				"originalKo": "때",
 				"originalEn": "time, when, moment",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -218,7 +247,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -236,7 +268,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -262,7 +298,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 13,
 				"originalKo": "중국",
 				"originalEn": "China",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -280,7 +319,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -306,7 +349,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 148,
 				"originalKo": "만나다",
 				"originalEn": "to meet",
-				"tags": [],
+				"tags": [
+					"transitive_person"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -339,7 +384,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1606,
 				"originalKo": "아시아",
 				"originalEn": "Asia",
-				"tags": [],
+				"tags": [
+					"place",
+					"continent",
+					"geography"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -357,7 +406,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1607,
 				"originalKo": "문화",
 				"originalEn": "culture",
-				"tags": [],
+				"tags": [
+					"culture",
+					"abstract",
+					"society"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -383,7 +436,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1458,
 				"originalKo": "관심",
 				"originalEn": "interest, attention",
-				"tags": [],
+				"tags": [
+					"cognition",
+					"emotion",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -409,7 +466,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1166,
 				"originalKo": "생기다",
 				"originalEn": "to form, occur, arise, look like",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -435,7 +495,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1608,
 				"originalKo": "아시아학",
 				"originalEn": "Asian studies",
-				"tags": [],
+				"tags": [
+					"education",
+					"academic_field",
+					"regional_studies",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -461,7 +526,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 167,
 				"originalKo": "공부하다",
 				"originalEn": "to study",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -512,7 +580,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1609,
 				"originalKo": "그런데",
 				"originalEn": "by the way, but, however",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_discourse",
+					"discourse",
+					"contrast",
+					"transition"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -530,7 +604,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 487,
 				"originalKo": "대학교",
 				"originalEn": "college",
-				"tags": [],
+				"tags": [
+					"place",
+					"school",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -556,7 +634,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1607,
 				"originalKo": "문화",
 				"originalEn": "culture",
-				"tags": [],
+				"tags": [
+					"culture",
+					"abstract",
+					"society"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -574,7 +656,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -600,7 +686,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 147,
 				"originalKo": "듣다",
 				"originalEn": "to listen/hear",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_audio"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -626,7 +715,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -644,7 +736,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1607,
 				"originalKo": "문화",
 				"originalEn": "culture",
-				"tags": [],
+				"tags": [
+					"culture",
+					"abstract",
+					"society"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -670,7 +766,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 530,
 				"originalKo": "더",
 				"originalEn": "more",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"comparative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -688,7 +789,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1610,
 				"originalKo": "자세히",
 				"originalEn": "in detail, thoroughly, closely",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -706,7 +812,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 230,
 				"originalKo": "알다",
 				"originalEn": "to know/understand",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_information",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -774,7 +884,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 602,
 				"originalKo": "그래서",
 				"originalEn": "so",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"cause"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -792,7 +907,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1611,
 				"originalKo": "혼자",
 				"originalEn": "alone, by oneself, solo",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"social",
+					"manner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -810,7 +930,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 810,
 				"originalKo": "열심히",
 				"originalEn": "hard, diligently",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -828,7 +953,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -846,7 +974,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1607,
 				"originalKo": "문화",
 				"originalEn": "culture",
-				"tags": [],
+				"tags": [
+					"culture",
+					"abstract",
+					"society"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -864,7 +996,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 80,
 				"originalKo": "책",
 				"originalEn": "book",
-				"tags": [],
+				"tags": [
+					"object",
+					"reading",
+					"book",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -890,7 +1027,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -916,7 +1056,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -942,7 +1085,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 209,
 				"originalKo": "영화",
 				"originalEn": "movie",
-				"tags": [],
+				"tags": [
+					"object",
+					"entertainment",
+					"media",
+					"visual_media",
+					"visual"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -968,7 +1117,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1612,
 				"originalKo": "방송",
 				"originalEn": "broadcasting, broadcast, show",
-				"tags": [],
+				"tags": [
+					"media",
+					"communication",
+					"broadcast",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -994,7 +1148,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 554,
 				"originalKo": "찾다",
 				"originalEn": "to find",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -1058,7 +1214,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -1076,7 +1235,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1607,
 				"originalKo": "문화",
 				"originalEn": "culture",
-				"tags": [],
+				"tags": [
+					"culture",
+					"abstract",
+					"society"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -1102,7 +1265,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -1120,7 +1288,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 230,
 				"originalKo": "알다",
 				"originalEn": "to know/understand",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_information",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -1153,7 +1325,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1614,
 				"originalKo": "한국어",
 				"originalEn": "Korean language",
-				"tags": [],
+				"tags": [
+					"language",
+					"education",
+					"culture",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -1179,7 +1356,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1110,
 				"originalKo": "필요하다",
 				"originalEn": "to need, be necessary",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -1223,7 +1403,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 602,
 				"originalKo": "그래서",
 				"originalEn": "so",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"cause"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -1241,7 +1426,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 487,
 				"originalKo": "대학교",
 				"originalEn": "college",
-				"tags": [],
+				"tags": [
+					"place",
+					"school",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -1267,7 +1456,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 814,
 				"originalKo": "졸업하다",
 				"originalEn": "to graduate",
-				"tags": [],
+				"tags": [
+					"transitive_place",
+					"intransitive_general",
+					"academic",
+					"locative_origin"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -1293,7 +1487,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1614,
 				"originalKo": "한국어",
 				"originalEn": "Korean language",
-				"tags": [],
+				"tags": [
+					"language",
+					"education",
+					"culture",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -1319,7 +1518,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 135,
 				"originalKo": "배우다",
 				"originalEn": "to learn",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_language"
+				],
 				"grammar": [
 					{
 						"unitId": 816,
@@ -1345,7 +1547,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 1240,
@@ -1371,7 +1576,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1515,
 				"originalKo": "유학",
 				"originalEn": "studying abroad",
-				"tags": [],
+				"tags": [
+					"academic",
+					"travel",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -1397,7 +1606,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -1449,7 +1663,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -1475,7 +1692,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1614,
 				"originalKo": "한국어",
 				"originalEn": "Korean language",
-				"tags": [],
+				"tags": [
+					"language",
+					"education",
+					"culture",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -1501,7 +1723,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 167,
 				"originalKo": "공부하다",
 				"originalEn": "to study",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -1534,7 +1759,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1623,
 				"originalKo": "년",
 				"originalEn": "year (counter)",
-				"tags": [],
+				"tags": [
+					"time",
+					"counter",
+					"calendar",
+					"measureWord",
+					"sinoMeasureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 653,
@@ -1560,7 +1791,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -1612,7 +1847,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 353,
 				"originalKo": "그리고",
 				"originalEn": "and",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -1630,7 +1869,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1616,
 				"originalKo": "이제",
 				"originalEn": "now, from now on, currently",
-				"tags": [],
+				"tags": [
+					"adverb_manner",
+					"time",
+					"aspect",
+					"temporal_present",
+					"present",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -1648,7 +1894,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -1666,7 +1915,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1607,
 				"originalKo": "문화",
 				"originalEn": "culture",
-				"tags": [],
+				"tags": [
+					"culture",
+					"abstract",
+					"society"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -1692,7 +1945,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -1710,7 +1968,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 530,
 				"originalKo": "더",
 				"originalEn": "more",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"comparative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -1728,7 +1991,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1610,
 				"originalKo": "자세히",
 				"originalEn": "in detail, thoroughly, closely",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -1746,7 +2014,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 167,
 				"originalKo": "공부하다",
 				"originalEn": "to study",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -1779,7 +2050,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 806,
 				"originalKo": "대학원",
 				"originalEn": "graduate school",
-				"tags": [],
+				"tags": [
+					"place",
+					"academic",
+					"school"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -1805,7 +2080,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1617,
 				"originalKo": "한국학",
 				"originalEn": "Korean studies",
-				"tags": [],
+				"tags": [
+					"education",
+					"academic_field",
+					"regional_studies",
+					"culture",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -1831,7 +2112,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 813,
 				"originalKo": "전공하다",
 				"originalEn": "to major in",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"academic"
+				],
 				"grammar": [
 					{
 						"unitId": 816,
@@ -1895,7 +2179,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 742,
 				"originalKo": "아직",
 				"originalEn": "not yet",
-				"tags": [],
+				"tags": [
+					"adverb_time",
+					"time",
+					"aspect"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -1913,7 +2201,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1603,
 				"originalKo": "독일",
 				"originalEn": "Germany",
-				"tags": [],
+				"tags": [
+					"country",
+					"place",
+					"geography"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -1939,7 +2231,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -1957,7 +2252,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1607,
 				"originalKo": "문화",
 				"originalEn": "culture",
-				"tags": [],
+				"tags": [
+					"culture",
+					"abstract",
+					"society"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -1983,7 +2282,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -2001,7 +2305,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 615,
 				"originalKo": "모르다",
 				"originalEn": "to not know",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -2027,7 +2334,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 11,
 				"originalKo": "사람",
 				"originalEn": "person",
-				"tags": [],
+				"tags": [
+					"person",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -2053,7 +2364,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -2099,7 +2414,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1207,
 				"originalKo": "저",
 				"originalEn": "I (humble), that (over there), um (filler)",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"1st_person",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -2125,7 +2444,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -2143,7 +2467,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1620,
 				"originalKo": "학교",
 				"originalEn": "school",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -2169,7 +2498,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1516,
 				"originalKo": "입학하다",
 				"originalEn": "to enter school, matriculate",
-				"tags": [],
+				"tags": [
+					"intransitive_place",
+					"academic",
+					"institution",
+					"locative_goal"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -2195,7 +2529,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -2221,7 +2558,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1607,
 				"originalKo": "문화",
 				"originalEn": "culture",
-				"tags": [],
+				"tags": [
+					"culture",
+					"abstract",
+					"society"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -2247,7 +2588,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 810,
 				"originalKo": "열심히",
 				"originalEn": "hard, diligently",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -2265,7 +2611,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 167,
 				"originalKo": "공부하다",
 				"originalEn": "to study",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -2291,7 +2640,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -2317,7 +2669,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -2335,7 +2692,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1621,
 				"originalKo": "이해하다",
 				"originalEn": "to understand, comprehend",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cognition",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -2386,7 +2747,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 602,
 				"originalKo": "그래서",
 				"originalEn": "so",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"cause"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -2404,7 +2770,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -2430,7 +2800,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -2456,7 +2829,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1607,
 				"originalKo": "문화",
 				"originalEn": "culture",
-				"tags": [],
+				"tags": [
+					"culture",
+					"abstract",
+					"society"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -2482,7 +2859,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1603,
 				"originalKo": "독일",
 				"originalEn": "Germany",
-				"tags": [],
+				"tags": [
+					"country",
+					"place",
+					"geography"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -2508,7 +2889,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1622,
 				"originalKo": "소개하다",
 				"originalEn": "to introduce, present",
-				"tags": [],
+				"tags": [
+					"transitive_person",
+					"transitive_general",
+					"communication",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 838,
@@ -2555,7 +2941,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1629,
 				"originalKo": "제목",
 				"originalEn": "title, subject, heading",
-				"tags": [],
+				"tags": [
+					"document",
+					"communication",
+					"abstract",
+					"object"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -2573,7 +2964,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -2599,7 +2994,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 554,
 				"originalKo": "찾다",
 				"originalEn": "to find",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -2640,7 +3037,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -2666,7 +3067,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1627,
 				"originalKo": "러시아",
 				"originalEn": "Russia",
-				"tags": [],
+				"tags": [
+					"country",
+					"place",
+					"geography"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -2692,7 +3097,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 240,
 				"originalKo": "오",
 				"originalEn": "five",
-				"tags": [],
+				"tags": [
+					"sinoNumber"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -2718,7 +3125,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 330,
 				"originalKo": "마리",
 				"originalEn": "animal counter",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"animal"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -2737,7 +3148,9 @@ const VERIFIED_SENTENCES = [
 				"originalKo": "은 / 는",
 				"originalEn": "topic marker",
 				"tags": [
-					"grammar"
+					"particle",
+					"topic",
+					"devtest"
 				],
 				"grammar": [
 					{
@@ -2764,7 +3177,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1642,
 				"originalKo": "마리아",
 				"originalEn": "Maria (name)",
-				"tags": [],
+				"tags": [
+					"name",
+					"person",
+					"proper_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -2806,7 +3223,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1630,
 				"originalKo": "개월",
 				"originalEn": "month (duration counter)",
-				"tags": [],
+				"tags": [
+					"time",
+					"counter",
+					"duration",
+					"measureWord",
+					"sinoMeasureWord"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -2824,7 +3247,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1631,
 				"originalKo": "전",
 				"originalEn": "before, ago, previous",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -2850,7 +3277,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -2876,7 +3306,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -2930,7 +3365,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 210,
 				"originalKo": "오전",
 				"originalEn": "morning/AM",
-				"tags": [],
+				"tags": [
+					"time",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -2956,7 +3394,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1632,
 				"originalKo": "한국어학당",
 				"originalEn": "Korean language institute",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"language"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -2982,7 +3425,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1614,
 				"originalKo": "한국어",
 				"originalEn": "Korean language",
-				"tags": [],
+				"tags": [
+					"language",
+					"education",
+					"culture",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -3008,7 +3456,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 135,
 				"originalKo": "배우다",
 				"originalEn": "to learn",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_language"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -3034,7 +3485,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 620,
@@ -3060,7 +3516,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -3086,7 +3546,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 356,
 				"originalKo": "끝나다",
 				"originalEn": "to finish",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -3112,7 +3575,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1063,
 				"originalKo": "특별히",
 				"originalEn": "especially, particularly",
-				"tags": [],
+				"tags": [
+					"adverb_degree",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -3130,7 +3596,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -3156,7 +3625,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1641,
 				"originalKo": "일",
 				"originalEn": "work, task, matter, thing, business",
-				"tags": [],
+				"tags": [
+					"work",
+					"activity",
+					"task",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -3182,7 +3656,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 81,
 				"originalKo": "없다",
 				"originalEn": "to not have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -3227,7 +3706,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 97,
 				"originalKo": "도서관",
 				"originalEn": "library",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -3253,7 +3737,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -3279,7 +3770,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1633,
 				"originalKo": "공부",
 				"originalEn": "study, studying",
-				"tags": [],
+				"tags": [
+					"education",
+					"activity",
+					"cognition",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -3305,7 +3801,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -3331,7 +3830,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1634,
 				"originalKo": "날",
 				"originalEn": "day, date",
-				"tags": [],
+				"tags": [
+					"time",
+					"calendar",
+					"day"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -3357,7 +3860,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -3383,7 +3891,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 418,
 				"originalKo": "공원",
 				"originalEn": "park",
-				"tags": [],
+				"tags": [
+					"place",
+					"nature"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -3409,7 +3920,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -3435,7 +3953,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 351,
 				"originalKo": "산책",
 				"originalEn": "stroll",
-				"tags": [],
+				"tags": [
+					"activity",
+					"leisure"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -3461,7 +3982,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -3487,7 +4011,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1634,
 				"originalKo": "날",
 				"originalEn": "day, date",
-				"tags": [],
+				"tags": [
+					"time",
+					"calendar",
+					"day"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -3513,7 +4041,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -3559,7 +4092,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -3585,7 +4122,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 81,
 				"originalKo": "없다",
 				"originalEn": "to not have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -3611,7 +4153,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1611,
 				"originalKo": "혼자",
 				"originalEn": "alone, by oneself, solo",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"social",
+					"manner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -3629,7 +4176,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 665,
 				"originalKo": "시간",
 				"originalEn": "hour/time",
-				"tags": [],
+				"tags": [
+					"time",
+					"measureWord",
+					"koreanMeasureWord",
+					"resource",
+					"time_resource"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -3655,7 +4208,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 594,
 				"originalKo": "보내다",
 				"originalEn": "to send",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -3681,7 +4237,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 167,
 				"originalKo": "공부하다",
 				"originalEn": "to study",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 53,
@@ -3707,7 +4266,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 410,
 				"originalKo": "조금",
 				"originalEn": "little/few",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_quantity",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -3725,7 +4290,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1635,
 				"originalKo": "지루하다",
 				"originalEn": "to be boring, tedious, dull",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"state",
+					"emotion",
+					"descriptive_emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -3765,7 +4336,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -3813,7 +4389,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 602,
 				"originalKo": "그래서",
 				"originalEn": "so",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"cause"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -3831,7 +4412,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -3857,7 +4442,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 356,
 				"originalKo": "끝나다",
 				"originalEn": "to finish",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -3883,7 +4471,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 148,
 				"originalKo": "만나다",
 				"originalEn": "to meet",
-				"tags": [],
+				"tags": [
+					"transitive_person"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -3909,7 +4499,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1633,
 				"originalKo": "공부",
 				"originalEn": "study, studying",
-				"tags": [],
+				"tags": [
+					"education",
+					"activity",
+					"cognition",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -3935,7 +4530,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -3961,7 +4559,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 325,
 				"originalKo": "같이",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"social",
+					"accompaniment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -3979,7 +4583,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 313,
 				"originalKo": "놀다",
 				"originalEn": "to play/hang out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -4012,7 +4619,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -4038,7 +4649,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 554,
 				"originalKo": "찾다",
 				"originalEn": "to find",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 816,
@@ -4103,7 +4716,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -4129,7 +4746,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 826,
 				"originalKo": "성격",
 				"originalEn": "personality, character",
-				"tags": [],
+				"tags": [
+					"concept",
+					"personality"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -4155,7 +4775,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1078,
 				"originalKo": "밝다",
 				"originalEn": "bright, light",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"perception",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -4181,7 +4805,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1647,
 				"originalKo": "이야기하다",
 				"originalEn": "to talk, converse, chat",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"intransitive_general",
+					"communication",
+					"social",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -4207,7 +4837,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -4233,7 +4866,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 288,
 				"originalKo": "좋아하다",
 				"originalEn": "to like",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food",
+					"transitive_person",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -4279,7 +4918,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 433,
 				"originalKo": "작년",
 				"originalEn": "last year (sino)",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporalNoun",
+					"temporal_past",
+					"past"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -4305,7 +4949,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 12,
 				"originalKo": "일본",
 				"originalEn": "Japan",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -4331,7 +4978,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1633,
 				"originalKo": "공부",
 				"originalEn": "study, studying",
-				"tags": [],
+				"tags": [
+					"education",
+					"activity",
+					"cognition",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -4357,7 +5009,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -4390,7 +5045,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 431,
 				"originalKo": "올해",
 				"originalEn": "this year",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporalNoun",
+					"temporal_present",
+					"present"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -4416,7 +5076,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -4442,7 +5105,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1515,
 				"originalKo": "유학",
 				"originalEn": "studying abroad",
-				"tags": [],
+				"tags": [
+					"academic",
+					"travel",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -4468,7 +5135,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -4518,7 +5190,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -4536,7 +5211,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1636,
 				"originalKo": "노래",
 				"originalEn": "song",
-				"tags": [],
+				"tags": [
+					"art",
+					"music",
+					"song",
+					"culture",
+					"object",
+					"audio"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -4562,7 +5244,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 288,
 				"originalKo": "좋아하다",
 				"originalEn": "to like",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food",
+					"transitive_person",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -4588,7 +5276,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 156,
 				"originalKo": "날마다",
 				"originalEn": "everyday",
-				"tags": [],
+				"tags": [
+					"frequency",
+					"high"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -4606,7 +5297,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 140,
 				"originalKo": "음악",
 				"originalEn": "Music",
-				"tags": [],
+				"tags": [
+					"object",
+					"art",
+					"audio",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -4632,7 +5328,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 147,
 				"originalKo": "듣다",
 				"originalEn": "to listen/hear",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_audio"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -4658,7 +5357,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 160,
 				"originalKo": "노래방",
 				"originalEn": "karaoke",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"entertainment"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -4684,7 +5387,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 48,
 				"originalKo": "가끔",
 				"originalEn": "sometimes",
-				"tags": [],
+				"tags": [
+					"frequency",
+					"low",
+					"koreanRoot"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -4702,7 +5409,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -4751,7 +5465,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -4777,7 +5495,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1637,
 				"originalKo": "취미",
 				"originalEn": "hobby, pastime",
-				"tags": [],
+				"tags": [
+					"leisure",
+					"activity",
+					"interest",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -4803,7 +5526,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1638,
 				"originalKo": "같다",
 				"originalEn": "to be same, identical, similar, like",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"state",
+					"comparison"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -4829,7 +5556,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1360,
 				"originalKo": "함께",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"social",
+					"manner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -4847,7 +5579,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 160,
 				"originalKo": "노래방",
 				"originalEn": "karaoke",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"entertainment"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -4873,7 +5609,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -4906,7 +5649,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -4932,7 +5679,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 148,
 				"originalKo": "만나다",
 				"originalEn": "to meet",
-				"tags": [],
+				"tags": [
+					"transitive_person"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -5000,7 +5749,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -5026,7 +5779,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 325,
 				"originalKo": "같이",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"social",
+					"accompaniment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -5044,7 +5803,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 167,
 				"originalKo": "공부하다",
 				"originalEn": "to study",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 711,
@@ -5070,7 +5832,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -5096,7 +5862,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -5129,7 +5899,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1639,
 				"originalKo": "분",
 				"originalEn": "person (honorific), counter for people",
-				"tags": [],
+				"tags": [
+					"person",
+					"honorific",
+					"counter",
+					"measureWord",
+					"koreanMeasureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -5155,7 +5931,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 596,
 				"originalKo": "연락하다",
 				"originalEn": "to contact",
-				"tags": [],
+				"tags": [
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -5210,7 +5988,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 12,
 				"originalKo": "일본",
 				"originalEn": "Japan",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -5236,7 +6017,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 167,
 				"originalKo": "공부하다",
 				"originalEn": "to study",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -5284,7 +6068,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1628,
 				"originalKo": "일본어",
 				"originalEn": "Japanese language",
-				"tags": [],
+				"tags": [
+					"language",
+					"education",
+					"culture",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -5310,7 +6099,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 395,
 				"originalKo": "잘하다",
 				"originalEn": "to do well",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"transitive_general",
+					"transitive_sports"
+				],
 				"grammar": [
 					{
 						"unitId": 838,
@@ -5358,7 +6151,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -5376,7 +6172,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1636,
 				"originalKo": "노래",
 				"originalEn": "song",
-				"tags": [],
+				"tags": [
+					"art",
+					"music",
+					"song",
+					"culture",
+					"object",
+					"audio"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -5402,7 +6205,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 288,
 				"originalKo": "좋아하다",
 				"originalEn": "to like",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food",
+					"transitive_person",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -5455,7 +6264,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -5481,7 +6294,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 160,
 				"originalKo": "노래방",
 				"originalEn": "karaoke",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"entertainment"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -5507,7 +6324,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -5533,7 +6357,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -5559,7 +6386,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 288,
 				"originalKo": "좋아하다",
 				"originalEn": "to like",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food",
+					"transitive_person",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 620,
@@ -5585,7 +6418,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 599,
 				"originalKo": "전화드리다",
 				"originalEn": "to call (honorific)",
-				"tags": [],
+				"tags": [
+					"dative_person",
+					"humbleVerb",
+					"dative_humble"
+				],
 				"grammar": [
 					{
 						"unitId": 599,
@@ -5641,7 +6478,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -5667,7 +6508,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 465,
 				"originalKo": "요즘",
 				"originalEn": "these days",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporalNoun",
+					"temporal_present",
+					"present",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -5685,7 +6532,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -5711,7 +6562,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 81,
 				"originalKo": "없다",
 				"originalEn": "to not have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -5737,7 +6593,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 476,
 				"originalKo": "심심하다",
 				"originalEn": "to be bored",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"descriptive_emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 49,
@@ -5779,7 +6639,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 325,
 				"originalKo": "같이",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"social",
+					"accompaniment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -5797,7 +6663,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 167,
 				"originalKo": "공부하다",
 				"originalEn": "to study",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -5823,7 +6692,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 313,
 				"originalKo": "놀다",
 				"originalEn": "to play/hang out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -5849,7 +6721,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 196,
 				"originalKo": "재미있다",
 				"originalEn": "to be fun",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 838,
@@ -5901,7 +6776,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -5927,7 +6806,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 438,
 				"originalKo": "지난",
 				"originalEn": "previous",
-				"tags": [],
+				"tags": [
+					"time_modifier",
+					"time",
+					"determiner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -5945,7 +6828,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 369,
 				"originalKo": "주말",
 				"originalEn": "weekend",
-				"tags": [],
+				"tags": [
+					"time",
+					"weekend"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -5971,7 +6857,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1747,
 				"originalKo": "영수",
 				"originalEn": "Young-soo (personal given name)",
-				"tags": [],
+				"tags": [
+					"person",
+					"name",
+					"proper_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -5989,7 +6879,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 23,
 				"originalKo": "씨",
 				"originalEn": "Mr./Ms.",
-				"tags": [],
+				"tags": [
+					"proper_noun",
+					"person",
+					"honorific"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -6015,7 +6909,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 148,
 				"originalKo": "만나다",
 				"originalEn": "to meet",
-				"tags": [],
+				"tags": [
+					"transitive_person"
+				],
 				"grammar": [
 					{
 						"unitId": 485,
@@ -6041,7 +6937,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1748,
 				"originalKo": "오랜만",
 				"originalEn": "after a long time",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration",
+					"point_in_time"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -6067,7 +6967,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1749,
 				"originalKo": "속초",
 				"originalEn": "Sokcho (coastal city in Gangwon-do)",
-				"tags": [],
+				"tags": [
+					"place",
+					"city",
+					"place_outdoor",
+					"proper_noun",
+					"locative_goal",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -6093,7 +7000,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 861,
 				"originalKo": "다녀오다",
 				"originalEn": "visit, to go and come back",
-				"tags": [],
+				"tags": [
+					"intransitive_place",
+					"motion",
+					"locative_goal"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -6141,7 +7052,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1749,
 				"originalKo": "속초",
 				"originalEn": "Sokcho (coastal city in Gangwon-do)",
-				"tags": [],
+				"tags": [
+					"place",
+					"city",
+					"place_outdoor",
+					"proper_noun",
+					"locative_goal",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -6167,7 +7085,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1747,
 				"originalKo": "영수",
 				"originalEn": "Young-soo (personal given name)",
-				"tags": [],
+				"tags": [
+					"person",
+					"name",
+					"proper_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -6185,7 +7107,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 23,
 				"originalKo": "씨",
 				"originalEn": "Mr./Ms.",
-				"tags": [],
+				"tags": [
+					"proper_noun",
+					"person",
+					"honorific"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -6211,7 +7137,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 174,
 				"originalKo": "고향",
 				"originalEn": "hometown",
-				"tags": [],
+				"tags": [
+					"place",
+					"origin"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -6257,7 +7186,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 432,
 				"originalKo": "이번",
 				"originalEn": "this time",
-				"tags": [],
+				"tags": [
+					"time_modifier",
+					"time",
+					"determiner"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -6283,7 +7216,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1747,
 				"originalKo": "영수",
 				"originalEn": "Young-soo (personal given name)",
-				"tags": [],
+				"tags": [
+					"person",
+					"name",
+					"proper_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -6301,7 +7238,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 23,
 				"originalKo": "씨",
 				"originalEn": "Mr./Ms.",
-				"tags": [],
+				"tags": [
+					"proper_noun",
+					"person",
+					"honorific"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -6327,7 +7268,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 608,
 				"originalKo": "여기저기",
 				"originalEn": "here and there",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -6345,7 +7289,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1750,
 				"originalKo": "안내",
 				"originalEn": "guidance, information, tour guide",
-				"tags": [],
+				"tags": [
+					"activity",
+					"concept",
+					"communication",
+					"service"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -6371,7 +7320,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -6389,7 +7343,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -6429,7 +7386,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 794,
 				"originalKo": "즐겁다",
 				"originalEn": "to be pleasant/joyful",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_person",
+					"emotion",
+					"descriptive_emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -6455,7 +7418,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 407,
 				"originalKo": "여행하다",
 				"originalEn": "to travel",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"travel"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -6510,7 +7476,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 154,
 				"originalKo": "지금",
 				"originalEn": "now",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_present",
+					"present",
+					"no_time_particle"
+				],
 				"grammar": [
 					{
 						"unitId": 1312,
@@ -6536,7 +7507,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1749,
 				"originalKo": "속초",
 				"originalEn": "Sokcho (coastal city in Gangwon-do)",
-				"tags": [],
+				"tags": [
+					"place",
+					"city",
+					"place_outdoor",
+					"proper_noun",
+					"locative_goal",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -6562,7 +7540,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1207,
 				"originalKo": "저",
 				"originalEn": "I (humble), that (over there), um (filler)",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"1st_person",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -6588,7 +7570,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 879,
@@ -6621,7 +7610,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 558,
 				"originalKo": "곳",
 				"originalEn": "place",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -6647,7 +7639,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1622,
 				"originalKo": "소개하다",
 				"originalEn": "to introduce, present",
-				"tags": [],
+				"tags": [
+					"transitive_person",
+					"transitive_general",
+					"communication",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -6714,7 +7711,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 183,
 				"originalKo": "서울",
 				"originalEn": "Seoul",
-				"tags": [],
+				"tags": [
+					"place",
+					"city"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -6740,7 +7740,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 658,
 				"originalKo": "버스",
 				"originalEn": "bus",
-				"tags": [],
+				"tags": [
+					"object",
+					"transportation",
+					"vehicle"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -6766,7 +7770,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 397,
 				"originalKo": "타다",
 				"originalEn": "to ride",
-				"tags": [],
+				"tags": [
+					"transitive_vehicle",
+					"transitive_transportation",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -6792,7 +7800,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1751,
 				"originalKo": "동쪽",
 				"originalEn": "east, eastern side",
-				"tags": [],
+				"tags": [
+					"direction",
+					"place",
+					"location"
+				],
 				"grammar": [
 					{
 						"unitId": 1240,
@@ -6818,7 +7830,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 213,
 				"originalKo": "두",
 				"originalEn": "two",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -6836,7 +7851,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 665,
 				"originalKo": "시간",
 				"originalEn": "hour/time",
-				"tags": [],
+				"tags": [
+					"time",
+					"measureWord",
+					"koreanMeasureWord",
+					"resource",
+					"time_resource"
+				],
 				"grammar": [
 					{
 						"unitId": 653,
@@ -6862,7 +7883,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -6888,7 +7916,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1749,
 				"originalKo": "속초",
 				"originalEn": "Sokcho (coastal city in Gangwon-do)",
-				"tags": [],
+				"tags": [
+					"place",
+					"city",
+					"place_outdoor",
+					"proper_noun",
+					"locative_goal",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -6914,7 +7949,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1672,
 				"originalKo": "나오다",
 				"originalEn": "to come out, emerge, exit",
-				"tags": [],
+				"tags": [
+					"locative_origin",
+					"movement",
+					"intransitive",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -6961,7 +8001,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1749,
 				"originalKo": "속초",
 				"originalEn": "Sokcho (coastal city in Gangwon-do)",
-				"tags": [],
+				"tags": [
+					"place",
+					"city",
+					"place_outdoor",
+					"proper_noun",
+					"locative_goal",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -6987,7 +8034,15 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1752,
 				"originalKo": "설악산",
 				"originalEn": "Mount Seorak (mountain in Gangwon-do)",
-				"tags": [],
+				"tags": [
+					"place",
+					"place_outdoor",
+					"proper_noun",
+					"mountain",
+					"nature",
+					"locative_goal",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -7013,7 +8068,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1099,
 				"originalKo": "동해",
 				"originalEn": "East Sea (Sea of Japan)",
-				"tags": [],
+				"tags": [
+					"place",
+					"geographic",
+					"sea"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -7031,7 +8090,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 175,
 				"originalKo": "바다",
 				"originalEn": "ocean",
-				"tags": [],
+				"tags": [
+					"place",
+					"nature",
+					"water"
+				],
 				"grammar": [
 					{
 						"unitId": 1239,
@@ -7057,7 +8120,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -7083,7 +8151,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 859,
 				"originalKo": "구경거리",
 				"originalEn": "attraction, sight to see",
-				"tags": [],
+				"tags": [
+					"object",
+					"attraction",
+					"tourism"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -7109,7 +8181,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -7135,7 +8211,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -7168,7 +8247,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -7194,7 +8276,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -7241,7 +8327,15 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1752,
 				"originalKo": "설악산",
 				"originalEn": "Mount Seorak (mountain in Gangwon-do)",
-				"tags": [],
+				"tags": [
+					"place",
+					"place_outdoor",
+					"proper_noun",
+					"mountain",
+					"nature",
+					"locative_goal",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -7267,7 +8361,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -7293,7 +8394,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1753,
 				"originalKo": "등산",
 				"originalEn": "hiking, mountain climbing",
-				"tags": [],
+				"tags": [
+					"activity",
+					"hobby",
+					"exercise",
+					"outdoor"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -7319,7 +8425,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -7359,7 +8468,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1754,
 				"originalKo": "케이블카",
 				"originalEn": "cable car",
-				"tags": [],
+				"tags": [
+					"transportation",
+					"vehicle",
+					"tool",
+					"inanimate"
+				],
 				"grammar": [
 					{
 						"unitId": 1241,
@@ -7385,7 +8499,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 239,
 				"originalKo": "사",
 				"originalEn": "four",
-				"tags": [],
+				"tags": [
+					"sinoNumber"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -7411,7 +8527,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 113,
 				"originalKo": "위",
 				"originalEn": "above",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -7437,7 +8555,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 709,
 				"originalKo": "올라가다",
 				"originalEn": "to go up",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"intransitive_place",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -7494,7 +8618,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1749,
 				"originalKo": "속초",
 				"originalEn": "Sokcho (coastal city in Gangwon-do)",
-				"tags": [],
+				"tags": [
+					"place",
+					"city",
+					"place_outdoor",
+					"proper_noun",
+					"locative_goal",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -7520,7 +8651,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -7546,7 +8680,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1099,
 				"originalKo": "동해",
 				"originalEn": "East Sea (Sea of Japan)",
-				"tags": [],
+				"tags": [
+					"place",
+					"geographic",
+					"sea"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -7564,7 +8702,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 175,
 				"originalKo": "바다",
 				"originalEn": "ocean",
-				"tags": [],
+				"tags": [
+					"place",
+					"nature",
+					"water"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -7590,7 +8732,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 607,
 				"originalKo": "정말",
 				"originalEn": "really",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -7608,7 +8755,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 873,
 				"originalKo": "푸르다",
 				"originalEn": "blue, green (nature)",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"color",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -7634,7 +8785,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 191,
 				"originalKo": "깨끗하다",
 				"originalEn": "to be clean",
-				"tags": [],
+				"tags": [
+					"descriptive_place",
+					"descriptive_general",
+					"descriptive_cleanliness",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -7678,7 +8834,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 735,
 				"originalKo": "여름",
 				"originalEn": "summer",
-				"tags": [],
+				"tags": [
+					"time",
+					"season"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -7704,7 +8863,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1755,
 				"originalKo": "해수욕장",
 				"originalEn": "beach, bathing beach, seaside resort",
-				"tags": [],
+				"tags": [
+					"place",
+					"place_outdoor",
+					"leisure",
+					"nature",
+					"locative_goal",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -7730,7 +8896,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 794,
 				"originalKo": "즐겁다",
 				"originalEn": "to be pleasant/joyful",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_person",
+					"emotion",
+					"descriptive_emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -7756,7 +8928,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 665,
 				"originalKo": "시간",
 				"originalEn": "hour/time",
-				"tags": [],
+				"tags": [
+					"time",
+					"measureWord",
+					"koreanMeasureWord",
+					"resource",
+					"time_resource"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -7782,7 +8960,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 594,
 				"originalKo": "보내다",
 				"originalEn": "to send",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -7837,7 +9018,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 175,
 				"originalKo": "바다",
 				"originalEn": "ocean",
-				"tags": [],
+				"tags": [
+					"place",
+					"nature",
+					"water"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -7863,7 +9048,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 650,
 				"originalKo": "가깝다",
 				"originalEn": "to be close",
-				"tags": [],
+				"tags": [
+					"descriptive_place",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -7889,7 +9077,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 558,
 				"originalKo": "곳",
 				"originalEn": "place",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -7915,7 +9106,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 42,
 				"originalKo": "크다",
 				"originalEn": "to be big",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"koreanRoot",
+					"devtest",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -7941,7 +9138,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 181,
 				"originalKo": "호수",
 				"originalEn": "lake",
-				"tags": [],
+				"tags": [
+					"place",
+					"nature",
+					"water"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -7967,7 +9168,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 620,
@@ -7993,7 +9199,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 351,
 				"originalKo": "산책",
 				"originalEn": "stroll",
-				"tags": [],
+				"tags": [
+					"activity",
+					"leisure"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -8019,7 +9228,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1291,
@@ -8045,7 +9257,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 661,
 				"originalKo": "자전거",
 				"originalEn": "bicycle",
-				"tags": [],
+				"tags": [
+					"object",
+					"transportation",
+					"vehicle"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -8071,7 +9287,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 393,
 				"originalKo": "빌리다",
 				"originalEn": "to borrow/rent",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -8097,7 +9315,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 397,
 				"originalKo": "타다",
 				"originalEn": "to ride",
-				"tags": [],
+				"tags": [
+					"transitive_vehicle",
+					"transitive_transportation",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -8146,7 +9368,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1756,
 				"originalKo": "또",
 				"originalEn": "also, additionally, again",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_discourse",
+					"connective_adverb"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -8164,7 +9390,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 117,
 				"originalKo": "근처",
 				"originalEn": "near",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -8190,7 +9418,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 194,
 				"originalKo": "예쁘다",
 				"originalEn": "to be pretty",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"devtest",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -8216,7 +9448,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1757,
 				"originalKo": "커피숍",
 				"originalEn": "coffee shop, café",
-				"tags": [],
+				"tags": [
+					"place",
+					"place_indoor",
+					"commercial",
+					"beverage",
+					"locative_goal",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -8242,7 +9481,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -8288,7 +9531,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 185,
 				"originalKo": "아름답다",
 				"originalEn": "to be beautiful",
-				"tags": [],
+				"tags": [
+					"descriptive_place",
+					"descriptive_person",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -8314,7 +9561,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 186,
 				"originalKo": "경치",
 				"originalEn": "scenery",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"nature",
+					"visual"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -8340,7 +9591,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 711,
@@ -8366,7 +9620,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 143,
 				"originalKo": "커피",
 				"originalEn": "coffee",
-				"tags": [],
+				"tags": [
+					"drink",
+					"cup"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -8425,7 +9682,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1655,
 				"originalKo": "기분",
 				"originalEn": "feeling, mood",
-				"tags": [],
+				"tags": [
+					"emotion",
+					"feeling",
+					"psychology",
+					"state",
+					"abstract",
+					"psychological_state"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -8451,7 +9715,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 122,
 				"originalKo": "아주",
 				"originalEn": "very",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -8469,7 +9738,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 801,
@@ -8525,7 +9798,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1749,
 				"originalKo": "속초",
 				"originalEn": "Sokcho (coastal city in Gangwon-do)",
-				"tags": [],
+				"tags": [
+					"place",
+					"city",
+					"place_outdoor",
+					"proper_noun",
+					"locative_goal",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -8551,7 +9831,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 43,
 				"originalKo": "맛있다",
 				"originalEn": "to be delicious",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"food_adjective",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -8577,7 +9862,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 304,
 				"originalKo": "음식",
 				"originalEn": "food",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -8603,7 +9890,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 53,
@@ -8629,7 +9920,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 742,
 				"originalKo": "아직",
 				"originalEn": "not yet",
-				"tags": [],
+				"tags": [
+					"adverb_time",
+					"time",
+					"aspect"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -8647,7 +9942,15 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1739,
 				"originalKo": "못",
 				"originalEn": "cannot, unable to (short negative adverb)",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"negative",
+					"inability",
+					"short_negation",
+					"action_verb_only"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -8666,7 +9969,8 @@ const VERIFIED_SENTENCES = [
 				"originalKo": "이 / 가",
 				"originalEn": "subject marker",
 				"tags": [
-					"grammar"
+					"particle",
+					"subject"
 				],
 				"grammar": [
 					{
@@ -8714,7 +10018,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1639,
 				"originalKo": "분",
 				"originalEn": "person (honorific), counter for people",
-				"tags": [],
+				"tags": [
+					"person",
+					"honorific",
+					"counter",
+					"measureWord",
+					"koreanMeasureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -8747,7 +10057,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1758,
 				"originalKo": "꼭",
 				"originalEn": "surely, certainly, by all means",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"emphasis"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -8765,7 +10079,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 1644,
@@ -8807,7 +10128,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -8833,7 +10158,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 154,
 				"originalKo": "지금",
 				"originalEn": "now",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_present",
+					"present",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -8851,7 +10181,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 640,
 				"originalKo": "연세",
 				"originalEn": "age (honorific)",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"honorific",
+					"age"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -8869,7 +10203,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 487,
 				"originalKo": "대학교",
 				"originalEn": "college",
-				"tags": [],
+				"tags": [
+					"place",
+					"school",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -8887,7 +10225,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 103,
 				"originalKo": "기숙사",
 				"originalEn": "dormitory",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -8913,7 +10255,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 316,
 				"originalKo": "살다",
 				"originalEn": "to live",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"devtest",
+					"locative_static",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -8939,7 +10286,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -8983,7 +10335,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 103,
 				"originalKo": "기숙사",
 				"originalEn": "dormitory",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -9009,7 +10365,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 640,
 				"originalKo": "연세",
 				"originalEn": "age (honorific)",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"honorific",
+					"age"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -9027,7 +10387,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 487,
 				"originalKo": "대학교",
 				"originalEn": "college",
-				"tags": [],
+				"tags": [
+					"place",
+					"school",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -9053,7 +10417,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 54,
@@ -9079,7 +10448,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1632,
 				"originalKo": "한국어학당",
 				"originalEn": "Korean language institute",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"language"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -9105,7 +10479,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -9138,7 +10517,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 122,
 				"originalKo": "아주",
 				"originalEn": "very",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -9156,7 +10540,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1759,
 				"originalKo": "편하다",
 				"originalEn": "comfortable, convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -9199,7 +10586,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 103,
 				"originalKo": "기숙사",
 				"originalEn": "dormitory",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -9225,7 +10616,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 213,
 				"originalKo": "두",
 				"originalEn": "two",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -9243,7 +10637,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 11,
 				"originalKo": "사람",
 				"originalEn": "person",
-				"tags": [],
+				"tags": [
+					"person",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -9269,7 +10667,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 118,
 				"originalKo": "방",
 				"originalEn": "room",
-				"tags": [],
+				"tags": [
+					"place",
+					"room"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -9287,7 +10688,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 252,
 				"originalKo": "하나",
 				"originalEn": "one",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"counting"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -9313,7 +10717,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 325,
 				"originalKo": "같이",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"social",
+					"accompaniment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -9331,7 +10741,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 151,
 				"originalKo": "쓰다",
 				"originalEn": "to write",
-				"tags": [],
+				"tags": [
+					"transitive_writing",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -9357,7 +10770,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -9375,7 +10793,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 900,
 				"originalKo": "불편하다",
 				"originalEn": "uncomfortable, inconvenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -9421,7 +10842,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -9447,7 +10872,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1611,
 				"originalKo": "혼자",
 				"originalEn": "alone, by oneself, solo",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"social",
+					"manner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -9465,7 +10895,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1759,
 				"originalKo": "편하다",
 				"originalEn": "comfortable, convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -9491,7 +10924,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 316,
 				"originalKo": "살다",
 				"originalEn": "to live",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"devtest",
+					"locative_static",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -9524,7 +10962,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1760,
 				"originalKo": "이사",
 				"originalEn": "moving, relocation",
-				"tags": [],
+				"tags": [
+					"action",
+					"general",
+					"abstract"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -9542,7 +10984,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -9568,7 +11017,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 180,
 				"originalKo": "집",
 				"originalEn": "house/home",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room",
+					"building"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -9594,7 +11048,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 554,
 				"originalKo": "찾다",
 				"originalEn": "to find",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -9620,7 +11076,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -9668,7 +11129,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 202,
 				"originalKo": "반",
 				"originalEn": "half",
-				"tags": [],
+				"tags": [
+					"time_amount",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -9686,7 +11150,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -9712,7 +11180,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 316,
 				"originalKo": "살다",
 				"originalEn": "to live",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"devtest",
+					"locative_static",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -9738,7 +11211,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -9764,7 +11242,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1761,
 				"originalKo": "하숙집",
 				"originalEn": "boarding house, homestay",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"residence",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -9790,7 +11273,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1622,
 				"originalKo": "소개하다",
 				"originalEn": "to introduce, present",
-				"tags": [],
+				"tags": [
+					"transitive_person",
+					"transitive_general",
+					"communication",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -9830,7 +11318,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1619,
 				"originalKo": "그",
 				"originalEn": "that, the (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"medial",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -9848,7 +11341,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 180,
 				"originalKo": "집",
 				"originalEn": "house/home",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room",
+					"building"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -9875,7 +11373,8 @@ const VERIFIED_SENTENCES = [
 				"originalKo": "이 / 가",
 				"originalEn": "subject marker",
 				"tags": [
-					"grammar"
+					"particle",
+					"subject"
 				],
 				"grammar": [
 					{
@@ -9941,7 +11440,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1761,
 				"originalKo": "하숙집",
 				"originalEn": "boarding house, homestay",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"residence",
+					"room"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -9959,7 +11463,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1762,
 				"originalKo": "아주머니",
 				"originalEn": "middle-aged woman, landlady, auntie",
-				"tags": [],
+				"tags": [
+					"person",
+					"female",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -9985,7 +11493,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 197,
 				"originalKo": "친절하다",
 				"originalEn": "to be kind",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"descriptive_person_trait",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -10018,7 +11530,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 118,
 				"originalKo": "방",
 				"originalEn": "room",
-				"tags": [],
+				"tags": [
+					"place",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -10044,7 +11559,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 191,
 				"originalKo": "깨끗하다",
 				"originalEn": "to be clean",
-				"tags": [],
+				"tags": [
+					"descriptive_place",
+					"descriptive_general",
+					"descriptive_cleanliness",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -10097,7 +11617,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1609,
 				"originalKo": "그런데",
 				"originalEn": "by the way, but, however",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_discourse",
+					"discourse",
+					"contrast",
+					"transition"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -10115,7 +11641,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 118,
 				"originalKo": "방",
 				"originalEn": "room",
-				"tags": [],
+				"tags": [
+					"place",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -10141,7 +11670,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1763,
 				"originalKo": "생각",
 				"originalEn": "thought, idea, opinion",
-				"tags": [],
+				"tags": [
+					"concept",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 680,
@@ -10167,7 +11699,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 128,
 				"originalKo": "작다",
 				"originalEn": "to be small",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"size",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -10193,7 +11730,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -10211,7 +11753,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1082,
 				"originalKo": "어둡다",
 				"originalEn": "dark, dim",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"perception",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -10237,7 +11783,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 822,
 				"originalKo": "마음",
 				"originalEn": "mind, heart, feelings",
-				"tags": [],
+				"tags": [
+					"concept",
+					"emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -10263,7 +11812,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1102,
 				"originalKo": "들다",
 				"originalEn": "to enter, hold, cost, raise",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -10321,7 +11872,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 602,
 				"originalKo": "그래서",
 				"originalEn": "so",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"cause"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -10339,7 +11895,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -10365,7 +11925,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 180,
 				"originalKo": "집",
 				"originalEn": "house/home",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room",
+					"building"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -10391,7 +11956,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 902,
 				"originalKo": "알아보다",
 				"originalEn": "to look into, investigate, recognize",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cognition"
+				],
 				"grammar": [
 					{
 						"unitId": 816,
@@ -10417,7 +11985,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1764,
 				"originalKo": "부동산",
 				"originalEn": "real estate, real estate agency",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"business"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -10443,7 +12015,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -10495,7 +12074,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1764,
 				"originalKo": "부동산",
 				"originalEn": "real estate, real estate agency",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"business"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -10513,7 +12096,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1765,
 				"originalKo": "아저씨",
 				"originalEn": "middle-aged man, mister",
-				"tags": [],
+				"tags": [
+					"person",
+					"male",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -10539,7 +12126,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -10565,7 +12156,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1766,
 				"originalKo": "원룸",
 				"originalEn": "studio apartment, one-room",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -10591,7 +12186,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 252,
 				"originalKo": "하나",
 				"originalEn": "one",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"counting"
+				],
 				"grammar": [
 					{
 						"unitId": 879,
@@ -10624,7 +12222,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 322,
 				"originalKo": "주다",
 				"originalEn": "to give",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -10675,7 +12276,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1766,
 				"originalKo": "원룸",
 				"originalEn": "studio apartment, one-room",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -10701,7 +12306,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1761,
 				"originalKo": "하숙집",
 				"originalEn": "boarding house, homestay",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"residence",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 680,
@@ -10727,7 +12337,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 118,
 				"originalKo": "방",
 				"originalEn": "room",
-				"tags": [],
+				"tags": [
+					"place",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -10753,7 +12366,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 42,
 				"originalKo": "크다",
 				"originalEn": "to be big",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"koreanRoot",
+					"devtest",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -10779,7 +12398,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1078,
 				"originalKo": "밝다",
 				"originalEn": "bright, light",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"perception",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -10829,7 +12452,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 118,
 				"originalKo": "방",
 				"originalEn": "room",
-				"tags": [],
+				"tags": [
+					"place",
+					"room"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -10847,7 +12473,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 98,
 				"originalKo": "안",
 				"originalEn": "inside",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -10873,7 +12501,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 128,
 				"originalKo": "작다",
 				"originalEn": "to be small",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"size",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -10899,7 +12532,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 705,
 				"originalKo": "화장실",
 				"originalEn": "restroom",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -10925,7 +12562,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -10972,7 +12614,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1598,
 				"originalKo": "하지만",
 				"originalEn": "but, however",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_discourse",
+					"discourse",
+					"contrast"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -10990,7 +12637,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1767,
 				"originalKo": "관리비",
 				"originalEn": "maintenance fee, utility fee",
-				"tags": [],
+				"tags": [
+					"concept",
+					"economy"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -11016,7 +12666,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 410,
 				"originalKo": "조금",
 				"originalEn": "little/few",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_quantity",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -11034,7 +12690,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 392,
 				"originalKo": "비싸다",
 				"originalEn": "to be expensive",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_food",
+					"descriptive_price",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -11078,7 +12739,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1767,
 				"originalKo": "관리비",
 				"originalEn": "maintenance fee, utility fee",
-				"tags": [],
+				"tags": [
+					"concept",
+					"economy"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -11104,7 +12768,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 410,
 				"originalKo": "조금",
 				"originalEn": "little/few",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_quantity",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -11122,7 +12792,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 530,
 				"originalKo": "더",
 				"originalEn": "more",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"comparative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -11140,7 +12815,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 151,
 				"originalKo": "쓰다",
 				"originalEn": "to write",
-				"tags": [],
+				"tags": [
+					"transitive_writing",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -11214,7 +12892,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -11232,7 +12915,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1766,
 				"originalKo": "원룸",
 				"originalEn": "studio apartment, one-room",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -11258,7 +12945,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 316,
 				"originalKo": "살다",
 				"originalEn": "to live",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"devtest",
+					"locative_static",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -11284,7 +12976,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1395,
 				"originalKo": "앞으로",
 				"originalEn": "from now on, in the future",
-				"tags": [],
+				"tags": [
+					"adverb_time",
+					"time",
+					"temporal_relation",
+					"temporal_future",
+					"future",
+					"no_time_particle"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -11310,7 +13009,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 189,
 				"originalKo": "생활",
 				"originalEn": "life/living",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"experience"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -11336,7 +13038,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 530,
 				"originalKo": "더",
 				"originalEn": "more",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"comparative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -11354,7 +13061,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1759,
 				"originalKo": "편하다",
 				"originalEn": "comfortable, convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -11419,7 +13129,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 46,
 				"originalKo": "내일",
 				"originalEn": "tomorrow",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_future",
+					"future",
+					"sinoRoot",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -11437,7 +13153,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1764,
 				"originalKo": "부동산",
 				"originalEn": "real estate, real estate agency",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"business"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -11463,7 +13183,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -11489,7 +13216,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1766,
 				"originalKo": "원룸",
 				"originalEn": "studio apartment, one-room",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -11515,7 +13246,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 895,
 				"originalKo": "계약하다",
 				"originalEn": "to sign a contract, make an agreement",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"business"
+				],
 				"grammar": [
 					{
 						"unitId": 574,
@@ -11575,7 +13309,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 180,
 				"originalKo": "집",
 				"originalEn": "house/home",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room",
+					"building"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -11601,7 +13340,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -11627,7 +13370,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1641,
 				"originalKo": "일",
 				"originalEn": "work, task, matter, thing, business",
-				"tags": [],
+				"tags": [
+					"work",
+					"activity",
+					"task",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -11653,7 +13401,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 408,
 				"originalKo": "많이",
 				"originalEn": "much/many",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -11671,7 +13422,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1166,
 				"originalKo": "생기다",
 				"originalEn": "to form, occur, arise, look like",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -11739,7 +13493,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 456,
 				"originalKo": "빨리",
 				"originalEn": "quickly",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"speed"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -11757,7 +13516,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 148,
 				"originalKo": "만나다",
 				"originalEn": "to meet",
-				"tags": [],
+				"tags": [
+					"transitive_person"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -11808,7 +13569,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 103,
 				"originalKo": "기숙사",
 				"originalEn": "dormitory",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -11834,7 +13599,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 511,
 				"originalKo": "요리",
 				"originalEn": "dish",
-				"tags": [],
+				"tags": [
+					"food",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -11860,7 +13628,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -11900,7 +13671,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 371,
 				"originalKo": "힘들다",
 				"originalEn": "to be hard",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_person",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 932,
@@ -11941,7 +13716,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1761,
 				"originalKo": "하숙집",
 				"originalEn": "boarding house, homestay",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"residence",
+					"room"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -11959,7 +13739,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1762,
 				"originalKo": "아주머니",
 				"originalEn": "middle-aged woman, landlady, auntie",
-				"tags": [],
+				"tags": [
+					"person",
+					"female",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -11985,7 +13769,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 304,
 				"originalKo": "음식",
 				"originalEn": "food",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -12011,7 +13797,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 295,
 				"originalKo": "맛",
 				"originalEn": "taste",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"sensory"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -12037,7 +13826,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 81,
 				"originalKo": "없다",
 				"originalEn": "to not have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 930,
@@ -12082,7 +13876,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 290,
 				"originalKo": "그럼",
 				"originalEn": "then",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"conditional"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -12100,7 +13899,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1766,
 				"originalKo": "원룸",
 				"originalEn": "studio apartment, one-room",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -12126,7 +13929,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 511,
 				"originalKo": "요리",
 				"originalEn": "dish",
-				"tags": [],
+				"tags": [
+					"food",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -12152,7 +13958,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 395,
 				"originalKo": "잘하다",
 				"originalEn": "to do well",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"transitive_general",
+					"transitive_sports"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -12178,7 +13988,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 897,
 				"originalKo": "룸메이트",
 				"originalEn": "roommate",
-				"tags": [],
+				"tags": [
+					"person",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -12204,7 +14017,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 43,
 				"originalKo": "맛있다",
 				"originalEn": "to be delicious",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"food_adjective",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -12230,7 +14048,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 304,
 				"originalKo": "음식",
 				"originalEn": "food",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -12256,7 +14076,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 286,
 				"originalKo": "만들다",
 				"originalEn": "to make",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -12308,7 +14131,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -12334,7 +14160,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 120,
 				"originalKo": "어떻다",
 				"originalEn": "to be how",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"questionWord",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 49,
@@ -12375,7 +14205,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -12401,7 +14235,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 12,
 				"originalKo": "일본",
 				"originalEn": "Japan",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -12427,7 +14264,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 240,
 				"originalKo": "오",
 				"originalEn": "five",
-				"tags": [],
+				"tags": [
+					"sinoNumber"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -12453,7 +14292,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1768,
 				"originalKo": "유키",
 				"originalEn": "Yuki (personal name)",
-				"tags": [],
+				"tags": [
+					"name",
+					"person",
+					"proper_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -12497,7 +14340,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 3,
 				"originalKo": "제",
 				"originalEn": "my",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"possessive",
+					"humble"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -12515,7 +14363,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1766,
 				"originalKo": "원룸",
 				"originalEn": "studio apartment, one-room",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -12541,7 +14393,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 325,
 				"originalKo": "같이",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"social",
+					"accompaniment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -12559,7 +14417,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1713,
 				"originalKo": "살",
 				"originalEn": "years old (native Korean age counter)",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"counter",
+					"age"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -12577,7 +14440,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 897,
 				"originalKo": "룸메이트",
 				"originalEn": "roommate",
-				"tags": [],
+				"tags": [
+					"person",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -12603,7 +14469,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 554,
 				"originalKo": "찾다",
 				"originalEn": "to find",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -12629,7 +14497,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -12688,7 +14561,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1766,
 				"originalKo": "원룸",
 				"originalEn": "studio apartment, one-room",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -12714,7 +14591,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1611,
 				"originalKo": "혼자",
 				"originalEn": "alone, by oneself, solo",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"social",
+					"manner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -12732,7 +14614,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 53,
@@ -12758,7 +14642,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 476,
 				"originalKo": "심심하다",
 				"originalEn": "to be bored",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"descriptive_emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -12784,7 +14672,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 195,
 				"originalKo": "재미없다",
 				"originalEn": "to be not fun",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -12810,7 +14701,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 325,
 				"originalKo": "같이",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"social",
+					"accompaniment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -12828,7 +14725,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 795,
 				"originalKo": "지내다",
 				"originalEn": "to spend time/get along",
-				"tags": [],
+				"tags": [
+					"intransitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -12854,7 +14753,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 897,
 				"originalKo": "룸메이트",
 				"originalEn": "roommate",
-				"tags": [],
+				"tags": [
+					"person",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -12880,7 +14782,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 554,
 				"originalKo": "찾다",
 				"originalEn": "to find",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -12906,7 +14810,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -12950,7 +14859,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 3,
 				"originalKo": "제",
 				"originalEn": "my",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"possessive",
+					"humble"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -12968,7 +14882,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1766,
 				"originalKo": "원룸",
 				"originalEn": "studio apartment, one-room",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -12994,7 +14912,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1620,
 				"originalKo": "학교",
 				"originalEn": "school",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -13012,7 +14935,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 117,
 				"originalKo": "근처",
 				"originalEn": "near",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -13038,7 +14963,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 54,
@@ -13064,7 +14994,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1620,
 				"originalKo": "학교",
 				"originalEn": "school",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 1826,
@@ -13090,7 +15025,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 915,
 				"originalKo": "걸다",
 				"originalEn": "to hang, make (a phone call), bet",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -13116,7 +15053,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 249,
 				"originalKo": "분",
 				"originalEn": "minute",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"sinoMeasureWord",
+					"time"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -13134,7 +15075,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 651,
 				"originalKo": "걸리다",
 				"originalEn": "to take (time)",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"scalable",
+					"scalable_duration"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -13179,7 +15124,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1766,
 				"originalKo": "원룸",
 				"originalEn": "studio apartment, one-room",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -13197,7 +15146,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 117,
 				"originalKo": "근처",
 				"originalEn": "near",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -13223,7 +15174,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1769,
 				"originalKo": "세탁소",
 				"originalEn": "laundromat, dry cleaner's",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"business"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -13249,7 +15204,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 898,
 				"originalKo": "미용실",
 				"originalEn": "hair salon, beauty parlor",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -13275,7 +15233,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -13301,7 +15264,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1759,
 				"originalKo": "편하다",
 				"originalEn": "comfortable, convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -13327,7 +15293,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1770,
 				"originalKo": "이용하다",
 				"originalEn": "to use, utilize, make use of",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -13375,7 +15344,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1756,
 				"originalKo": "또",
 				"originalEn": "also, additionally, again",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_discourse",
+					"connective_adverb"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -13393,7 +15366,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 118,
 				"originalKo": "방",
 				"originalEn": "room",
-				"tags": [],
+				"tags": [
+					"place",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -13419,7 +15395,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 42,
 				"originalKo": "크다",
 				"originalEn": "to be big",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"koreanRoot",
+					"devtest",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -13445,7 +15427,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 705,
 				"originalKo": "화장실",
 				"originalEn": "restroom",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -13471,7 +15457,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 191,
 				"originalKo": "깨끗하다",
 				"originalEn": "to be clean",
-				"tags": [],
+				"tags": [
+					"descriptive_place",
+					"descriptive_general",
+					"descriptive_cleanliness",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -13514,7 +15505,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1766,
 				"originalKo": "원룸",
 				"originalEn": "studio apartment, one-room",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -13532,7 +15527,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 98,
 				"originalKo": "안",
 				"originalEn": "inside",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -13558,7 +15555,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1771,
 				"originalKo": "에어컨",
 				"originalEn": "air conditioner",
-				"tags": [],
+				"tags": [
+					"appliance",
+					"home",
+					"electronics"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -13584,7 +15585,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 922,
 				"originalKo": "세탁기",
 				"originalEn": "washing machine",
-				"tags": [],
+				"tags": [
+					"object",
+					"appliance"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -13610,7 +15614,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -13636,7 +15645,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 122,
 				"originalKo": "아주",
 				"originalEn": "very",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -13654,7 +15668,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 872,
 				"originalKo": "편리하다",
 				"originalEn": "convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -13699,7 +15716,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 180,
 				"originalKo": "집",
 				"originalEn": "house/home",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room",
+					"building"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -13725,7 +15747,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 128,
 				"originalKo": "작다",
 				"originalEn": "to be small",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"size",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -13751,7 +15778,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 919,
 				"originalKo": "부엌",
 				"originalEn": "kitchen",
-				"tags": [],
+				"tags": [
+					"place",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -13777,7 +15807,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -13803,7 +15838,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 511,
 				"originalKo": "요리",
 				"originalEn": "dish",
-				"tags": [],
+				"tags": [
+					"food",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -13829,7 +15867,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1759,
 				"originalKo": "편하다",
 				"originalEn": "comfortable, convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -13855,7 +15896,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -13907,7 +15951,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -13933,7 +15981,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 511,
 				"originalKo": "요리",
 				"originalEn": "dish",
-				"tags": [],
+				"tags": [
+					"food",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -13959,7 +16010,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 395,
 				"originalKo": "잘하다",
 				"originalEn": "to do well",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"transitive_general",
+					"transitive_sports"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -13985,7 +16040,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 288,
 				"originalKo": "좋아하다",
 				"originalEn": "to like",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food",
+					"transitive_person",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 54,
@@ -14011,7 +16072,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 511,
 				"originalKo": "요리",
 				"originalEn": "dish",
-				"tags": [],
+				"tags": [
+					"food",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -14037,7 +16101,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1649,
 				"originalKo": "못하다",
 				"originalEn": "to be poor at, cannot do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"intransitive_general",
+					"ability",
+					"negation"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -14063,7 +16132,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -14089,7 +16162,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 21,
 				"originalKo": "괜찮다",
 				"originalEn": "to be okay",
-				"tags": [],
+				"tags": [
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -14138,7 +16214,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 601,
 				"originalKo": "그렇지만",
 				"originalEn": "however",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"contrast"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -14156,7 +16237,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1772,
 				"originalKo": "청소",
 				"originalEn": "cleaning",
-				"tags": [],
+				"tags": [
+					"action",
+					"general",
+					"domestic"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -14182,7 +16267,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -14200,7 +16290,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1649,
 				"originalKo": "못하다",
 				"originalEn": "to be poor at, cannot do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"intransitive_general",
+					"ability",
+					"negation"
+				],
 				"grammar": [
 					{
 						"unitId": 54,
@@ -14226,7 +16321,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1772,
 				"originalKo": "청소",
 				"originalEn": "cleaning",
-				"tags": [],
+				"tags": [
+					"action",
+					"general",
+					"domestic"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -14252,7 +16351,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 395,
 				"originalKo": "잘하다",
 				"originalEn": "to do well",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"transitive_general",
+					"transitive_sports"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -14278,7 +16381,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -14304,7 +16411,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 897,
 				"originalKo": "룸메이트",
 				"originalEn": "roommate",
-				"tags": [],
+				"tags": [
+					"person",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -14389,7 +16499,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -14415,7 +16529,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 325,
 				"originalKo": "같이",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"social",
+					"accompaniment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -14433,7 +16553,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 43,
 				"originalKo": "맛있다",
 				"originalEn": "to be delicious",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"food_adjective",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -14459,7 +16584,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 304,
 				"originalKo": "음식",
 				"originalEn": "food",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -14511,7 +16638,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 196,
 				"originalKo": "재미있다",
 				"originalEn": "to be fun",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -14537,7 +16667,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 795,
 				"originalKo": "지내다",
 				"originalEn": "to spend time/get along",
-				"tags": [],
+				"tags": [
+					"intransitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -14570,7 +16702,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1639,
 				"originalKo": "분",
 				"originalEn": "person (honorific), counter for people",
-				"tags": [],
+				"tags": [
+					"person",
+					"honorific",
+					"counter",
+					"measureWord",
+					"koreanMeasureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -14596,7 +16734,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 3,
 				"originalKo": "제",
 				"originalEn": "my",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"possessive",
+					"humble"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -14614,7 +16757,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 588,
 				"originalKo": "이메일",
 				"originalEn": "e-mail",
-				"tags": [],
+				"tags": [
+					"object",
+					"writing",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -14640,7 +16787,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 596,
 				"originalKo": "연락하다",
 				"originalEn": "to contact",
-				"tags": [],
+				"tags": [
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -14697,7 +16846,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1672,
 				"originalKo": "나오다",
 				"originalEn": "to come out, emerge, exit",
-				"tags": [],
+				"tags": [
+					"locative_origin",
+					"movement",
+					"intransitive",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -14723,7 +16877,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1775,
 				"originalKo": "내",
 				"originalEn": "my (plain 1st-person possessive pronoun)",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"possessive",
+					"informal"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -14741,7 +16900,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -14774,7 +16937,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1776,
 				"originalKo": "치맥",
 				"originalEn": "chimaek (chicken and beer)",
-				"tags": [],
+				"tags": [
+					"food",
+					"drink",
+					"cultural"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -14800,7 +16967,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1777,
 				"originalKo": "사랑하다",
 				"originalEn": "to love",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_person",
+					"emotion",
+					"social",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 49,
@@ -14842,7 +17016,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 602,
 				"originalKo": "그래서",
 				"originalEn": "so",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"cause"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -14860,7 +17039,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 437,
 				"originalKo": "지난주",
 				"originalEn": "last week",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporalNoun",
+					"temporal_past",
+					"past"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -14886,7 +17070,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1778,
 				"originalKo": "대구",
 				"originalEn": "Daegu (metropolitan city in Korea)",
-				"tags": [],
+				"tags": [
+					"place",
+					"city",
+					"place_outdoor",
+					"proper_noun",
+					"locative_goal",
+					"locative_static"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -14904,7 +17095,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1776,
 				"originalKo": "치맥",
 				"originalEn": "chimaek (chicken and beer)",
-				"tags": [],
+				"tags": [
+					"food",
+					"drink",
+					"cultural"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -14922,7 +17117,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1779,
 				"originalKo": "페스티벌",
 				"originalEn": "festival",
-				"tags": [],
+				"tags": [
+					"event",
+					"culture",
+					"entertainment"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -14948,7 +17147,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 861,
 				"originalKo": "다녀오다",
 				"originalEn": "visit, to go and come back",
-				"tags": [],
+				"tags": [
+					"intransitive_place",
+					"motion",
+					"locative_goal"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -14997,7 +17200,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 11,
 				"originalKo": "사람",
 				"originalEn": "person",
-				"tags": [],
+				"tags": [
+					"person",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -15030,7 +17237,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 607,
 				"originalKo": "정말",
 				"originalEn": "really",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -15048,7 +17260,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -15097,7 +17313,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1780,
 				"originalKo": "치킨",
 				"originalEn": "fried chicken, chicken",
-				"tags": [],
+				"tags": [
+					"food",
+					"meat"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -15123,7 +17342,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 607,
 				"originalKo": "정말",
 				"originalEn": "really",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -15141,7 +17365,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -15203,7 +17431,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1619,
 				"originalKo": "그",
 				"originalEn": "that, the (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"medial",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -15221,7 +17454,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1783,
 				"originalKo": "중",
 				"originalEn": "middle, among, during",
-				"tags": [],
+				"tags": [
+					"position",
+					"abstract",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -15247,7 +17484,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 62,
 				"originalKo": "우리",
 				"originalEn": "we/us/our",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"plural"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -15273,7 +17514,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1784,
 				"originalKo": "선택하다",
 				"originalEn": "to choose, select, pick",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"action",
+					"cognition"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -15299,7 +17544,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1370,
 				"originalKo": "메뉴",
 				"originalEn": "menu",
-				"tags": [],
+				"tags": [
+					"food",
+					"dining",
+					"document"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -15325,7 +17574,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1781,
 				"originalKo": "프라이드치킨",
 				"originalEn": "fried chicken",
-				"tags": [],
+				"tags": [
+					"food",
+					"meat"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -15351,7 +17603,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1782,
 				"originalKo": "마늘",
 				"originalEn": "garlic",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable",
+					"ingredient"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -15369,7 +17625,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1780,
 				"originalKo": "치킨",
 				"originalEn": "fried chicken, chicken",
-				"tags": [],
+				"tags": [
+					"food",
+					"meat"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -15387,7 +17646,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 353,
 				"originalKo": "그리고",
 				"originalEn": "and",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -15405,7 +17668,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 950,
 				"originalKo": "양념",
 				"originalEn": "seasoning, marinade, sauce",
-				"tags": [],
+				"tags": [
+					"food",
+					"condiment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -15423,7 +17689,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1780,
 				"originalKo": "치킨",
 				"originalEn": "fried chicken, chicken",
-				"tags": [],
+				"tags": [
+					"food",
+					"meat"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -15463,7 +17732,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1776,
 				"originalKo": "치맥",
 				"originalEn": "chimaek (chicken and beer)",
-				"tags": [],
+				"tags": [
+					"food",
+					"drink",
+					"cultural"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -15489,7 +17762,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 327,
 				"originalKo": "맥주",
 				"originalEn": "beer",
-				"tags": [],
+				"tags": [
+					"drink",
+					"alcohol",
+					"bottle"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -15515,7 +17792,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1758,
 				"originalKo": "꼭",
 				"originalEn": "surely, certainly, by all means",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"emphasis"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -15533,7 +17814,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1110,
 				"originalKo": "필요하다",
 				"originalEn": "to need, be necessary",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 1773,
@@ -15575,7 +17859,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 602,
 				"originalKo": "그래서",
 				"originalEn": "so",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"cause"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -15593,7 +17882,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1785,
 				"originalKo": "시원하다",
 				"originalEn": "to be cool, refreshing",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"feeling",
+					"drink",
+					"temperature",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -15619,7 +17914,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 327,
 				"originalKo": "맥주",
 				"originalEn": "beer",
-				"tags": [],
+				"tags": [
+					"drink",
+					"alcohol",
+					"bottle"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -15645,7 +17944,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -15695,7 +17996,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -15728,7 +18033,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1781,
 				"originalKo": "프라이드치킨",
 				"originalEn": "fried chicken",
-				"tags": [],
+				"tags": [
+					"food",
+					"meat"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -15754,7 +18062,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 555,
 				"originalKo": "제일",
 				"originalEn": "most",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"superlative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -15772,7 +18085,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 288,
 				"originalKo": "좋아하다",
 				"originalEn": "to like",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food",
+					"transitive_person",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -15825,7 +18144,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1782,
 				"originalKo": "마늘",
 				"originalEn": "garlic",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable",
+					"ingredient"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -15843,7 +18166,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 980,
 				"originalKo": "소스",
 				"originalEn": "sauce",
-				"tags": [],
+				"tags": [
+					"food",
+					"condiment"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -15869,7 +18195,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 954,
 				"originalKo": "찍다",
 				"originalEn": "to take (photo), dip, stamp, print",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -15921,7 +18249,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1782,
 				"originalKo": "마늘",
 				"originalEn": "garlic",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable",
+					"ingredient"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -15939,7 +18271,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1780,
 				"originalKo": "치킨",
 				"originalEn": "fried chicken, chicken",
-				"tags": [],
+				"tags": [
+					"food",
+					"meat"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -15965,7 +18300,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1786,
 				"originalKo": "인기",
 				"originalEn": "popularity",
-				"tags": [],
+				"tags": [
+					"concept",
+					"social",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -15991,7 +18330,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -16050,7 +18393,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 950,
 				"originalKo": "양념",
 				"originalEn": "seasoning, marinade, sauce",
-				"tags": [],
+				"tags": [
+					"food",
+					"condiment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -16068,7 +18414,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1780,
 				"originalKo": "치킨",
 				"originalEn": "fried chicken, chicken",
-				"tags": [],
+				"tags": [
+					"food",
+					"meat"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -16094,7 +18443,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 287,
 				"originalKo": "맵다",
 				"originalEn": "to be spicy",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -16120,7 +18473,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 314,
 				"originalKo": "달다",
 				"originalEn": "to be sweet",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"devtest",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -16153,7 +18511,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1408,
 				"originalKo": "나다",
 				"originalEn": "to break out, occur, sprout, grow",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"occurrence",
+					"state_change"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -16179,7 +18541,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -16197,7 +18564,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 950,
 				"originalKo": "양념",
 				"originalEn": "seasoning, marinade, sauce",
-				"tags": [],
+				"tags": [
+					"food",
+					"condiment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -16215,7 +18585,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1780,
 				"originalKo": "치킨",
 				"originalEn": "fried chicken, chicken",
-				"tags": [],
+				"tags": [
+					"food",
+					"meat"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -16241,7 +18614,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 555,
 				"originalKo": "제일",
 				"originalEn": "most",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"superlative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -16259,7 +18637,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 43,
 				"originalKo": "맛있다",
 				"originalEn": "to be delicious",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"food_adjective",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -16310,7 +18693,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 251,
 				"originalKo": "안",
 				"originalEn": "not",
-				"tags": [],
+				"tags": [
+					"negative",
+					"short_negation"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -16368,7 +18754,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 11,
 				"originalKo": "사람",
 				"originalEn": "person",
-				"tags": [],
+				"tags": [
+					"person",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -16401,7 +18791,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1758,
 				"originalKo": "꼭",
 				"originalEn": "surely, certainly, by all means",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"emphasis"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -16419,7 +18813,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 505,
 				"originalKo": "드시다",
 				"originalEn": "to eat/drink",
-				"tags": [],
+				"tags": [
+					"transitive_food",
+					"transitive_drink",
+					"honorificVerb"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -16478,7 +18876,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1776,
 				"originalKo": "치맥",
 				"originalEn": "chimaek (chicken and beer)",
-				"tags": [],
+				"tags": [
+					"food",
+					"drink",
+					"cultural"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -16530,7 +18932,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 440,
 				"originalKo": "콘서트",
 				"originalEn": "concert",
-				"tags": [],
+				"tags": [
+					"event",
+					"music"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -16556,7 +18961,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1464,
 				"originalKo": "무료",
 				"originalEn": "free of charge",
-				"tags": [],
+				"tags": [
+					"finance",
+					"commerce",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -16582,7 +18991,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -16636,7 +19048,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 607,
 				"originalKo": "정말",
 				"originalEn": "really",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -16654,7 +19071,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 196,
 				"originalKo": "재미있다",
 				"originalEn": "to be fun",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -16703,7 +19123,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1778,
 				"originalKo": "대구",
 				"originalEn": "Daegu (metropolitan city in Korea)",
-				"tags": [],
+				"tags": [
+					"place",
+					"city",
+					"place_outdoor",
+					"proper_noun",
+					"locative_goal",
+					"locative_static"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -16721,7 +19148,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1776,
 				"originalKo": "치맥",
 				"originalEn": "chimaek (chicken and beer)",
-				"tags": [],
+				"tags": [
+					"food",
+					"drink",
+					"cultural"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -16739,7 +19170,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1779,
 				"originalKo": "페스티벌",
 				"originalEn": "festival",
-				"tags": [],
+				"tags": [
+					"event",
+					"culture",
+					"entertainment"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -16765,7 +19200,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1758,
 				"originalKo": "꼭",
 				"originalEn": "surely, certainly, by all means",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"emphasis"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -16784,7 +19223,8 @@ const VERIFIED_SENTENCES = [
 				"originalKo": "이 / 가",
 				"originalEn": "subject marker",
 				"tags": [
-					"grammar"
+					"particle",
+					"subject"
 				],
 				"grammar": [
 					{
@@ -16843,7 +19283,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1131,
 				"originalKo": "잡채",
 				"originalEn": "japchae (stir-fried glass noodles with vegetables)",
-				"tags": [],
+				"tags": [
+					"food",
+					"dish",
+					"traditional"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -16869,7 +19313,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 286,
 				"originalKo": "만들다",
 				"originalEn": "to make",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -16909,7 +19356,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1787,
 				"originalKo": "적",
 				"originalEn": "experience, occasion (bound noun in -(으)ㄴ 적이 있다/없다)",
-				"tags": [],
+				"tags": [
+					"bound_noun",
+					"time",
+					"experience"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -16935,7 +19386,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 49,
@@ -16977,7 +19433,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1131,
 				"originalKo": "잡채",
 				"originalEn": "japchae (stir-fried glass noodles with vegetables)",
-				"tags": [],
+				"tags": [
+					"food",
+					"dish",
+					"traditional"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -17003,7 +19463,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -17029,7 +19492,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1788,
 				"originalKo": "잔치",
 				"originalEn": "feast, banquet, party",
-				"tags": [],
+				"tags": [
+					"event",
+					"culture",
+					"food"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -17047,7 +19514,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1605,
 				"originalKo": "때",
 				"originalEn": "time, when, moment",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -17065,7 +19536,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1758,
 				"originalKo": "꼭",
 				"originalEn": "surely, certainly, by all means",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"emphasis"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -17109,7 +19584,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 304,
 				"originalKo": "음식",
 				"originalEn": "food",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 37,
@@ -17151,7 +19628,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1131,
 				"originalKo": "잡채",
 				"originalEn": "japchae (stir-fried glass noodles with vegetables)",
-				"tags": [],
+				"tags": [
+					"food",
+					"dish",
+					"traditional"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -17177,7 +19658,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 286,
 				"originalKo": "만들다",
 				"originalEn": "to make",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -17233,7 +19717,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 962,
 				"originalKo": "고기",
 				"originalEn": "meat",
-				"tags": [],
+				"tags": [
+					"food",
+					"meat"
+				],
 				"grammar": [
 					{
 						"unitId": 995,
@@ -17259,7 +19746,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1782,
 				"originalKo": "마늘",
 				"originalEn": "garlic",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable",
+					"ingredient"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -17277,7 +19768,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1792,
 				"originalKo": "간장",
 				"originalEn": "soy sauce",
-				"tags": [],
+				"tags": [
+					"food",
+					"condiment",
+					"ingredient"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -17295,7 +19790,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 945,
 				"originalKo": "설탕",
 				"originalEn": "sugar",
-				"tags": [],
+				"tags": [
+					"food",
+					"condiment",
+					"sweet"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -17313,7 +19812,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 989,
 				"originalKo": "참기름",
 				"originalEn": "sesame oil",
-				"tags": [],
+				"tags": [
+					"food",
+					"condiment",
+					"traditional"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -17331,7 +19834,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 955,
 				"originalKo": "후추",
 				"originalEn": "black pepper",
-				"tags": [],
+				"tags": [
+					"food",
+					"condiment",
+					"spicy"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -17357,7 +19864,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 935,
 				"originalKo": "넣다",
 				"originalEn": "to put in, insert",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -17383,7 +19892,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 944,
 				"originalKo": "섞다",
 				"originalEn": "to mix, blend",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -17425,7 +19936,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1793,
 				"originalKo": "끓다",
 				"originalEn": "to boil, bubble (intransitive)",
-				"tags": [],
+				"tags": [
+					"intransitive",
+					"cooking",
+					"water"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -17451,7 +19966,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 39,
 				"originalKo": "물",
 				"originalEn": "water",
-				"tags": [],
+				"tags": [
+					"drink",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -17477,7 +19996,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1790,
 				"originalKo": "시금치",
 				"originalEn": "spinach",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable",
+					"ingredient"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -17503,7 +20026,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 935,
 				"originalKo": "넣다",
 				"originalEn": "to put in, insert",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -17543,7 +20068,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 353,
 				"originalKo": "그리고",
 				"originalEn": "and",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -17562,7 +20091,7 @@ const VERIFIED_SENTENCES = [
 				"originalKo": "~(으)ㄴ 후에 / ~기 전에",
 				"originalEn": "after / before doing",
 				"tags": [
-					"grammar"
+					"time_clause"
 				],
 				"grammar": [
 					{
@@ -17589,7 +20118,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1365,
 				"originalKo": "꺼내다",
 				"originalEn": "to take out, bring out, bring up (topic)",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"activity",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -17632,7 +20165,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1790,
 				"originalKo": "시금치",
 				"originalEn": "spinach",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable",
+					"ingredient"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -17658,7 +20195,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1782,
 				"originalKo": "마늘",
 				"originalEn": "garlic",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable",
+					"ingredient"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -17684,7 +20225,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 947,
 				"originalKo": "소금",
 				"originalEn": "salt",
-				"tags": [],
+				"tags": [
+					"food",
+					"condiment",
+					"salty"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -17710,7 +20255,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 935,
 				"originalKo": "넣다",
 				"originalEn": "to put in, insert",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -17736,7 +20283,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 951,
 				"originalKo": "양념하다",
 				"originalEn": "to season, marinate",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cooking"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -17779,7 +20329,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1791,
 				"originalKo": "달걀",
 				"originalEn": "egg, hen's egg",
-				"tags": [],
+				"tags": [
+					"food",
+					"ingredient"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -17805,7 +20358,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 549,
 				"originalKo": "얇다",
 				"originalEn": "to be thin",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_dimension_thickness",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -17831,7 +20388,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1658,
 				"originalKo": "부치다",
 				"originalEn": "to fry, griddle (pancake, jeon)",
-				"tags": [],
+				"tags": [
+					"transitive_food",
+					"cooking",
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -17864,7 +20425,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 981,
 				"originalKo": "썰다",
 				"originalEn": "to slice, chop",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cooking"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -17904,7 +20468,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 984,
 				"originalKo": "양파",
 				"originalEn": "onion",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -17922,7 +20489,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 975,
 				"originalKo": "버섯",
 				"originalEn": "mushroom",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -17940,7 +20510,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 970,
 				"originalKo": "당근",
 				"originalEn": "carrot",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -17966,7 +20539,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 981,
 				"originalKo": "썰다",
 				"originalEn": "to slice, chop",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cooking"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -18006,7 +20582,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 354,
 				"originalKo": "먼저",
 				"originalEn": "first",
-				"tags": [],
+				"tags": [
+					"sequence",
+					"time"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -18024,7 +20603,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 984,
 				"originalKo": "양파",
 				"originalEn": "onion",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -18050,7 +20632,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 977,
 				"originalKo": "볶다",
 				"originalEn": "to stir-fry, fry",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cooking"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -18091,7 +20676,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1619,
 				"originalKo": "그",
 				"originalEn": "that, the (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"medial",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -18109,7 +20699,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1180,
 				"originalKo": "후",
 				"originalEn": "after, later (Sino-Korean)",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -18135,7 +20728,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 970,
 				"originalKo": "당근",
 				"originalEn": "carrot",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -18153,7 +20749,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 975,
 				"originalKo": "버섯",
 				"originalEn": "mushroom",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -18171,7 +20770,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 962,
 				"originalKo": "고기",
 				"originalEn": "meat",
-				"tags": [],
+				"tags": [
+					"food",
+					"meat"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -18197,7 +20799,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1073,
 				"originalKo": "따로",
 				"originalEn": "separately, apart",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -18215,7 +20821,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 977,
 				"originalKo": "볶다",
 				"originalEn": "to stir-fry, fry",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cooking"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -18255,7 +20864,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1789,
 				"originalKo": "당면",
 				"originalEn": "glass noodles, cellophane noodles (sweet potato starch noodles)",
-				"tags": [],
+				"tags": [
+					"food",
+					"ingredient"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -18281,7 +20893,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 249,
 				"originalKo": "분",
 				"originalEn": "minute",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"sinoMeasureWord",
+					"time"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -18299,7 +20915,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1794,
 				"originalKo": "동안",
 				"originalEn": "during, for, duration of time",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -18317,7 +20937,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 978,
 				"originalKo": "삶다",
 				"originalEn": "to boil (eggs, meat)",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cooking"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -18360,7 +20983,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 994,
 				"originalKo": "프라이팬",
 				"originalEn": "frying pan",
-				"tags": [],
+				"tags": [
+					"object",
+					"cookware"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -18386,7 +21012,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1789,
 				"originalKo": "당면",
 				"originalEn": "glass noodles, cellophane noodles (sweet potato starch noodles)",
-				"tags": [],
+				"tags": [
+					"food",
+					"ingredient"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -18412,7 +21041,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1792,
 				"originalKo": "간장",
 				"originalEn": "soy sauce",
-				"tags": [],
+				"tags": [
+					"food",
+					"condiment",
+					"ingredient"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -18438,7 +21071,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 935,
 				"originalKo": "넣다",
 				"originalEn": "to put in, insert",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -18464,7 +21099,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 977,
 				"originalKo": "볶다",
 				"originalEn": "to stir-fry, fry",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cooking"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -18508,7 +21146,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1789,
 				"originalKo": "당면",
 				"originalEn": "glass noodles, cellophane noodles (sweet potato starch noodles)",
-				"tags": [],
+				"tags": [
+					"food",
+					"ingredient"
+				],
 				"grammar": [
 					{
 						"unitId": 995,
@@ -18534,7 +21175,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 977,
 				"originalKo": "볶다",
 				"originalEn": "to stir-fry, fry",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cooking"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -18560,7 +21204,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 990,
 				"originalKo": "채소",
 				"originalEn": "vegetable",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -18586,7 +21233,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 962,
 				"originalKo": "고기",
 				"originalEn": "meat",
-				"tags": [],
+				"tags": [
+					"food",
+					"meat"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -18612,7 +21262,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 935,
 				"originalKo": "넣다",
 				"originalEn": "to put in, insert",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -18638,7 +21290,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -18656,7 +21313,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 944,
 				"originalKo": "섞다",
 				"originalEn": "to mix, blend",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -18697,7 +21356,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1110,
 				"originalKo": "필요하다",
 				"originalEn": "to need, be necessary",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -18723,7 +21385,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1792,
 				"originalKo": "간장",
 				"originalEn": "soy sauce",
-				"tags": [],
+				"tags": [
+					"food",
+					"condiment",
+					"ingredient"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -18741,7 +21407,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 989,
 				"originalKo": "참기름",
 				"originalEn": "sesame oil",
-				"tags": [],
+				"tags": [
+					"food",
+					"condiment",
+					"traditional"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -18759,7 +21429,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 945,
 				"originalKo": "설탕",
 				"originalEn": "sugar",
-				"tags": [],
+				"tags": [
+					"food",
+					"condiment",
+					"sweet"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -18777,7 +21451,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 955,
 				"originalKo": "후추",
 				"originalEn": "black pepper",
-				"tags": [],
+				"tags": [
+					"food",
+					"condiment",
+					"spicy"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -18803,7 +21481,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 410,
 				"originalKo": "조금",
 				"originalEn": "little/few",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_quantity",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -18821,7 +21505,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 530,
 				"originalKo": "더",
 				"originalEn": "more",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"comparative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -18839,7 +21528,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 942,
 				"originalKo": "뿌리다",
 				"originalEn": "to sprinkle, scatter",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -18880,7 +21571,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1131,
 				"originalKo": "잡채",
 				"originalEn": "japchae (stir-fried glass noodles with vegetables)",
-				"tags": [],
+				"tags": [
+					"food",
+					"dish",
+					"traditional"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -18906,7 +21601,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 953,
 				"originalKo": "접시",
 				"originalEn": "plate, dish",
-				"tags": [],
+				"tags": [
+					"object",
+					"tableware"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -18932,7 +21630,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1795,
 				"originalKo": "담다",
 				"originalEn": "to put into, serve (onto a plate/bowl), fill",
-				"tags": [],
+				"tags": [
+					"transitive_food",
+					"cooking",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -18974,7 +21676,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1619,
 				"originalKo": "그",
 				"originalEn": "that, the (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"medial",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -18992,7 +21699,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 113,
 				"originalKo": "위",
 				"originalEn": "above",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 995,
@@ -19018,7 +21727,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1791,
 				"originalKo": "달걀",
 				"originalEn": "egg, hen's egg",
-				"tags": [],
+				"tags": [
+					"food",
+					"ingredient"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -19044,7 +21756,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 194,
 				"originalKo": "예쁘다",
 				"originalEn": "to be pretty",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"devtest",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -19070,7 +21786,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1484,
 				"originalKo": "올리다",
 				"originalEn": "to raise, post (online), upload",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"internet",
+					"movement"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -19115,7 +21835,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -19141,7 +21864,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1796,
 				"originalKo": "외국인",
 				"originalEn": "foreigner",
-				"tags": [],
+				"tags": [
+					"person"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -19174,7 +21899,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 288,
 				"originalKo": "좋아하다",
 				"originalEn": "to like",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food",
+					"transitive_person",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -19200,7 +21931,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 558,
 				"originalKo": "곳",
 				"originalEn": "place",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -19226,7 +21960,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 100,
 				"originalKo": "어디",
 				"originalEn": "where",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"place",
+					"deictic",
+					"interrogative"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -19274,7 +22013,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 11,
 				"originalKo": "사람",
 				"originalEn": "person",
-				"tags": [],
+				"tags": [
+					"person",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 1797,
@@ -19300,7 +22043,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 614,
 				"originalKo": "다르다",
 				"originalEn": "to be different",
-				"tags": [],
+				"tags": [
+					"descriptive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -19350,7 +22095,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1207,
 				"originalKo": "저",
 				"originalEn": "I (humble), that (over there), um (filler)",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"1st_person",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -19376,7 +22125,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -19402,7 +22154,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 555,
 				"originalKo": "제일",
 				"originalEn": "most",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"superlative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -19420,7 +22177,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 288,
 				"originalKo": "좋아하다",
 				"originalEn": "to like",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food",
+					"transitive_person",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -19446,7 +22209,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 558,
 				"originalKo": "곳",
 				"originalEn": "place",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -19472,7 +22238,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 116,
 				"originalKo": "편의점",
 				"originalEn": "convenience store",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"shop",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 37,
@@ -19519,7 +22290,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1008,
 				"originalKo": "식료품",
 				"originalEn": "groceries, foodstuffs",
-				"tags": [],
+				"tags": [
+					"food",
+					"commodity"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -19545,7 +22319,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1006,
 				"originalKo": "생활용품",
 				"originalEn": "household items, daily necessities",
-				"tags": [],
+				"tags": [
+					"object",
+					"commodity"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -19571,7 +22348,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1015,
 				"originalKo": "팔다",
 				"originalEn": "to sell",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -19597,7 +22377,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 558,
 				"originalKo": "곳",
 				"originalEn": "place",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -19623,7 +22406,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 461,
@@ -19649,7 +22436,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1962,
 				"originalKo": "그중",
 				"originalEn": "among them, of them",
-				"tags": [],
+				"tags": [
+					"general"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -19675,7 +22464,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -19701,7 +22494,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 116,
 				"originalKo": "편의점",
 				"originalEn": "convenience store",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"shop",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -19727,7 +22525,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 555,
 				"originalKo": "제일",
 				"originalEn": "most",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"superlative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -19745,7 +22548,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 47,
 				"originalKo": "자주",
 				"originalEn": "often",
-				"tags": [],
+				"tags": [
+					"frequency",
+					"high",
+					"koreanRoot"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -19763,7 +22570,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 49,
@@ -19808,7 +22622,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 116,
 				"originalKo": "편의점",
 				"originalEn": "convenience store",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"shop",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -19834,7 +22653,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 62,
 				"originalKo": "우리",
 				"originalEn": "we/us/our",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"plural"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -19860,7 +22683,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1798,
 				"originalKo": "생활하다",
 				"originalEn": "to live, lead a life, get by",
-				"tags": [],
+				"tags": [
+					"action",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -19886,7 +22712,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 558,
 				"originalKo": "곳",
 				"originalEn": "place",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -19912,7 +22741,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 575,
 				"originalKo": "모두",
 				"originalEn": "all",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -19930,7 +22763,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -19993,7 +22831,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 62,
 				"originalKo": "우리",
 				"originalEn": "we/us/our",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"plural"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -20011,7 +22853,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1761,
 				"originalKo": "하숙집",
 				"originalEn": "boarding house, homestay",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"residence",
+					"room"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -20029,7 +22876,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 117,
 				"originalKo": "근처",
 				"originalEn": "near",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -20055,7 +22904,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 116,
 				"originalKo": "편의점",
 				"originalEn": "convenience store",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"shop",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -20081,7 +22935,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -20107,7 +22966,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 47,
 				"originalKo": "자주",
 				"originalEn": "often",
-				"tags": [],
+				"tags": [
+					"frequency",
+					"high",
+					"koreanRoot"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -20125,7 +22988,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 49,
@@ -20170,7 +23040,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1001,
 				"originalKo": "마트",
 				"originalEn": "mart, supermarket",
-				"tags": [],
+				"tags": [
+					"place",
+					"commercial",
+					"facility"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -20196,7 +23070,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 443,
 				"originalKo": "일찍",
 				"originalEn": "early",
-				"tags": [],
+				"tags": [
+					"adverb_time",
+					"time"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -20214,7 +23091,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 69,
 				"originalKo": "문",
 				"originalEn": "door",
-				"tags": [],
+				"tags": [
+					"object",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -20240,7 +23120,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 232,
 				"originalKo": "닫다",
 				"originalEn": "to close",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_object"
+				],
 				"grammar": [
 					{
 						"unitId": 620,
@@ -20266,7 +23149,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 116,
 				"originalKo": "편의점",
 				"originalEn": "convenience store",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"shop",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -20292,7 +23180,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 665,
 				"originalKo": "시간",
 				"originalEn": "hour/time",
-				"tags": [],
+				"tags": [
+					"time",
+					"measureWord",
+					"koreanMeasureWord",
+					"resource",
+					"time_resource"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -20310,7 +23204,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 69,
 				"originalKo": "문",
 				"originalEn": "door",
-				"tags": [],
+				"tags": [
+					"object",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -20336,7 +23233,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 317,
 				"originalKo": "열다",
 				"originalEn": "to open",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -20362,7 +23262,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1497,
 				"originalKo": "밤",
 				"originalEn": "night, chestnut",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"food"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -20380,7 +23284,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 455,
 				"originalKo": "늦게",
 				"originalEn": "late",
-				"tags": [],
+				"tags": [
+					"adverb_time",
+					"time"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -20406,7 +23313,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -20465,7 +23379,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 62,
 				"originalKo": "우리",
 				"originalEn": "we/us/our",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"plural"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -20483,7 +23401,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 189,
 				"originalKo": "생활",
 				"originalEn": "life/living",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"experience"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -20509,7 +23430,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 1276,
@@ -20549,7 +23475,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1799,
 				"originalKo": "모든",
 				"originalEn": "all, every (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -20567,7 +23495,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -20593,7 +23524,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 116,
 				"originalKo": "편의점",
 				"originalEn": "convenience store",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"shop",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -20619,7 +23555,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 316,
 				"originalKo": "살다",
 				"originalEn": "to live",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"devtest",
+					"locative_static",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -20652,7 +23593,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 465,
 				"originalKo": "요즘",
 				"originalEn": "these days",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporalNoun",
+					"temporal_present",
+					"present",
+					"no_time_particle"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -20678,7 +23625,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1329,
 				"originalKo": "택배",
 				"originalEn": "parcel delivery, courier service",
-				"tags": [],
+				"tags": [
+					"postal",
+					"transportation",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -20704,7 +23655,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 594,
 				"originalKo": "보내다",
 				"originalEn": "to send",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -20737,7 +23691,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 530,
 				"originalKo": "더",
 				"originalEn": "more",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"comparative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -20755,7 +23714,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 872,
 				"originalKo": "편리하다",
 				"originalEn": "convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 801,
@@ -20814,7 +23776,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1800,
 				"originalKo": "특히",
 				"originalEn": "especially, particularly",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -20832,7 +23797,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1801,
 				"originalKo": "여러",
 				"originalEn": "several, various, multiple (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -20850,7 +23818,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1802,
 				"originalKo": "가지",
 				"originalEn": "kind, sort, variety (bound noun / classifier for types)",
-				"tags": [],
+				"tags": [
+					"bound_noun",
+					"counter",
+					"measureWord"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -20868,7 +23840,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1803,
 				"originalKo": "도시락",
 				"originalEn": "lunchbox, packed meal, bento",
-				"tags": [],
+				"tags": [
+					"food",
+					"container"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -20894,7 +23869,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -20920,7 +23900,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 116,
 				"originalKo": "편의점",
 				"originalEn": "convenience store",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"shop",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -20946,7 +23931,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1696,
 				"originalKo": "식사",
 				"originalEn": "meal, dining",
-				"tags": [],
+				"tags": [
+					"food",
+					"meal",
+					"event"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -20972,7 +23961,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -21012,7 +24004,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 49,
@@ -21056,7 +24052,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 116,
 				"originalKo": "편의점",
 				"originalEn": "convenience store",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"shop",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -21082,7 +24083,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 42,
 				"originalKo": "크다",
 				"originalEn": "to be big",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"koreanRoot",
+					"devtest",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -21115,7 +24122,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 81,
 				"originalKo": "없다",
 				"originalEn": "to not have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -21141,7 +24153,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 717,
 				"originalKo": "물건",
 				"originalEn": "object",
-				"tags": [],
+				"tags": [
+					"object",
+					"merchandise"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -21167,7 +24182,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 81,
 				"originalKo": "없다",
 				"originalEn": "to not have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 49,
@@ -21210,7 +24230,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1006,
 				"originalKo": "생활용품",
 				"originalEn": "household items, daily necessities",
-				"tags": [],
+				"tags": [
+					"object",
+					"commodity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -21228,7 +24251,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1008,
 				"originalKo": "식료품",
 				"originalEn": "groceries, foodstuffs",
-				"tags": [],
+				"tags": [
+					"food",
+					"commodity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -21246,7 +24272,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 990,
 				"originalKo": "채소",
 				"originalEn": "vegetable",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -21272,7 +24301,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 291,
 				"originalKo": "과일",
 				"originalEn": "fruit",
-				"tags": [],
+				"tags": [
+					"food",
+					"fruit"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -21290,7 +24322,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1009,
 				"originalKo": "음료",
 				"originalEn": "beverage, drink",
-				"tags": [],
+				"tags": [
+					"food",
+					"beverage",
+					"liquid"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -21308,7 +24344,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 999,
 				"originalKo": "냉동식품",
 				"originalEn": "frozen food",
-				"tags": [],
+				"tags": [
+					"food",
+					"dish"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -21334,7 +24373,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 752,
 				"originalKo": "다",
 				"originalEn": "all",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -21352,7 +24395,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1015,
 				"originalKo": "팔다",
 				"originalEn": "to sell",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 620,
@@ -21378,7 +24424,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -21404,7 +24454,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 203,
 				"originalKo": "보통",
 				"originalEn": "usually",
-				"tags": [],
+				"tags": [
+					"frequency",
+					"general"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -21422,7 +24475,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1005,
 				"originalKo": "생수",
 				"originalEn": "bottled mineral water",
-				"tags": [],
+				"tags": [
+					"food",
+					"beverage",
+					"liquid"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -21448,7 +24505,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1804,
 				"originalKo": "우유",
 				"originalEn": "milk",
-				"tags": [],
+				"tags": [
+					"food",
+					"drink",
+					"ingredient"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -21466,7 +24527,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 291,
 				"originalKo": "과일",
 				"originalEn": "fruit",
-				"tags": [],
+				"tags": [
+					"food",
+					"fruit"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -21492,7 +24556,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 408,
 				"originalKo": "많이",
 				"originalEn": "much/many",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -21510,7 +24577,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 49,
@@ -21557,7 +24626,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1611,
 				"originalKo": "혼자",
 				"originalEn": "alone, by oneself, solo",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"social",
+					"manner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -21575,7 +24649,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 316,
 				"originalKo": "살다",
 				"originalEn": "to live",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"devtest",
+					"locative_static",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -21601,7 +24680,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1001,
 				"originalKo": "마트",
 				"originalEn": "mart, supermarket",
-				"tags": [],
+				"tags": [
+					"place",
+					"commercial",
+					"facility"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -21627,7 +24710,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 291,
 				"originalKo": "과일",
 				"originalEn": "fruit",
-				"tags": [],
+				"tags": [
+					"food",
+					"fruit"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -21653,7 +24739,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -21679,7 +24767,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 400,
 				"originalKo": "너무",
 				"originalEn": "too much",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -21697,7 +24791,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -21723,7 +24821,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -21741,7 +24844,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1805,
 				"originalKo": "사먹다",
 				"originalEn": "to buy and eat (food), eat out",
-				"tags": [],
+				"tags": [
+					"transitive_food",
+					"action",
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 251,
@@ -21781,7 +24888,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 116,
 				"originalKo": "편의점",
 				"originalEn": "convenience store",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"shop",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -21807,7 +24919,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1806,
 				"originalKo": "조금씩",
 				"originalEn": "little by little, in small amounts",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"adverb_quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -21825,7 +24941,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1015,
 				"originalKo": "팔다",
 				"originalEn": "to sell",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 53,
@@ -21851,7 +24970,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 49,
@@ -21897,7 +25020,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1395,
 				"originalKo": "앞으로",
 				"originalEn": "from now on, in the future",
-				"tags": [],
+				"tags": [
+					"adverb_time",
+					"time",
+					"temporal_relation",
+					"temporal_future",
+					"future",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -21915,7 +25045,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 117,
 				"originalKo": "근처",
 				"originalEn": "near",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -21941,7 +25073,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 116,
 				"originalKo": "편의점",
 				"originalEn": "convenience store",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"shop",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -21967,7 +25104,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 530,
 				"originalKo": "더",
 				"originalEn": "more",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"comparative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -21985,7 +25127,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 801,
@@ -22066,7 +25212,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1807,
 				"originalKo": "생필품",
 				"originalEn": "daily necessities, essential goods",
-				"tags": [],
+				"tags": [
+					"noun",
+					"commerce",
+					"living",
+					"object"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -22084,7 +25235,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1037,
 				"originalKo": "여성복",
 				"originalEn": "women's clothing",
-				"tags": [],
+				"tags": [
+					"clothing",
+					"womenswear"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -22102,7 +25256,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1808,
 				"originalKo": "가구",
 				"originalEn": "furniture",
-				"tags": [],
+				"tags": [
+					"noun",
+					"home",
+					"furniture",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -22128,7 +25287,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -22161,7 +25322,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 100,
 				"originalKo": "어디",
 				"originalEn": "where",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"place",
+					"deictic",
+					"interrogative"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -22187,7 +25353,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 763,
 				"originalKo": "한번",
 				"originalEn": "once",
-				"tags": [],
+				"tags": [
+					"adverb_frequency",
+					"frequency",
+					"time"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -22213,7 +25383,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1759,
 				"originalKo": "편하다",
 				"originalEn": "comfortable, convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -22239,7 +25412,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 316,
 				"originalKo": "살다",
 				"originalEn": "to live",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"devtest",
+					"locative_static",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -22294,7 +25472,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 162,
 				"originalKo": "백화점",
 				"originalEn": "department store",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"shop",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -22312,7 +25495,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1032,
 				"originalKo": "상품",
 				"originalEn": "product, merchandise, prize",
-				"tags": [],
+				"tags": [
+					"object",
+					"commodity"
+				],
 				"grammar": [
 					{
 						"unitId": 1312,
@@ -22338,7 +25524,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1001,
 				"originalKo": "마트",
 				"originalEn": "mart, supermarket",
-				"tags": [],
+				"tags": [
+					"place",
+					"commercial",
+					"facility"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -22364,7 +25554,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1006,
 				"originalKo": "생활용품",
 				"originalEn": "household items, daily necessities",
-				"tags": [],
+				"tags": [
+					"object",
+					"commodity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -22382,7 +25575,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1008,
 				"originalKo": "식료품",
 				"originalEn": "groceries, foodstuffs",
-				"tags": [],
+				"tags": [
+					"food",
+					"commodity"
+				],
 				"grammar": [
 					{
 						"unitId": 1826,
@@ -22408,7 +25604,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 201,
 				"originalKo": "몇",
 				"originalEn": "what/how many",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"number",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -22426,7 +25626,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 226,
 				"originalKo": "번",
 				"originalEn": "times/number",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"frequency"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -22452,7 +25656,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1809,
 				"originalKo": "클릭",
 				"originalEn": "click (mouse click)",
-				"tags": [],
+				"tags": [
+					"noun",
+					"computer",
+					"internet",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -22478,7 +25687,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1759,
 				"originalKo": "편하다",
 				"originalEn": "comfortable, convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -22504,7 +25716,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1810,
 				"originalKo": "주문하다",
 				"originalEn": "to order (goods, food)",
-				"tags": [],
+				"tags": [
+					"action_verb",
+					"commerce",
+					"food",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -22530,7 +25747,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 180,
 				"originalKo": "집",
 				"originalEn": "house/home",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room",
+					"building"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -22556,7 +25778,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1032,
 				"originalKo": "상품",
 				"originalEn": "product, merchandise, prize",
-				"tags": [],
+				"tags": [
+					"object",
+					"commodity"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -22582,7 +25807,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 365,
 				"originalKo": "받다",
 				"originalEn": "to receive",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -22632,7 +25860,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 735,
 				"originalKo": "여름",
 				"originalEn": "summer",
-				"tags": [],
+				"tags": [
+					"time",
+					"season"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -22658,7 +25889,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1811,
 				"originalKo": "가족",
 				"originalEn": "family",
-				"tags": [],
+				"tags": [
+					"noun",
+					"people",
+					"family",
+					"relationship"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -22691,7 +25927,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 408,
 				"originalKo": "많이",
 				"originalEn": "much/many",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -22709,7 +25948,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 125,
 				"originalKo": "덥다",
 				"originalEn": "to be hot",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_weather",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 1046,
@@ -22758,7 +26002,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1771,
 				"originalKo": "에어컨",
 				"originalEn": "air conditioner",
-				"tags": [],
+				"tags": [
+					"appliance",
+					"home",
+					"electronics"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -22784,7 +26032,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 816,
@@ -22847,7 +26097,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 162,
 				"originalKo": "백화점",
 				"originalEn": "department store",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"shop",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -22865,7 +26120,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1023,
 				"originalKo": "가전제품",
 				"originalEn": "home appliances, electronic goods",
-				"tags": [],
+				"tags": [
+					"object",
+					"appliance",
+					"commodity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -22883,7 +26142,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1027,
 				"originalKo": "매장",
 				"originalEn": "shop, store, sales floor",
-				"tags": [],
+				"tags": [
+					"place",
+					"commercial"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -22909,7 +26171,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -22935,7 +26204,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1812,
 				"originalKo": "필요",
 				"originalEn": "need, necessity",
-				"tags": [],
+				"tags": [
+					"noun",
+					"concept",
+					"abstract"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -22954,7 +26227,8 @@ const VERIFIED_SENTENCES = [
 				"originalKo": "이 / 가",
 				"originalEn": "subject marker",
 				"tags": [
-					"grammar"
+					"particle",
+					"subject"
 				],
 				"grammar": [
 					{
@@ -22981,7 +26255,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 81,
 				"originalKo": "없다",
 				"originalEn": "to not have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 49,
@@ -23023,7 +26302,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 62,
 				"originalKo": "우리",
 				"originalEn": "we/us/our",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"plural"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -23041,7 +26324,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1813,
 				"originalKo": "쇼핑몰",
 				"originalEn": "shopping mall, online mall",
-				"tags": [],
+				"tags": [
+					"noun",
+					"place",
+					"commerce",
+					"internet"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -23067,7 +26355,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 530,
 				"originalKo": "더",
 				"originalEn": "more",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"comparative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -23085,7 +26378,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 548,
 				"originalKo": "싸다",
 				"originalEn": "to be cheap",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_food",
+					"descriptive_price",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -23111,7 +26409,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1759,
 				"originalKo": "편하다",
 				"originalEn": "comfortable, convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -23137,7 +26438,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -23182,7 +26485,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 125,
 				"originalKo": "덥다",
 				"originalEn": "to be hot",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_weather",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -23208,7 +26516,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1634,
 				"originalKo": "날",
 				"originalEn": "day, date",
-				"tags": [],
+				"tags": [
+					"time",
+					"calendar",
+					"day"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -23226,7 +26538,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1811,
 				"originalKo": "가족",
 				"originalEn": "family",
-				"tags": [],
+				"tags": [
+					"noun",
+					"people",
+					"family",
+					"relationship"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -23259,7 +26576,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 298,
 				"originalKo": "삼계탕",
 				"originalEn": "ginseng chicken soup",
-				"tags": [],
+				"tags": [
+					"food",
+					"soup",
+					"meat",
+					"koreanFood"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -23278,7 +26600,8 @@ const VERIFIED_SENTENCES = [
 				"originalKo": "을 / 를",
 				"originalEn": "object marker",
 				"tags": [
-					"grammar"
+					"particle",
+					"object"
 				],
 				"grammar": [
 					{
@@ -23338,7 +26661,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1773,
@@ -23381,7 +26707,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 290,
 				"originalKo": "그럼",
 				"originalEn": "then",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"conditional"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -23399,7 +26730,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 298,
 				"originalKo": "삼계탕",
 				"originalEn": "ginseng chicken soup",
-				"tags": [],
+				"tags": [
+					"food",
+					"soup",
+					"meat",
+					"koreanFood"
+				],
 				"grammar": [
 					{
 						"unitId": 298,
@@ -23425,7 +26761,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 987,
 				"originalKo": "재료",
 				"originalEn": "ingredient, material",
-				"tags": [],
+				"tags": [
+					"object",
+					"ingredient"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -23451,7 +26790,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 605,
 				"originalKo": "준비하다",
 				"originalEn": "to prepare",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -23509,7 +26850,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 62,
 				"originalKo": "우리",
 				"originalEn": "we/us/our",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"plural"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -23527,7 +26872,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1813,
 				"originalKo": "쇼핑몰",
 				"originalEn": "shopping mall, online mall",
-				"tags": [],
+				"tags": [
+					"noun",
+					"place",
+					"commerce",
+					"internet"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -23553,7 +26903,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1513,
 				"originalKo": "매주",
 				"originalEn": "every week, weekly",
-				"tags": [],
+				"tags": [
+					"adverb_frequency",
+					"frequency",
+					"calendar"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -23571,7 +26925,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1820,
 				"originalKo": "특별",
 				"originalEn": "special, specialty",
-				"tags": [],
+				"tags": [
+					"noun",
+					"quality",
+					"special",
+					"modifier"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -23589,7 +26948,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1032,
 				"originalKo": "상품",
 				"originalEn": "product, merchandise, prize",
-				"tags": [],
+				"tags": [
+					"object",
+					"commodity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -23607,7 +26969,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 201,
 				"originalKo": "몇",
 				"originalEn": "what/how many",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"number",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -23625,7 +26991,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1802,
 				"originalKo": "가지",
 				"originalEn": "kind, sort, variety (bound noun / classifier for types)",
-				"tags": [],
+				"tags": [
+					"bound_noun",
+					"counter",
+					"measureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -23651,7 +27021,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1821,
 				"originalKo": "할인하다",
 				"originalEn": "to discount, offer a discount",
-				"tags": [],
+				"tags": [
+					"action_verb",
+					"commerce",
+					"finance",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -23677,7 +27052,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 548,
 				"originalKo": "싸다",
 				"originalEn": "to be cheap",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_food",
+					"descriptive_price",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -23703,7 +27083,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 406,
 				"originalKo": "쇼핑하다",
 				"originalEn": "to go shopping",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"leisure"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -23755,7 +27138,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 62,
 				"originalKo": "우리",
 				"originalEn": "we/us/our",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"plural"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -23773,7 +27160,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1813,
 				"originalKo": "쇼핑몰",
 				"originalEn": "shopping mall, online mall",
-				"tags": [],
+				"tags": [
+					"noun",
+					"place",
+					"commerce",
+					"internet"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -23799,7 +27191,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1042,
 				"originalKo": "항상",
 				"originalEn": "always, constantly",
-				"tags": [],
+				"tags": [
+					"adverb_frequency",
+					"frequency",
+					"temporal_present",
+					"present",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -23817,7 +27215,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1821,
 				"originalKo": "할인하다",
 				"originalEn": "to discount, offer a discount",
-				"tags": [],
+				"tags": [
+					"action_verb",
+					"commerce",
+					"finance",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -23843,7 +27246,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1032,
 				"originalKo": "상품",
 				"originalEn": "product, merchandise, prize",
-				"tags": [],
+				"tags": [
+					"object",
+					"commodity"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -23869,7 +27275,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -23895,7 +27306,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1822,
 				"originalKo": "회원",
 				"originalEn": "member, membership",
-				"tags": [],
+				"tags": [
+					"noun",
+					"people",
+					"person",
+					"status"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -23921,7 +27337,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -23947,7 +27367,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 341,
 				"originalKo": "생일",
 				"originalEn": "birthday",
-				"tags": [],
+				"tags": [
+					"time",
+					"event",
+					"celebration"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -23965,7 +27389,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1819,
 				"originalKo": "쿠폰",
 				"originalEn": "coupon",
-				"tags": [],
+				"tags": [
+					"noun",
+					"commerce",
+					"discount",
+					"object"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -23984,7 +27413,8 @@ const VERIFIED_SENTENCES = [
 				"originalKo": "도",
 				"originalEn": "also",
 				"tags": [
-					"grammar"
+					"particle",
+					"also"
 				],
 				"grammar": [
 					{
@@ -24011,7 +27441,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 591,
 				"originalKo": "드리다",
 				"originalEn": "to give (honorific)",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person",
+					"humbleVerb",
+					"dative_humble"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -24054,7 +27489,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 341,
 				"originalKo": "생일",
 				"originalEn": "birthday",
-				"tags": [],
+				"tags": [
+					"time",
+					"event",
+					"celebration"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -24080,7 +27519,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -24106,7 +27550,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 427,
 				"originalKo": "달",
 				"originalEn": "month/moon",
-				"tags": [],
+				"tags": [
+					"time",
+					"nature",
+					"duration",
+					"measureWord",
+					"koreanMeasureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -24132,7 +27582,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 530,
 				"originalKo": "더",
 				"originalEn": "more",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"comparative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -24150,7 +27605,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 408,
 				"originalKo": "많이",
 				"originalEn": "much/many",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -24168,7 +27626,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1041,
 				"originalKo": "할인",
 				"originalEn": "discount, reduction",
-				"tags": [],
+				"tags": [
+					"concept",
+					"commerce"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -24186,7 +27647,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 365,
 				"originalKo": "받다",
 				"originalEn": "to receive",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -24235,7 +27699,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 62,
 				"originalKo": "우리",
 				"originalEn": "we/us/our",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"plural"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -24253,7 +27721,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1813,
 				"originalKo": "쇼핑몰",
 				"originalEn": "shopping mall, online mall",
-				"tags": [],
+				"tags": [
+					"noun",
+					"place",
+					"commerce",
+					"internet"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -24279,7 +27752,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 548,
 				"originalKo": "싸다",
 				"originalEn": "to be cheap",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_food",
+					"descriptive_price",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -24305,7 +27783,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1759,
 				"originalKo": "편하다",
 				"originalEn": "comfortable, convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -24331,7 +27812,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 406,
 				"originalKo": "쇼핑하다",
 				"originalEn": "to go shopping",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"leisure"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -24376,7 +27860,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 45,
 				"originalKo": "오늘",
 				"originalEn": "today",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_present",
+					"present",
+					"koreanRoot",
+					"no_time_particle"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -24402,7 +27892,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 735,
 				"originalKo": "여름",
 				"originalEn": "summer",
-				"tags": [],
+				"tags": [
+					"time",
+					"season"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -24428,7 +27921,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 756,
 				"originalKo": "신다",
 				"originalEn": "to wear (shoes)",
-				"tags": [],
+				"tags": [
+					"transitive_footwear",
+					"footwear"
+				],
 				"grammar": [
 					{
 						"unitId": 1815,
@@ -24454,7 +27950,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -24480,7 +27980,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 541,
 				"originalKo": "운동화",
 				"originalEn": "sneakers",
-				"tags": [],
+				"tags": [
+					"object",
+					"footwear",
+					"wearable"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -24506,7 +28010,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1622,
 				"originalKo": "소개하다",
 				"originalEn": "to introduce, present",
-				"tags": [],
+				"tags": [
+					"transitive_person",
+					"transitive_general",
+					"communication",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 838,
@@ -24556,7 +28065,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 465,
 				"originalKo": "요즘",
 				"originalEn": "these days",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporalNoun",
+					"temporal_present",
+					"present",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -24574,7 +28089,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 555,
 				"originalKo": "제일",
 				"originalEn": "most",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"superlative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -24592,7 +28112,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1786,
 				"originalKo": "인기",
 				"originalEn": "popularity",
-				"tags": [],
+				"tags": [
+					"concept",
+					"social",
+					"abstract"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -24610,7 +28134,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -24636,7 +28165,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1035,
 				"originalKo": "스포츠용품",
 				"originalEn": "sporting goods",
-				"tags": [],
+				"tags": [
+					"object",
+					"sports",
+					"equipment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -24654,7 +28187,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 182,
 				"originalKo": "회사",
 				"originalEn": "company",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"work",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -24672,7 +28210,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 214,
 				"originalKo": "세",
 				"originalEn": "three",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -24690,7 +28231,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 558,
 				"originalKo": "곳",
 				"originalEn": "place",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -24716,7 +28260,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 541,
 				"originalKo": "운동화",
 				"originalEn": "sneakers",
-				"tags": [],
+				"tags": [
+					"object",
+					"footwear",
+					"wearable"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -24742,7 +28290,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 604,
 				"originalKo": "고르다",
 				"originalEn": "to pick/select",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -24797,7 +28347,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1077,
 				"originalKo": "모양",
 				"originalEn": "shape, form, appearance",
-				"tags": [],
+				"tags": [
+					"concept",
+					"attribute",
+					"shape"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -24823,7 +28377,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 194,
 				"originalKo": "예쁘다",
 				"originalEn": "to be pretty",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"devtest",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -24849,7 +28407,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1055,
 				"originalKo": "색깔",
 				"originalEn": "color",
-				"tags": [],
+				"tags": [
+					"concept",
+					"attribute",
+					"color"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -24875,7 +28437,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1801,
 				"originalKo": "여러",
 				"originalEn": "several, various, multiple (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -24893,7 +28458,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1802,
 				"originalKo": "가지",
 				"originalEn": "kind, sort, variety (bound noun / classifier for types)",
-				"tags": [],
+				"tags": [
+					"bound_noun",
+					"counter",
+					"measureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -24926,7 +28495,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 190,
 				"originalKo": "여자",
 				"originalEn": "woman",
-				"tags": [],
+				"tags": [
+					"person",
+					"female",
+					"adult"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -24959,7 +28532,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 288,
 				"originalKo": "좋아하다",
 				"originalEn": "to like",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food",
+					"transitive_person",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -25023,7 +28602,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 171,
 				"originalKo": "운동하다",
 				"originalEn": "to exercise",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -25056,7 +28638,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 756,
 				"originalKo": "신다",
 				"originalEn": "to wear (shoes)",
-				"tags": [],
+				"tags": [
+					"transitive_footwear",
+					"footwear"
+				],
 				"grammar": [
 					{
 						"unitId": 572,
@@ -25089,7 +28674,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 203,
 				"originalKo": "보통",
 				"originalEn": "usually",
-				"tags": [],
+				"tags": [
+					"frequency",
+					"general"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -25107,7 +28695,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1605,
 				"originalKo": "때",
 				"originalEn": "time, when, moment",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -25125,7 +28717,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 756,
 				"originalKo": "신다",
 				"originalEn": "to wear (shoes)",
-				"tags": [],
+				"tags": [
+					"transitive_footwear",
+					"footwear"
+				],
 				"grammar": [
 					{
 						"unitId": 572,
@@ -25174,7 +28769,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 541,
 				"originalKo": "운동화",
 				"originalEn": "sneakers",
-				"tags": [],
+				"tags": [
+					"object",
+					"footwear",
+					"wearable"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -25192,7 +28791,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 98,
 				"originalKo": "안",
 				"originalEn": "inside",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -25218,7 +28819,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1823,
 				"originalKo": "바람",
 				"originalEn": "wind",
-				"tags": [],
+				"tags": [
+					"noun",
+					"weather",
+					"nature"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -25244,7 +28849,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -25262,7 +28872,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1673,
 				"originalKo": "들어오다",
 				"originalEn": "to come in, enter",
-				"tags": [],
+				"tags": [
+					"locative_goal",
+					"movement",
+					"intransitive",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -25288,7 +28903,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 122,
 				"originalKo": "아주",
 				"originalEn": "very",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -25306,7 +28926,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1785,
 				"originalKo": "시원하다",
 				"originalEn": "to be cool, refreshing",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"feeling",
+					"drink",
+					"temperature",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -25347,7 +28973,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 922,
 				"originalKo": "세탁기",
 				"originalEn": "washing machine",
-				"tags": [],
+				"tags": [
+					"object",
+					"appliance"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -25373,7 +29002,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 935,
 				"originalKo": "넣다",
 				"originalEn": "to put in, insert",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 572,
@@ -25425,7 +29056,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 42,
 				"originalKo": "크다",
 				"originalEn": "to be big",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"koreanRoot",
+					"devtest",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -25451,7 +29088,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1081,
 				"originalKo": "사이즈",
 				"originalEn": "size",
-				"tags": [],
+				"tags": [
+					"concept",
+					"attribute",
+					"size"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -25477,7 +29118,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -25503,7 +29149,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 825,
 				"originalKo": "발",
 				"originalEn": "foot",
-				"tags": [],
+				"tags": [
+					"bodyPart"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -25529,7 +29177,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 122,
 				"originalKo": "아주",
 				"originalEn": "very",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -25547,7 +29200,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 42,
 				"originalKo": "크다",
 				"originalEn": "to be big",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"koreanRoot",
+					"devtest",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -25573,7 +29232,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 187,
 				"originalKo": "남자",
 				"originalEn": "man",
-				"tags": [],
+				"tags": [
+					"person",
+					"male",
+					"adult"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -25606,7 +29269,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 756,
 				"originalKo": "신다",
 				"originalEn": "to wear (shoes)",
-				"tags": [],
+				"tags": [
+					"transitive_footwear",
+					"footwear"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -25661,7 +29327,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 537,
 				"originalKo": "신발",
 				"originalEn": "shoes",
-				"tags": [],
+				"tags": [
+					"object",
+					"footwear",
+					"wearable"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -25679,7 +29349,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 98,
 				"originalKo": "안",
 				"originalEn": "inside",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -25705,7 +29377,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 39,
 				"originalKo": "물",
 				"originalEn": "water",
-				"tags": [],
+				"tags": [
+					"drink",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -25731,7 +29407,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1673,
 				"originalKo": "들어오다",
 				"originalEn": "to come in, enter",
-				"tags": [],
+				"tags": [
+					"locative_goal",
+					"movement",
+					"intransitive",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -25757,7 +29438,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 286,
 				"originalKo": "만들다",
 				"originalEn": "to make",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food"
+				],
 				"grammar": [
 					{
 						"unitId": 54,
@@ -25790,7 +29474,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1824,
 				"originalKo": "비",
 				"originalEn": "rain",
-				"tags": [],
+				"tags": [
+					"noun",
+					"weather",
+					"nature"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -25816,7 +29504,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -25842,7 +29535,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1699,
 				"originalKo": "나",
 				"originalEn": "I, me (plain/informal 1st-person pronoun)",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"1st_person",
+					"informal"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -25868,7 +29565,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 756,
 				"originalKo": "신다",
 				"originalEn": "to wear (shoes)",
-				"tags": [],
+				"tags": [
+					"transitive_footwear",
+					"footwear"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -25894,7 +29594,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 706,
 				"originalKo": "나가다",
 				"originalEn": "to exit",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"intransitive_place",
+					"locative_origin",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 572,
@@ -25948,7 +29653,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1598,
 				"originalKo": "하지만",
 				"originalEn": "but, however",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_discourse",
+					"discourse",
+					"contrast"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -25966,7 +29676,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1055,
 				"originalKo": "색깔",
 				"originalEn": "color",
-				"tags": [],
+				"tags": [
+					"concept",
+					"attribute",
+					"color"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -25992,7 +29706,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1066,
 				"originalKo": "흰색",
 				"originalEn": "white",
-				"tags": [],
+				"tags": [
+					"concept",
+					"color"
+				],
 				"grammar": [
 					{
 						"unitId": 1402,
@@ -26018,7 +29735,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -26044,7 +29766,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 413,
 				"originalKo": "쉽다",
 				"originalEn": "to be easy",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_difficulty",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -26070,7 +29797,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 192,
 				"originalKo": "더럽다",
 				"originalEn": "to be dirty",
-				"tags": [],
+				"tags": [
+					"descriptive_place",
+					"descriptive_general",
+					"devtest",
+					"descriptive_cleanliness",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 801,
@@ -26103,7 +29836,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 191,
 				"originalKo": "깨끗하다",
 				"originalEn": "to be clean",
-				"tags": [],
+				"tags": [
+					"descriptive_place",
+					"descriptive_general",
+					"descriptive_cleanliness",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -26129,7 +29867,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 756,
 				"originalKo": "신다",
 				"originalEn": "to wear (shoes)",
-				"tags": [],
+				"tags": [
+					"transitive_footwear",
+					"footwear"
+				],
 				"grammar": [
 					{
 						"unitId": 1276,
@@ -26184,7 +29925,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 922,
 				"originalKo": "세탁기",
 				"originalEn": "washing machine",
-				"tags": [],
+				"tags": [
+					"object",
+					"appliance"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -26210,7 +29954,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 935,
 				"originalKo": "넣다",
 				"originalEn": "to put in, insert",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 573,
@@ -26265,7 +30011,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 225,
 				"originalKo": "대화",
 				"originalEn": "conversation",
-				"tags": [],
+				"tags": [
+					"activity",
+					"communication",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -26291,7 +30041,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 147,
 				"originalKo": "듣다",
 				"originalEn": "to listen/hear",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_audio"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -26317,7 +30070,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1825,
 				"originalKo": "빈칸",
 				"originalEn": "blank, empty space, blank line",
-				"tags": [],
+				"tags": [
+					"noun",
+					"study",
+					"academic",
+					"text"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -26343,7 +30101,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1413,
 				"originalKo": "디자인",
 				"originalEn": "design",
-				"tags": [],
+				"tags": [
+					"art",
+					"fashion",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -26369,7 +30131,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 122,
 				"originalKo": "아주",
 				"originalEn": "very",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -26387,7 +30154,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 194,
 				"originalKo": "예쁘다",
 				"originalEn": "to be pretty",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"devtest",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -26427,7 +30198,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 171,
 				"originalKo": "운동하다",
 				"originalEn": "to exercise",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -26460,7 +30234,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1740,
 				"originalKo": "매우",
 				"originalEn": "very, extremely",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -26478,7 +30257,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -26523,7 +30306,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 545,
 				"originalKo": "가볍다",
 				"originalEn": "to be light",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_dimension_weight",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -26549,7 +30336,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1759,
 				"originalKo": "편하다",
 				"originalEn": "comfortable, convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -26575,7 +30365,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 537,
 				"originalKo": "신발",
 				"originalEn": "shoes",
-				"tags": [],
+				"tags": [
+					"object",
+					"footwear",
+					"wearable"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -26601,7 +30395,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 756,
 				"originalKo": "신다",
 				"originalEn": "to wear (shoes)",
-				"tags": [],
+				"tags": [
+					"transitive_footwear",
+					"footwear"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -26634,7 +30431,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1655,
 				"originalKo": "기분",
 				"originalEn": "feeling, mood",
-				"tags": [],
+				"tags": [
+					"emotion",
+					"feeling",
+					"psychology",
+					"state",
+					"abstract",
+					"psychological_state"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -26660,7 +30464,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1102,
 				"originalKo": "들다",
 				"originalEn": "to enter, hold, cost, raise",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -26707,7 +30513,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 541,
 				"originalKo": "운동화",
 				"originalEn": "sneakers",
-				"tags": [],
+				"tags": [
+					"object",
+					"footwear",
+					"wearable"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -26733,7 +30543,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1,
 				"originalKo": "이름",
 				"originalEn": "name",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"koreanRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -26759,7 +30572,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 151,
 				"originalKo": "쓰다",
 				"originalEn": "to write",
-				"tags": [],
+				"tags": [
+					"transitive_writing",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -26799,7 +30615,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1372,
 				"originalKo": "서비스",
 				"originalEn": "service, complimentary item (on the house)",
-				"tags": [],
+				"tags": [
+					"commerce",
+					"food",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -26825,7 +30645,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -26851,7 +30676,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1699,
 				"originalKo": "나",
 				"originalEn": "I, me (plain/informal 1st-person pronoun)",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"1st_person",
+					"informal"
+				],
 				"grammar": [
 					{
 						"unitId": 1402,
@@ -26877,7 +30706,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 541,
 				"originalKo": "운동화",
 				"originalEn": "sneakers",
-				"tags": [],
+				"tags": [
+					"object",
+					"footwear",
+					"wearable"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -26903,7 +30736,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1063,
 				"originalKo": "특별히",
 				"originalEn": "especially, particularly",
-				"tags": [],
+				"tags": [
+					"adverb_degree",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -26921,7 +30757,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1810,
 				"originalKo": "주문하다",
 				"originalEn": "to order (goods, food)",
-				"tags": [],
+				"tags": [
+					"action_verb",
+					"commerce",
+					"food",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -26972,7 +30813,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 213,
 				"originalKo": "두",
 				"originalEn": "two",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -26990,7 +30834,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1698,
 				"originalKo": "명",
 				"originalEn": "counter for people (plain)",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"counter",
+					"person"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -27016,7 +30865,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 151,
 				"originalKo": "쓰다",
 				"originalEn": "to write",
-				"tags": [],
+				"tags": [
+					"transitive_writing",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -27049,7 +30901,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 128,
 				"originalKo": "작다",
 				"originalEn": "to be small",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"size",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -27075,7 +30932,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 925,
 				"originalKo": "식탁",
 				"originalEn": "dining table",
-				"tags": [],
+				"tags": [
+					"object",
+					"furniture"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -27093,7 +30953,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 252,
 				"originalKo": "하나",
 				"originalEn": "one",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"counting"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -27119,7 +30982,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1759,
 				"originalKo": "편하다",
 				"originalEn": "comfortable, convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -27145,7 +31011,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 72,
 				"originalKo": "의자",
 				"originalEn": "chair",
-				"tags": [],
+				"tags": [
+					"object"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -27163,7 +31031,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 213,
 				"originalKo": "두",
 				"originalEn": "two",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -27181,7 +31052,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 329,
 				"originalKo": "개",
 				"originalEn": "item",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -27225,7 +31099,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 239,
 				"originalKo": "사",
 				"originalEn": "four",
-				"tags": [],
+				"tags": [
+					"sinoNumber"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -27258,7 +31134,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1623,
 				"originalKo": "년",
 				"originalEn": "year (counter)",
-				"tags": [],
+				"tags": [
+					"time",
+					"counter",
+					"calendar",
+					"measureWord",
+					"sinoMeasureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -27284,7 +31166,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 410,
 				"originalKo": "조금",
 				"originalEn": "little/few",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_quantity",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -27302,7 +31190,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1154,
 				"originalKo": "지나다",
 				"originalEn": "to pass, go by (time, place)",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"motion",
+					"temporal"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -27335,7 +31227,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 122,
 				"originalKo": "아주",
 				"originalEn": "very",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -27353,7 +31250,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 191,
 				"originalKo": "깨끗하다",
 				"originalEn": "to be clean",
-				"tags": [],
+				"tags": [
+					"descriptive_place",
+					"descriptive_general",
+					"descriptive_cleanliness",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -27398,7 +31300,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1616,
 				"originalKo": "이제",
 				"originalEn": "now, from now on, currently",
-				"tags": [],
+				"tags": [
+					"adverb_manner",
+					"time",
+					"aspect",
+					"temporal_present",
+					"present",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -27416,7 +31325,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1515,
 				"originalKo": "유학",
 				"originalEn": "studying abroad",
-				"tags": [],
+				"tags": [
+					"academic",
+					"travel",
+					"activity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -27434,7 +31347,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 189,
 				"originalKo": "생활",
 				"originalEn": "life/living",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"experience"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -27460,7 +31376,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 356,
 				"originalKo": "끝나다",
 				"originalEn": "to finish",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -27486,7 +31405,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 174,
 				"originalKo": "고향",
 				"originalEn": "hometown",
-				"tags": [],
+				"tags": [
+					"place",
+					"origin"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -27512,7 +31434,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1674,
 				"originalKo": "돌아가다",
 				"originalEn": "to return, go back",
-				"tags": [],
+				"tags": [
+					"locative_goal",
+					"movement",
+					"intransitive",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 54,
@@ -27538,7 +31465,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1015,
 				"originalKo": "팔다",
 				"originalEn": "to sell",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 816,
@@ -27610,7 +31540,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1207,
 				"originalKo": "저",
 				"originalEn": "I (humble), that (over there), um (filler)",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"1st_person",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -27636,7 +31570,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1001,
 				"originalKo": "마트",
 				"originalEn": "mart, supermarket",
-				"tags": [],
+				"tags": [
+					"place",
+					"commercial",
+					"facility"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -27662,7 +31600,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -27702,7 +31642,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 532,
 				"originalKo": "값",
 				"originalEn": "price",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"economy",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -27728,7 +31672,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 526,
 				"originalKo": "원",
 				"originalEn": "won",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"sinoMeasureWord",
+					"currency"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -27768,7 +31716,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 61,
 				"originalKo": "여기",
 				"originalEn": "here",
-				"tags": [],
+				"tags": [
+					"place",
+					"demonstrative",
+					"deictic",
+					"proximal"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -27794,7 +31747,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 526,
 				"originalKo": "원",
 				"originalEn": "won",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"sinoMeasureWord",
+					"currency"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -27834,7 +31791,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1015,
 				"originalKo": "팔다",
 				"originalEn": "to sell",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 838,
@@ -27883,7 +31843,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 925,
 				"originalKo": "식탁",
 				"originalEn": "dining table",
-				"tags": [],
+				"tags": [
+					"object",
+					"furniture"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -27909,7 +31872,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1082,
 				"originalKo": "어둡다",
 				"originalEn": "dark, dim",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"perception",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -27935,7 +31902,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1828,
 				"originalKo": "갈색",
 				"originalEn": "brown color, brown",
-				"tags": [],
+				"tags": [
+					"color",
+					"appearance",
+					"visual"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -27968,7 +31939,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 72,
 				"originalKo": "의자",
 				"originalEn": "chair",
-				"tags": [],
+				"tags": [
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -27994,7 +31967,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1829,
 				"originalKo": "까만색",
 				"originalEn": "black color, black",
-				"tags": [],
+				"tags": [
+					"color",
+					"appearance",
+					"visual"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -28040,7 +32017,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1831,
 				"originalKo": "무늬",
 				"originalEn": "pattern, design",
-				"tags": [],
+				"tags": [
+					"concept",
+					"appearance",
+					"visual",
+					"design"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -28066,7 +32048,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 81,
 				"originalKo": "없다",
 				"originalEn": "to not have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -28092,7 +32079,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1072,
 				"originalKo": "단순하다",
 				"originalEn": "simple, plain",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -28118,7 +32108,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1413,
 				"originalKo": "디자인",
 				"originalEn": "design",
-				"tags": [],
+				"tags": [
+					"art",
+					"fashion",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 54,
@@ -28151,7 +32145,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 100,
 				"originalKo": "어디",
 				"originalEn": "where",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"place",
+					"deictic",
+					"interrogative"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -28177,7 +32176,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -28195,7 +32199,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1130,
 				"originalKo": "어울리다",
 				"originalEn": "to match, suit, go well with",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -28246,7 +32253,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -28272,7 +32283,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -28290,7 +32306,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 925,
 				"originalKo": "식탁",
 				"originalEn": "dining table",
-				"tags": [],
+				"tags": [
+					"object",
+					"furniture"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -28316,7 +32335,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1696,
 				"originalKo": "식사",
 				"originalEn": "meal, dining",
-				"tags": [],
+				"tags": [
+					"food",
+					"meal",
+					"event"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -28342,7 +32365,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -28368,7 +32394,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1633,
 				"originalKo": "공부",
 				"originalEn": "study, studying",
-				"tags": [],
+				"tags": [
+					"education",
+					"activity",
+					"cognition",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -28394,7 +32425,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -28449,7 +32483,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1081,
 				"originalKo": "사이즈",
 				"originalEn": "size",
-				"tags": [],
+				"tags": [
+					"concept",
+					"attribute",
+					"size"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -28475,7 +32513,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 42,
 				"originalKo": "크다",
 				"originalEn": "to be big",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"koreanRoot",
+					"devtest",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -28515,7 +32559,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 80,
 				"originalKo": "책",
 				"originalEn": "book",
-				"tags": [],
+				"tags": [
+					"object",
+					"reading",
+					"book",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -28541,7 +32590,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1801,
 				"originalKo": "여러",
 				"originalEn": "several, various, multiple (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -28559,7 +32611,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 567,
 				"originalKo": "권",
 				"originalEn": "counting word for books",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"book"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -28577,7 +32633,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 916,
 				"originalKo": "놓다",
 				"originalEn": "to put, place, set down",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -28603,7 +32662,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 167,
 				"originalKo": "공부하다",
 				"originalEn": "to study",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -28636,7 +32698,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 547,
 				"originalKo": "무겁다",
 				"originalEn": "to be heavy",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_dimension_weight",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -28662,7 +32728,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 717,
 				"originalKo": "물건",
 				"originalEn": "object",
-				"tags": [],
+				"tags": [
+					"object",
+					"merchandise"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -28688,7 +32757,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1484,
 				"originalKo": "올리다",
 				"originalEn": "to raise, post (online), upload",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"internet",
+					"movement"
+				],
 				"grammar": [
 					{
 						"unitId": 572,
@@ -28741,7 +32814,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 717,
 				"originalKo": "물건",
 				"originalEn": "object",
-				"tags": [],
+				"tags": [
+					"object",
+					"merchandise"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -28767,7 +32843,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -28800,7 +32878,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 72,
 				"originalKo": "의자",
 				"originalEn": "chair",
-				"tags": [],
+				"tags": [
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -28826,7 +32906,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 916,
 				"originalKo": "놓다",
 				"originalEn": "to put, place, set down",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -28859,7 +32942,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1002,
 				"originalKo": "방석",
 				"originalEn": "floor cushion",
-				"tags": [],
+				"tags": [
+					"object",
+					"furniture"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -28885,7 +32971,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 591,
 				"originalKo": "드리다",
 				"originalEn": "to give (honorific)",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person",
+					"humbleVerb",
+					"dative_humble"
+				],
 				"grammar": [
 					{
 						"unitId": 838,
@@ -28941,7 +33032,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1832,
 				"originalKo": "체크무늬",
 				"originalEn": "check pattern, plaid, checkered",
-				"tags": [],
+				"tags": [
+					"concept",
+					"appearance",
+					"visual",
+					"design"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -28967,7 +33063,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -28993,7 +33094,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1830,
 				"originalKo": "파란색",
 				"originalEn": "blue color, blue",
-				"tags": [],
+				"tags": [
+					"color",
+					"appearance",
+					"visual"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -29011,7 +33116,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1002,
 				"originalKo": "방석",
 				"originalEn": "floor cushion",
-				"tags": [],
+				"tags": [
+					"object",
+					"furniture"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -29044,7 +33152,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 925,
 				"originalKo": "식탁",
 				"originalEn": "dining table",
-				"tags": [],
+				"tags": [
+					"object",
+					"furniture"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -29070,7 +33181,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -29088,7 +33204,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1130,
 				"originalKo": "어울리다",
 				"originalEn": "to match, suit, go well with",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -29114,7 +33233,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 413,
 				"originalKo": "쉽다",
 				"originalEn": "to be easy",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_difficulty",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -29140,7 +33264,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 192,
 				"originalKo": "더럽다",
 				"originalEn": "to be dirty",
-				"tags": [],
+				"tags": [
+					"descriptive_place",
+					"descriptive_general",
+					"devtest",
+					"descriptive_cleanliness",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -29180,7 +33310,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -29228,7 +33362,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1458,
 				"originalKo": "관심",
 				"originalEn": "interest, attention",
-				"tags": [],
+				"tags": [
+					"cognition",
+					"emotion",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -29254,7 +33392,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -29287,7 +33430,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1639,
 				"originalKo": "분",
 				"originalEn": "person (honorific), counter for people",
-				"tags": [],
+				"tags": [
+					"person",
+					"honorific",
+					"counter",
+					"measureWord",
+					"koreanMeasureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -29320,7 +33469,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -29346,7 +33499,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 588,
 				"originalKo": "이메일",
 				"originalEn": "e-mail",
-				"tags": [],
+				"tags": [
+					"object",
+					"writing",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -29372,7 +33529,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 594,
 				"originalKo": "보내다",
 				"originalEn": "to send",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -29425,7 +33585,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1836,
 				"originalKo": "얘들",
 				"originalEn": "these kids, these children, these guys",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun",
+					"plural",
+					"informal"
+				],
 				"grammar": [
 					{
 						"unitId": 1834,
@@ -29451,7 +33616,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1835,
 				"originalKo": "안녕",
 				"originalEn": "hi, hello, goodbye (informal greeting); peace, well-being",
-				"tags": [],
+				"tags": [
+					"greeting",
+					"informal",
+					"emotion"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -29490,7 +33659,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1510,
 				"originalKo": "고등학교",
 				"originalEn": "high school",
-				"tags": [],
+				"tags": [
+					"facility",
+					"education",
+					"institution",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -29516,7 +33690,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 814,
 				"originalKo": "졸업하다",
 				"originalEn": "to graduate",
-				"tags": [],
+				"tags": [
+					"transitive_place",
+					"intransitive_general",
+					"academic",
+					"locative_origin"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -29542,7 +33721,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 207,
 				"originalKo": "한",
 				"originalEn": "one",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -29560,7 +33742,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 226,
 				"originalKo": "번",
 				"originalEn": "times/number",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"frequency"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -29586,7 +33772,15 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1739,
 				"originalKo": "못",
 				"originalEn": "cannot, unable to (short negative adverb)",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"negative",
+					"inability",
+					"short_negation",
+					"action_verb_only"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -29604,7 +33798,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -29637,7 +33834,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 62,
 				"originalKo": "우리",
 				"originalEn": "we/us/our",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"plural"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -29663,7 +33864,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 148,
 				"originalKo": "만나다",
 				"originalEn": "to meet",
-				"tags": [],
+				"tags": [
+					"transitive_person"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -29696,7 +33899,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1623,
 				"originalKo": "년",
 				"originalEn": "year (counter)",
-				"tags": [],
+				"tags": [
+					"time",
+					"counter",
+					"calendar",
+					"measureWord",
+					"sinoMeasureWord"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -29714,7 +33923,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1517,
 				"originalKo": "정도",
 				"originalEn": "degree, limit, approximate amount (\"about\")",
-				"tags": [],
+				"tags": [
+					"approximation",
+					"measurement",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -29732,7 +33945,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -29781,7 +33998,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 752,
 				"originalKo": "다",
 				"originalEn": "all",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity",
+					"degree"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -29807,7 +34028,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 814,
 				"originalKo": "졸업하다",
 				"originalEn": "to graduate",
-				"tags": [],
+				"tags": [
+					"transitive_place",
+					"intransitive_general",
+					"academic",
+					"locative_origin"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -29833,7 +34059,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 668,
 				"originalKo": "어떻게",
 				"originalEn": "how",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"method"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -29851,7 +34080,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 795,
 				"originalKo": "지내다",
 				"originalEn": "to spend time/get along",
-				"tags": [],
+				"tags": [
+					"intransitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -29898,7 +34129,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1794,
 				"originalKo": "동안",
 				"originalEn": "during, for, duration of time",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -29916,7 +34151,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -29934,7 +34174,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 795,
 				"originalKo": "지내다",
 				"originalEn": "to spend time/get along",
-				"tags": [],
+				"tags": [
+					"intransitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -29985,7 +34227,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1699,
 				"originalKo": "나",
 				"originalEn": "I, me (plain/informal 1st-person pronoun)",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"1st_person",
+					"informal"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -30011,7 +34257,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1085,
 				"originalKo": "이렇다",
 				"originalEn": "like this, such",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"demonstrative"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -30037,7 +34286,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1108,
 				"originalKo": "초대장",
 				"originalEn": "invitation card",
-				"tags": [],
+				"tags": [
+					"object",
+					"document"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -30063,7 +34315,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 594,
 				"originalKo": "보내다",
 				"originalEn": "to send",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -30089,7 +34344,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1838,
 				"originalKo": "이유",
 				"originalEn": "reason, cause, motive",
-				"tags": [],
+				"tags": [
+					"concept",
+					"causal",
+					"cognition"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -30115,7 +34374,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 863,
 				"originalKo": "동창회",
 				"originalEn": "alumni association, reunion",
-				"tags": [],
+				"tags": [
+					"event",
+					"social"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -30133,7 +34395,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1105,
 				"originalKo": "모임",
 				"originalEn": "meeting, gathering, get-together",
-				"tags": [],
+				"tags": [
+					"event",
+					"social"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -30151,7 +34416,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1837,
 				"originalKo": "때문",
 				"originalEn": "reason, cause, because of",
-				"tags": [],
+				"tags": [
+					"concept",
+					"causal",
+					"reason"
+				],
 				"grammar": [
 					{
 						"unitId": 1833,
@@ -30199,7 +34468,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1709,
 				"originalKo": "곧",
 				"originalEn": "soon, shortly, right away",
-				"tags": [],
+				"tags": [
+					"time",
+					"adverb_time",
+					"temporal_future",
+					"future",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -30217,7 +34492,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1842,
 				"originalKo": "신촌",
 				"originalEn": "Sinchon (university district in Seoul)",
-				"tags": [],
+				"tags": [
+					"place",
+					"proper_noun",
+					"location",
+					"neighborhood"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -30235,7 +34515,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1510,
 				"originalKo": "고등학교",
 				"originalEn": "high school",
-				"tags": [],
+				"tags": [
+					"facility",
+					"education",
+					"institution",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -30253,7 +34538,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1717,
 				"originalKo": "학년",
 				"originalEn": "school year, grade",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"sinoMeasureWord",
+					"counter",
+					"education"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -30271,7 +34561,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 202,
 				"originalKo": "반",
 				"originalEn": "half",
-				"tags": [],
+				"tags": [
+					"time_amount",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -30289,7 +34582,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 863,
 				"originalKo": "동창회",
 				"originalEn": "alumni association, reunion",
-				"tags": [],
+				"tags": [
+					"event",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -30315,7 +34611,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 816,
@@ -30362,7 +34661,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 575,
 				"originalKo": "모두",
 				"originalEn": "all",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -30380,7 +34683,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 863,
 				"originalKo": "동창회",
 				"originalEn": "alumni association, reunion",
-				"tags": [],
+				"tags": [
+					"event",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -30406,7 +34712,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1758,
 				"originalKo": "꼭",
 				"originalEn": "surely, certainly, by all means",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"emphasis"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -30424,7 +34734,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -30497,7 +34812,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 575,
 				"originalKo": "모두",
 				"originalEn": "all",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -30515,7 +34834,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -30548,7 +34870,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 193,
 				"originalKo": "바쁘다",
 				"originalEn": "to be busy",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"devtest",
+					"descriptive_person_trait",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -30574,7 +34901,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1641,
 				"originalKo": "일",
 				"originalEn": "work, task, matter, thing, business",
-				"tags": [],
+				"tags": [
+					"work",
+					"activity",
+					"task",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -30600,7 +34932,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 81,
 				"originalKo": "없다",
 				"originalEn": "to not have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -30626,7 +34963,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 432,
 				"originalKo": "이번",
 				"originalEn": "this time",
-				"tags": [],
+				"tags": [
+					"time_modifier",
+					"time",
+					"determiner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -30644,7 +34985,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 863,
 				"originalKo": "동창회",
 				"originalEn": "alumni association, reunion",
-				"tags": [],
+				"tags": [
+					"event",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -30670,7 +35014,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1758,
 				"originalKo": "꼭",
 				"originalEn": "surely, certainly, by all means",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"emphasis"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -30688,7 +35036,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1672,
 				"originalKo": "나오다",
 				"originalEn": "to come out, emerge, exit",
-				"tags": [],
+				"tags": [
+					"locative_origin",
+					"movement",
+					"intransitive",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -30735,7 +35088,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1748,
 				"originalKo": "오랜만",
 				"originalEn": "after a long time",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration",
+					"point_in_time"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -30761,7 +35118,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -30794,7 +35155,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 148,
 				"originalKo": "만나다",
 				"originalEn": "to meet",
-				"tags": [],
+				"tags": [
+					"transitive_person"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -30820,7 +35183,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 43,
 				"originalKo": "맛있다",
 				"originalEn": "to be delicious",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"food_adjective",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -30846,7 +35214,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -30898,7 +35269,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 196,
 				"originalKo": "재미있다",
 				"originalEn": "to be fun",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -30924,7 +35298,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 627,
 				"originalKo": "이야기",
 				"originalEn": "story",
-				"tags": [],
+				"tags": [
+					"concept",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -30950,7 +35327,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -30976,7 +35356,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 1833,
@@ -31022,7 +35405,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 32,
 				"originalKo": "선생님",
 				"originalEn": "teacher",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"honorific",
+					"elder_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 648,
@@ -31048,7 +35436,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1634,
 				"originalKo": "날",
 				"originalEn": "day, date",
-				"tags": [],
+				"tags": [
+					"time",
+					"calendar",
+					"day"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -31066,7 +35458,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 62,
 				"originalKo": "우리",
 				"originalEn": "we/us/our",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"plural"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -31092,7 +35488,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 485,
@@ -31118,7 +35517,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -31194,7 +35598,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 38,
 				"originalKo": "밥",
 				"originalEn": "rice/meal",
-				"tags": [],
+				"tags": [
+					"food",
+					"koreanRoot",
+					"devtest",
+					"food_bowl"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -31246,7 +35655,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1180,
 				"originalKo": "후",
 				"originalEn": "after, later (Sino-Korean)",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -31272,7 +35684,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 752,
 				"originalKo": "다",
 				"originalEn": "all",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -31290,7 +35706,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 325,
 				"originalKo": "같이",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"social",
+					"accompaniment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -31308,7 +35730,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 160,
 				"originalKo": "노래방",
 				"originalEn": "karaoke",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"entertainment"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -31334,7 +35760,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 1021,
@@ -31360,7 +35793,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 620,
@@ -31386,7 +35822,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1841,
 				"originalKo": "혹시",
 				"originalEn": "by any chance, perhaps, maybe",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"modality",
+					"interrogative",
+					"politeness"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -31404,7 +35845,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 614,
 				"originalKo": "다르다",
 				"originalEn": "to be different",
-				"tags": [],
+				"tags": [
+					"descriptive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -31430,7 +35873,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -31456,7 +35903,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1839,
 				"originalKo": "장소",
 				"originalEn": "place, venue, location",
-				"tags": [],
+				"tags": [
+					"place",
+					"location",
+					"space"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -31482,7 +35933,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -31508,7 +35964,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1699,
 				"originalKo": "나",
 				"originalEn": "I, me (plain/informal 1st-person pronoun)",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"1st_person",
+					"informal"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -31534,7 +35994,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1647,
 				"originalKo": "이야기하다",
 				"originalEn": "to talk, converse, chat",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"intransitive_general",
+					"communication",
+					"social",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -31591,7 +36057,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 752,
 				"originalKo": "다",
 				"originalEn": "all",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -31609,7 +36079,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 325,
 				"originalKo": "같이",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"social",
+					"accompaniment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -31627,7 +36103,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1719,
 				"originalKo": "사진",
 				"originalEn": "photo, picture, photograph",
-				"tags": [],
+				"tags": [
+					"object",
+					"document",
+					"visual_media"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -31653,7 +36133,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 954,
 				"originalKo": "찍다",
 				"originalEn": "to take (photo), dip, stamp, print",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -31679,7 +36161,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 915,
 				"originalKo": "걸다",
 				"originalEn": "to hang, make (a phone call), bet",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 53,
@@ -31705,7 +36189,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 194,
 				"originalKo": "예쁘다",
 				"originalEn": "to be pretty",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"devtest",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -31731,7 +36219,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -31757,7 +36248,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 512,
 				"originalKo": "와",
 				"originalEn": "wow",
-				"tags": [],
+				"tags": [
+					"interjection",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -31800,7 +36294,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1843,
 				"originalKo": "미진",
 				"originalEn": "Mijin (personal given name)",
-				"tags": [],
+				"tags": [
+					"person",
+					"name",
+					"proper_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -31826,7 +36324,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1840,
 				"originalKo": "외국",
 				"originalEn": "foreign country, abroad, overseas",
-				"tags": [],
+				"tags": [
+					"place",
+					"country",
+					"location"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -31852,7 +36354,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1515,
 				"originalKo": "유학",
 				"originalEn": "studying abroad",
-				"tags": [],
+				"tags": [
+					"academic",
+					"travel",
+					"activity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -31870,7 +36376,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1783,
 				"originalKo": "중",
 				"originalEn": "middle, among, during",
-				"tags": [],
+				"tags": [
+					"position",
+					"abstract",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -31903,7 +36413,15 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1739,
 				"originalKo": "못",
 				"originalEn": "cannot, unable to (short negative adverb)",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"negative",
+					"inability",
+					"short_negation",
+					"action_verb_only"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -31921,7 +36439,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -31968,7 +36491,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1841,
 				"originalKo": "혹시",
 				"originalEn": "by any chance, perhaps, maybe",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"modality",
+					"interrogative",
+					"politeness"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -31986,7 +36514,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1634,
 				"originalKo": "날",
 				"originalEn": "day, date",
-				"tags": [],
+				"tags": [
+					"time",
+					"calendar",
+					"day"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -32004,7 +36536,15 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1739,
 				"originalKo": "못",
 				"originalEn": "cannot, unable to (short negative adverb)",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"negative",
+					"inability",
+					"short_negation",
+					"action_verb_only"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -32022,7 +36562,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -32048,7 +36593,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 11,
 				"originalKo": "사람",
 				"originalEn": "person",
-				"tags": [],
+				"tags": [
+					"person",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -32074,7 +36623,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -32100,7 +36654,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1699,
 				"originalKo": "나",
 				"originalEn": "I, me (plain/informal 1st-person pronoun)",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"1st_person",
+					"informal"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -32126,7 +36684,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1495,
 				"originalKo": "미리",
 				"originalEn": "in advance, beforehand",
-				"tags": [],
+				"tags": [
+					"adverb_time",
+					"time",
+					"order"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -32144,7 +36706,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 596,
 				"originalKo": "연락하다",
 				"originalEn": "to contact",
-				"tags": [],
+				"tags": [
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -32198,7 +36762,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 290,
 				"originalKo": "그럼",
 				"originalEn": "then",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"conditional"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -32216,7 +36785,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 863,
 				"originalKo": "동창회",
 				"originalEn": "alumni association, reunion",
-				"tags": [],
+				"tags": [
+					"event",
+					"social"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -32234,7 +36806,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1634,
 				"originalKo": "날",
 				"originalEn": "day, date",
-				"tags": [],
+				"tags": [
+					"time",
+					"calendar",
+					"day"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -32260,7 +36836,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 148,
 				"originalKo": "만나다",
 				"originalEn": "to meet",
-				"tags": [],
+				"tags": [
+					"transitive_person"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -32302,7 +36880,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 45,
 				"originalKo": "오늘",
 				"originalEn": "today",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_present",
+					"present",
+					"koreanRoot",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -32320,7 +36904,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1845,
 				"originalKo": "리타오",
 				"originalEn": "Li Tao (personal given name)",
-				"tags": [],
+				"tags": [
+					"person",
+					"name",
+					"proper_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -32338,7 +36926,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1134,
 				"originalKo": "집들이",
 				"originalEn": "housewarming party",
-				"tags": [],
+				"tags": [
+					"event",
+					"social",
+					"traditional"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -32364,7 +36956,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -32390,7 +36987,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -32408,7 +37008,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 230,
 				"originalKo": "알다",
 				"originalEn": "to know/understand",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_information",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -32434,7 +37038,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 1773,
@@ -32475,7 +37084,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 290,
 				"originalKo": "그럼",
 				"originalEn": "then",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"conditional"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -32493,7 +37107,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1849,
 				"originalKo": "근데",
 				"originalEn": "by the way, but, however (colloquial contraction of 그런데)",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"discourse",
+					"colloquial"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -32511,7 +37129,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1134,
 				"originalKo": "집들이",
 				"originalEn": "housewarming party",
-				"tags": [],
+				"tags": [
+					"event",
+					"social",
+					"traditional"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -32537,7 +37159,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 510,
 				"originalKo": "뭐",
 				"originalEn": "what",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"object",
+					"deictic",
+					"interrogative"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -32563,7 +37190,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1140,
@@ -32589,7 +37218,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1802,
 				"originalKo": "가지",
 				"originalEn": "kind, sort, variety (bound noun / classifier for types)",
-				"tags": [],
+				"tags": [
+					"bound_noun",
+					"counter",
+					"measureWord"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -32631,7 +37264,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1399,
 				"originalKo": "지난번",
 				"originalEn": "last time, previous time",
-				"tags": [],
+				"tags": [
+					"calendar",
+					"time",
+					"temporal_relation",
+					"temporal_past",
+					"past"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -32657,7 +37296,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 53,
@@ -32683,7 +37325,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 180,
 				"originalKo": "집",
 				"originalEn": "house/home",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room",
+					"building"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -32709,7 +37356,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 70,
 				"originalKo": "시계",
 				"originalEn": "clock",
-				"tags": [],
+				"tags": [
+					"object",
+					"watch",
+					"wearable",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -32735,7 +37387,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 81,
 				"originalKo": "없다",
 				"originalEn": "to not have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -32789,7 +37446,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 70,
 				"originalKo": "시계",
 				"originalEn": "clock",
-				"tags": [],
+				"tags": [
+					"object",
+					"watch",
+					"wearable",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -32815,7 +37477,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 579,
 				"originalKo": "선물하다",
 				"originalEn": "to give a gift",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_person",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -32841,7 +37507,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -32867,7 +37536,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 120,
 				"originalKo": "어떻다",
 				"originalEn": "to be how",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"questionWord",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -32909,7 +37582,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1733,
 				"originalKo": "그거",
 				"originalEn": "that thing (near you, colloquial)",
-				"tags": [],
+				"tags": [
+					"demonstrative",
+					"object",
+					"deictic",
+					"medial"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -32927,7 +37605,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 21,
 				"originalKo": "괜찮다",
 				"originalEn": "to be okay",
-				"tags": [],
+				"tags": [
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -32992,7 +37673,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 918,
 				"originalKo": "벽",
 				"originalEn": "wall",
-				"tags": [],
+				"tags": [
+					"object",
+					"architectural"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -33018,7 +37702,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 915,
 				"originalKo": "걸다",
 				"originalEn": "to hang, make (a phone call), bet",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -33051,7 +37737,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 42,
 				"originalKo": "크다",
 				"originalEn": "to be big",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"koreanRoot",
+					"devtest",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -33077,7 +37769,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 70,
 				"originalKo": "시계",
 				"originalEn": "clock",
-				"tags": [],
+				"tags": [
+					"object",
+					"watch",
+					"wearable",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -33103,7 +37800,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1021,
@@ -33143,7 +37842,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1119,
 				"originalKo": "벽시계",
 				"originalEn": "wall clock",
-				"tags": [],
+				"tags": [
+					"object",
+					"appliance"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -33169,7 +37871,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1141,
@@ -33214,7 +37918,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 13,
 				"originalKo": "중국",
 				"originalEn": "China",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -33240,7 +37947,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 70,
 				"originalKo": "시계",
 				"originalEn": "clock",
-				"tags": [],
+				"tags": [
+					"object",
+					"watch",
+					"wearable",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -33266,7 +37978,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 764,
 				"originalKo": "끝",
 				"originalEn": "end",
-				"tags": [],
+				"tags": [
+					"concept",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -33292,7 +38007,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1852,
 				"originalKo": "의미",
 				"originalEn": "meaning, sense, significance",
-				"tags": [],
+				"tags": [
+					"concept",
+					"cognition",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -33318,7 +38037,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1851,
 				"originalKo": "가지다",
 				"originalEn": "to have, hold, possess, carry",
-				"tags": [],
+				"tags": [
+					"transitive_object",
+					"possession",
+					"regular"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -33344,7 +38067,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -33370,7 +38098,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 579,
 				"originalKo": "선물하다",
 				"originalEn": "to give a gift",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_person",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 573,
@@ -33421,7 +38153,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 290,
 				"originalKo": "그럼",
 				"originalEn": "then",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"conditional"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -33439,7 +38176,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -33465,7 +38205,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1134,
 				"originalKo": "집들이",
 				"originalEn": "housewarming party",
-				"tags": [],
+				"tags": [
+					"event",
+					"social",
+					"traditional"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -33491,7 +38235,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1714,
 				"originalKo": "대",
 				"originalEn": "counter for vehicles, machines, appliances",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"counter",
+					"vehicle",
+					"electronics",
+					"machine"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -33517,7 +38268,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 365,
 				"originalKo": "받다",
 				"originalEn": "to receive",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -33543,7 +38297,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 510,
 				"originalKo": "뭐",
 				"originalEn": "what",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"object",
+					"deictic",
+					"interrogative"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -33569,7 +38328,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1140,
@@ -33596,7 +38357,8 @@ const VERIFIED_SENTENCES = [
 				"originalKo": "이 / 가",
 				"originalEn": "subject marker",
 				"tags": [
-					"grammar"
+					"particle",
+					"subject"
 				],
 				"grammar": [
 					{
@@ -33639,7 +38401,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 203,
 				"originalKo": "보통",
 				"originalEn": "usually",
-				"tags": [],
+				"tags": [
+					"frequency",
+					"general"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -33657,7 +38422,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 94,
 				"originalKo": "휴지",
 				"originalEn": "tissue",
-				"tags": [],
+				"tags": [
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -33683,7 +38450,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1004,
 				"originalKo": "비누",
 				"originalEn": "soap",
-				"tags": [],
+				"tags": [
+					"object",
+					"toiletry"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -33701,7 +38471,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1126,
 				"originalKo": "세제",
 				"originalEn": "detergent, cleaning agent",
-				"tags": [],
+				"tags": [
+					"object",
+					"toiletry"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -33719,7 +38492,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1638,
 				"originalKo": "같다",
 				"originalEn": "to be same, identical, similar, like",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"state",
+					"comparison"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -33745,7 +38522,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1006,
 				"originalKo": "생활용품",
 				"originalEn": "household items, daily necessities",
-				"tags": [],
+				"tags": [
+					"object",
+					"commodity"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -33771,7 +38551,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 408,
 				"originalKo": "많이",
 				"originalEn": "much/many",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -33789,7 +38572,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 579,
 				"originalKo": "선물하다",
 				"originalEn": "to give a gift",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_person",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -33834,7 +38621,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1849,
 				"originalKo": "근데",
 				"originalEn": "by the way, but, however (colloquial contraction of 그런데)",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"discourse",
+					"colloquial"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -33852,7 +38643,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 465,
 				"originalKo": "요즘",
 				"originalEn": "these days",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporalNoun",
+					"temporal_present",
+					"present",
+					"no_time_particle"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -33878,7 +38675,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1136,
 				"originalKo": "향초",
 				"originalEn": "scented candle",
-				"tags": [],
+				"tags": [
+					"object",
+					"decor"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -33904,7 +38704,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1853,
 				"originalKo": "디퓨저",
 				"originalEn": "diffuser (aroma / fragrance diffuser)",
-				"tags": [],
+				"tags": [
+					"object",
+					"daily_item",
+					"loanword"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -33922,7 +38726,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1638,
 				"originalKo": "같다",
 				"originalEn": "to be same, identical, similar, like",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"state",
+					"comparison"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -33948,7 +38756,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -33974,7 +38785,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 576,
 				"originalKo": "선물",
 				"originalEn": "gift",
-				"tags": [],
+				"tags": [
+					"object",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -34000,7 +38814,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1786,
 				"originalKo": "인기",
 				"originalEn": "popularity",
-				"tags": [],
+				"tags": [
+					"concept",
+					"social",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -34026,7 +38844,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -34068,7 +38891,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 290,
 				"originalKo": "그럼",
 				"originalEn": "then",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"conditional"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -34086,7 +38914,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 62,
 				"originalKo": "우리",
 				"originalEn": "we/us/our",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"plural"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -34112,7 +38944,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 94,
 				"originalKo": "휴지",
 				"originalEn": "tissue",
-				"tags": [],
+				"tags": [
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -34138,7 +38972,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1140,
@@ -34164,7 +39000,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 1021,
@@ -34206,7 +39049,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 94,
 				"originalKo": "휴지",
 				"originalEn": "tissue",
-				"tags": [],
+				"tags": [
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -34232,7 +39077,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 408,
 				"originalKo": "많이",
 				"originalEn": "much/many",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -34250,7 +39098,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 151,
 				"originalKo": "쓰다",
 				"originalEn": "to write",
-				"tags": [],
+				"tags": [
+					"transitive_writing",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -34276,7 +39127,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 717,
 				"originalKo": "물건",
 				"originalEn": "object",
-				"tags": [],
+				"tags": [
+					"object",
+					"merchandise"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -34326,7 +39180,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1142,
 				"originalKo": "그래",
 				"originalEn": "yes, alright, okay (informal)",
-				"tags": [],
+				"tags": [
+					"exclamation",
+					"informal"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -34344,7 +39201,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 353,
 				"originalKo": "그리고",
 				"originalEn": "and",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -34362,7 +39223,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 705,
 				"originalKo": "화장실",
 				"originalEn": "restroom",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"room"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -34388,7 +39253,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 916,
 				"originalKo": "놓다",
 				"originalEn": "to put, place, set down",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -34414,7 +39282,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1853,
 				"originalKo": "디퓨저",
 				"originalEn": "diffuser (aroma / fragrance diffuser)",
-				"tags": [],
+				"tags": [
+					"object",
+					"daily_item",
+					"loanword"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -34440,7 +39312,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 252,
 				"originalKo": "하나",
 				"originalEn": "one",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"counting"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -34458,7 +39333,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1140,
@@ -34485,7 +39362,8 @@ const VERIFIED_SENTENCES = [
 				"originalKo": "이 / 가",
 				"originalEn": "subject marker",
 				"tags": [
-					"grammar"
+					"particle",
+					"subject"
 				],
 				"grammar": [
 					{
@@ -34527,7 +39405,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1845,
 				"originalKo": "리타오",
 				"originalEn": "Li Tao (personal given name)",
-				"tags": [],
+				"tags": [
+					"person",
+					"name",
+					"proper_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -34553,7 +39435,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 288,
 				"originalKo": "좋아하다",
 				"originalEn": "to like",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food",
+					"transitive_person",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -34579,7 +39467,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 1833,
@@ -34621,7 +39512,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 42,
 				"originalKo": "크다",
 				"originalEn": "to be big",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"koreanRoot",
+					"devtest",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -34647,7 +39544,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1854,
 				"originalKo": "두루마리",
 				"originalEn": "roll, scroll (as in 두루마리 휴지: roll of toilet paper)",
-				"tags": [],
+				"tags": [
+					"object",
+					"daily_item",
+					"shape"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -34665,7 +39566,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 94,
 				"originalKo": "휴지",
 				"originalEn": "tissue",
-				"tags": [],
+				"tags": [
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -34691,7 +39594,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 239,
 				"originalKo": "사",
 				"originalEn": "four",
-				"tags": [],
+				"tags": [
+					"sinoNumber"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -34709,7 +39614,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -34735,7 +39647,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 1773,
@@ -34776,7 +39692,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1853,
 				"originalKo": "디퓨저",
 				"originalEn": "diffuser (aroma / fragrance diffuser)",
-				"tags": [],
+				"tags": [
+					"object",
+					"daily_item",
+					"loanword"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -34802,7 +39722,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1699,
 				"originalKo": "나",
 				"originalEn": "I, me (plain/informal 1st-person pronoun)",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"1st_person",
+					"informal"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -34828,7 +39752,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1021,
@@ -34870,7 +39796,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -34896,7 +39826,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 290,
 				"originalKo": "그럼",
 				"originalEn": "then",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"conditional"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -34914,7 +39849,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 752,
 				"originalKo": "다",
 				"originalEn": "all",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity",
+					"degree"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -34940,7 +39879,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 580,
 				"originalKo": "이따가",
 				"originalEn": "later",
-				"tags": [],
+				"tags": [
+					"adverb_time",
+					"time",
+					"temporal_future",
+					"future",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -34958,7 +39903,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1620,
 				"originalKo": "학교",
 				"originalEn": "school",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -34976,7 +39926,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 99,
 				"originalKo": "앞",
 				"originalEn": "front",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -35002,7 +39954,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 204,
 				"originalKo": "시",
 				"originalEn": "hour/o'clock",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"time"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -35020,7 +39976,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 202,
 				"originalKo": "반",
 				"originalEn": "half",
-				"tags": [],
+				"tags": [
+					"time_amount",
+					"quantity"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -35046,7 +40005,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -35090,7 +40052,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -35116,7 +40082,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1191,
 				"originalKo": "부탁",
 				"originalEn": "request, favor",
-				"tags": [],
+				"tags": [
+					"concept",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -35142,7 +40111,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 879,
@@ -35175,7 +40147,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1787,
 				"originalKo": "적",
 				"originalEn": "experience, occasion (bound noun in -(으)ㄴ 적이 있다/없다)",
-				"tags": [],
+				"tags": [
+					"bound_noun",
+					"time",
+					"experience"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -35201,7 +40177,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 930,
@@ -35243,7 +40224,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1756,
 				"originalKo": "또",
 				"originalEn": "also, additionally, again",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_discourse",
+					"connective_adverb"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -35261,7 +40246,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1191,
 				"originalKo": "부탁",
 				"originalEn": "request, favor",
-				"tags": [],
+				"tags": [
+					"concept",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -35287,7 +40275,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 365,
 				"originalKo": "받다",
 				"originalEn": "to receive",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -35313,7 +40304,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1787,
 				"originalKo": "적",
 				"originalEn": "experience, occasion (bound noun in -(으)ㄴ 적이 있다/없다)",
-				"tags": [],
+				"tags": [
+					"bound_noun",
+					"time",
+					"experience"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -35339,7 +40334,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 930,
@@ -35379,7 +40379,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1151,
 				"originalKo": "여러분",
 				"originalEn": "everyone, ladies and gentlemen",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"2nd_person",
+					"honorific_person"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -35405,7 +40409,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 668,
 				"originalKo": "어떻게",
 				"originalEn": "how",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"method"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -35423,7 +40430,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 593,
 				"originalKo": "말하다",
 				"originalEn": "to say",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 1855,
@@ -35470,7 +40480,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1856,
 				"originalKo": "자리",
 				"originalEn": "seat, spot, position, space",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun",
+					"object",
+					"seating"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -35496,7 +40511,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 328,
 				"originalKo": "앉다",
 				"originalEn": "to sit",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -35529,7 +40547,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1771,
 				"originalKo": "에어컨",
 				"originalEn": "air conditioner",
-				"tags": [],
+				"tags": [
+					"appliance",
+					"home",
+					"electronics"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -35547,7 +40569,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1837,
 				"originalKo": "때문",
 				"originalEn": "reason, cause, because of",
-				"tags": [],
+				"tags": [
+					"concept",
+					"causal",
+					"reason"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -35573,7 +40599,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 400,
 				"originalKo": "너무",
 				"originalEn": "too much",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -35591,7 +40623,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 131,
 				"originalKo": "춥다",
 				"originalEn": "to be cold",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_weather",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -35617,7 +40654,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1856,
 				"originalKo": "자리",
 				"originalEn": "seat, spot, position, space",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun",
+					"object",
+					"seating"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -35643,7 +40685,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1857,
 				"originalKo": "바꾸다",
 				"originalEn": "to change, exchange, swap, replace",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"action",
+					"change",
+					"exchange"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -35676,7 +40723,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1605,
 				"originalKo": "때",
 				"originalEn": "time, when, moment",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -35694,7 +40745,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 668,
 				"originalKo": "어떻게",
 				"originalEn": "how",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"method"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -35712,7 +40766,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1191,
 				"originalKo": "부탁",
 				"originalEn": "request, favor",
-				"tags": [],
+				"tags": [
+					"concept",
+					"social"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -35730,7 +40787,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -35756,7 +40816,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 1021,
@@ -35797,7 +40861,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1858,
 				"originalKo": "미안하다",
 				"originalEn": "to be sorry, apologetic",
-				"tags": [],
+				"tags": [
+					"descriptive_emotion",
+					"apology",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 1773,
@@ -35824,7 +40892,9 @@ const VERIFIED_SENTENCES = [
 				"originalKo": "만",
 				"originalEn": "particle indicating restriction or exclusivity (\"only\", \"just\")",
 				"tags": [
-					"grammar"
+					"particle",
+					"limitation",
+					"exclusive"
 				],
 				"grammar": [
 					{
@@ -35851,7 +40921,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1856,
 				"originalKo": "자리",
 				"originalEn": "seat, spot, position, space",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun",
+					"object",
+					"seating"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -35869,7 +40944,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -35887,7 +40967,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1857,
 				"originalKo": "바꾸다",
 				"originalEn": "to change, exchange, swap, replace",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"action",
+					"change",
+					"exchange"
+				],
 				"grammar": [
 					{
 						"unitId": 322,
@@ -35937,7 +41022,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1408,
 				"originalKo": "나다",
 				"originalEn": "to break out, occur, sprout, grow",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"occurrence",
+					"state_change"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -35963,7 +41052,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -35981,7 +41075,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 131,
 				"originalKo": "춥다",
 				"originalEn": "to be cold",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_weather",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -36007,7 +41106,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1191,
 				"originalKo": "부탁",
 				"originalEn": "request, favor",
-				"tags": [],
+				"tags": [
+					"concept",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -36033,7 +41135,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 620,
@@ -36059,7 +41166,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -36077,7 +41189,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1188,
 				"originalKo": "들어주다",
 				"originalEn": "to grant (request), listen to",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 1199,
@@ -36117,7 +41232,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1856,
 				"originalKo": "자리",
 				"originalEn": "seat, spot, position, space",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun",
+					"object",
+					"seating"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -36135,7 +41255,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -36153,7 +41278,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1857,
 				"originalKo": "바꾸다",
 				"originalEn": "to change, exchange, swap, replace",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"action",
+					"change",
+					"exchange"
+				],
 				"grammar": [
 					{
 						"unitId": 572,
@@ -36203,7 +41333,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 938,
 				"originalKo": "말다",
 				"originalEn": "to roll, mix (rice in soup), refrain from",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -36229,7 +41361,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 413,
 				"originalKo": "쉽다",
 				"originalEn": "to be easy",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_difficulty",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 621,
@@ -36255,7 +41392,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1859,
 				"originalKo": "친하다",
 				"originalEn": "to be close, intimate, friendly (with)",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"social_relation",
+					"intimacy",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -36281,7 +41423,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -36307,7 +41453,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1191,
 				"originalKo": "부탁",
 				"originalEn": "request, favor",
-				"tags": [],
+				"tags": [
+					"concept",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -36333,7 +41482,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1860,
 				"originalKo": "참",
 				"originalEn": "truly, really, very, by the way",
-				"tags": [],
+				"tags": [
+					"adverb_degree",
+					"degree",
+					"emphasis",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -36351,7 +41505,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 414,
 				"originalKo": "어렵다",
 				"originalEn": "to be difficult",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_difficulty",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -36399,7 +41557,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1191,
 				"originalKo": "부탁",
 				"originalEn": "request, favor",
-				"tags": [],
+				"tags": [
+					"concept",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -36425,7 +41586,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -36458,7 +41622,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -36484,7 +41652,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1188,
 				"originalKo": "들어주다",
 				"originalEn": "to grant (request), listen to",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -36517,7 +41688,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1655,
 				"originalKo": "기분",
 				"originalEn": "feeling, mood",
-				"tags": [],
+				"tags": [
+					"emotion",
+					"feeling",
+					"psychology",
+					"state",
+					"abstract",
+					"psychological_state"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -36543,7 +41721,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 124,
 				"originalKo": "나쁘다",
 				"originalEn": "to be bad",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -36611,7 +41792,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 11,
 				"originalKo": "사람",
 				"originalEn": "person",
-				"tags": [],
+				"tags": [
+					"person",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -36644,7 +41829,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1741,
 				"originalKo": "진짜",
 				"originalEn": "really, truly, genuinely",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"discourse"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -36670,7 +41860,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1191,
 				"originalKo": "부탁",
 				"originalEn": "request, favor",
-				"tags": [],
+				"tags": [
+					"concept",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -36696,7 +41889,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -36722,7 +41918,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -36748,7 +41948,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1188,
 				"originalKo": "들어주다",
 				"originalEn": "to grant (request), listen to",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -36781,7 +41984,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -36799,7 +42005,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1638,
 				"originalKo": "같다",
 				"originalEn": "to be same, identical, similar, like",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"state",
+					"comparison"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -36825,7 +42035,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1861,
 				"originalKo": "걱정",
 				"originalEn": "worry, concern, anxiety",
-				"tags": [],
+				"tags": [
+					"emotion",
+					"abstract",
+					"concern"
+				],
 				"grammar": [
 					{
 						"unitId": 1402,
@@ -36851,7 +42065,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -36897,7 +42114,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1862,
 				"originalKo": "설명",
 				"originalEn": "explanation, description, account",
-				"tags": [],
+				"tags": [
+					"speech",
+					"communication",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -36923,7 +42144,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -36941,7 +42167,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -36967,7 +42196,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1863,
 				"originalKo": "부탁하다",
 				"originalEn": "to ask a favor, request, ask of",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"speech",
+					"communication",
+					"favor",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -36993,7 +42228,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -37019,7 +42258,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -37045,7 +42288,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1151,
 				"originalKo": "여러분",
 				"originalEn": "everyone, ladies and gentlemen",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"2nd_person",
+					"honorific_person"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -37071,7 +42318,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 627,
 				"originalKo": "이야기",
 				"originalEn": "story",
-				"tags": [],
+				"tags": [
+					"concept",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -37097,7 +42347,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -37115,7 +42370,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1188,
 				"originalKo": "들어주다",
 				"originalEn": "to grant (request), listen to",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -37141,7 +42399,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -37190,7 +42451,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1191,
 				"originalKo": "부탁",
 				"originalEn": "request, favor",
-				"tags": [],
+				"tags": [
+					"concept",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -37216,7 +42480,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 365,
 				"originalKo": "받다",
 				"originalEn": "to receive",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -37242,7 +42509,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 11,
 				"originalKo": "사람",
 				"originalEn": "person",
-				"tags": [],
+				"tags": [
+					"person",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -37268,7 +42539,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1864,
 				"originalKo": "상황",
 				"originalEn": "situation, circumstance, condition",
-				"tags": [],
+				"tags": [
+					"abstract",
+					"state",
+					"context"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -37294,7 +42569,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 414,
 				"originalKo": "어렵다",
 				"originalEn": "to be difficult",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_difficulty",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -37320,7 +42599,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1188,
 				"originalKo": "들어주다",
 				"originalEn": "to grant (request), listen to",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -37360,7 +42642,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1605,
 				"originalKo": "때",
 				"originalEn": "time, when, moment",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -37378,7 +42664,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 26,
 				"originalKo": "아니요",
 				"originalEn": "no",
-				"tags": [],
+				"tags": [
+					"greeting"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -37397,7 +42685,10 @@ const VERIFIED_SENTENCES = [
 				"originalKo": "(이)라고",
 				"originalEn": "quotation particle (\"called\", \"saying that\")",
 				"tags": [
-					"grammar"
+					"particle",
+					"quotation",
+					"direct_quotation",
+					"citation"
 				],
 				"grammar": [
 					{
@@ -37424,7 +42715,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 593,
 				"originalKo": "말하다",
 				"originalEn": "to say",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -37450,7 +42744,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -37476,7 +42773,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 400,
 				"originalKo": "너무",
 				"originalEn": "too much",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -37494,7 +42797,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1866,
 				"originalKo": "어려워하다",
 				"originalEn": "to find (something) difficult, struggle with",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"emotion",
+					"psychological_predicate",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 1737,
@@ -37544,7 +42853,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1756,
 				"originalKo": "또",
 				"originalEn": "also, additionally, again",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_discourse",
+					"connective_adverb"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -37562,7 +42875,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -37588,7 +42905,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1191,
 				"originalKo": "부탁",
 				"originalEn": "request, favor",
-				"tags": [],
+				"tags": [
+					"concept",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -37614,7 +42934,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1188,
 				"originalKo": "들어주다",
 				"originalEn": "to grant (request), listen to",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -37647,7 +42970,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1605,
 				"originalKo": "때",
 				"originalEn": "time, when, moment",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -37665,7 +42992,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 400,
 				"originalKo": "너무",
 				"originalEn": "too much",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -37683,7 +43016,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1655,
 				"originalKo": "기분",
 				"originalEn": "feeling, mood",
-				"tags": [],
+				"tags": [
+					"emotion",
+					"feeling",
+					"psychology",
+					"state",
+					"abstract",
+					"psychological_state"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -37701,7 +43041,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1867,
 				"originalKo": "나빠하다",
 				"originalEn": "to feel unpleasant, take offense, feel bad (about)",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"emotion",
+					"psychological_predicate"
+				],
 				"grammar": [
 					{
 						"unitId": 1737,
@@ -37750,7 +43094,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -37768,7 +43116,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1727,
 				"originalKo": "사이",
 				"originalEn": "between, space between, interval, relationship",
-				"tags": [],
+				"tags": [
+					"position",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -37794,7 +43145,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1191,
 				"originalKo": "부탁",
 				"originalEn": "request, favor",
-				"tags": [],
+				"tags": [
+					"concept",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -37820,7 +43174,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 400,
 				"originalKo": "너무",
 				"originalEn": "too much",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -37838,7 +43198,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1868,
 				"originalKo": "힘들어하다",
 				"originalEn": "to have a hard time, struggle with, suffer",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"emotion",
+					"psychological_predicate",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 1737,
@@ -37888,7 +43254,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -37914,7 +43283,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -37940,7 +43314,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1656,
 				"originalKo": "처음",
 				"originalEn": "first time, for the first time",
-				"tags": [],
+				"tags": [
+					"time",
+					"order",
+					"sequence",
+					"adverb_manner",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -37966,7 +43346,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1869,
 				"originalKo": "국립",
 				"originalEn": "national, state-run, established by the nation",
-				"tags": [],
+				"tags": [
+					"institution",
+					"public",
+					"abstract",
+					"national"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -37984,7 +43369,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1870,
 				"originalKo": "중앙",
 				"originalEn": "center, middle, central",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun",
+					"center",
+					"location"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -38002,7 +43392,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 481,
 				"originalKo": "박물관",
 				"originalEn": "museum",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"history"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -38028,7 +43422,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 861,
 				"originalKo": "다녀오다",
 				"originalEn": "visit, to go and come back",
-				"tags": [],
+				"tags": [
+					"intransitive_place",
+					"motion",
+					"locative_goal"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -38083,7 +43481,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 666,
 				"originalKo": "호선",
 				"originalEn": "subway line",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"transit"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -38101,7 +43502,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1871,
 				"originalKo": "이촌역",
 				"originalEn": "Ichon Station (Seoul Subway Line 4 / Gyeongui-Jungang Line)",
-				"tags": [],
+				"tags": [
+					"place",
+					"station",
+					"subway",
+					"transitFacility"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -38127,7 +43533,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 667,
 				"originalKo": "내리다",
 				"originalEn": "to get off (bus, train)",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"transportation",
+					"transit",
+					"locative_origin"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -38160,7 +43571,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 100,
 				"originalKo": "어디",
 				"originalEn": "where",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"place",
+					"deictic",
+					"interrogative"
+				],
 				"grammar": [
 					{
 						"unitId": 1240,
@@ -38186,7 +43602,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 706,
 				"originalKo": "나가다",
 				"originalEn": "to exit",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"intransitive_place",
+					"locative_origin",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 1211,
@@ -38212,7 +43633,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 615,
 				"originalKo": "모르다",
 				"originalEn": "to not know",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -38238,7 +43662,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1872,
 				"originalKo": "지나가다",
 				"originalEn": "to pass by, go by, walk past",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"movement",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -38264,7 +43692,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1765,
 				"originalKo": "아저씨",
 				"originalEn": "middle-aged man, mister",
-				"tags": [],
+				"tags": [
+					"person",
+					"male",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 647,
@@ -38290,7 +43722,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 312,
 				"originalKo": "길다",
 				"originalEn": "to be long",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_dimension_length",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -38316,7 +43753,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 694,
 				"originalKo": "물어보다",
 				"originalEn": "to ask",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -38369,7 +43809,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1207,
 				"originalKo": "저",
 				"originalEn": "I (humble), that (over there), um (filler)",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"1st_person",
+					"humble"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -38387,7 +43831,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1873,
 				"originalKo": "실례하다",
 				"originalEn": "to commit a discourtesy, excuse oneself, be impolite",
-				"tags": [],
+				"tags": [
+					"action",
+					"speech",
+					"social",
+					"etiquette"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -38420,7 +43869,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1869,
 				"originalKo": "국립",
 				"originalEn": "national, state-run, established by the nation",
-				"tags": [],
+				"tags": [
+					"institution",
+					"public",
+					"abstract",
+					"national"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -38438,7 +43892,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1870,
 				"originalKo": "중앙",
 				"originalEn": "center, middle, central",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun",
+					"center",
+					"location"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -38456,7 +43915,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 481,
 				"originalKo": "박물관",
 				"originalEn": "museum",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"history"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -38482,7 +43945,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 816,
@@ -38529,7 +43999,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 201,
 				"originalKo": "몇",
 				"originalEn": "what/how many",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"number",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -38547,7 +44021,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 226,
 				"originalKo": "번",
 				"originalEn": "times/number",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"frequency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -38565,7 +44043,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 704,
 				"originalKo": "출구",
 				"originalEn": "exit",
-				"tags": [],
+				"tags": [
+					"place",
+					"transitFacility"
+				],
 				"grammar": [
 					{
 						"unitId": 1240,
@@ -38591,7 +44072,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 706,
 				"originalKo": "나가다",
 				"originalEn": "to exit",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"intransitive_place",
+					"locative_origin",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 1211,
@@ -38617,7 +44103,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 230,
 				"originalKo": "알다",
 				"originalEn": "to know/understand",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_information",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -38662,7 +44152,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1765,
 				"originalKo": "아저씨",
 				"originalEn": "middle-aged man, mister",
-				"tags": [],
+				"tags": [
+					"person",
+					"male",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -38688,7 +44182,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 197,
 				"originalKo": "친절하다",
 				"originalEn": "to be kind",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"descriptive_person_trait",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -38714,7 +44212,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 145,
 				"originalKo": "가르치다",
 				"originalEn": "to teach",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -38747,7 +44248,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 413,
 				"originalKo": "쉽다",
 				"originalEn": "to be easy",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_difficulty",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -38773,7 +44279,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 554,
 				"originalKo": "찾다",
 				"originalEn": "to find",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -38831,7 +44339,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1869,
 				"originalKo": "국립",
 				"originalEn": "national, state-run, established by the nation",
-				"tags": [],
+				"tags": [
+					"institution",
+					"public",
+					"abstract",
+					"national"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -38849,7 +44362,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1870,
 				"originalKo": "중앙",
 				"originalEn": "center, middle, central",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun",
+					"center",
+					"location"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -38867,7 +44385,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 481,
 				"originalKo": "박물관",
 				"originalEn": "museum",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"history"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -38893,7 +44415,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 84,
 				"originalKo": "돈",
 				"originalEn": "money",
-				"tags": [],
+				"tags": [
+					"object",
+					"resource",
+					"currency_resource"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -38919,7 +44445,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1216,
 				"originalKo": "내다",
 				"originalEn": "to pay, turn in, produce, cause",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -38945,7 +44474,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1464,
 				"originalKo": "무료",
 				"originalEn": "free of charge",
-				"tags": [],
+				"tags": [
+					"finance",
+					"commerce",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -38971,7 +44504,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 708,
 				"originalKo": "들어가다",
 				"originalEn": "to enter",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"intransitive_place",
+					"locative_goal",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -39024,7 +44562,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 481,
 				"originalKo": "박물관",
 				"originalEn": "museum",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"history"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -39050,7 +44592,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 513,
 				"originalKo": "구경하다",
 				"originalEn": "to look around",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_place",
+					"leisure"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -39083,7 +44629,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1862,
 				"originalKo": "설명",
 				"originalEn": "explanation, description, account",
-				"tags": [],
+				"tags": [
+					"speech",
+					"communication",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -39109,7 +44659,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -39127,7 +44682,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 147,
 				"originalKo": "듣다",
 				"originalEn": "to listen/hear",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_audio"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -39160,7 +44718,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1874,
 				"originalKo": "외국어",
 				"originalEn": "foreign language",
-				"tags": [],
+				"tags": [
+					"language",
+					"education",
+					"abstract",
+					"culture"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -39178,7 +44741,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1875,
 				"originalKo": "음성",
 				"originalEn": "voice, audio, speech sound",
-				"tags": [],
+				"tags": [
+					"sound",
+					"speech",
+					"communication",
+					"audio"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -39196,7 +44764,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1876,
 				"originalKo": "안내기",
 				"originalEn": "guide device, audio guide machine",
-				"tags": [],
+				"tags": [
+					"device",
+					"appliance",
+					"tool",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -39222,7 +44795,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 393,
 				"originalKo": "빌리다",
 				"originalEn": "to borrow/rent",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 485,
@@ -39248,7 +44823,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -39301,7 +44883,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 22,
 				"originalKo": "죄송하다",
 				"originalEn": "to be sorry",
-				"tags": [],
+				"tags": [
+					"emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -39334,7 +44918,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 139,
 				"originalKo": "영어",
 				"originalEn": "English language",
-				"tags": [],
+				"tags": [
+					"language",
+					"object",
+					"sinoRoot"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -39352,7 +44940,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1875,
 				"originalKo": "음성",
 				"originalEn": "voice, audio, speech sound",
-				"tags": [],
+				"tags": [
+					"sound",
+					"speech",
+					"communication",
+					"audio"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -39370,7 +44963,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1876,
 				"originalKo": "안내기",
 				"originalEn": "guide device, audio guide machine",
-				"tags": [],
+				"tags": [
+					"device",
+					"appliance",
+					"tool",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -39396,7 +44994,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 393,
 				"originalKo": "빌리다",
 				"originalEn": "to borrow/rent",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -39429,7 +45029,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 668,
 				"originalKo": "어떻게",
 				"originalEn": "how",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"method"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -39447,7 +45050,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1276,
@@ -39504,7 +45110,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1877,
 				"originalKo": "신분증",
 				"originalEn": "identification card, ID, identification document",
-				"tags": [],
+				"tags": [
+					"document",
+					"object",
+					"identification",
+					"official"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -39530,7 +45141,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 272,
 				"originalKo": "천",
 				"originalEn": "thousand",
-				"tags": [],
+				"tags": [
+					"sinoNumber"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -39548,7 +45161,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 526,
 				"originalKo": "원",
 				"originalEn": "won",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"sinoMeasureWord",
+					"currency"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -39574,7 +45191,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1216,
 				"originalKo": "내다",
 				"originalEn": "to pay, turn in, produce, cause",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -39600,7 +45220,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 393,
 				"originalKo": "빌리다",
 				"originalEn": "to borrow/rent",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -39653,7 +45275,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1875,
 				"originalKo": "음성",
 				"originalEn": "voice, audio, speech sound",
-				"tags": [],
+				"tags": [
+					"sound",
+					"speech",
+					"communication",
+					"audio"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -39671,7 +45298,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1876,
 				"originalKo": "안내기",
 				"originalEn": "guide device, audio guide machine",
-				"tags": [],
+				"tags": [
+					"device",
+					"appliance",
+					"tool",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 1241,
@@ -39697,7 +45329,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1862,
 				"originalKo": "설명",
 				"originalEn": "explanation, description, account",
-				"tags": [],
+				"tags": [
+					"speech",
+					"communication",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -39723,7 +45359,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1102,
 				"originalKo": "들다",
 				"originalEn": "to enter, hold, cost, raise",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 711,
@@ -39749,7 +45387,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 481,
 				"originalKo": "박물관",
 				"originalEn": "museum",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"history"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -39775,7 +45417,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 457,
 				"originalKo": "천천히",
 				"originalEn": "slowly",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"speed"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -39793,7 +45440,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 513,
 				"originalKo": "구경하다",
 				"originalEn": "to look around",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_place",
+					"leisure"
+				],
 				"grammar": [
 					{
 						"unitId": 53,
@@ -39819,7 +45470,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1621,
 				"originalKo": "이해하다",
 				"originalEn": "to understand, comprehend",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cognition",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 1815,
@@ -39845,7 +45500,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 413,
 				"originalKo": "쉽다",
 				"originalEn": "to be easy",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_difficulty",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -39871,7 +45531,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 607,
 				"originalKo": "정말",
 				"originalEn": "really",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -39889,7 +45554,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 196,
 				"originalKo": "재미있다",
 				"originalEn": "to be fun",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -39941,7 +45609,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1768,
 				"originalKo": "유키",
 				"originalEn": "Yuki (personal name)",
-				"tags": [],
+				"tags": [
+					"name",
+					"person",
+					"proper_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -39967,7 +45639,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -39985,7 +45660,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 489,
 				"originalKo": "역사",
 				"originalEn": "history",
-				"tags": [],
+				"tags": [
+					"concept",
+					"academic"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -40011,7 +45689,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1458,
 				"originalKo": "관심",
 				"originalEn": "interest, attention",
-				"tags": [],
+				"tags": [
+					"cognition",
+					"emotion",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -40037,7 +45719,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 621,
@@ -40063,7 +45749,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 426,
 				"originalKo": "다음",
 				"originalEn": "next",
-				"tags": [],
+				"tags": [
+					"time_modifier",
+					"time",
+					"determiner"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -40089,7 +45779,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 325,
 				"originalKo": "같이",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"social",
+					"accompaniment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -40107,7 +45803,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 574,
@@ -40169,7 +45872,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 426,
 				"originalKo": "다음",
 				"originalEn": "next",
-				"tags": [],
+				"tags": [
+					"time_modifier",
+					"time",
+					"determiner"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -40195,7 +45902,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -40235,7 +45949,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1750,
 				"originalKo": "안내",
 				"originalEn": "guidance, information, tour guide",
-				"tags": [],
+				"tags": [
+					"activity",
+					"concept",
+					"communication",
+					"service"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -40253,7 +45972,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 32,
 				"originalKo": "선생님",
 				"originalEn": "teacher",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"honorific",
+					"elder_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -40279,7 +46003,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1862,
 				"originalKo": "설명",
 				"originalEn": "explanation, description, account",
-				"tags": [],
+				"tags": [
+					"speech",
+					"communication",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -40305,7 +46033,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1286,
 				"originalKo": "신청하다",
 				"originalEn": "to apply, sign up",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"academic",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -40331,7 +46063,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1287,
 				"originalKo": "직접",
 				"originalEn": "directly, in person",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -40349,7 +46085,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1102,
 				"originalKo": "들다",
 				"originalEn": "to enter, hold, cost, raise",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 711,
@@ -40375,7 +46113,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 513,
 				"originalKo": "구경하다",
 				"originalEn": "to look around",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_place",
+					"leisure"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -40423,7 +46165,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 426,
 				"originalKo": "다음",
 				"originalEn": "next",
-				"tags": [],
+				"tags": [
+					"time_modifier",
+					"time",
+					"determiner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -40441,7 +46187,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 435,
 				"originalKo": "주",
 				"originalEn": "week",
-				"tags": [],
+				"tags": [
+					"time",
+					"measureWord",
+					"sinoMeasureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -40467,7 +46217,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -40493,7 +46248,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -40511,7 +46269,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1607,
 				"originalKo": "문화",
 				"originalEn": "culture",
-				"tags": [],
+				"tags": [
+					"culture",
+					"abstract",
+					"society"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -40529,7 +46291,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -40547,7 +46313,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1839,
 				"originalKo": "장소",
 				"originalEn": "place, venue, location",
-				"tags": [],
+				"tags": [
+					"place",
+					"location",
+					"space"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -40565,7 +46335,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1750,
 				"originalKo": "안내",
 				"originalEn": "guidance, information, tour guide",
-				"tags": [],
+				"tags": [
+					"activity",
+					"concept",
+					"communication",
+					"service"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -40610,7 +46385,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 210,
 				"originalKo": "오전",
 				"originalEn": "morning/AM",
-				"tags": [],
+				"tags": [
+					"time",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -40636,7 +46414,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 183,
 				"originalKo": "서울",
 				"originalEn": "Seoul",
-				"tags": [],
+				"tags": [
+					"place",
+					"city"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -40654,7 +46435,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 489,
 				"originalKo": "역사",
 				"originalEn": "history",
-				"tags": [],
+				"tags": [
+					"concept",
+					"academic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -40672,7 +46456,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 481,
 				"originalKo": "박물관",
 				"originalEn": "museum",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"history"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -40698,7 +46486,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -40724,7 +46516,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -40750,7 +46545,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 211,
 				"originalKo": "오후",
 				"originalEn": "afternoon/PM",
-				"tags": [],
+				"tags": [
+					"time",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -40776,7 +46574,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1243,
 				"originalKo": "경복궁",
 				"originalEn": "Gyeongbokgung Palace",
-				"tags": [],
+				"tags": [
+					"place",
+					"landmark",
+					"tourism",
+					"traditional"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -40802,7 +46605,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 838,
@@ -40854,7 +46664,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 481,
 				"originalKo": "박물관",
 				"originalEn": "museum",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"history"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -40880,7 +46694,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1620,
 				"originalKo": "학교",
 				"originalEn": "school",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -40906,7 +46725,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 650,
 				"originalKo": "가깝다",
 				"originalEn": "to be close",
-				"tags": [],
+				"tags": [
+					"descriptive_place",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 54,
@@ -40932,7 +46754,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1878,
 				"originalKo": "찾아가다",
 				"originalEn": "to visit, find one's way to, go to",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"movement",
+					"locative_goal",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 1815,
@@ -40958,7 +46785,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 414,
 				"originalKo": "어렵다",
 				"originalEn": "to be difficult",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_difficulty",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -40991,7 +46822,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 915,
 				"originalKo": "걸다",
 				"originalEn": "to hang, make (a phone call), bet",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -41035,7 +46868,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -41061,7 +46901,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 940,
 				"originalKo": "방법",
 				"originalEn": "method, way",
-				"tags": [],
+				"tags": [
+					"concept",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -41087,7 +46930,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41105,7 +46953,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 152,
 				"originalKo": "읽다",
 				"originalEn": "to read",
-				"tags": [],
+				"tags": [
+					"transitive_reading",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -41131,7 +46982,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 426,
 				"originalKo": "다음",
 				"originalEn": "next",
-				"tags": [],
+				"tags": [
+					"time_modifier",
+					"time",
+					"determiner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41149,7 +47004,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 435,
 				"originalKo": "주",
 				"originalEn": "week",
-				"tags": [],
+				"tags": [
+					"time",
+					"measureWord",
+					"sinoMeasureWord"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41167,7 +47026,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 347,
 				"originalKo": "금요일",
 				"originalEn": "Friday",
-				"tags": [],
+				"tags": [
+					"time",
+					"dayOfWeek",
+					"weekday"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41185,7 +47048,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 210,
 				"originalKo": "오전",
 				"originalEn": "morning/AM",
-				"tags": [],
+				"tags": [
+					"time",
+					"sinoRoot"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41203,7 +47069,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 204,
 				"originalKo": "시",
 				"originalEn": "hour/o'clock",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"time"
+				],
 				"grammar": [
 					{
 						"unitId": 1826,
@@ -41229,7 +47099,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 452,
 				"originalKo": "늦다",
 				"originalEn": "to be late",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_person",
+					"descriptive_speed",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -41255,7 +47130,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 675,
 				"originalKo": "도착하다",
 				"originalEn": "to arrive",
-				"tags": [],
+				"tags": [
+					"intransitive_place",
+					"locative_goal",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 1644,
@@ -41299,7 +47178,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1884,
 				"originalKo": "교통",
 				"originalEn": "traffic, transportation, transit",
-				"tags": [],
+				"tags": [
+					"concept",
+					"transportation"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41317,7 +47199,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1885,
 				"originalKo": "카드",
 				"originalEn": "card (credit/transit/greeting card)",
-				"tags": [],
+				"tags": [
+					"object",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -41343,7 +47228,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 605,
 				"originalKo": "준비하다",
 				"originalEn": "to prepare",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -41369,7 +47256,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -41395,7 +47285,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1398,
 				"originalKo": "잊다",
 				"originalEn": "to forget",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cognition"
+				],
 				"grammar": [
 					{
 						"unitId": 1737,
@@ -41455,7 +47348,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 671,
 				"originalKo": "역",
 				"originalEn": "station",
-				"tags": [],
+				"tags": [
+					"place",
+					"transitFacility"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41473,7 +47369,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1883,
 				"originalKo": "출발",
 				"originalEn": "departure",
-				"tags": [],
+				"tags": [
+					"concept",
+					"transit",
+					"time"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41491,7 +47391,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 671,
 				"originalKo": "역",
 				"originalEn": "station",
-				"tags": [],
+				"tags": [
+					"place",
+					"transitFacility"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -41517,7 +47420,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 387,
 				"originalKo": "지하철",
 				"originalEn": "subway",
-				"tags": [],
+				"tags": [
+					"object",
+					"transportation",
+					"vehicle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41535,7 +47442,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 666,
 				"originalKo": "호선",
 				"originalEn": "subway line",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"transit"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -41561,7 +47471,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 397,
 				"originalKo": "타다",
 				"originalEn": "to ride",
-				"tags": [],
+				"tags": [
+					"transitive_vehicle",
+					"transitive_transportation",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -41587,7 +47501,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 1239,
@@ -41613,7 +47534,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1887,
 				"originalKo": "충정로역",
 				"originalEn": "Chungjeongno Station (Seoul Subway Line 2 and Line 5)",
-				"tags": [],
+				"tags": [
+					"place",
+					"station",
+					"subway",
+					"transitFacility"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -41639,7 +47565,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 666,
 				"originalKo": "호선",
 				"originalEn": "subway line",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"transit"
+				],
 				"grammar": [
 					{
 						"unitId": 1240,
@@ -41679,7 +47608,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 673,
 				"originalKo": "갈아타다",
 				"originalEn": "to transfer",
-				"tags": [],
+				"tags": [
+					"transitive_transportation",
+					"transit"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -41720,7 +47652,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 671,
 				"originalKo": "역",
 				"originalEn": "station",
-				"tags": [],
+				"tags": [
+					"place",
+					"transitFacility"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41738,7 +47673,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 226,
 				"originalKo": "번",
 				"originalEn": "times/number",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"frequency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41756,7 +47695,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 704,
 				"originalKo": "출구",
 				"originalEn": "exit",
-				"tags": [],
+				"tags": [
+					"place",
+					"transitFacility"
+				],
 				"grammar": [
 					{
 						"unitId": 1240,
@@ -41782,7 +47724,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1672,
 				"originalKo": "나오다",
 				"originalEn": "to come out, emerge, exit",
-				"tags": [],
+				"tags": [
+					"locative_origin",
+					"movement",
+					"intransitive",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -41808,7 +47755,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1517,
 				"originalKo": "정도",
 				"originalEn": "degree, limit, approximate amount (\"about\")",
-				"tags": [],
+				"tags": [
+					"approximation",
+					"measurement",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41826,7 +47777,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1879,
 				"originalKo": "걸어가다",
 				"originalEn": "to walk, go on foot",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"movement",
+					"locative_goal",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -41868,7 +47824,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1620,
 				"originalKo": "학교",
 				"originalEn": "school",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41886,7 +47847,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1883,
 				"originalKo": "출발",
 				"originalEn": "departure",
-				"tags": [],
+				"tags": [
+					"concept",
+					"transit",
+					"time"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41904,7 +47869,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1620,
 				"originalKo": "학교",
 				"originalEn": "school",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41922,7 +47892,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 99,
 				"originalKo": "앞",
 				"originalEn": "front",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41940,7 +47912,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 658,
 				"originalKo": "버스",
 				"originalEn": "bus",
-				"tags": [],
+				"tags": [
+					"object",
+					"transportation",
+					"vehicle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -41958,7 +47934,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 672,
 				"originalKo": "정류장",
 				"originalEn": "bus stop",
-				"tags": [],
+				"tags": [
+					"place",
+					"transitFacility"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -41984,7 +47963,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 226,
 				"originalKo": "번",
 				"originalEn": "times/number",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"frequency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -42002,7 +47985,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 226,
 				"originalKo": "번",
 				"originalEn": "times/number",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"frequency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -42020,7 +48007,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 658,
 				"originalKo": "버스",
 				"originalEn": "bus",
-				"tags": [],
+				"tags": [
+					"object",
+					"transportation",
+					"vehicle"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -42046,7 +48037,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 397,
 				"originalKo": "타다",
 				"originalEn": "to ride",
-				"tags": [],
+				"tags": [
+					"transitive_vehicle",
+					"transitive_transportation",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -42072,7 +48067,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 183,
 				"originalKo": "서울",
 				"originalEn": "Seoul",
-				"tags": [],
+				"tags": [
+					"place",
+					"city"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -42090,7 +48088,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 489,
 				"originalKo": "역사",
 				"originalEn": "history",
-				"tags": [],
+				"tags": [
+					"concept",
+					"academic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -42108,7 +48109,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 481,
 				"originalKo": "박물관",
 				"originalEn": "museum",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"history"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -42126,7 +48131,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 99,
 				"originalKo": "앞",
 				"originalEn": "front",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -42144,7 +48151,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 672,
 				"originalKo": "정류장",
 				"originalEn": "bus stop",
-				"tags": [],
+				"tags": [
+					"place",
+					"transitFacility"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -42170,7 +48180,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1880,
 				"originalKo": "하차하다",
 				"originalEn": "to get off, alight, disembark (vehicle)",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"transit",
+					"transportation"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -42213,7 +48227,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 481,
 				"originalKo": "박물관",
 				"originalEn": "museum",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"history"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -42239,7 +48257,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1243,
 				"originalKo": "경복궁",
 				"originalEn": "Gyeongbokgung Palace",
-				"tags": [],
+				"tags": [
+					"place",
+					"landmark",
+					"tourism",
+					"traditional"
+				],
 				"grammar": [
 					{
 						"unitId": 1826,
@@ -42265,7 +48288,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 915,
 				"originalKo": "걸다",
 				"originalEn": "to hang, make (a phone call), bet",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -42291,7 +48316,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 249,
 				"originalKo": "분",
 				"originalEn": "minute",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"sinoMeasureWord",
+					"time"
+				],
 				"grammar": [
 					{
 						"unitId": 653,
@@ -42317,7 +48346,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 651,
 				"originalKo": "걸리다",
 				"originalEn": "to take (time)",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"scalable",
+					"scalable_duration"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -42363,7 +48396,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1243,
 				"originalKo": "경복궁",
 				"originalEn": "Gyeongbokgung Palace",
-				"tags": [],
+				"tags": [
+					"place",
+					"landmark",
+					"tourism",
+					"traditional"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -42381,7 +48419,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 229,
 				"originalKo": "쪽",
 				"originalEn": "page",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"sinoMeasureWord",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -42407,7 +48449,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1879,
 				"originalKo": "걸어가다",
 				"originalEn": "to walk, go on foot",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"movement",
+					"locative_goal",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 1239,
@@ -42433,7 +48480,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 688,
 				"originalKo": "왼쪽",
 				"originalEn": "left side",
-				"tags": [],
+				"tags": [
+					"direction",
+					"spatialNoun",
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -42459,7 +48510,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -42485,7 +48541,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -42503,7 +48562,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 109,
 				"originalKo": "식당",
 				"originalEn": "restaurant",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"food",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -42529,7 +48594,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 708,
 				"originalKo": "들어가다",
 				"originalEn": "to enter",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"intransitive_place",
+					"locative_goal",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -42555,7 +48625,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 206,
 				"originalKo": "점심",
 				"originalEn": "lunch",
-				"tags": [],
+				"tags": [
+					"time",
+					"meal",
+					"noon"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -42573,7 +48647,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1696,
 				"originalKo": "식사",
 				"originalEn": "meal, dining",
-				"tags": [],
+				"tags": [
+					"food",
+					"meal",
+					"event"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -42599,7 +48677,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1644,
@@ -42642,7 +48723,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1370,
 				"originalKo": "메뉴",
 				"originalEn": "menu",
-				"tags": [],
+				"tags": [
+					"food",
+					"dining",
+					"document"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -42668,7 +48753,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 285,
 				"originalKo": "불고기",
 				"originalEn": "bulgogi",
-				"tags": [],
+				"tags": [
+					"food",
+					"meat",
+					"koreanFood"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -42694,7 +48783,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 296,
 				"originalKo": "비빔밥",
 				"originalEn": "bibimbap",
-				"tags": [],
+				"tags": [
+					"food",
+					"koreanFood"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -42720,7 +48812,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -42770,7 +48865,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 204,
 				"originalKo": "시",
 				"originalEn": "hour/o'clock",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"time"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -42810,7 +48909,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1243,
 				"originalKo": "경복궁",
 				"originalEn": "Gyeongbokgung Palace",
-				"tags": [],
+				"tags": [
+					"place",
+					"landmark",
+					"tourism",
+					"traditional"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -42828,7 +48932,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1886,
 				"originalKo": "매표소",
 				"originalEn": "ticket office, ticket booth, box office",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"transitFacility",
+					"commerce"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -42846,7 +48955,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 99,
 				"originalKo": "앞",
 				"originalEn": "front",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -42872,7 +48983,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 148,
 				"originalKo": "만나다",
 				"originalEn": "to meet",
-				"tags": [],
+				"tags": [
+					"transitive_person"
+				],
 				"grammar": [
 					{
 						"unitId": 1736,
@@ -42917,7 +49030,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 210,
 				"originalKo": "오전",
 				"originalEn": "morning/AM",
-				"tags": [],
+				"tags": [
+					"time",
+					"sinoRoot"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -42935,7 +49051,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 481,
 				"originalKo": "박물관",
 				"originalEn": "museum",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"history"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -42953,7 +49073,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -42979,7 +49103,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1286,
 				"originalKo": "신청하다",
 				"originalEn": "to apply, sign up",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"academic",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -43012,7 +49140,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 24,
 				"originalKo": "학생",
 				"originalEn": "student",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -43045,7 +49177,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1620,
 				"originalKo": "학교",
 				"originalEn": "school",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -43071,7 +49208,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1243,
 				"originalKo": "경복궁",
 				"originalEn": "Gyeongbokgung Palace",
-				"tags": [],
+				"tags": [
+					"place",
+					"landmark",
+					"tourism",
+					"traditional"
+				],
 				"grammar": [
 					{
 						"unitId": 1240,
@@ -43097,7 +49239,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1287,
 				"originalKo": "직접",
 				"originalEn": "directly, in person",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -43115,7 +49261,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 1644,
@@ -43157,7 +49308,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1620,
 				"originalKo": "학교",
 				"originalEn": "school",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -43175,7 +49331,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 99,
 				"originalKo": "앞",
 				"originalEn": "front",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -43193,7 +49351,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 658,
 				"originalKo": "버스",
 				"originalEn": "bus",
-				"tags": [],
+				"tags": [
+					"object",
+					"transportation",
+					"vehicle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -43211,7 +49373,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 672,
 				"originalKo": "정류장",
 				"originalEn": "bus stop",
-				"tags": [],
+				"tags": [
+					"place",
+					"transitFacility"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -43237,7 +49402,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 226,
 				"originalKo": "번",
 				"originalEn": "times/number",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"frequency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -43255,7 +49424,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 226,
 				"originalKo": "번",
 				"originalEn": "times/number",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"frequency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -43273,7 +49446,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 226,
 				"originalKo": "번",
 				"originalEn": "times/number",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"frequency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -43291,7 +49468,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 658,
 				"originalKo": "버스",
 				"originalEn": "bus",
-				"tags": [],
+				"tags": [
+					"object",
+					"transportation",
+					"vehicle"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -43317,7 +49498,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 397,
 				"originalKo": "타다",
 				"originalEn": "to ride",
-				"tags": [],
+				"tags": [
+					"transitive_vehicle",
+					"transitive_transportation",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -43343,7 +49528,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1243,
 				"originalKo": "경복궁",
 				"originalEn": "Gyeongbokgung Palace",
-				"tags": [],
+				"tags": [
+					"place",
+					"landmark",
+					"tourism",
+					"traditional"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -43369,7 +49559,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1880,
 				"originalKo": "하차하다",
 				"originalEn": "to get off, alight, disembark (vehicle)",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"transit",
+					"transportation"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -43413,7 +49607,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1399,
 				"originalKo": "지난번",
 				"originalEn": "last time, previous time",
-				"tags": [],
+				"tags": [
+					"calendar",
+					"time",
+					"temporal_relation",
+					"temporal_past",
+					"past"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -43439,7 +49639,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1286,
 				"originalKo": "신청하다",
 				"originalEn": "to apply, sign up",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"academic",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -43472,7 +49676,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 181,
 				"originalKo": "호수",
 				"originalEn": "lake",
-				"tags": [],
+				"tags": [
+					"place",
+					"nature",
+					"water"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -43490,7 +49698,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1888,
 				"originalKo": "음악회",
 				"originalEn": "concert, music recital, musical performance",
-				"tags": [],
+				"tags": [
+					"activity",
+					"music",
+					"art",
+					"event"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -43508,7 +49721,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1108,
 				"originalKo": "초대장",
 				"originalEn": "invitation card",
-				"tags": [],
+				"tags": [
+					"object",
+					"document"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -43534,7 +49750,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 594,
 				"originalKo": "보내다",
 				"originalEn": "to send",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -43560,7 +49779,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 591,
 				"originalKo": "드리다",
 				"originalEn": "to give (honorific)",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person",
+					"humbleVerb",
+					"dative_humble"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -43602,7 +49826,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 185,
 				"originalKo": "아름답다",
 				"originalEn": "to be beautiful",
-				"tags": [],
+				"tags": [
+					"descriptive_place",
+					"descriptive_person",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -43628,7 +49856,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1497,
 				"originalKo": "밤",
 				"originalEn": "night, chestnut",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"food"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -43646,7 +49878,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1785,
 				"originalKo": "시원하다",
 				"originalEn": "to be cool, refreshing",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"feeling",
+					"drink",
+					"temperature",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -43672,7 +49910,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1823,
 				"originalKo": "바람",
 				"originalEn": "wind",
-				"tags": [],
+				"tags": [
+					"noun",
+					"weather",
+					"nature"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -43698,7 +49940,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1889,
 				"originalKo": "불다",
 				"originalEn": "to blow (wind), play (wind instrument)",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"weather"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -43724,7 +49969,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 181,
 				"originalKo": "호수",
 				"originalEn": "lake",
-				"tags": [],
+				"tags": [
+					"place",
+					"nature",
+					"water"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -43750,7 +49999,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 147,
 				"originalKo": "듣다",
 				"originalEn": "to listen/hear",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_audio"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -43776,7 +50028,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 140,
 				"originalKo": "음악",
 				"originalEn": "Music",
-				"tags": [],
+				"tags": [
+					"object",
+					"art",
+					"audio",
+					"sinoRoot"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -43811,7 +50068,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 607,
 				"originalKo": "정말",
 				"originalEn": "really",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -43829,7 +50091,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1890,
 				"originalKo": "기억",
 				"originalEn": "memory, recollection",
-				"tags": [],
+				"tags": [
+					"concept",
+					"cognition"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -43855,7 +50120,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1367,
 				"originalKo": "남다",
 				"originalEn": "to remain, be left over",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"quantity",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -43881,7 +50151,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1497,
 				"originalKo": "밤",
 				"originalEn": "night, chestnut",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -43907,7 +50181,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -43933,7 +50211,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 915,
 				"originalKo": "걸다",
 				"originalEn": "to hang, make (a phone call), bet",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -43980,7 +50260,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 418,
 				"originalKo": "공원",
 				"originalEn": "park",
-				"tags": [],
+				"tags": [
+					"place",
+					"nature"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -43998,7 +50281,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1891,
 				"originalKo": "입구",
 				"originalEn": "entrance, entry, doorway",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -44024,7 +50310,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -44042,7 +50333,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1108,
 				"originalKo": "초대장",
 				"originalEn": "invitation card",
-				"tags": [],
+				"tags": [
+					"object",
+					"document"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -44068,7 +50362,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1877,
 				"originalKo": "신분증",
 				"originalEn": "identification card, ID, identification document",
-				"tags": [],
+				"tags": [
+					"document",
+					"object",
+					"identification",
+					"official"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -44094,7 +50393,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 700,
 				"originalKo": "보이다",
 				"originalEn": "to be seen",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"perception"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -44141,7 +50443,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 441,
 				"originalKo": "표",
 				"originalEn": "ticket",
-				"tags": [],
+				"tags": [
+					"object",
+					"document"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -44167,7 +50472,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 591,
 				"originalKo": "드리다",
 				"originalEn": "to give (honorific)",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person",
+					"humbleVerb",
+					"dative_humble"
+				],
 				"grammar": [
 					{
 						"unitId": 838,
@@ -44217,7 +50527,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -44243,7 +50557,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1856,
 				"originalKo": "자리",
 				"originalEn": "seat, spot, position, space",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun",
+					"object",
+					"seating"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -44269,7 +50588,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 328,
 				"originalKo": "앉다",
 				"originalEn": "to sit",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_static"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -44302,7 +50624,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1892,
 				"originalKo": "서두르다",
 				"originalEn": "to hurry, rush",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -44344,7 +50669,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1894,
 				"originalKo": "터미널",
 				"originalEn": "terminal, bus terminal",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"transitFacility"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -44370,7 +50699,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 649,
 				"originalKo": "택시",
 				"originalEn": "taxi",
-				"tags": [],
+				"tags": [
+					"object",
+					"transportation",
+					"vehicle"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -44396,7 +50729,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 397,
 				"originalKo": "타다",
 				"originalEn": "to ride",
-				"tags": [],
+				"tags": [
+					"transitive_vehicle",
+					"transitive_transportation",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -44422,7 +50759,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 249,
 				"originalKo": "분",
 				"originalEn": "minute",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"sinoMeasureWord",
+					"time"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -44440,7 +50781,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1517,
 				"originalKo": "정도",
 				"originalEn": "degree, limit, approximate amount (\"about\")",
-				"tags": [],
+				"tags": [
+					"approximation",
+					"measurement",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -44458,7 +50803,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 651,
 				"originalKo": "걸리다",
 				"originalEn": "to take (time)",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"scalable",
+					"scalable_duration"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -44499,7 +50848,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 684,
 				"originalKo": "오른쪽",
 				"originalEn": "right side",
-				"tags": [],
+				"tags": [
+					"direction",
+					"spatialNoun",
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -44525,7 +50878,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1891,
 				"originalKo": "입구",
 				"originalEn": "entrance, entry, doorway",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -44551,7 +50907,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -44594,7 +50955,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -44620,7 +50985,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 432,
 				"originalKo": "이번",
 				"originalEn": "this time",
-				"tags": [],
+				"tags": [
+					"time_modifier",
+					"time",
+					"determiner"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -44646,7 +51015,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -44664,7 +51036,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 487,
 				"originalKo": "대학교",
 				"originalEn": "college",
-				"tags": [],
+				"tags": [
+					"place",
+					"school",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -44690,7 +51066,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1516,
 				"originalKo": "입학하다",
 				"originalEn": "to enter school, matriculate",
-				"tags": [],
+				"tags": [
+					"intransitive_place",
+					"academic",
+					"institution",
+					"locative_goal"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -44716,7 +51097,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 24,
 				"originalKo": "학생",
 				"originalEn": "student",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -44761,7 +51146,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -44787,7 +51175,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 240,
 				"originalKo": "오",
 				"originalEn": "five",
-				"tags": [],
+				"tags": [
+					"sinoNumber"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -44820,7 +51210,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 525,
 				"originalKo": "얼마",
 				"originalEn": "how much/many",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -44838,7 +51231,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 98,
 				"originalKo": "안",
 				"originalEn": "inside",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -44856,7 +51251,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -44882,7 +51281,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 742,
 				"originalKo": "아직",
 				"originalEn": "not yet",
-				"tags": [],
+				"tags": [
+					"adverb_time",
+					"time",
+					"aspect"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -44900,7 +51303,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -44918,7 +51324,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 189,
 				"originalKo": "생활",
 				"originalEn": "life/living",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"experience"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -44944,7 +51353,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 791,
 				"originalKo": "익숙하다",
 				"originalEn": "to be familiar",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"cognition",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -44992,7 +51405,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -45018,7 +51435,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 487,
 				"originalKo": "대학교",
 				"originalEn": "college",
-				"tags": [],
+				"tags": [
+					"place",
+					"school",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -45036,7 +51457,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 189,
 				"originalKo": "생활",
 				"originalEn": "life/living",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"experience"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -45062,7 +51486,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 410,
 				"originalKo": "조금",
 				"originalEn": "little/few",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_quantity",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -45080,7 +51510,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 414,
 				"originalKo": "어렵다",
 				"originalEn": "to be difficult",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_difficulty",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -45127,7 +51561,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 432,
 				"originalKo": "이번",
 				"originalEn": "this time",
-				"tags": [],
+				"tags": [
+					"time_modifier",
+					"time",
+					"determiner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -45145,7 +51583,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 759,
 				"originalKo": "학기",
 				"originalEn": "semester",
-				"tags": [],
+				"tags": [
+					"time",
+					"academic"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -45171,7 +51612,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 575,
 				"originalKo": "모두",
 				"originalEn": "all",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -45189,7 +51634,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 329,
 				"originalKo": "개",
 				"originalEn": "item",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -45222,7 +51670,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -45248,7 +51700,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 147,
 				"originalKo": "듣다",
 				"originalEn": "to listen/hear",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_audio"
+				],
 				"grammar": [
 					{
 						"unitId": 620,
@@ -45274,7 +51729,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1962,
 				"originalKo": "그중",
 				"originalEn": "among them, of them",
-				"tags": [],
+				"tags": [
+					"general"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -45300,7 +51757,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 555,
 				"originalKo": "제일",
 				"originalEn": "most",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"superlative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -45318,7 +51780,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 414,
 				"originalKo": "어렵다",
 				"originalEn": "to be difficult",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_difficulty",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -45344,7 +51810,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -45370,7 +51840,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1902,
 				"originalKo": "글쓰기",
 				"originalEn": "writing, composition, essay writing",
-				"tags": [],
+				"tags": [
+					"activity",
+					"academic",
+					"concept"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -45388,7 +51862,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -45433,7 +51911,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -45459,7 +51941,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 742,
 				"originalKo": "아직",
 				"originalEn": "not yet",
-				"tags": [],
+				"tags": [
+					"adverb_time",
+					"time",
+					"aspect"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -45477,7 +51963,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 134,
 				"originalKo": "한국말",
 				"originalEn": "Korean language",
-				"tags": [],
+				"tags": [
+					"language",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -45503,7 +51992,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -45521,7 +52015,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1649,
 				"originalKo": "못하다",
 				"originalEn": "to be poor at, cannot do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"intransitive_general",
+					"ability",
+					"negation"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -45547,7 +52046,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -45565,7 +52069,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -45591,7 +52099,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1102,
 				"originalKo": "들다",
 				"originalEn": "to enter, hold, cost, raise",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1276,
@@ -45617,7 +52127,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 426,
 				"originalKo": "다음",
 				"originalEn": "next",
-				"tags": [],
+				"tags": [
+					"time_modifier",
+					"time",
+					"determiner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -45635,7 +52149,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 759,
 				"originalKo": "학기",
 				"originalEn": "semester",
-				"tags": [],
+				"tags": [
+					"time",
+					"academic"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -45661,7 +52178,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1903,
 				"originalKo": "전공",
 				"originalEn": "major, field of study, academic specialization",
-				"tags": [],
+				"tags": [
+					"concept",
+					"academic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -45679,7 +52199,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -45705,7 +52229,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1286,
 				"originalKo": "신청하다",
 				"originalEn": "to apply, sign up",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"academic",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -45761,7 +52289,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -45779,7 +52312,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -45805,7 +52342,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1904,
 				"originalKo": "시험",
 				"originalEn": "exam, test, examination",
-				"tags": [],
+				"tags": [
+					"activity",
+					"academic",
+					"concept"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -45831,7 +52372,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 207,
 				"originalKo": "한",
 				"originalEn": "one",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -45849,7 +52393,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 226,
 				"originalKo": "번",
 				"originalEn": "times/number",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"frequency"
+				],
 				"grammar": [
 					{
 						"unitId": 1402,
@@ -45875,7 +52423,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -45901,7 +52452,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 461,
@@ -45927,7 +52482,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1905,
 				"originalKo": "일주일",
 				"originalEn": "one week, a week",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration",
+					"time_amount"
+				],
 				"grammar": [
 					{
 						"unitId": 1797,
@@ -45953,7 +52512,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 228,
 				"originalKo": "숙제",
 				"originalEn": "homework",
-				"tags": [],
+				"tags": [
+					"activity",
+					"task",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -45979,7 +52543,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -46005,7 +52572,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1216,
 				"originalKo": "내다",
 				"originalEn": "to pay, turn in, produce, cause",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 574,
@@ -46045,7 +52615,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1837,
 				"originalKo": "때문",
 				"originalEn": "reason, cause, because of",
-				"tags": [],
+				"tags": [
+					"concept",
+					"causal",
+					"reason"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -46071,7 +52645,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 410,
 				"originalKo": "조금",
 				"originalEn": "little/few",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_quantity",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -46089,7 +52669,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 371,
 				"originalKo": "힘들다",
 				"originalEn": "to be hard",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_person",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -46130,7 +52714,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 555,
 				"originalKo": "제일",
 				"originalEn": "most",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"superlative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -46148,7 +52737,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 196,
 				"originalKo": "재미있다",
 				"originalEn": "to be fun",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -46174,7 +52766,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -46200,7 +52796,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -46218,7 +52817,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1607,
 				"originalKo": "문화",
 				"originalEn": "culture",
-				"tags": [],
+				"tags": [
+					"culture",
+					"abstract",
+					"society"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -46236,7 +52839,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -46281,7 +52888,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2,
 				"originalKo": "저",
 				"originalEn": "I",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"humble"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -46307,7 +52918,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -46325,7 +52939,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1607,
 				"originalKo": "문화",
 				"originalEn": "culture",
-				"tags": [],
+				"tags": [
+					"culture",
+					"abstract",
+					"society"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -46351,7 +52969,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1458,
 				"originalKo": "관심",
 				"originalEn": "interest, attention",
-				"tags": [],
+				"tags": [
+					"cognition",
+					"emotion",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -46377,7 +52999,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -46403,7 +53029,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -46421,7 +53052,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -46447,7 +53082,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 147,
 				"originalKo": "듣다",
 				"originalEn": "to listen/hear",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_audio"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -46473,7 +53111,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -46499,7 +53140,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 607,
 				"originalKo": "정말",
 				"originalEn": "really",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -46517,7 +53163,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -46562,7 +53212,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -46580,7 +53235,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -46606,7 +53265,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -46624,7 +53286,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 209,
 				"originalKo": "영화",
 				"originalEn": "movie",
-				"tags": [],
+				"tags": [
+					"object",
+					"entertainment",
+					"media",
+					"visual_media",
+					"visual"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -46650,7 +53318,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 475,
 				"originalKo": "드라마",
 				"originalEn": "drama",
-				"tags": [],
+				"tags": [
+					"object",
+					"media",
+					"visual_media"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -46676,7 +53348,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 711,
@@ -46702,7 +53377,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -46720,7 +53398,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1607,
 				"originalKo": "문화",
 				"originalEn": "culture",
-				"tags": [],
+				"tags": [
+					"culture",
+					"abstract",
+					"society"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -46746,7 +53428,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 135,
 				"originalKo": "배우다",
 				"originalEn": "to learn",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_language"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -46779,7 +53464,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 607,
 				"originalKo": "정말",
 				"originalEn": "really",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -46797,7 +53487,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -46839,7 +53533,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -46865,7 +53563,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1635,
 				"originalKo": "지루하다",
 				"originalEn": "to be boring, tedious, dull",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"state",
+					"emotion",
+					"descriptive_emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -46891,7 +53595,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 196,
 				"originalKo": "재미있다",
 				"originalEn": "to be fun",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -46917,7 +53624,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1513,
 				"originalKo": "매주",
 				"originalEn": "every week, weekly",
-				"tags": [],
+				"tags": [
+					"adverb_frequency",
+					"frequency",
+					"calendar"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -46935,7 +53646,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -46953,7 +53668,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 665,
 				"originalKo": "시간",
 				"originalEn": "hour/time",
-				"tags": [],
+				"tags": [
+					"time",
+					"measureWord",
+					"koreanMeasureWord",
+					"resource",
+					"time_resource"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -46979,7 +53700,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1095,
 				"originalKo": "기대",
 				"originalEn": "expectation, anticipation",
-				"tags": [],
+				"tags": [
+					"concept",
+					"emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -47005,7 +53729,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -47050,7 +53778,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 325,
 				"originalKo": "같이",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"social",
+					"accompaniment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -47068,7 +53802,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -47086,7 +53825,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -47112,7 +53855,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 147,
 				"originalKo": "듣다",
 				"originalEn": "to listen/hear",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_audio"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -47138,7 +53884,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -47164,7 +53914,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -47182,7 +53935,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 511,
 				"originalKo": "요리",
 				"originalEn": "dish",
-				"tags": [],
+				"tags": [
+					"food",
+					"activity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -47200,7 +53956,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1097,
 				"originalKo": "동아리",
 				"originalEn": "club, student group",
-				"tags": [],
+				"tags": [
+					"organization",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -47226,7 +53985,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1622,
 				"originalKo": "소개하다",
 				"originalEn": "to introduce, present",
-				"tags": [],
+				"tags": [
+					"transitive_person",
+					"transitive_general",
+					"communication",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -47293,7 +54057,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 511,
 				"originalKo": "요리",
 				"originalEn": "dish",
-				"tags": [],
+				"tags": [
+					"food",
+					"activity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -47311,7 +54078,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1097,
 				"originalKo": "동아리",
 				"originalEn": "club, student group",
-				"tags": [],
+				"tags": [
+					"organization",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -47337,7 +54107,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 708,
 				"originalKo": "들어가다",
 				"originalEn": "to enter",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"intransitive_place",
+					"locative_goal",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -47363,7 +54138,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -47381,7 +54159,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -47407,7 +54189,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 788,
 				"originalKo": "사귀다",
 				"originalEn": "to make friends with",
-				"tags": [],
+				"tags": [
+					"transitive_person",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -47440,7 +54225,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -47458,7 +54246,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 304,
 				"originalKo": "음식",
 				"originalEn": "food",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -47484,7 +54274,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 286,
 				"originalKo": "만들다",
 				"originalEn": "to make",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -47510,7 +54303,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -47543,7 +54339,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -47561,7 +54362,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1097,
 				"originalKo": "동아리",
 				"originalEn": "club, student group",
-				"tags": [],
+				"tags": [
+					"organization",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -47587,7 +54391,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 708,
 				"originalKo": "들어가다",
 				"originalEn": "to enter",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"intransitive_place",
+					"locative_goal",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 1021,
@@ -47613,7 +54422,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -47660,7 +54472,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1395,
 				"originalKo": "앞으로",
 				"originalEn": "from now on, in the future",
-				"tags": [],
+				"tags": [
+					"adverb_time",
+					"time",
+					"temporal_relation",
+					"temporal_future",
+					"future",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -47678,7 +54497,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -47704,7 +54527,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 810,
 				"originalKo": "열심히",
 				"originalEn": "hard, diligently",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -47722,7 +54550,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 147,
 				"originalKo": "듣다",
 				"originalEn": "to listen/hear",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_audio"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -47748,7 +54579,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -47766,7 +54600,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -47792,7 +54630,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 408,
 				"originalKo": "많이",
 				"originalEn": "much/many",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -47810,7 +54651,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 788,
 				"originalKo": "사귀다",
 				"originalEn": "to make friends with",
-				"tags": [],
+				"tags": [
+					"transitive_person",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 711,
@@ -47836,7 +54680,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 196,
 				"originalKo": "재미있다",
 				"originalEn": "to be fun",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -47862,7 +54709,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 795,
 				"originalKo": "지내다",
 				"originalEn": "to spend time/get along",
-				"tags": [],
+				"tags": [
+					"intransitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -47936,7 +54785,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1614,
 				"originalKo": "한국어",
 				"originalEn": "Korean language",
-				"tags": [],
+				"tags": [
+					"language",
+					"education",
+					"culture",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -47962,7 +54816,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 167,
 				"originalKo": "공부하다",
 				"originalEn": "to study",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 711,
@@ -47988,7 +54845,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 196,
 				"originalKo": "재미있다",
 				"originalEn": "to be fun",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -48014,7 +54874,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -48047,7 +54910,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1641,
 				"originalKo": "일",
 				"originalEn": "work, task, matter, thing, business",
-				"tags": [],
+				"tags": [
+					"work",
+					"activity",
+					"task",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -48080,7 +54948,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 1021,
@@ -48123,7 +54996,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1632,
 				"originalKo": "한국어학당",
 				"originalEn": "Korean language institute",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"language"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -48149,7 +55027,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 24,
 				"originalKo": "학생",
 				"originalEn": "student",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -48182,7 +55064,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -48208,7 +55095,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1801,
 				"originalKo": "여러",
 				"originalEn": "several, various, multiple (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -48226,7 +55116,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1906,
 				"originalKo": "프로그램",
 				"originalEn": "program, schedule of activities",
-				"tags": [],
+				"tags": [
+					"general",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -48259,7 +55152,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 1292,
@@ -48300,7 +55198,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1735,
 				"originalKo": "어떤",
 				"originalEn": "which, what kind of, some",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"determiner",
+					"modifier",
+					"deictic",
+					"interrogative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -48318,7 +55222,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1906,
 				"originalKo": "프로그램",
 				"originalEn": "program, schedule of activities",
-				"tags": [],
+				"tags": [
+					"general",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -48344,7 +55251,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 1211,
@@ -48370,7 +55282,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 902,
 				"originalKo": "알아보다",
 				"originalEn": "to look into, investigate, recognize",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cognition"
+				],
 				"grammar": [
 					{
 						"unitId": 1021,
@@ -48415,7 +55330,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 134,
 				"originalKo": "한국말",
 				"originalEn": "Korean language",
-				"tags": [],
+				"tags": [
+					"language",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -48441,7 +55359,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1269,
 				"originalKo": "연습하다",
 				"originalEn": "to practice, rehearse",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"academic"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -48474,7 +55395,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -48492,7 +55416,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -48518,7 +55446,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 788,
 				"originalKo": "사귀다",
 				"originalEn": "to make friends with",
-				"tags": [],
+				"tags": [
+					"transitive_person",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -48551,7 +55482,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 11,
 				"originalKo": "사람",
 				"originalEn": "person",
-				"tags": [],
+				"tags": [
+					"person",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -48584,7 +55519,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1908,
 				"originalKo": "언어",
 				"originalEn": "language, tongue, speech",
-				"tags": [],
+				"tags": [
+					"language",
+					"education"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -48602,7 +55540,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1279,
 				"originalKo": "교환",
 				"originalEn": "exchange, swap",
-				"tags": [],
+				"tags": [
+					"concept",
+					"commerce"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -48620,7 +55561,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1906,
 				"originalKo": "프로그램",
 				"originalEn": "program, schedule of activities",
-				"tags": [],
+				"tags": [
+					"general",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -48646,7 +55590,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1286,
 				"originalKo": "신청하다",
 				"originalEn": "to apply, sign up",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"academic",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -48690,7 +55638,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1908,
 				"originalKo": "언어",
 				"originalEn": "language, tongue, speech",
-				"tags": [],
+				"tags": [
+					"language",
+					"education"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -48708,7 +55659,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1279,
 				"originalKo": "교환",
 				"originalEn": "exchange, swap",
-				"tags": [],
+				"tags": [
+					"concept",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -48734,7 +55688,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -48752,7 +55709,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 487,
 				"originalKo": "대학교",
 				"originalEn": "college",
-				"tags": [],
+				"tags": [
+					"place",
+					"school",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -48770,7 +55731,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 24,
 				"originalKo": "학생",
 				"originalEn": "student",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -48796,7 +55761,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1632,
 				"originalKo": "한국어학당",
 				"originalEn": "Korean language institute",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"language"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -48814,7 +55784,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 24,
 				"originalKo": "학생",
 				"originalEn": "student",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -48840,7 +55814,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1874,
 				"originalKo": "외국어",
 				"originalEn": "foreign language",
-				"tags": [],
+				"tags": [
+					"language",
+					"education",
+					"abstract",
+					"culture"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -48858,7 +55837,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1909,
 				"originalKo": "연습",
 				"originalEn": "practice, drill, rehearsal, exercise",
-				"tags": [],
+				"tags": [
+					"education",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -48884,7 +55866,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 820,
 				"originalKo": "도와주다",
 				"originalEn": "to help, give help",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_person",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -48910,7 +55896,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1906,
 				"originalKo": "프로그램",
 				"originalEn": "program, schedule of activities",
-				"tags": [],
+				"tags": [
+					"general",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 37,
@@ -48954,7 +55943,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1908,
 				"originalKo": "언어",
 				"originalEn": "language, tongue, speech",
-				"tags": [],
+				"tags": [
+					"language",
+					"education"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -48972,7 +55964,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1279,
 				"originalKo": "교환",
 				"originalEn": "exchange, swap",
-				"tags": [],
+				"tags": [
+					"concept",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -48998,7 +55993,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1286,
 				"originalKo": "신청하다",
 				"originalEn": "to apply, sign up",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"academic",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -49024,7 +56023,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1799,
 				"originalKo": "모든",
 				"originalEn": "all, every (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -49042,7 +56043,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 24,
 				"originalKo": "학생",
 				"originalEn": "student",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -49068,7 +56073,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1910,
 				"originalKo": "오리엔테이션",
 				"originalEn": "orientation, welcoming and introductory session",
-				"tags": [],
+				"tags": [
+					"education",
+					"school"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -49094,7 +56102,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1758,
 				"originalKo": "꼭",
 				"originalEn": "surely, certainly, by all means",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"emphasis"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -49112,7 +56124,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 574,
@@ -49138,7 +56155,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 49,
@@ -49187,7 +56207,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -49205,7 +56228,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 511,
 				"originalKo": "요리",
 				"originalEn": "dish",
-				"tags": [],
+				"tags": [
+					"food",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -49231,7 +56257,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1632,
 				"originalKo": "한국어학당",
 				"originalEn": "Korean language institute",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"language"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -49249,7 +56280,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 24,
 				"originalKo": "학생",
 				"originalEn": "student",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -49282,7 +56317,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 413,
 				"originalKo": "쉽다",
 				"originalEn": "to be easy",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_difficulty",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -49308,7 +56348,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1759,
 				"originalKo": "편하다",
 				"originalEn": "comfortable, convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -49334,7 +56377,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -49352,7 +56398,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 511,
 				"originalKo": "요리",
 				"originalEn": "dish",
-				"tags": [],
+				"tags": [
+					"food",
+					"activity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -49370,7 +56419,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 940,
 				"originalKo": "방법",
 				"originalEn": "method, way",
-				"tags": [],
+				"tags": [
+					"concept",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -49396,7 +56448,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 145,
 				"originalKo": "가르치다",
 				"originalEn": "to teach",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -49436,7 +56491,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1906,
 				"originalKo": "프로그램",
 				"originalEn": "program, schedule of activities",
-				"tags": [],
+				"tags": [
+					"general",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -49484,7 +56542,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1511,
 				"originalKo": "매년",
 				"originalEn": "every year, annually",
-				"tags": [],
+				"tags": [
+					"adverb_frequency",
+					"frequency",
+					"calendar"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -49502,7 +56564,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 725,
 				"originalKo": "봄",
 				"originalEn": "spring",
-				"tags": [],
+				"tags": [
+					"time",
+					"season"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -49520,7 +56585,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 759,
 				"originalKo": "학기",
 				"originalEn": "semester",
-				"tags": [],
+				"tags": [
+					"time",
+					"academic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -49538,7 +56606,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 736,
 				"originalKo": "가을",
 				"originalEn": "autumn",
-				"tags": [],
+				"tags": [
+					"time",
+					"season"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -49556,7 +56627,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 759,
 				"originalKo": "학기",
 				"originalEn": "semester",
-				"tags": [],
+				"tags": [
+					"time",
+					"academic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -49574,7 +56648,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 737,
 				"originalKo": "겨울",
 				"originalEn": "winter",
-				"tags": [],
+				"tags": [
+					"time",
+					"season"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -49592,7 +56669,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 759,
 				"originalKo": "학기",
 				"originalEn": "semester",
-				"tags": [],
+				"tags": [
+					"time",
+					"academic"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -49618,7 +56698,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1286,
 				"originalKo": "신청하다",
 				"originalEn": "to apply, sign up",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"academic",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -49670,7 +56754,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1912,
 				"originalKo": "요리하다",
 				"originalEn": "to cook, prepare food, make a dish",
-				"tags": [],
+				"tags": [
+					"transitive_food",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -49696,7 +56783,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -49722,7 +56812,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 288,
 				"originalKo": "좋아하다",
 				"originalEn": "to like",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food",
+					"transitive_person",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 1291,
@@ -49748,7 +56844,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -49766,7 +56865,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 304,
 				"originalKo": "음식",
 				"originalEn": "food",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -49792,7 +56893,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1458,
 				"originalKo": "관심",
 				"originalEn": "interest, attention",
-				"tags": [],
+				"tags": [
+					"cognition",
+					"emotion",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -49818,7 +56923,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -49844,7 +56954,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 24,
 				"originalKo": "학생",
 				"originalEn": "student",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -49870,7 +56984,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -49888,7 +57007,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1906,
 				"originalKo": "프로그램",
 				"originalEn": "program, schedule of activities",
-				"tags": [],
+				"tags": [
+					"general",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -49914,7 +57036,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1286,
 				"originalKo": "신청하다",
 				"originalEn": "to apply, sign up",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"academic",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -49958,7 +57084,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1632,
 				"originalKo": "한국어학당",
 				"originalEn": "Korean language institute",
-				"tags": [],
+				"tags": [
+					"place",
+					"education",
+					"institution",
+					"language"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -49984,7 +57115,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 759,
 				"originalKo": "학기",
 				"originalEn": "semester",
-				"tags": [],
+				"tags": [
+					"time",
+					"academic"
+				],
 				"grammar": [
 					{
 						"unitId": 1797,
@@ -50010,7 +57144,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -50028,7 +57165,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 209,
 				"originalKo": "영화",
 				"originalEn": "movie",
-				"tags": [],
+				"tags": [
+					"object",
+					"entertainment",
+					"media",
+					"visual_media",
+					"visual"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -50046,7 +57189,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1913,
 				"originalKo": "편",
 				"originalEn": "counter for movies, videos, films, poems, literary pieces",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"counter"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -50072,7 +57219,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1464,
 				"originalKo": "무료",
 				"originalEn": "free of charge",
-				"tags": [],
+				"tags": [
+					"finance",
+					"commerce",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -50098,7 +57249,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -50149,7 +57303,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 209,
 				"originalKo": "영화",
 				"originalEn": "movie",
-				"tags": [],
+				"tags": [
+					"object",
+					"entertainment",
+					"media",
+					"visual_media",
+					"visual"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -50175,7 +57335,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 345,
 				"originalKo": "수요일",
 				"originalEn": "Wednesday",
-				"tags": [],
+				"tags": [
+					"time",
+					"dayOfWeek",
+					"weekday"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -50193,7 +57357,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 211,
 				"originalKo": "오후",
 				"originalEn": "afternoon/PM",
-				"tags": [],
+				"tags": [
+					"time",
+					"sinoRoot"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -50211,7 +57378,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 204,
 				"originalKo": "시",
 				"originalEn": "hour/o'clock",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"time"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -50251,7 +57422,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1914,
 				"originalKo": "대강당",
 				"originalEn": "main auditorium, grand hall, assembly hall",
-				"tags": [],
+				"tags": [
+					"place",
+					"school"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -50277,7 +57451,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 49,
@@ -50323,7 +57500,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -50341,7 +57521,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 209,
 				"originalKo": "영화",
 				"originalEn": "movie",
-				"tags": [],
+				"tags": [
+					"object",
+					"entertainment",
+					"media",
+					"visual_media",
+					"visual"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -50367,7 +57553,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1458,
 				"originalKo": "관심",
 				"originalEn": "interest, attention",
-				"tags": [],
+				"tags": [
+					"cognition",
+					"emotion",
+					"abstract"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -50385,7 +57575,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -50411,7 +57606,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1639,
 				"originalKo": "분",
 				"originalEn": "person (honorific), counter for people",
-				"tags": [],
+				"tags": [
+					"person",
+					"honorific",
+					"counter",
+					"measureWord",
+					"koreanMeasureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -50444,7 +57645,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 209,
 				"originalKo": "영화",
 				"originalEn": "movie",
-				"tags": [],
+				"tags": [
+					"object",
+					"entertainment",
+					"media",
+					"visual_media",
+					"visual"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -50470,7 +57677,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 485,
@@ -50496,7 +57706,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1914,
 				"originalKo": "대강당",
 				"originalEn": "main auditorium, grand hall, assembly hall",
-				"tags": [],
+				"tags": [
+					"place",
+					"school"
+				],
 				"grammar": [
 					{
 						"unitId": 1240,
@@ -50522,7 +57735,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 416,
@@ -50566,7 +57784,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 465,
 				"originalKo": "요즘",
 				"originalEn": "these days",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporalNoun",
+					"temporal_present",
+					"present",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -50584,7 +57808,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1915,
 				"originalKo": "인터넷",
 				"originalEn": "internet",
-				"tags": [],
+				"tags": [
+					"general",
+					"technology",
+					"communication"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -50602,7 +57830,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1916,
 				"originalKo": "전문",
 				"originalEn": "specialty, specialization, expertise",
-				"tags": [],
+				"tags": [
+					"general",
+					"profession",
+					"business"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -50620,7 +57852,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 101,
 				"originalKo": "은행",
 				"originalEn": "bank",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -50646,7 +57883,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1770,
 				"originalKo": "이용하다",
 				"originalEn": "to use, utilize, make use of",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -50672,7 +57912,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 11,
 				"originalKo": "사람",
 				"originalEn": "person",
-				"tags": [],
+				"tags": [
+					"person",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -50698,7 +57942,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 801,
@@ -50731,7 +57979,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -50775,7 +58028,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 602,
 				"originalKo": "그래서",
 				"originalEn": "so",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"cause"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -50793,7 +58051,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 45,
 				"originalKo": "오늘",
 				"originalEn": "today",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_present",
+					"present",
+					"koreanRoot",
+					"no_time_particle"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -50819,7 +58083,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1915,
 				"originalKo": "인터넷",
 				"originalEn": "internet",
-				"tags": [],
+				"tags": [
+					"general",
+					"technology",
+					"communication"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -50837,7 +58105,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1916,
 				"originalKo": "전문",
 				"originalEn": "specialty, specialization, expertise",
-				"tags": [],
+				"tags": [
+					"general",
+					"profession",
+					"business"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -50855,7 +58127,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 101,
 				"originalKo": "은행",
 				"originalEn": "bank",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -50881,7 +58158,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1622,
 				"originalKo": "소개하다",
 				"originalEn": "to introduce, present",
-				"tags": [],
+				"tags": [
+					"transitive_person",
+					"transitive_general",
+					"communication",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -50946,7 +58228,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1915,
 				"originalKo": "인터넷",
 				"originalEn": "internet",
-				"tags": [],
+				"tags": [
+					"general",
+					"technology",
+					"communication"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -50964,7 +58250,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1916,
 				"originalKo": "전문",
 				"originalEn": "specialty, specialization, expertise",
-				"tags": [],
+				"tags": [
+					"general",
+					"profession",
+					"business"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -50982,7 +58272,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 101,
 				"originalKo": "은행",
 				"originalEn": "bank",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -51008,7 +58303,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1268,
 				"originalKo": "사용하다",
 				"originalEn": "to use, employ",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1259,
@@ -51034,7 +58331,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 354,
 				"originalKo": "먼저",
 				"originalEn": "first",
-				"tags": [],
+				"tags": [
+					"sequence",
+					"time"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -51052,7 +58352,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1917,
 				"originalKo": "앱",
 				"originalEn": "app, mobile application",
-				"tags": [],
+				"tags": [
+					"general",
+					"technology",
+					"software"
+				],
 				"grammar": [
 					{
 						"unitId": 1312,
@@ -51078,7 +58382,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1918,
 				"originalKo": "다운로드",
 				"originalEn": "download",
-				"tags": [],
+				"tags": [
+					"general",
+					"technology",
+					"computing"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -51096,7 +58404,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 365,
 				"originalKo": "받다",
 				"originalEn": "to receive",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 1276,
@@ -51152,7 +58463,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1917,
 				"originalKo": "앱",
 				"originalEn": "app, mobile application",
-				"tags": [],
+				"tags": [
+					"general",
+					"technology",
+					"software"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -51178,7 +58493,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1919,
 				"originalKo": "다운로드하다",
 				"originalEn": "to download",
-				"tags": [],
+				"tags": [
+					"action",
+					"technology",
+					"computing"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -51204,7 +58523,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1180,
 				"originalKo": "후",
 				"originalEn": "after, later (Sino-Korean)",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -51222,7 +58544,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1920,
 				"originalKo": "계좌",
 				"originalEn": "bank account, account",
-				"tags": [],
+				"tags": [
+					"general",
+					"finance",
+					"banking"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -51248,7 +58574,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 286,
 				"originalKo": "만들다",
 				"originalEn": "to make",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -51274,7 +58603,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -51319,7 +58652,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1920,
 				"originalKo": "계좌",
 				"originalEn": "bank account, account",
-				"tags": [],
+				"tags": [
+					"general",
+					"finance",
+					"banking"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -51345,7 +58682,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 286,
 				"originalKo": "만들다",
 				"originalEn": "to make",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -51378,7 +58718,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1299,
 				"originalKo": "비밀번호",
 				"originalEn": "password, PIN",
-				"tags": [],
+				"tags": [
+					"banking",
+					"security",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -51404,7 +58748,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 286,
 				"originalKo": "만들다",
 				"originalEn": "to make",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food"
+				],
 				"grammar": [
 					{
 						"unitId": 1276,
@@ -51461,7 +58808,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -51479,7 +58831,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1299,
 				"originalKo": "비밀번호",
 				"originalEn": "password, PIN",
-				"tags": [],
+				"tags": [
+					"banking",
+					"security",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -51505,7 +58861,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1915,
 				"originalKo": "인터넷",
 				"originalEn": "internet",
-				"tags": [],
+				"tags": [
+					"general",
+					"technology",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -51531,7 +58891,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 101,
 				"originalKo": "은행",
 				"originalEn": "bank",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -51549,7 +58914,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 236,
 				"originalKo": "일",
 				"originalEn": "one",
-				"tags": [],
+				"tags": [
+					"sinoNumber"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -51575,7 +58942,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -51601,7 +58971,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1794,
 				"originalKo": "동안",
 				"originalEn": "during, for, duration of time",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -51619,7 +58993,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1561,
 				"originalKo": "계속",
 				"originalEn": "continuously, keep on",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"aspect",
+					"continuity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -51637,7 +59017,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1110,
 				"originalKo": "필요하다",
 				"originalEn": "to need, be necessary",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -51682,7 +59065,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1920,
 				"originalKo": "계좌",
 				"originalEn": "bank account, account",
-				"tags": [],
+				"tags": [
+					"general",
+					"finance",
+					"banking"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -51708,7 +59095,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 84,
 				"originalKo": "돈",
 				"originalEn": "money",
-				"tags": [],
+				"tags": [
+					"object",
+					"resource",
+					"currency_resource"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -51734,7 +59125,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 935,
 				"originalKo": "넣다",
 				"originalEn": "to put in, insert",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -51760,7 +59153,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1605,
 				"originalKo": "때",
 				"originalEn": "time, when, moment",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 1312,
@@ -51786,7 +59183,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 203,
 				"originalKo": "보통",
 				"originalEn": "usually",
-				"tags": [],
+				"tags": [
+					"frequency",
+					"general"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -51804,7 +59204,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 101,
 				"originalKo": "은행",
 				"originalEn": "bank",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 367,
@@ -51830,7 +59235,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1921,
 				"originalKo": "똑같이",
 				"originalEn": "identically, equally, the same way",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"manner",
+					"general"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -51848,7 +59257,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1268,
 				"originalKo": "사용하다",
 				"originalEn": "to use, employ",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -51901,7 +59312,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 614,
 				"originalKo": "다르다",
 				"originalEn": "to be different",
-				"tags": [],
+				"tags": [
+					"descriptive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -51927,7 +59340,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 11,
 				"originalKo": "사람",
 				"originalEn": "person",
-				"tags": [],
+				"tags": [
+					"person",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -51953,7 +59370,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 84,
 				"originalKo": "돈",
 				"originalEn": "money",
-				"tags": [],
+				"tags": [
+					"object",
+					"resource",
+					"currency_resource"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -51979,7 +59400,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 594,
 				"originalKo": "보내다",
 				"originalEn": "to send",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -52019,7 +59443,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 101,
 				"originalKo": "은행",
 				"originalEn": "bank",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -52045,7 +59474,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 84,
 				"originalKo": "돈",
 				"originalEn": "money",
-				"tags": [],
+				"tags": [
+					"object",
+					"resource",
+					"currency_resource"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -52071,7 +59504,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 393,
 				"originalKo": "빌리다",
 				"originalEn": "to borrow/rent",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -52126,7 +59561,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1922,
 				"originalKo": "체크",
 				"originalEn": "check, debit, verification",
-				"tags": [],
+				"tags": [
+					"general",
+					"finance",
+					"banking"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -52144,7 +59583,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1885,
 				"originalKo": "카드",
 				"originalEn": "card (credit/transit/greeting card)",
-				"tags": [],
+				"tags": [
+					"object",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -52170,7 +59612,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 286,
 				"originalKo": "만들다",
 				"originalEn": "to make",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -52223,7 +59668,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 203,
 				"originalKo": "보통",
 				"originalEn": "usually",
-				"tags": [],
+				"tags": [
+					"frequency",
+					"general"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -52241,7 +59689,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 101,
 				"originalKo": "은행",
 				"originalEn": "bank",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -52267,7 +59720,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1372,
 				"originalKo": "서비스",
 				"originalEn": "service, complimentary item (on the house)",
-				"tags": [],
+				"tags": [
+					"commerce",
+					"food",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -52293,7 +59750,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 365,
 				"originalKo": "받다",
 				"originalEn": "to receive",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -52326,7 +59786,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 84,
 				"originalKo": "돈",
 				"originalEn": "money",
-				"tags": [],
+				"tags": [
+					"object",
+					"resource",
+					"currency_resource"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -52352,7 +59816,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1216,
 				"originalKo": "내다",
 				"originalEn": "to pay, turn in, produce, cause",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 574,
@@ -52392,7 +59859,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1605,
 				"originalKo": "때",
 				"originalEn": "time, when, moment",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -52418,7 +59889,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 461,
@@ -52444,7 +59919,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1915,
 				"originalKo": "인터넷",
 				"originalEn": "internet",
-				"tags": [],
+				"tags": [
+					"general",
+					"technology",
+					"communication"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -52462,7 +59941,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1916,
 				"originalKo": "전문",
 				"originalEn": "specialty, specialization, expertise",
-				"tags": [],
+				"tags": [
+					"general",
+					"profession",
+					"business"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -52480,7 +59963,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 101,
 				"originalKo": "은행",
 				"originalEn": "bank",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -52506,7 +59994,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1923,
 				"originalKo": "대부분",
 				"originalEn": "most, majority, mostly",
-				"tags": [],
+				"tags": [
+					"general",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -52524,7 +60015,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1464,
 				"originalKo": "무료",
 				"originalEn": "free of charge",
-				"tags": [],
+				"tags": [
+					"finance",
+					"commerce",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -52571,7 +60066,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1915,
 				"originalKo": "인터넷",
 				"originalEn": "internet",
-				"tags": [],
+				"tags": [
+					"general",
+					"technology",
+					"communication"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -52589,7 +60088,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1916,
 				"originalKo": "전문",
 				"originalEn": "specialty, specialization, expertise",
-				"tags": [],
+				"tags": [
+					"general",
+					"profession",
+					"business"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -52607,7 +60110,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 101,
 				"originalKo": "은행",
 				"originalEn": "bank",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -52633,7 +60141,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 203,
 				"originalKo": "보통",
 				"originalEn": "usually",
-				"tags": [],
+				"tags": [
+					"frequency",
+					"general"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -52651,7 +60162,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 101,
 				"originalKo": "은행",
 				"originalEn": "bank",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -52677,7 +60193,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -52717,7 +60236,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1641,
 				"originalKo": "일",
 				"originalEn": "work, task, matter, thing, business",
-				"tags": [],
+				"tags": [
+					"work",
+					"activity",
+					"task",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -52743,7 +60267,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 413,
 				"originalKo": "쉽다",
 				"originalEn": "to be easy",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_difficulty",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -52769,7 +60298,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1759,
 				"originalKo": "편하다",
 				"originalEn": "comfortable, convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -52795,7 +60327,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -52847,7 +60382,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 367,
@@ -52873,7 +60412,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1924,
 				"originalKo": "메시지",
 				"originalEn": "message, text message",
-				"tags": [],
+				"tags": [
+					"general",
+					"communication",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -52899,7 +60442,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1925,
 				"originalKo": "주고받다",
 				"originalEn": "to exchange, send and receive, trade",
-				"tags": [],
+				"tags": [
+					"action",
+					"communication",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -52925,7 +60472,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1794,
 				"originalKo": "동안",
 				"originalEn": "during, for, duration of time",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -52943,7 +60494,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 84,
 				"originalKo": "돈",
 				"originalEn": "money",
-				"tags": [],
+				"tags": [
+					"object",
+					"resource",
+					"currency_resource"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -52969,7 +60524,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 594,
 				"originalKo": "보내다",
 				"originalEn": "to send",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 1291,
@@ -52995,7 +60553,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 365,
 				"originalKo": "받다",
 				"originalEn": "to receive",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -53053,7 +60614,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1924,
 				"originalKo": "메시지",
 				"originalEn": "message, text message",
-				"tags": [],
+				"tags": [
+					"general",
+					"communication",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -53079,7 +60644,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1925,
 				"originalKo": "주고받다",
 				"originalEn": "to exchange, send and receive, trade",
-				"tags": [],
+				"tags": [
+					"action",
+					"communication",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 1239,
@@ -53105,7 +60674,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -53131,7 +60704,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1,
 				"originalKo": "이름",
 				"originalEn": "name",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"koreanRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -53157,7 +60733,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1926,
 				"originalKo": "클릭하다",
 				"originalEn": "to click",
-				"tags": [],
+				"tags": [
+					"action",
+					"technology",
+					"computing"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -53183,7 +60763,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 84,
 				"originalKo": "돈",
 				"originalEn": "money",
-				"tags": [],
+				"tags": [
+					"object",
+					"resource",
+					"currency_resource"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -53209,7 +60793,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 594,
 				"originalKo": "보내다",
 				"originalEn": "to send",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -53258,7 +60845,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2028,
 				"originalKo": "이때",
 				"originalEn": "this moment, this time, now",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -53276,7 +60866,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -53302,7 +60896,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 101,
 				"originalKo": "은행",
 				"originalEn": "bank",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -53320,7 +60919,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1920,
 				"originalKo": "계좌",
 				"originalEn": "bank account, account",
-				"tags": [],
+				"tags": [
+					"general",
+					"finance",
+					"banking"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -53338,7 +60941,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1716,
 				"originalKo": "호",
 				"originalEn": "room / unit number (counter)",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"sinoMeasureWord",
+					"counter",
+					"buildingPart"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -53364,7 +60972,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 615,
 				"originalKo": "모르다",
 				"originalEn": "to not know",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 572,
@@ -53414,7 +61025,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1927,
 				"originalKo": "핸드폰",
 				"originalEn": "cell phone, mobile phone",
-				"tags": [],
+				"tags": [
+					"general",
+					"technology",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -53440,7 +61055,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 596,
 				"originalKo": "연락하다",
 				"originalEn": "to contact",
-				"tags": [],
+				"tags": [
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -53473,7 +61090,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 973,
 				"originalKo": "면",
 				"originalEn": "noodles, side, face, surface",
-				"tags": [],
+				"tags": [
+					"food",
+					"ingredient"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -53491,7 +61111,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 84,
 				"originalKo": "돈",
 				"originalEn": "money",
-				"tags": [],
+				"tags": [
+					"object",
+					"resource",
+					"currency_resource"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -53517,7 +61141,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 594,
 				"originalKo": "보내다",
 				"originalEn": "to send",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -53569,7 +61196,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1811,
 				"originalKo": "가족",
 				"originalEn": "family",
-				"tags": [],
+				"tags": [
+					"noun",
+					"people",
+					"family",
+					"relationship"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -53595,7 +61227,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -53621,7 +61257,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1907,
 				"originalKo": "특별하다",
 				"originalEn": "to be special, particular, extraordinary",
-				"tags": [],
+				"tags": [
+					"stative_state",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -53647,7 +61286,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1634,
 				"originalKo": "날",
 				"originalEn": "day, date",
-				"tags": [],
+				"tags": [
+					"time",
+					"calendar",
+					"day"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -53673,7 +61316,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 606,
 				"originalKo": "축하하다",
 				"originalEn": "to congratulate",
-				"tags": [],
+				"tags": [
+					"transitive_person",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -53706,7 +61352,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 915,
 				"originalKo": "걸다",
 				"originalEn": "to hang, make (a phone call), bet",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 932,
@@ -53749,7 +61397,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 112,
 				"originalKo": "우체국",
 				"originalEn": "post office",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -53775,7 +61428,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1928,
 				"originalKo": "축하",
 				"originalEn": "celebration, congratulation",
-				"tags": [],
+				"tags": [
+					"general",
+					"social"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -53793,7 +61449,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1885,
 				"originalKo": "카드",
 				"originalEn": "card (credit/transit/greeting card)",
-				"tags": [],
+				"tags": [
+					"object",
+					"commerce"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -53811,7 +61470,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1372,
 				"originalKo": "서비스",
 				"originalEn": "service, complimentary item (on the house)",
-				"tags": [],
+				"tags": [
+					"commerce",
+					"food",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -53837,7 +61500,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1770,
 				"originalKo": "이용하다",
 				"originalEn": "to use, utilize, make use of",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -53896,7 +61562,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1885,
 				"originalKo": "카드",
 				"originalEn": "card (credit/transit/greeting card)",
-				"tags": [],
+				"tags": [
+					"object",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -53922,7 +61591,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 604,
 				"originalKo": "고르다",
 				"originalEn": "to pick/select",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -53948,7 +61619,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1928,
 				"originalKo": "축하",
 				"originalEn": "celebration, congratulation",
-				"tags": [],
+				"tags": [
+					"general",
+					"social"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -53966,7 +61640,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1929,
 				"originalKo": "인사",
 				"originalEn": "greeting, regards, salutation",
-				"tags": [],
+				"tags": [
+					"general",
+					"social",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -53992,7 +61670,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 151,
 				"originalKo": "쓰다",
 				"originalEn": "to write",
-				"tags": [],
+				"tags": [
+					"transitive_writing",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -54025,7 +61706,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1179,
 				"originalKo": "하루",
 				"originalEn": "one day",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -54043,7 +61727,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 98,
 				"originalKo": "안",
 				"originalEn": "inside",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -54069,7 +61755,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1928,
 				"originalKo": "축하",
 				"originalEn": "celebration, congratulation",
-				"tags": [],
+				"tags": [
+					"general",
+					"social"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -54087,7 +61776,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1885,
 				"originalKo": "카드",
 				"originalEn": "card (credit/transit/greeting card)",
-				"tags": [],
+				"tags": [
+					"object",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -54113,7 +61805,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1931,
 				"originalKo": "배달하다",
 				"originalEn": "to deliver",
-				"tags": [],
+				"tags": [
+					"action",
+					"service",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -54139,7 +61835,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 591,
 				"originalKo": "드리다",
 				"originalEn": "to give (honorific)",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person",
+					"humbleVerb",
+					"dative_humble"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -54185,7 +61886,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1638,
 				"originalKo": "같다",
 				"originalEn": "to be same, identical, similar, like",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"state",
+					"comparison"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -54211,7 +61916,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1885,
 				"originalKo": "카드",
 				"originalEn": "card (credit/transit/greeting card)",
-				"tags": [],
+				"tags": [
+					"object",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -54237,7 +61945,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 207,
 				"originalKo": "한",
 				"originalEn": "one",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -54255,7 +61966,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 226,
 				"originalKo": "번",
 				"originalEn": "times/number",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"frequency"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -54281,7 +61996,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1698,
 				"originalKo": "명",
 				"originalEn": "counter for people (plain)",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"counter",
+					"person"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -54314,7 +62034,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 594,
 				"originalKo": "보내다",
 				"originalEn": "to send",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -54371,7 +62094,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1777,
 				"originalKo": "사랑하다",
 				"originalEn": "to love",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_person",
+					"emotion",
+					"social",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -54397,7 +62127,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 11,
 				"originalKo": "사람",
 				"originalEn": "person",
-				"tags": [],
+				"tags": [
+					"person",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -54423,7 +62157,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 965,
 				"originalKo": "꽃다",
 				"originalEn": "to skewer, stick in, plug in",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -54449,7 +62185,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 579,
 				"originalKo": "선물하다",
 				"originalEn": "to give a gift",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_person",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -54482,7 +62222,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 915,
 				"originalKo": "걸다",
 				"originalEn": "to hang, make (a phone call), bet",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 932,
@@ -54524,7 +62266,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 112,
 				"originalKo": "우체국",
 				"originalEn": "post office",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -54550,7 +62297,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 104,
 				"originalKo": "꽃",
 				"originalEn": "flower",
-				"tags": [],
+				"tags": [
+					"object",
+					"plant",
+					"nature",
+					"flower"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -54576,7 +62328,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1931,
 				"originalKo": "배달하다",
 				"originalEn": "to deliver",
-				"tags": [],
+				"tags": [
+					"action",
+					"service",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -54602,7 +62358,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 591,
 				"originalKo": "드리다",
 				"originalEn": "to give (honorific)",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person",
+					"humbleVerb",
+					"dative_humble"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -54645,7 +62406,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 185,
 				"originalKo": "아름답다",
 				"originalEn": "to be beautiful",
-				"tags": [],
+				"tags": [
+					"descriptive_place",
+					"descriptive_person",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -54671,7 +62436,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 582,
 				"originalKo": "꽃다발",
 				"originalEn": "bouquet",
-				"tags": [],
+				"tags": [
+					"object",
+					"nature",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -54697,7 +62466,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1924,
 				"originalKo": "메시지",
 				"originalEn": "message, text message",
-				"tags": [],
+				"tags": [
+					"general",
+					"communication",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -54723,7 +62496,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1360,
 				"originalKo": "함께",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"social",
+					"manner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -54741,7 +62519,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 594,
 				"originalKo": "보내다",
 				"originalEn": "to send",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -54791,7 +62572,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1932,
 				"originalKo": "원하다",
 				"originalEn": "to want, desire, wish",
-				"tags": [],
+				"tags": [
+					"action",
+					"psychological",
+					"desire",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -54824,7 +62611,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 576,
 				"originalKo": "선물",
 				"originalEn": "gift",
-				"tags": [],
+				"tags": [
+					"object",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -54850,7 +62640,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 325,
 				"originalKo": "같이",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"social",
+					"accompaniment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -54868,7 +62664,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1931,
 				"originalKo": "배달하다",
 				"originalEn": "to deliver",
-				"tags": [],
+				"tags": [
+					"action",
+					"service",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -54894,7 +62694,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 591,
 				"originalKo": "드리다",
 				"originalEn": "to give (honorific)",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person",
+					"humbleVerb",
+					"dative_humble"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -54936,7 +62741,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 576,
 				"originalKo": "선물",
 				"originalEn": "gift",
-				"tags": [],
+				"tags": [
+					"object",
+					"social"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -54954,7 +62762,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1930,
 				"originalKo": "배달",
 				"originalEn": "delivery",
-				"tags": [],
+				"tags": [
+					"general",
+					"service",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -54980,7 +62792,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1073,
 				"originalKo": "따로",
 				"originalEn": "separately, apart",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -54998,7 +62814,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 84,
 				"originalKo": "돈",
 				"originalEn": "money",
-				"tags": [],
+				"tags": [
+					"object",
+					"resource",
+					"currency_resource"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -55024,7 +62844,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1216,
 				"originalKo": "내다",
 				"originalEn": "to pay, turn in, produce, cause",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 574,
@@ -55080,7 +62903,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -55106,7 +62933,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1817,
 				"originalKo": "식품",
 				"originalEn": "food, foodstuffs, groceries",
-				"tags": [],
+				"tags": [
+					"noun",
+					"food",
+					"commerce",
+					"goods"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -55132,7 +62964,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 505,
 				"originalKo": "드시다",
 				"originalEn": "to eat/drink",
-				"tags": [],
+				"tags": [
+					"transitive_food",
+					"transitive_drink",
+					"honorificVerb"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -55183,7 +63019,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 112,
 				"originalKo": "우체국",
 				"originalEn": "post office",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -55209,7 +63050,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 43,
 				"originalKo": "맛있다",
 				"originalEn": "to be delicious",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"food_adjective",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -55235,7 +63081,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1911,
 				"originalKo": "몸",
 				"originalEn": "body, physique, physical health",
-				"tags": [],
+				"tags": [
+					"body",
+					"health"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -55261,7 +63110,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -55287,7 +63140,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1933,
 				"originalKo": "신선식품",
 				"originalEn": "fresh food, perishable food products",
-				"tags": [],
+				"tags": [
+					"food",
+					"grocery"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -55313,7 +63169,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1015,
 				"originalKo": "팔다",
 				"originalEn": "to sell",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -55360,7 +63219,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1915,
 				"originalKo": "인터넷",
 				"originalEn": "internet",
-				"tags": [],
+				"tags": [
+					"general",
+					"technology",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -55386,7 +63249,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 1241,
@@ -55412,7 +63280,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1810,
 				"originalKo": "주문하다",
 				"originalEn": "to order (goods, food)",
-				"tags": [],
+				"tags": [
+					"action_verb",
+					"commerce",
+					"food",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -55445,7 +63318,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 870,
 				"originalKo": "신선하다",
 				"originalEn": "fresh",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"food",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -55471,7 +63349,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 291,
 				"originalKo": "과일",
 				"originalEn": "fruit",
-				"tags": [],
+				"tags": [
+					"food",
+					"fruit"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -55489,7 +63370,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 990,
 				"originalKo": "채소",
 				"originalEn": "vegetable",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -55507,7 +63391,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 962,
 				"originalKo": "고기",
 				"originalEn": "meat",
-				"tags": [],
+				"tags": [
+					"food",
+					"meat"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -55525,7 +63412,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1934,
 				"originalKo": "곡류",
 				"originalEn": "grains, cereals",
-				"tags": [],
+				"tags": [
+					"food",
+					"agriculture"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -55543,7 +63433,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1935,
 				"originalKo": "등",
 				"originalEn": "etc., and the like, and so on",
-				"tags": [],
+				"tags": [
+					"general",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -55569,7 +63462,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 180,
 				"originalKo": "집",
 				"originalEn": "house/home",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room",
+					"building"
+				],
 				"grammar": [
 					{
 						"unitId": 1240,
@@ -55595,7 +63493,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1931,
 				"originalKo": "배달하다",
 				"originalEn": "to deliver",
-				"tags": [],
+				"tags": [
+					"action",
+					"service",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -55621,7 +63523,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 591,
 				"originalKo": "드리다",
 				"originalEn": "to give (honorific)",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person",
+					"humbleVerb",
+					"dative_humble"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -55664,7 +63571,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1561,
 				"originalKo": "계속",
 				"originalEn": "continuously, keep on",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"aspect",
+					"continuity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -55682,7 +63595,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 392,
 				"originalKo": "비싸다",
 				"originalEn": "to be expensive",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_food",
+					"descriptive_price",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -55708,7 +63626,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1936,
 				"originalKo": "휴대",
 				"originalEn": "carrying, carrying on one's person, portability",
-				"tags": [],
+				"tags": [
+					"general",
+					"verbal_property"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -55726,7 +63647,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -55752,7 +63678,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1268,
 				"originalKo": "사용하다",
 				"originalEn": "to use, employ",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -55785,7 +63713,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 915,
 				"originalKo": "걸다",
 				"originalEn": "to hang, make (a phone call), bet",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 932,
@@ -55830,7 +63760,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 112,
 				"originalKo": "우체국",
 				"originalEn": "post office",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -55856,7 +63791,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 548,
 				"originalKo": "싸다",
 				"originalEn": "to be cheap",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_food",
+					"descriptive_price",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -55882,7 +63822,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1937,
 				"originalKo": "가격",
 				"originalEn": "price, cost",
-				"tags": [],
+				"tags": [
+					"finance",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -55908,7 +63851,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1936,
 				"originalKo": "휴대",
 				"originalEn": "carrying, carrying on one's person, portability",
-				"tags": [],
+				"tags": [
+					"general",
+					"verbal_property"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -55926,7 +63872,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -55952,7 +63903,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -55978,7 +63931,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1770,
 				"originalKo": "이용하다",
 				"originalEn": "to use, utilize, make use of",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -56029,7 +63985,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 112,
 				"originalKo": "우체국",
 				"originalEn": "post office",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -56055,7 +64016,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1936,
 				"originalKo": "휴대",
 				"originalEn": "carrying, carrying on one's person, portability",
-				"tags": [],
+				"tags": [
+					"general",
+					"verbal_property"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56073,7 +64037,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56091,7 +64060,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1372,
 				"originalKo": "서비스",
 				"originalEn": "service, complimentary item (on the house)",
-				"tags": [],
+				"tags": [
+					"commerce",
+					"food",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -56117,7 +64090,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 203,
 				"originalKo": "보통",
 				"originalEn": "usually",
-				"tags": [],
+				"tags": [
+					"frequency",
+					"general"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56135,7 +64111,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1936,
 				"originalKo": "휴대",
 				"originalEn": "carrying, carrying on one's person, portability",
-				"tags": [],
+				"tags": [
+					"general",
+					"verbal_property"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56153,7 +64132,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56171,7 +64155,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1372,
 				"originalKo": "서비스",
 				"originalEn": "service, complimentary item (on the house)",
-				"tags": [],
+				"tags": [
+					"commerce",
+					"food",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 680,
@@ -56197,7 +64185,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1938,
 				"originalKo": "%",
 				"originalEn": "percent, percentage",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"counter",
+					"general"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -56230,7 +64223,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 548,
 				"originalKo": "싸다",
 				"originalEn": "to be cheap",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_food",
+					"descriptive_price",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -56274,7 +64272,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 465,
 				"originalKo": "요즘",
 				"originalEn": "these days",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporalNoun",
+					"temporal_present",
+					"present",
+					"no_time_particle"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -56300,7 +64304,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 402,
 				"originalKo": "아이",
 				"originalEn": "child",
-				"tags": [],
+				"tags": [
+					"person",
+					"family"
+				],
 				"grammar": [
 					{
 						"unitId": 1312,
@@ -56326,7 +64333,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1939,
 				"originalKo": "노인",
 				"originalEn": "elderly person, senior citizen",
-				"tags": [],
+				"tags": [
+					"person",
+					"age",
+					"social",
+					"subject_animate"
+				],
 				"grammar": [
 					{
 						"unitId": 1826,
@@ -56352,7 +64364,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1936,
 				"originalKo": "휴대",
 				"originalEn": "carrying, carrying on one's person, portability",
-				"tags": [],
+				"tags": [
+					"general",
+					"verbal_property"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56370,7 +64385,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -56396,7 +64416,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 81,
 				"originalKo": "없다",
 				"originalEn": "to not have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -56422,7 +64447,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 11,
 				"originalKo": "사람",
 				"originalEn": "person",
-				"tags": [],
+				"tags": [
+					"person",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -56448,7 +64477,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 81,
 				"originalKo": "없다",
 				"originalEn": "to not have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 1156,
@@ -56495,7 +64529,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -56521,7 +64559,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 11,
 				"originalKo": "사람",
 				"originalEn": "person",
-				"tags": [],
+				"tags": [
+					"person",
+					"koreanRoot",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -56554,7 +64596,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1936,
 				"originalKo": "휴대",
 				"originalEn": "carrying, carrying on one's person, portability",
-				"tags": [],
+				"tags": [
+					"general",
+					"verbal_property"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56572,7 +64617,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 1241,
@@ -56598,7 +64648,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1940,
 				"originalKo": "통화",
 				"originalEn": "phone call, phone conversation",
-				"tags": [],
+				"tags": [
+					"general",
+					"communication",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -56624,7 +64678,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1941,
 				"originalKo": "녹음",
 				"originalEn": "audio recording",
-				"tags": [],
+				"tags": [
+					"general",
+					"media",
+					"technology"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56642,7 +64700,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1942,
 				"originalKo": "계산",
 				"originalEn": "calculation, paying the bill",
-				"tags": [],
+				"tags": [
+					"general",
+					"finance",
+					"commerce"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56660,7 +64722,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1340,
 				"originalKo": "동영상",
 				"originalEn": "video, video clip",
-				"tags": [],
+				"tags": [
+					"media",
+					"internet",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -56686,7 +64752,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1719,
 				"originalKo": "사진",
 				"originalEn": "photo, picture, photograph",
-				"tags": [],
+				"tags": [
+					"object",
+					"document",
+					"visual_media"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56704,7 +64774,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 954,
 				"originalKo": "찍다",
 				"originalEn": "to take (photo), dip, stamp, print",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1815,
@@ -56730,7 +64802,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 155,
 				"originalKo": "게임",
 				"originalEn": "game",
-				"tags": [],
+				"tags": [
+					"object",
+					"activity",
+					"entertainment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56748,7 +64824,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1935,
 				"originalKo": "등",
 				"originalEn": "etc., and the like, and so on",
-				"tags": [],
+				"tags": [
+					"general",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56766,7 +64845,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1801,
 				"originalKo": "여러",
 				"originalEn": "several, various, multiple (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56784,7 +64866,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1802,
 				"originalKo": "가지",
 				"originalEn": "kind, sort, variety (bound noun / classifier for types)",
-				"tags": [],
+				"tags": [
+					"bound_noun",
+					"counter",
+					"measureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -56810,7 +64896,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1156,
@@ -56859,7 +64948,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 62,
 				"originalKo": "우리",
 				"originalEn": "we/us/our",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"plural"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56877,7 +64970,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 789,
 				"originalKo": "신문사",
 				"originalEn": "newspaper company",
-				"tags": [],
+				"tags": [
+					"place",
+					"media",
+					"facility",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -56903,7 +65001,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1221,
 				"originalKo": "대다",
 				"originalEn": "to place against, touch, tag (card)",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -56929,7 +65029,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1221,
 				"originalKo": "대다",
 				"originalEn": "to place against, touch, tag (card)",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [],
 				"morphTemplate": "70대",
 				"inflection": {
@@ -56947,7 +65049,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1397,
 				"originalKo": "이상",
 				"originalEn": "more than, above, abnormal",
-				"tags": [],
+				"tags": [
+					"measurement",
+					"dimension",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -56973,7 +65079,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1939,
 				"originalKo": "노인",
 				"originalEn": "elderly person, senior citizen",
-				"tags": [],
+				"tags": [
+					"person",
+					"age",
+					"social",
+					"subject_animate"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -56991,7 +65102,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 575,
 				"originalKo": "모두",
 				"originalEn": "all",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -57009,7 +65124,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1698,
 				"originalKo": "명",
 				"originalEn": "counter for people (plain)",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"counter",
+					"person"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -57035,7 +65155,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1936,
 				"originalKo": "휴대",
 				"originalEn": "carrying, carrying on one's person, portability",
-				"tags": [],
+				"tags": [
+					"general",
+					"verbal_property"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -57053,7 +65176,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -57079,7 +65207,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 177,
 				"originalKo": "언제",
 				"originalEn": "when",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"time",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -57097,7 +65229,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1268,
 				"originalKo": "사용하다",
 				"originalEn": "to use, employ",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -57123,7 +65257,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1268,
 				"originalKo": "사용하다",
 				"originalEn": "to use, employ",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 711,
@@ -57149,7 +65285,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -57175,7 +65315,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1943,
 				"originalKo": "점",
 				"originalEn": "point, aspect, feature",
-				"tags": [],
+				"tags": [
+					"general",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -57201,7 +65344,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 900,
 				"originalKo": "불편하다",
 				"originalEn": "uncomfortable, inconvenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -57227,7 +65373,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1943,
 				"originalKo": "점",
 				"originalEn": "point, aspect, feature",
-				"tags": [],
+				"tags": [
+					"general",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -57253,7 +65402,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 510,
 				"originalKo": "뭐",
 				"originalEn": "what",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"object",
+					"deictic",
+					"interrogative"
+				],
 				"grammar": [
 					{
 						"unitId": 1346,
@@ -57279,7 +65433,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1274,
 				"originalKo": "질문하다",
 				"originalEn": "to ask a question",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"communication",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -57332,7 +65490,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1221,
 				"originalKo": "대다",
 				"originalEn": "to place against, touch, tag (card)",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -57358,7 +65518,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1936,
 				"originalKo": "휴대",
 				"originalEn": "carrying, carrying on one's person, portability",
-				"tags": [],
+				"tags": [
+					"general",
+					"verbal_property"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -57376,7 +65539,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 1241,
@@ -57402,7 +65570,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 631,
 				"originalKo": "뉴스",
 				"originalEn": "news",
-				"tags": [],
+				"tags": [
+					"concept",
+					"media",
+					"visual_media"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -57428,7 +65600,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 475,
 				"originalKo": "드라마",
 				"originalEn": "drama",
-				"tags": [],
+				"tags": [
+					"object",
+					"media",
+					"visual_media"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -57454,7 +65630,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -57480,7 +65659,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1944,
 				"originalKo": "쇼핑",
 				"originalEn": "shopping",
-				"tags": [],
+				"tags": [
+					"general",
+					"commerce",
+					"leisure"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -57506,7 +65689,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1915,
 				"originalKo": "인터넷",
 				"originalEn": "internet",
-				"tags": [],
+				"tags": [
+					"general",
+					"technology",
+					"communication"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -57524,7 +65711,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1945,
 				"originalKo": "뱅킹",
 				"originalEn": "banking (e.g. internet banking)",
-				"tags": [],
+				"tags": [
+					"general",
+					"finance",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -57550,7 +65741,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1347,
@@ -57576,7 +65770,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1263,
 				"originalKo": "대답하다",
 				"originalEn": "to answer, reply",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"communication",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -57629,7 +65827,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1936,
 				"originalKo": "휴대",
 				"originalEn": "carrying, carrying on one's person, portability",
-				"tags": [],
+				"tags": [
+					"general",
+					"verbal_property"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -57647,7 +65848,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 1241,
@@ -57673,7 +65879,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1719,
 				"originalKo": "사진",
 				"originalEn": "photo, picture, photograph",
-				"tags": [],
+				"tags": [
+					"object",
+					"document",
+					"visual_media"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -57699,7 +65909,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 954,
 				"originalKo": "찍다",
 				"originalEn": "to take (photo), dip, stamp, print",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -57725,7 +65937,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1946,
 				"originalKo": "블로그",
 				"originalEn": "blog",
-				"tags": [],
+				"tags": [
+					"general",
+					"internet",
+					"media"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -57751,7 +65967,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1484,
 				"originalKo": "올리다",
 				"originalEn": "to raise, post (online), upload",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"internet",
+					"movement"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -57777,7 +65997,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -57803,7 +66026,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 288,
 				"originalKo": "좋아하다",
 				"originalEn": "to like",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food",
+					"transitive_person",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 1347,
@@ -57829,7 +66058,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -57887,7 +66119,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 250,
 				"originalKo": "나이",
 				"originalEn": "age",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"age",
+					"person_attribute",
+					"property"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -57913,7 +66150,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -57939,7 +66180,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1939,
 				"originalKo": "노인",
 				"originalEn": "elderly person, senior citizen",
-				"tags": [],
+				"tags": [
+					"person",
+					"age",
+					"social",
+					"subject_animate"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -57972,7 +66218,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1221,
 				"originalKo": "대다",
 				"originalEn": "to place against, touch, tag (card)",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -57998,7 +66246,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 614,
 				"originalKo": "다르다",
 				"originalEn": "to be different",
-				"tags": [],
+				"tags": [
+					"descriptive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -58024,7 +66274,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1940,
 				"originalKo": "통화",
 				"originalEn": "phone call, phone conversation",
-				"tags": [],
+				"tags": [
+					"general",
+					"communication",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -58050,7 +66304,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1291,
@@ -58076,7 +66333,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1924,
 				"originalKo": "메시지",
 				"originalEn": "message, text message",
-				"tags": [],
+				"tags": [
+					"general",
+					"communication",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -58102,7 +66363,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 594,
 				"originalKo": "보내다",
 				"originalEn": "to send",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -58135,7 +66399,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 408,
 				"originalKo": "많이",
 				"originalEn": "much/many",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -58153,7 +66420,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1268,
 				"originalKo": "사용하다",
 				"originalEn": "to use, employ",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1347,
@@ -58179,7 +66448,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -58235,7 +66507,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1756,
 				"originalKo": "또",
 				"originalEn": "also, additionally, again",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_discourse",
+					"connective_adverb"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -58253,7 +66529,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 717,
 				"originalKo": "물건",
 				"originalEn": "object",
-				"tags": [],
+				"tags": [
+					"object",
+					"merchandise"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -58271,7 +66550,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 532,
 				"originalKo": "값",
 				"originalEn": "price",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"economy",
+					"devtest"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -58289,7 +66572,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1638,
 				"originalKo": "같다",
 				"originalEn": "to be same, identical, similar, like",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"state",
+					"comparison"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -58315,7 +66602,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -58341,7 +66631,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1336,
 				"originalKo": "계산하다",
 				"originalEn": "to calculate, pay the bill",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"finance",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -58367,7 +66661,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1641,
 				"originalKo": "일",
 				"originalEn": "work, task, matter, thing, business",
-				"tags": [],
+				"tags": [
+					"work",
+					"activity",
+					"task",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -58393,7 +66692,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 621,
@@ -58419,7 +66722,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1936,
 				"originalKo": "휴대",
 				"originalEn": "carrying, carrying on one's person, portability",
-				"tags": [],
+				"tags": [
+					"general",
+					"verbal_property"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -58437,7 +66743,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 1241,
@@ -58463,7 +66774,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1336,
 				"originalKo": "계산하다",
 				"originalEn": "to calculate, pay the bill",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"finance",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -58489,7 +66804,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 53,
@@ -58515,7 +66834,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 122,
 				"originalKo": "아주",
 				"originalEn": "very",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -58533,7 +66857,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 872,
 				"originalKo": "편리하다",
 				"originalEn": "convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 1347,
@@ -58559,7 +66886,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1647,
 				"originalKo": "이야기하다",
 				"originalEn": "to talk, converse, chat",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"intransitive_general",
+					"communication",
+					"social",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -58611,7 +66944,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1915,
 				"originalKo": "인터넷",
 				"originalEn": "internet",
-				"tags": [],
+				"tags": [
+					"general",
+					"technology",
+					"communication"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -58629,7 +66966,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1947,
 				"originalKo": "검색",
 				"originalEn": "search, online search",
-				"tags": [],
+				"tags": [
+					"general",
+					"internet",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -58655,7 +66996,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 48,
 				"originalKo": "가끔",
 				"originalEn": "sometimes",
-				"tags": [],
+				"tags": [
+					"frequency",
+					"low",
+					"koreanRoot"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -58673,7 +67018,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 620,
@@ -58699,7 +67047,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1948,
 				"originalKo": "글씨",
 				"originalEn": "letter, handwriting, script, font",
-				"tags": [],
+				"tags": [
+					"general",
+					"writing",
+					"language"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -58725,7 +67077,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 400,
 				"originalKo": "너무",
 				"originalEn": "too much",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -58743,7 +67101,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 128,
 				"originalKo": "작다",
 				"originalEn": "to be small",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"size",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -58769,7 +67132,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 900,
 				"originalKo": "불편하다",
 				"originalEn": "uncomfortable, inconvenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 1347,
@@ -58795,7 +67161,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1263,
 				"originalKo": "대답하다",
 				"originalEn": "to answer, reply",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"communication",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -58851,7 +67221,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 602,
 				"originalKo": "그래서",
 				"originalEn": "so",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"cause"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -58869,7 +67244,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1936,
 				"originalKo": "휴대",
 				"originalEn": "carrying, carrying on one's person, portability",
-				"tags": [],
+				"tags": [
+					"general",
+					"verbal_property"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -58887,7 +67265,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -58905,7 +67288,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 182,
 				"originalKo": "회사",
 				"originalEn": "company",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"work",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -58938,7 +67326,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1939,
 				"originalKo": "노인",
 				"originalEn": "elderly person, senior citizen",
-				"tags": [],
+				"tags": [
+					"person",
+					"age",
+					"social",
+					"subject_animate"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -58971,7 +67364,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1759,
 				"originalKo": "편하다",
 				"originalEn": "comfortable, convenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -58997,7 +67393,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1335,
 				"originalKo": "검색하다",
 				"originalEn": "to search (online, database)",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"internet",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -59030,7 +67430,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1948,
 				"originalKo": "글씨",
 				"originalEn": "letter, handwriting, script, font",
-				"tags": [],
+				"tags": [
+					"general",
+					"writing",
+					"language"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -59056,7 +67460,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 42,
 				"originalKo": "크다",
 				"originalEn": "to be big",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"koreanRoot",
+					"devtest",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -59082,7 +67492,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -59115,7 +67528,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1936,
 				"originalKo": "휴대",
 				"originalEn": "carrying, carrying on one's person, portability",
-				"tags": [],
+				"tags": [
+					"general",
+					"verbal_property"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -59133,7 +67549,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -59159,7 +67580,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 920,
 				"originalKo": "새로",
 				"originalEn": "newly, anew",
-				"tags": [],
+				"tags": [
+					"adverb_manner",
+					"manner",
+					"temporal"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -59177,7 +67602,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 286,
 				"originalKo": "만들다",
 				"originalEn": "to make",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -59203,7 +67631,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 1865,
@@ -59229,7 +67660,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1156,
@@ -59276,7 +67710,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1950,
 				"originalKo": "하늘",
 				"originalEn": "sky, heaven",
-				"tags": [],
+				"tags": [
+					"general",
+					"nature",
+					"space",
+					"name"
+				],
 				"grammar": [
 					{
 						"unitId": 1834,
@@ -59302,7 +67741,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1951,
 				"originalKo": "엄마",
 				"originalEn": "mom, mommy, mother",
-				"tags": [],
+				"tags": [
+					"family",
+					"person",
+					"subject_animate"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -59328,7 +67771,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1700,
 				"originalKo": "너",
 				"originalEn": "you (informal/banmal 2nd-person pronoun)",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"2nd_person",
+					"informal"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -59354,7 +67801,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 288,
 				"originalKo": "좋아하다",
 				"originalEn": "to like",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food",
+					"transitive_person",
+					"scalable",
+					"scalable_emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -59380,7 +67833,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1952,
 				"originalKo": "만두",
 				"originalEn": "dumpling, mandu",
-				"tags": [],
+				"tags": [
+					"food",
+					"grocery"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -59406,7 +67862,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 410,
 				"originalKo": "조금",
 				"originalEn": "little/few",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_quantity",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -59424,7 +67886,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 286,
 				"originalKo": "만들다",
 				"originalEn": "to make",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food"
+				],
 				"grammar": [
 					{
 						"unitId": 1140,
@@ -59450,7 +67915,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -59483,7 +67953,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 180,
 				"originalKo": "집",
 				"originalEn": "house/home",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room",
+					"building"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -59509,7 +67984,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 81,
 				"originalKo": "없다",
 				"originalEn": "to not have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletive"
+				],
 				"grammar": [
 					{
 						"unitId": 1949,
@@ -59551,7 +68031,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -59577,7 +68062,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 915,
 				"originalKo": "걸다",
 				"originalEn": "to hang, make (a phone call), bet",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -59610,7 +68097,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 365,
 				"originalKo": "받다",
 				"originalEn": "to receive",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -59653,7 +68143,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 154,
 				"originalKo": "지금",
 				"originalEn": "now",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_present",
+					"present",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -59671,7 +68166,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 227,
 				"originalKo": "수업",
 				"originalEn": "class",
-				"tags": [],
+				"tags": [
+					"activity",
+					"education",
+					"sinoRoot"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -59689,7 +68188,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1783,
 				"originalKo": "중",
 				"originalEn": "middle, among, during",
-				"tags": [],
+				"tags": [
+					"position",
+					"abstract",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -59764,7 +68267,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 249,
 				"originalKo": "분",
 				"originalEn": "minute",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"sinoMeasureWord",
+					"time"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -59782,7 +68289,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1794,
 				"originalKo": "동안",
 				"originalEn": "during, for, duration of time",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -59800,7 +68311,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 146,
 				"originalKo": "기다리다",
 				"originalEn": "to wait",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"scalable",
+					"scalable_duration"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -59833,7 +68348,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -59866,7 +68386,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1265,
 				"originalKo": "메모",
 				"originalEn": "note, memo",
-				"tags": [],
+				"tags": [
+					"object",
+					"writing",
+					"document"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -59892,7 +68416,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1349,
 				"originalKo": "남기다",
 				"originalEn": "to leave behind, save",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"food",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -59918,7 +68446,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 180,
 				"originalKo": "집",
 				"originalEn": "house/home",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room",
+					"building"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -59944,7 +68477,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 816,
@@ -59970,7 +68510,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1156,
@@ -60014,7 +68557,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 502,
 				"originalKo": "형",
 				"originalEn": "older brother (for male)",
-				"tags": [],
+				"tags": [
+					"person",
+					"family",
+					"male"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -60040,7 +68587,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 426,
 				"originalKo": "다음",
 				"originalEn": "next",
-				"tags": [],
+				"tags": [
+					"time_modifier",
+					"time",
+					"determiner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60058,7 +68609,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 435,
 				"originalKo": "주",
 				"originalEn": "week",
-				"tags": [],
+				"tags": [
+					"time",
+					"measureWord",
+					"sinoMeasureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -60084,7 +68639,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 501,
 				"originalKo": "할아버지",
 				"originalEn": "grandfather",
-				"tags": [],
+				"tags": [
+					"person",
+					"family",
+					"male",
+					"honorific",
+					"elder_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60102,7 +68663,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 585,
 				"originalKo": "생신",
 				"originalEn": "birthday (honorific)",
-				"tags": [],
+				"tags": [
+					"time",
+					"event",
+					"honorific"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -60135,7 +68700,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1811,
 				"originalKo": "가족",
 				"originalEn": "family",
-				"tags": [],
+				"tags": [
+					"noun",
+					"people",
+					"family",
+					"relationship"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -60161,7 +68731,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1953,
 				"originalKo": "다함께",
 				"originalEn": "all together, all in one group",
-				"tags": [],
+				"tags": [
+					"general",
+					"manner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60179,7 +68752,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1696,
 				"originalKo": "식사",
 				"originalEn": "meal, dining",
-				"tags": [],
+				"tags": [
+					"food",
+					"meal",
+					"event"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60197,7 +68774,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 763,
 				"originalKo": "한번",
 				"originalEn": "once",
-				"tags": [],
+				"tags": [
+					"adverb_frequency",
+					"frequency",
+					"time"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60215,7 +68796,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1363,
@@ -60241,7 +68825,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1156,
@@ -60285,7 +68872,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1748,
 				"originalKo": "오랜만",
 				"originalEn": "after a long time",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration",
+					"point_in_time"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -60311,7 +68902,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -60337,7 +68932,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 109,
 				"originalKo": "식당",
 				"originalEn": "restaurant",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"food",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -60363,7 +68964,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 454,
 				"originalKo": "예약하다",
 				"originalEn": "to make a reservation",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_place"
+				],
 				"grammar": [
 					{
 						"unitId": 1347,
@@ -60389,7 +68993,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -60441,7 +69048,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1954,
 				"originalKo": "그러니까",
 				"originalEn": "so, therefore, that's why",
-				"tags": [],
+				"tags": [
+					"general",
+					"connective"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60459,7 +69069,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1758,
 				"originalKo": "꼭",
 				"originalEn": "surely, certainly, by all means",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"emphasis"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60477,7 +69091,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 1182,
@@ -60503,7 +69122,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1756,
 				"originalKo": "또",
 				"originalEn": "also, additionally, again",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_discourse",
+					"connective_adverb"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60521,7 +69144,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 502,
 				"originalKo": "형",
 				"originalEn": "older brother (for male)",
-				"tags": [],
+				"tags": [
+					"person",
+					"family",
+					"male"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -60547,7 +69174,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 190,
 				"originalKo": "여자",
 				"originalEn": "woman",
-				"tags": [],
+				"tags": [
+					"person",
+					"female",
+					"adult"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60565,7 +69196,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -60591,7 +69226,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 62,
 				"originalKo": "우리",
 				"originalEn": "we/us/our",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"plural"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60609,7 +69248,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1811,
 				"originalKo": "가족",
 				"originalEn": "family",
-				"tags": [],
+				"tags": [
+					"noun",
+					"people",
+					"family",
+					"relationship"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -60635,7 +69279,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1622,
 				"originalKo": "소개하다",
 				"originalEn": "to introduce, present",
-				"tags": [],
+				"tags": [
+					"transitive_person",
+					"transitive_general",
+					"communication",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -60668,7 +69317,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1156,
@@ -60712,7 +69364,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 465,
 				"originalKo": "요즘",
 				"originalEn": "these days",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporalNoun",
+					"temporal_present",
+					"present",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60730,7 +69388,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1633,
 				"originalKo": "공부",
 				"originalEn": "study, studying",
-				"tags": [],
+				"tags": [
+					"education",
+					"activity",
+					"cognition",
+					"abstract"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60748,7 +69411,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1837,
 				"originalKo": "때문",
 				"originalEn": "reason, cause, because of",
-				"tags": [],
+				"tags": [
+					"concept",
+					"causal",
+					"reason"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -60774,7 +69441,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60792,7 +69464,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 193,
 				"originalKo": "바쁘다",
 				"originalEn": "to be busy",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"devtest",
+					"descriptive_person_trait",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 838,
@@ -60825,7 +69502,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 432,
 				"originalKo": "이번",
 				"originalEn": "this time",
-				"tags": [],
+				"tags": [
+					"time_modifier",
+					"time",
+					"determiner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60843,7 +69524,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1811,
 				"originalKo": "가족",
 				"originalEn": "family",
-				"tags": [],
+				"tags": [
+					"noun",
+					"people",
+					"family",
+					"relationship"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60861,7 +69547,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1105,
 				"originalKo": "모임",
 				"originalEn": "meeting, gathering, get-together",
-				"tags": [],
+				"tags": [
+					"event",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -60887,7 +69576,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1758,
 				"originalKo": "꼭",
 				"originalEn": "surely, certainly, by all means",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"emphasis"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -60905,7 +69598,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -60964,7 +69662,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 502,
 				"originalKo": "형",
 				"originalEn": "older brother (for male)",
-				"tags": [],
+				"tags": [
+					"person",
+					"family",
+					"male"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -60990,7 +69692,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 501,
 				"originalKo": "할아버지",
 				"originalEn": "grandfather",
-				"tags": [],
+				"tags": [
+					"person",
+					"family",
+					"male",
+					"honorific",
+					"elder_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -61008,7 +69716,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 585,
 				"originalKo": "생신",
 				"originalEn": "birthday (honorific)",
-				"tags": [],
+				"tags": [
+					"time",
+					"event",
+					"honorific"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -61026,7 +69738,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 577,
 				"originalKo": "케이크",
 				"originalEn": "cake",
-				"tags": [],
+				"tags": [
+					"food",
+					"bakery",
+					"dessert"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -61044,7 +69760,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -61062,7 +69783,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 239,
 				"originalKo": "사",
 				"originalEn": "four",
-				"tags": [],
+				"tags": [
+					"sinoNumber"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -61080,7 +69803,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 1362,
@@ -61106,7 +69834,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -61139,7 +69870,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1951,
 				"originalKo": "엄마",
 				"originalEn": "mom, mommy, mother",
-				"tags": [],
+				"tags": [
+					"family",
+					"person",
+					"subject_animate"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -61165,7 +69900,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 193,
 				"originalKo": "바쁘다",
 				"originalEn": "to be busy",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"devtest",
+					"descriptive_person_trait",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 53,
@@ -61191,7 +69931,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1700,
 				"originalKo": "너",
 				"originalEn": "you (informal/banmal 2nd-person pronoun)",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"2nd_person",
+					"informal"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -61217,7 +69961,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -61235,7 +69984,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 150,
 				"originalKo": "사다",
 				"originalEn": "to buy",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1140,
@@ -61261,7 +70012,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 1182,
@@ -61305,7 +70061,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 501,
 				"originalKo": "할아버지",
 				"originalEn": "grandfather",
-				"tags": [],
+				"tags": [
+					"person",
+					"family",
+					"male",
+					"honorific",
+					"elder_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -61331,7 +70093,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1748,
 				"originalKo": "오랜만",
 				"originalEn": "after a long time",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration",
+					"point_in_time"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -61357,7 +70123,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1811,
 				"originalKo": "가족",
 				"originalEn": "family",
-				"tags": [],
+				"tags": [
+					"noun",
+					"people",
+					"family",
+					"relationship"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -61383,7 +70154,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 575,
 				"originalKo": "모두",
 				"originalEn": "all",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -61401,7 +70176,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1104,
 				"originalKo": "모이다",
 				"originalEn": "to gather, assemble, get together",
-				"tags": [],
+				"tags": [
+					"intransitive_person"
+				],
 				"grammar": [
 					{
 						"unitId": 53,
@@ -61427,7 +70204,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1955,
 				"originalKo": "기뻐하다",
 				"originalEn": "to rejoice, be glad, be pleased (3rd person)",
-				"tags": [],
+				"tags": [
+					"action",
+					"psychological",
+					"emotion",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -61474,7 +70256,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1954,
 				"originalKo": "그러니까",
 				"originalEn": "so, therefore, that's why",
-				"tags": [],
+				"tags": [
+					"general",
+					"connective"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -61492,7 +70277,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1398,
 				"originalKo": "잊다",
 				"originalEn": "to forget",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cognition"
+				],
 				"grammar": [
 					{
 						"unitId": 573,
@@ -61543,7 +70331,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1956,
 				"originalKo": "간단하다",
 				"originalEn": "to be simple, brief, uncomplicated",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -61569,7 +70360,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 151,
 				"originalKo": "쓰다",
 				"originalEn": "to write",
-				"tags": [],
+				"tags": [
+					"transitive_writing",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 816,
@@ -61595,7 +70389,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -61628,7 +70425,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 312,
 				"originalKo": "길다",
 				"originalEn": "to be long",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_dimension_length",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 801,
@@ -61683,7 +70485,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 665,
 				"originalKo": "시간",
 				"originalEn": "hour/time",
-				"tags": [],
+				"tags": [
+					"time",
+					"measureWord",
+					"koreanMeasureWord",
+					"resource",
+					"time_resource"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -61701,7 +70509,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -61727,7 +70540,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1951,
 				"originalKo": "엄마",
 				"originalEn": "mom, mommy, mother",
-				"tags": [],
+				"tags": [
+					"family",
+					"person",
+					"subject_animate"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -61753,7 +70570,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -61771,7 +70593,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 763,
 				"originalKo": "한번",
 				"originalEn": "once",
-				"tags": [],
+				"tags": [
+					"adverb_frequency",
+					"frequency",
+					"time"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -61789,7 +70615,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1182,
@@ -61833,7 +70662,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 426,
 				"originalKo": "다음",
 				"originalEn": "next",
-				"tags": [],
+				"tags": [
+					"time_modifier",
+					"time",
+					"determiner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -61851,7 +70684,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 435,
 				"originalKo": "주",
 				"originalEn": "week",
-				"tags": [],
+				"tags": [
+					"time",
+					"measureWord",
+					"sinoMeasureWord"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -61869,7 +70706,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 345,
 				"originalKo": "수요일",
 				"originalEn": "Wednesday",
-				"tags": [],
+				"tags": [
+					"time",
+					"dayOfWeek",
+					"weekday"
+				],
 				"grammar": [
 					{
 						"unitId": 1312,
@@ -61895,7 +70736,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1377,
 				"originalKo": "연휴",
 				"originalEn": "consecutive holidays, long weekend",
-				"tags": [],
+				"tags": [
+					"calendar",
+					"time",
+					"holiday"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -61921,7 +70766,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 762,
 				"originalKo": "시작되다",
 				"originalEn": "to be started",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 620,
@@ -61947,7 +70795,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1605,
 				"originalKo": "때",
 				"originalEn": "time, when, moment",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -61965,7 +70817,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 174,
 				"originalKo": "고향",
 				"originalEn": "hometown",
-				"tags": [],
+				"tags": [
+					"place",
+					"origin"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -61991,7 +70846,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 495,
 				"originalKo": "언니",
 				"originalEn": "older sister (for female)",
-				"tags": [],
+				"tags": [
+					"person",
+					"family",
+					"female"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -62017,7 +70876,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 851,
 				"originalKo": "조카",
 				"originalEn": "nephew, niece",
-				"tags": [],
+				"tags": [
+					"person",
+					"family"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -62043,7 +70905,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 1156,
@@ -62088,7 +70955,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 236,
 				"originalKo": "일",
 				"originalEn": "one",
-				"tags": [],
+				"tags": [
+					"sinoNumber"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -62106,7 +70975,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1623,
 				"originalKo": "년",
 				"originalEn": "year (counter)",
-				"tags": [],
+				"tags": [
+					"time",
+					"counter",
+					"calendar",
+					"measureWord",
+					"sinoMeasureWord"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -62124,7 +70999,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 273,
 				"originalKo": "만",
 				"originalEn": "ten thousand",
-				"tags": [],
+				"tags": [
+					"sinoNumber"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -62150,7 +71027,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 881,
 				"originalKo": "그립다",
 				"originalEn": "to miss, long for",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"emotion",
+					"descriptive_emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -62176,7 +71058,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1811,
 				"originalKo": "가족",
 				"originalEn": "family",
-				"tags": [],
+				"tags": [
+					"noun",
+					"people",
+					"family",
+					"relationship"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -62202,7 +71089,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 148,
 				"originalKo": "만나다",
 				"originalEn": "to meet",
-				"tags": [],
+				"tags": [
+					"transitive_person"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -62235,7 +71124,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 607,
 				"originalKo": "정말",
 				"originalEn": "really",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -62253,7 +71147,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1095,
 				"originalKo": "기대",
 				"originalEn": "expectation, anticipation",
-				"tags": [],
+				"tags": [
+					"concept",
+					"emotion"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -62279,7 +71176,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 1156,
@@ -62326,7 +71227,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 419,
 				"originalKo": "어제",
 				"originalEn": "yesterday",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporalNoun",
+					"temporal_past",
+					"past",
+					"no_time_particle"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -62352,7 +71259,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 495,
 				"originalKo": "언니",
 				"originalEn": "older sister (for female)",
-				"tags": [],
+				"tags": [
+					"person",
+					"family",
+					"female"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -62378,7 +71289,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -62404,7 +71320,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -62430,7 +71349,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -62456,7 +71378,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 60,
 				"originalKo": "무엇",
 				"originalEn": "what",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"thing",
+					"deictic",
+					"interrogative"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -62482,7 +71409,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -62515,7 +71445,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 363,
 				"originalKo": "묻다",
 				"originalEn": "to ask",
-				"tags": [],
+				"tags": [
+					"dative_person",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -62570,7 +71503,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 495,
 				"originalKo": "언니",
 				"originalEn": "older sister (for female)",
-				"tags": [],
+				"tags": [
+					"person",
+					"family",
+					"female"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -62596,7 +71533,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -62614,7 +71554,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1957,
 				"originalKo": "방문",
 				"originalEn": "visit",
-				"tags": [],
+				"tags": [
+					"general",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -62640,7 +71583,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1656,
 				"originalKo": "처음",
 				"originalEn": "first time, for the first time",
-				"tags": [],
+				"tags": [
+					"time",
+					"order",
+					"sequence",
+					"adverb_manner",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -62673,7 +71622,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -62699,7 +71651,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 795,
 				"originalKo": "지내다",
 				"originalEn": "to spend time/get along",
-				"tags": [],
+				"tags": [
+					"intransitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -62725,7 +71679,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1794,
 				"originalKo": "동안",
 				"originalEn": "during, for, duration of time",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -62743,7 +71701,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1801,
 				"originalKo": "여러",
 				"originalEn": "several, various, multiple (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -62761,7 +71722,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1802,
 				"originalKo": "가지",
 				"originalEn": "kind, sort, variety (bound noun / classifier for types)",
-				"tags": [],
+				"tags": [
+					"bound_noun",
+					"counter",
+					"measureWord"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -62779,7 +71744,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1493,
 				"originalKo": "경험",
 				"originalEn": "experience",
-				"tags": [],
+				"tags": [
+					"cognition",
+					"abstract",
+					"activity"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -62805,7 +71774,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 417,
@@ -62838,7 +71810,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -62896,7 +71871,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 889,
 				"originalKo": "유명하다",
 				"originalEn": "famous, well-known",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"reputation",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -62922,7 +71901,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 880,
 				"originalKo": "관광지",
 				"originalEn": "tourist attraction, sight",
-				"tags": [],
+				"tags": [
+					"place",
+					"tourism",
+					"attraction"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -62948,7 +71931,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1958,
 				"originalKo": "안내하다",
 				"originalEn": "to guide, escort, show around",
-				"tags": [],
+				"tags": [
+					"action",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -62974,7 +71960,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 314,
 				"originalKo": "달다",
 				"originalEn": "to be sweet",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"devtest",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 1362,
@@ -63000,7 +71991,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -63026,7 +72020,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 174,
 				"originalKo": "고향",
 				"originalEn": "hometown",
-				"tags": [],
+				"tags": [
+					"place",
+					"origin"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -63052,7 +72049,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1959,
 				"originalKo": "맛보다",
 				"originalEn": "to taste, sample food",
-				"tags": [],
+				"tags": [
+					"action",
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -63092,7 +72092,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -63110,7 +72113,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 304,
 				"originalKo": "음식",
 				"originalEn": "food",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -63169,7 +72174,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -63223,7 +72231,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -63241,7 +72252,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 475,
 				"originalKo": "드라마",
 				"originalEn": "drama",
-				"tags": [],
+				"tags": [
+					"object",
+					"media",
+					"visual_media"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -63267,7 +72282,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1458,
 				"originalKo": "관심",
 				"originalEn": "interest, attention",
-				"tags": [],
+				"tags": [
+					"cognition",
+					"emotion",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -63293,7 +72312,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -63319,7 +72342,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 851,
 				"originalKo": "조카",
 				"originalEn": "nephew, niece",
-				"tags": [],
+				"tags": [
+					"person",
+					"family"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -63345,7 +72371,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 787,
 				"originalKo": "방송국",
 				"originalEn": "broadcasting station",
-				"tags": [],
+				"tags": [
+					"place",
+					"media",
+					"facility",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -63371,7 +72402,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1958,
 				"originalKo": "안내하다",
 				"originalEn": "to guide, escort, show around",
-				"tags": [],
+				"tags": [
+					"action",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -63397,7 +72431,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 314,
 				"originalKo": "달다",
 				"originalEn": "to be sweet",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"devtest",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 1362,
@@ -63423,7 +72462,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -63477,7 +72519,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 353,
 				"originalKo": "그리고",
 				"originalEn": "and",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -63495,7 +72541,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 475,
 				"originalKo": "드라마",
 				"originalEn": "drama",
-				"tags": [],
+				"tags": [
+					"object",
+					"media",
+					"visual_media"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -63521,7 +72571,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 149,
 				"originalKo": "보다",
 				"originalEn": "to see/watch",
-				"tags": [],
+				"tags": [
+					"transitive_visual",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -63547,7 +72600,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 287,
 				"originalKo": "맵다",
 				"originalEn": "to be spicy",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -63573,7 +72630,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 304,
 				"originalKo": "음식",
 				"originalEn": "food",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -63646,7 +72705,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -63697,7 +72759,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 851,
 				"originalKo": "조카",
 				"originalEn": "nephew, niece",
-				"tags": [],
+				"tags": [
+					"person",
+					"family"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -63723,7 +72788,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -63749,7 +72817,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 287,
 				"originalKo": "맵다",
 				"originalEn": "to be spicy",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -63775,7 +72847,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 304,
 				"originalKo": "음식",
 				"originalEn": "food",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -63855,7 +72929,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1960,
 				"originalKo": "맛집",
 				"originalEn": "famous restaurant, renowned eatery",
-				"tags": [],
+				"tags": [
+					"food",
+					"place",
+					"facility",
+					"restaurant"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -63881,7 +72960,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 408,
 				"originalKo": "많이",
 				"originalEn": "much/many",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -63899,7 +72981,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 230,
 				"originalKo": "알다",
 				"originalEn": "to know/understand",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_information",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -63925,7 +73011,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -63951,7 +73041,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 287,
 				"originalKo": "맵다",
 				"originalEn": "to be spicy",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -63977,7 +73071,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 304,
 				"originalKo": "음식",
 				"originalEn": "food",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -64003,7 +73099,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 43,
 				"originalKo": "맛있다",
 				"originalEn": "to be delicious",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"food_adjective",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -64029,7 +73130,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -64055,7 +73159,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 109,
 				"originalKo": "식당",
 				"originalEn": "restaurant",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"food",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -64081,7 +73191,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -64099,7 +73214,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1622,
 				"originalKo": "소개하다",
 				"originalEn": "to introduce, present",
-				"tags": [],
+				"tags": [
+					"transitive_person",
+					"transitive_general",
+					"communication",
+					"social"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -64125,7 +73245,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 314,
 				"originalKo": "달다",
 				"originalEn": "to be sweet",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"devtest",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 1362,
@@ -64151,7 +73276,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -64200,7 +73328,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 76,
 				"originalKo": "친구",
 				"originalEn": "friend",
-				"tags": [],
+				"tags": [
+					"person",
+					"relationship",
+					"sinoRoot"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -64226,7 +73358,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 109,
 				"originalKo": "식당",
 				"originalEn": "restaurant",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"food",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -64244,7 +73382,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 201,
 				"originalKo": "몇",
 				"originalEn": "what/how many",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"number",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -64262,7 +73404,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 558,
 				"originalKo": "곳",
 				"originalEn": "place",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -64288,7 +73433,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1961,
 				"originalKo": "알리다",
 				"originalEn": "to inform, let know, announce",
-				"tags": [],
+				"tags": [
+					"action",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -64345,7 +73493,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1962,
 				"originalKo": "그중",
 				"originalEn": "among them, of them",
-				"tags": [],
+				"tags": [
+					"general"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -64363,7 +73513,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 207,
 				"originalKo": "한",
 				"originalEn": "one",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -64381,7 +73534,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 109,
 				"originalKo": "식당",
 				"originalEn": "restaurant",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"food",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -64407,7 +73566,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1786,
 				"originalKo": "인기",
 				"originalEn": "popularity",
-				"tags": [],
+				"tags": [
+					"concept",
+					"social",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -64433,7 +73596,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -64459,7 +73626,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 558,
 				"originalKo": "곳",
 				"originalEn": "place",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 1385,
@@ -64485,7 +73655,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 781,
 				"originalKo": "휴일",
 				"originalEn": "holiday",
-				"tags": [],
+				"tags": [
+					"time",
+					"event",
+					"holiday"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -64511,7 +73685,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 1259,
@@ -64537,7 +73718,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1963,
 				"originalKo": "예약",
 				"originalEn": "reservation, booking",
-				"tags": [],
+				"tags": [
+					"general"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -64563,7 +73746,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1758,
 				"originalKo": "꼭",
 				"originalEn": "surely, certainly, by all means",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"emphasis"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -64581,7 +73768,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1276,
@@ -64621,7 +73811,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -64670,7 +73863,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 602,
 				"originalKo": "그래서",
 				"originalEn": "so",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"cause"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -64688,7 +73886,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 45,
 				"originalKo": "오늘",
 				"originalEn": "today",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_present",
+					"present",
+					"koreanRoot",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -64706,7 +73910,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1640,
 				"originalKo": "전화",
 				"originalEn": "telephone, phone call",
-				"tags": [],
+				"tags": [
+					"communication",
+					"device",
+					"technology",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -64732,7 +73941,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 915,
 				"originalKo": "걸다",
 				"originalEn": "to hang, make (a phone call), bet",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -64758,7 +73969,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1147,
 				"originalKo": "바로",
 				"originalEn": "directly, immediately, right (away)",
-				"tags": [],
+				"tags": [
+					"adverb_manner",
+					"manner",
+					"temporal"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -64776,7 +73991,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1963,
 				"originalKo": "예약",
 				"originalEn": "reservation, booking",
-				"tags": [],
+				"tags": [
+					"general"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -64802,7 +74019,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -64860,7 +74080,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -64886,7 +74109,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 407,
 				"originalKo": "여행하다",
 				"originalEn": "to travel",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"travel"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -64912,7 +74138,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1794,
 				"originalKo": "동안",
 				"originalEn": "during, for, duration of time",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -64930,7 +74160,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1811,
 				"originalKo": "가족",
 				"originalEn": "family",
-				"tags": [],
+				"tags": [
+					"noun",
+					"people",
+					"family",
+					"relationship"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -64963,7 +74198,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1964,
 				"originalKo": "양식",
 				"originalEn": "Western food, Western cuisine",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -65022,7 +74259,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -65069,7 +74309,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1915,
 				"originalKo": "인터넷",
 				"originalEn": "internet",
-				"tags": [],
+				"tags": [
+					"general",
+					"technology",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 199,
@@ -65095,7 +74339,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -65113,7 +74362,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 902,
 				"originalKo": "알아보다",
 				"originalEn": "to look into, investigate, recognize",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"cognition"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -65170,7 +74422,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1965,
 				"originalKo": "뷔페",
 				"originalEn": "buffet, buffet restaurant",
-				"tags": [],
+				"tags": [
+					"food",
+					"place",
+					"facility",
+					"restaurant"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -65188,7 +74445,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 109,
 				"originalKo": "식당",
 				"originalEn": "restaurant",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"food",
+					"sinoRoot",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -65214,7 +74477,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 252,
 				"originalKo": "하나",
 				"originalEn": "one",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"counting"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -65232,7 +74498,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 554,
 				"originalKo": "찾다",
 				"originalEn": "to find",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -65265,7 +74533,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1465,
 				"originalKo": "세계",
 				"originalEn": "world",
-				"tags": [],
+				"tags": [
+					"geography",
+					"place",
+					"world"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -65283,7 +74555,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1801,
 				"originalKo": "여러",
 				"originalEn": "several, various, multiple (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -65301,7 +74576,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 6,
 				"originalKo": "나라",
 				"originalEn": "country",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [
 					{
 						"unitId": 856,
@@ -65327,7 +74605,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 304,
 				"originalKo": "음식",
 				"originalEn": "food",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -65353,7 +74633,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -65379,7 +74664,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 558,
 				"originalKo": "곳",
 				"originalEn": "place",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 1385,
@@ -65405,7 +74693,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 62,
 				"originalKo": "우리",
 				"originalEn": "we/us/our",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"plural"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -65423,7 +74715,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1811,
 				"originalKo": "가족",
 				"originalEn": "family",
-				"tags": [],
+				"tags": [
+					"noun",
+					"people",
+					"family",
+					"relationship"
+				],
 				"grammar": [
 					{
 						"unitId": 618,
@@ -65449,7 +74746,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -65526,7 +74827,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1963,
 				"originalKo": "예약",
 				"originalEn": "reservation, booking",
-				"tags": [],
+				"tags": [
+					"general"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -65552,7 +74855,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -65585,7 +74891,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1856,
 				"originalKo": "자리",
 				"originalEn": "seat, spot, position, space",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun",
+					"object",
+					"seating"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -65611,7 +74922,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 604,
 				"originalKo": "고르다",
 				"originalEn": "to pick/select",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -65644,7 +74957,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -65670,7 +74986,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 130,
 				"originalKo": "조용하다",
 				"originalEn": "to be quiet",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_acoustic",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -65696,7 +75016,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1856,
 				"originalKo": "자리",
 				"originalEn": "seat, spot, position, space",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun",
+					"object",
+					"seating"
+				],
 				"grammar": [
 					{
 						"unitId": 1240,
@@ -65722,7 +75047,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 314,
 				"originalKo": "달다",
 				"originalEn": "to be sweet",
-				"tags": [],
+				"tags": [
+					"descriptive_food",
+					"devtest",
+					"descriptive_taste",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 1362,
@@ -65748,7 +75078,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -65804,7 +75137,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 495,
 				"originalKo": "언니",
 				"originalEn": "older sister (for female)",
-				"tags": [],
+				"tags": [
+					"person",
+					"family",
+					"female"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -65830,7 +75167,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 851,
 				"originalKo": "조카",
 				"originalEn": "nephew, niece",
-				"tags": [],
+				"tags": [
+					"person",
+					"family"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -65856,7 +75196,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 136,
 				"originalKo": "오다",
 				"originalEn": "to come",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -65882,7 +75227,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -65900,7 +75250,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 193,
 				"originalKo": "바쁘다",
 				"originalEn": "to be busy",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"devtest",
+					"descriptive_person_trait",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 801,
@@ -65940,7 +75295,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1377,
 				"originalKo": "연휴",
 				"originalEn": "consecutive holidays, long weekend",
-				"tags": [],
+				"tags": [
+					"calendar",
+					"time",
+					"holiday"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -65966,7 +75325,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 890,
 				"originalKo": "행복하다",
 				"originalEn": "happy",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"emotion",
+					"descriptive_emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -65992,7 +75356,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 594,
 				"originalKo": "보내다",
 				"originalEn": "to send",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -66025,7 +75392,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -66043,7 +75413,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1638,
 				"originalKo": "같다",
 				"originalEn": "to be same, identical, similar, like",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"state",
+					"comparison"
+				],
 				"grammar": [
 					{
 						"unitId": 1156,
@@ -66087,7 +75461,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 310,
 				"originalKo": "피자",
 				"originalEn": "pizza",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -66113,7 +75489,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 207,
 				"originalKo": "한",
 				"originalEn": "one",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -66131,7 +75510,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 334,
 				"originalKo": "판",
 				"originalEn": "plate/pan",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 1402,
@@ -66157,7 +75540,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1810,
 				"originalKo": "주문하다",
 				"originalEn": "to order (goods, food)",
-				"tags": [],
+				"tags": [
+					"action_verb",
+					"commerce",
+					"food",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -66190,7 +75578,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1971,
 				"originalKo": "배달비",
 				"originalEn": "delivery fee, delivery charge",
-				"tags": [],
+				"tags": [
+					"general",
+					"finance",
+					"commerce"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -66208,7 +75600,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 526,
 				"originalKo": "원",
 				"originalEn": "won",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"sinoMeasureWord",
+					"currency"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -66234,7 +75630,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -66279,7 +75680,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 213,
 				"originalKo": "두",
 				"originalEn": "two",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -66297,7 +75701,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 993,
 				"originalKo": "파",
 				"originalEn": "green onion, scallion",
-				"tags": [],
+				"tags": [
+					"food",
+					"vegetable"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -66323,7 +75730,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1397,
 				"originalKo": "이상",
 				"originalEn": "more than, above, abnormal",
-				"tags": [],
+				"tags": [
+					"measurement",
+					"dimension",
+					"abstract"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -66341,7 +75752,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1810,
 				"originalKo": "주문하다",
 				"originalEn": "to order (goods, food)",
-				"tags": [],
+				"tags": [
+					"action_verb",
+					"commerce",
+					"food",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 1291,
@@ -66367,7 +75783,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 310,
 				"originalKo": "피자",
 				"originalEn": "pizza",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 1624,
@@ -66393,7 +75811,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1780,
 				"originalKo": "치킨",
 				"originalEn": "fried chicken, chicken",
-				"tags": [],
+				"tags": [
+					"food",
+					"meat"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -66419,7 +75840,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 325,
 				"originalKo": "같이",
 				"originalEn": "together",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"social",
+					"accompaniment"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -66437,7 +75864,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 321,
 				"originalKo": "시키다",
 				"originalEn": "to order",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_food",
+					"transitive_drink"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -66463,7 +75894,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1971,
 				"originalKo": "배달비",
 				"originalEn": "delivery fee, delivery charge",
-				"tags": [],
+				"tags": [
+					"general",
+					"finance",
+					"commerce"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -66489,7 +75924,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1464,
 				"originalKo": "무료",
 				"originalEn": "free of charge",
-				"tags": [],
+				"tags": [
+					"finance",
+					"commerce",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 56,
@@ -66534,7 +75973,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 42,
 				"originalKo": "크다",
 				"originalEn": "to be big",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"koreanRoot",
+					"devtest",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -66560,7 +76005,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1081,
 				"originalKo": "사이즈",
 				"originalEn": "size",
-				"tags": [],
+				"tags": [
+					"concept",
+					"attribute",
+					"size"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -66578,7 +76027,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 310,
 				"originalKo": "피자",
 				"originalEn": "pizza",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -66604,7 +76055,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1810,
 				"originalKo": "주문하다",
 				"originalEn": "to order (goods, food)",
-				"tags": [],
+				"tags": [
+					"action_verb",
+					"commerce",
+					"food",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -66637,7 +76093,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1972,
 				"originalKo": "콜라",
 				"originalEn": "cola, Coke",
-				"tags": [],
+				"tags": [
+					"food",
+					"drink",
+					"beverage"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -66663,7 +76123,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1973,
 				"originalKo": "사이다",
 				"originalEn": "cider, lemon-lime soda (e.g. Chilsung Cider)",
-				"tags": [],
+				"tags": [
+					"food",
+					"drink",
+					"beverage"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -66689,7 +76153,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1464,
 				"originalKo": "무료",
 				"originalEn": "free of charge",
-				"tags": [],
+				"tags": [
+					"finance",
+					"commerce",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 1242,
@@ -66715,7 +76183,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 591,
 				"originalKo": "드리다",
 				"originalEn": "to give (honorific)",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person",
+					"humbleVerb",
+					"dative_humble"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -66756,7 +76229,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 526,
 				"originalKo": "원",
 				"originalEn": "won",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"sinoMeasureWord",
+					"currency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -66774,7 +76251,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1397,
 				"originalKo": "이상",
 				"originalEn": "more than, above, abnormal",
-				"tags": [],
+				"tags": [
+					"measurement",
+					"dimension",
+					"abstract"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -66792,7 +76273,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1810,
 				"originalKo": "주문하다",
 				"originalEn": "to order (goods, food)",
-				"tags": [],
+				"tags": [
+					"action_verb",
+					"commerce",
+					"food",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -66825,7 +76311,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1391,
 				"originalKo": "배달되다",
 				"originalEn": "to be delivered",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"postal",
+					"passive",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -66872,7 +76363,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1631,
 				"originalKo": "전",
 				"originalEn": "before, ago, previous",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -66898,7 +76393,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1810,
 				"originalKo": "주문하다",
 				"originalEn": "to order (goods, food)",
-				"tags": [],
+				"tags": [
+					"action_verb",
+					"commerce",
+					"food",
+					"action"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -66938,7 +76438,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1980,
 				"originalKo": "손님",
 				"originalEn": "customer, guest, visitor",
-				"tags": [],
+				"tags": [
+					"person",
+					"social",
+					"subject_animate"
+				],
 				"grammar": [
 					{
 						"unitId": 647,
@@ -66964,7 +76468,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 426,
 				"originalKo": "다음",
 				"originalEn": "next",
-				"tags": [],
+				"tags": [
+					"time_modifier",
+					"time",
+					"determiner"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -66990,7 +76498,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 151,
 				"originalKo": "쓰다",
 				"originalEn": "to write",
-				"tags": [],
+				"tags": [
+					"transitive_writing",
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -67023,7 +76534,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1041,
 				"originalKo": "할인",
 				"originalEn": "discount, reduction",
-				"tags": [],
+				"tags": [
+					"concept",
+					"commerce"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -67041,7 +76555,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1819,
 				"originalKo": "쿠폰",
 				"originalEn": "coupon",
-				"tags": [],
+				"tags": [
+					"noun",
+					"commerce",
+					"discount",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -67067,7 +76586,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 591,
 				"originalKo": "드리다",
 				"originalEn": "to give (honorific)",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person",
+					"humbleVerb",
+					"dative_humble"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -67112,7 +76636,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 465,
 				"originalKo": "요즘",
 				"originalEn": "these days",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporalNoun",
+					"temporal_present",
+					"present",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -67130,7 +76660,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 123,
 				"originalKo": "날씨",
 				"originalEn": "weather",
-				"tags": [],
+				"tags": [
+					"attribute",
+					"nature",
+					"weather"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -67156,7 +76690,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 125,
 				"originalKo": "덥다",
 				"originalEn": "to be hot",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_weather",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -67182,7 +76721,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1497,
 				"originalKo": "밤",
 				"originalEn": "night, chestnut",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 1797,
@@ -67208,7 +76751,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1771,
 				"originalKo": "에어컨",
 				"originalEn": "air conditioner",
-				"tags": [],
+				"tags": [
+					"appliance",
+					"home",
+					"electronics"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -67234,7 +76781,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1982,
 				"originalKo": "켜다",
 				"originalEn": "to turn on, switch on (appliance, light)",
-				"tags": [],
+				"tags": [
+					"action",
+					"home",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -67260,7 +76811,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 359,
 				"originalKo": "자다",
 				"originalEn": "to sleep",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -67311,7 +76865,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1609,
 				"originalKo": "그런데",
 				"originalEn": "by the way, but, however",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_discourse",
+					"discourse",
+					"contrast",
+					"transition"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -67329,7 +76889,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 419,
 				"originalKo": "어제",
 				"originalEn": "yesterday",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporalNoun",
+					"temporal_past",
+					"past",
+					"no_time_particle"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -67347,7 +76913,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 208,
 				"originalKo": "아침",
 				"originalEn": "morning/breakfast",
-				"tags": [],
+				"tags": [
+					"time",
+					"meal",
+					"morning"
+				],
 				"grammar": [
 					{
 						"unitId": 1312,
@@ -67373,7 +76943,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1159,
 				"originalKo": "갑자기",
 				"originalEn": "suddenly, abruptly",
-				"tags": [],
+				"tags": [
+					"adverb_manner",
+					"manner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -67391,7 +76964,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1911,
 				"originalKo": "몸",
 				"originalEn": "body, physique, physical health",
-				"tags": [],
+				"tags": [
+					"body",
+					"health"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -67417,7 +76993,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1983,
 				"originalKo": "떨리다",
 				"originalEn": "to tremble, shiver, shake",
-				"tags": [],
+				"tags": [
+					"action",
+					"body",
+					"health",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -67443,7 +77024,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1984,
 				"originalKo": "목",
 				"originalEn": "neck, throat",
-				"tags": [],
+				"tags": [
+					"body",
+					"health"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -67469,7 +77053,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 400,
 				"originalKo": "너무",
 				"originalEn": "too much",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -67487,7 +77077,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 453,
 				"originalKo": "아프다",
 				"originalEn": "to be sick",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"descriptive_person_trait",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -67537,7 +77131,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1407,
 				"originalKo": "기침",
 				"originalEn": "cough",
-				"tags": [],
+				"tags": [
+					"illness",
+					"health",
+					"symptom"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -67563,7 +77161,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1424,
 				"originalKo": "심하다",
 				"originalEn": "severe, extreme",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"degree",
+					"evaluation",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -67596,7 +77199,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1429,
 				"originalKo": "콧물",
 				"originalEn": "runny nose, nasal discharge",
-				"tags": [],
+				"tags": [
+					"illness",
+					"health",
+					"symptom"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -67622,7 +77229,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1408,
 				"originalKo": "나다",
 				"originalEn": "to break out, occur, sprout, grow",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"occurrence",
+					"state_change"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -67675,7 +77286,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -67693,7 +77309,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 420,
 				"originalKo": "쉬다",
 				"originalEn": "to rest",
-				"tags": [],
+				"tags": [
+					"intransitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -67719,7 +77337,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 21,
 				"originalKo": "괜찮다",
 				"originalEn": "to be okay",
-				"tags": [],
+				"tags": [
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 801,
@@ -67773,7 +77394,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1430,
 				"originalKo": "푹",
 				"originalEn": "thoroughly, deeply, soundly (rest)",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"health",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -67791,7 +77418,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 359,
 				"originalKo": "자다",
 				"originalEn": "to sleep",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -67842,7 +77472,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 359,
 				"originalKo": "자다",
 				"originalEn": "to sleep",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -67868,7 +77501,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 358,
 				"originalKo": "일어나다",
 				"originalEn": "to wake up",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -67901,7 +77537,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1984,
 				"originalKo": "목",
 				"originalEn": "neck, throat",
-				"tags": [],
+				"tags": [
+					"body",
+					"health"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -67927,7 +77566,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 530,
 				"originalKo": "더",
 				"originalEn": "more",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"comparative"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -67945,7 +77589,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 453,
 				"originalKo": "아프다",
 				"originalEn": "to be sick",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"descriptive_person_trait",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -67971,7 +77619,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 220,
 				"originalKo": "열",
 				"originalEn": "ten",
-				"tags": [],
+				"tags": [
+					"koreanNumber"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -67997,7 +77647,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 408,
 				"originalKo": "많이",
 				"originalEn": "much/many",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -68015,7 +77668,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1408,
 				"originalKo": "나다",
 				"originalEn": "to break out, occur, sprout, grow",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"occurrence",
+					"state_change"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -68064,7 +77721,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 602,
 				"originalKo": "그래서",
 				"originalEn": "so",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse",
+					"cause"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -68082,7 +77744,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 180,
 				"originalKo": "집",
 				"originalEn": "house/home",
-				"tags": [],
+				"tags": [
+					"place",
+					"residence",
+					"room",
+					"building"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -68100,7 +77767,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 117,
 				"originalKo": "근처",
 				"originalEn": "near",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -68126,7 +77795,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -68152,7 +77826,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 446,
 				"originalKo": "병원",
 				"originalEn": "hospital",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"medical",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -68178,7 +77857,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -68232,7 +77918,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 16,
 				"originalKo": "한국",
 				"originalEn": "Korea",
-				"tags": [],
+				"tags": [
+					"place",
+					"country"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -68250,7 +77939,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 446,
 				"originalKo": "병원",
 				"originalEn": "hospital",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"medical",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -68276,7 +77970,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1656,
 				"originalKo": "처음",
 				"originalEn": "first time, for the first time",
-				"tags": [],
+				"tags": [
+					"time",
+					"order",
+					"sequence",
+					"adverb_manner",
+					"abstract"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -68294,7 +77994,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -68320,7 +78027,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 1385,
@@ -68346,7 +78056,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 373,
 				"originalKo": "좀",
 				"originalEn": "little",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -68364,7 +78079,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1985,
 				"originalKo": "무섭다",
 				"originalEn": "to be scary, to be afraid, fearful",
-				"tags": [],
+				"tags": [
+					"emotion",
+					"description",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 1815,
@@ -68397,7 +78116,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -68423,7 +78145,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1861,
 				"originalKo": "걱정",
 				"originalEn": "worry, concern, anxiety",
-				"tags": [],
+				"tags": [
+					"emotion",
+					"abstract",
+					"concern"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -68449,7 +78175,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -68502,7 +78232,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 446,
 				"originalKo": "병원",
 				"originalEn": "hospital",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"medical",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -68528,7 +78263,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 35,
 				"originalKo": "의사",
 				"originalEn": "doctor",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"sinoRoot",
+					"devtest"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -68546,7 +78286,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 32,
 				"originalKo": "선생님",
 				"originalEn": "teacher",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"honorific",
+					"elder_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -68572,7 +78317,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 148,
 				"originalKo": "만나다",
 				"originalEn": "to meet",
-				"tags": [],
+				"tags": [
+					"transitive_person"
+				],
 				"grammar": [
 					{
 						"unitId": 816,
@@ -68598,7 +78345,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 146,
 				"originalKo": "기다리다",
 				"originalEn": "to wait",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"scalable",
+					"scalable_duration"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -68624,7 +78375,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1986,
 				"originalKo": "환자",
 				"originalEn": "patient (medical)",
-				"tags": [],
+				"tags": [
+					"people",
+					"health",
+					"medical"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -68657,7 +78412,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -68708,7 +78467,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 146,
 				"originalKo": "기다리다",
 				"originalEn": "to wait",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"scalable",
+					"scalable_duration"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -68734,7 +78497,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1794,
 				"originalKo": "동안",
 				"originalEn": "during, for, duration of time",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -68752,7 +78519,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 134,
 				"originalKo": "한국말",
 				"originalEn": "Korean language",
-				"tags": [],
+				"tags": [
+					"language",
+					"object"
+				],
 				"grammar": [
 					{
 						"unitId": 1241,
@@ -68778,7 +78548,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 668,
 				"originalKo": "어떻게",
 				"originalEn": "how",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"method"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -68796,7 +78569,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1193,
 				"originalKo": "설명하다",
 				"originalEn": "to explain",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 1276,
@@ -68822,7 +78598,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 1987,
@@ -68848,7 +78628,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1988,
 				"originalKo": "생각하다",
 				"originalEn": "to think, consider, believe",
-				"tags": [],
+				"tags": [
+					"action",
+					"cognition",
+					"mental",
+					"volitional_human"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -68899,7 +78684,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1775,
 				"originalKo": "내",
 				"originalEn": "my (plain 1st-person possessive pronoun)",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"possessive",
+					"informal"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -68917,7 +78707,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1989,
 				"originalKo": "차례",
 				"originalEn": "turn, order, sequence",
-				"tags": [],
+				"tags": [
+					"abstract",
+					"time",
+					"general"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -68943,7 +78737,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -68969,7 +78767,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 32,
 				"originalKo": "선생님",
 				"originalEn": "teacher",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"honorific",
+					"elder_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -68995,7 +78798,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 148,
 				"originalKo": "만나다",
 				"originalEn": "to meet",
-				"tags": [],
+				"tags": [
+					"transitive_person"
+				],
 				"grammar": [
 					{
 						"unitId": 816,
@@ -69021,7 +78826,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 708,
 				"originalKo": "들어가다",
 				"originalEn": "to enter",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"intransitive_place",
+					"locative_goal",
+					"motion_concord"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -69079,7 +78889,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 35,
 				"originalKo": "의사",
 				"originalEn": "doctor",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"sinoRoot",
+					"devtest"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -69097,7 +78912,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 32,
 				"originalKo": "선생님",
 				"originalEn": "teacher",
-				"tags": [],
+				"tags": [
+					"person",
+					"profession",
+					"honorific",
+					"elder_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -69123,7 +78943,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 122,
 				"originalKo": "아주",
 				"originalEn": "very",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -69141,7 +78966,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 197,
 				"originalKo": "친절하다",
 				"originalEn": "to be kind",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"descriptive_person_trait",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -69167,7 +78996,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 100,
 				"originalKo": "어디",
 				"originalEn": "where",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"place",
+					"deictic",
+					"interrogative"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -69193,7 +79027,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 177,
 				"originalKo": "언제",
 				"originalEn": "when",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"time",
+					"no_time_particle"
+				],
 				"grammar": [
 					{
 						"unitId": 1312,
@@ -69219,7 +79057,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 453,
 				"originalKo": "아프다",
 				"originalEn": "to be sick",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"descriptive_person_trait",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -69252,7 +79094,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 694,
 				"originalKo": "물어보다",
 				"originalEn": "to ask",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -69285,7 +79130,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1699,
 				"originalKo": "나",
 				"originalEn": "I, me (plain/informal 1st-person pronoun)",
-				"tags": [],
+				"tags": [
+					"pronoun",
+					"1st_person",
+					"informal"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -69311,7 +79160,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1990,
 				"originalKo": "대답",
 				"originalEn": "answer, reply, response",
-				"tags": [],
+				"tags": [
+					"communication",
+					"conversation"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -69337,7 +79189,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -69370,7 +79225,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 146,
 				"originalKo": "기다리다",
 				"originalEn": "to wait",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"scalable",
+					"scalable_duration"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -69396,7 +79255,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 322,
 				"originalKo": "주다",
 				"originalEn": "to give",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"dative_person"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -69457,7 +79319,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1775,
 				"originalKo": "내",
 				"originalEn": "my (plain 1st-person possessive pronoun)",
-				"tags": [],
+				"tags": [
+					"person",
+					"pronoun_1st",
+					"possessive",
+					"informal"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -69475,7 +79342,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 627,
 				"originalKo": "이야기",
 				"originalEn": "story",
-				"tags": [],
+				"tags": [
+					"concept",
+					"communication"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -69501,7 +79371,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 147,
 				"originalKo": "듣다",
 				"originalEn": "to listen/hear",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_audio"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -69527,7 +79400,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 201,
 				"originalKo": "몇",
 				"originalEn": "what/how many",
-				"tags": [],
+				"tags": [
+					"questionWord",
+					"number",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -69545,7 +79422,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1802,
 				"originalKo": "가지",
 				"originalEn": "kind, sort, variety (bound noun / classifier for types)",
-				"tags": [],
+				"tags": [
+					"bound_noun",
+					"counter",
+					"measureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -69571,7 +79452,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1991,
 				"originalKo": "검사하다",
 				"originalEn": "to examine, inspect, check, test",
-				"tags": [],
+				"tags": [
+					"action",
+					"medical",
+					"general"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -69611,7 +79496,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1424,
 				"originalKo": "심하다",
 				"originalEn": "severe, extreme",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"degree",
+					"evaluation",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -69637,7 +79527,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1405,
 				"originalKo": "감기",
 				"originalEn": "cold (illness)",
-				"tags": [],
+				"tags": [
+					"illness",
+					"health",
+					"symptom"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -69663,7 +79557,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 651,
 				"originalKo": "걸리다",
 				"originalEn": "to take (time)",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"scalable",
+					"scalable_duration"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -69696,7 +79594,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1992,
 				"originalKo": "말씀하다",
 				"originalEn": "to speak, say (honorific or humble of 말하다)",
-				"tags": [],
+				"tags": [
+					"action",
+					"speech",
+					"honorific"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -69760,7 +79662,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1497,
 				"originalKo": "밤",
 				"originalEn": "night, chestnut",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 1797,
@@ -69786,7 +79692,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1771,
 				"originalKo": "에어컨",
 				"originalEn": "air conditioner",
-				"tags": [],
+				"tags": [
+					"appliance",
+					"home",
+					"electronics"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -69812,7 +79722,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1982,
 				"originalKo": "켜다",
 				"originalEn": "to turn on, switch on (appliance, light)",
-				"tags": [],
+				"tags": [
+					"action",
+					"home",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -69838,7 +79752,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 359,
 				"originalKo": "자다",
 				"originalEn": "to sleep",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -69864,7 +79781,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1405,
 				"originalKo": "감기",
 				"originalEn": "cold (illness)",
-				"tags": [],
+				"tags": [
+					"illness",
+					"health",
+					"symptom"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -69890,7 +79811,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 651,
 				"originalKo": "걸리다",
 				"originalEn": "to take (time)",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"scalable",
+					"scalable_duration"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -69937,7 +79862,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -69998,7 +79926,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1984,
 				"originalKo": "목",
 				"originalEn": "neck, throat",
-				"tags": [],
+				"tags": [
+					"body",
+					"health"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -70024,7 +79955,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 408,
 				"originalKo": "많이",
 				"originalEn": "much/many",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -70042,7 +79976,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1419,
 				"originalKo": "붓다",
 				"originalEn": "to swell, puff up",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"health",
+					"symptom"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -70075,7 +80013,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 307,
 				"originalKo": "차",
 				"originalEn": "tea",
-				"tags": [],
+				"tags": [
+					"drink",
+					"tea",
+					"cup"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -70101,7 +80043,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 304,
 				"originalKo": "음식",
 				"originalEn": "food",
-				"tags": [],
+				"tags": [
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -70160,7 +80104,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -70220,7 +80167,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1984,
 				"originalKo": "목",
 				"originalEn": "neck, throat",
-				"tags": [],
+				"tags": [
+					"body",
+					"health"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -70246,7 +80196,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 713,
 				"originalKo": "따뜻하다",
 				"originalEn": "to be warm",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"weather",
+					"descriptive_weather",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -70272,7 +80227,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -70298,7 +80256,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 701,
 				"originalKo": "약",
 				"originalEn": "medicine",
-				"tags": [],
+				"tags": [
+					"object",
+					"medical"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -70324,7 +80285,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1165,
 				"originalKo": "사흘",
 				"originalEn": "three days",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -70342,7 +80306,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1794,
 				"originalKo": "동안",
 				"originalEn": "during, for, duration of time",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration",
+					"bound_noun"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -70386,7 +80354,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -70452,7 +80423,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 353,
 				"originalKo": "그리고",
 				"originalEn": "and",
-				"tags": [],
+				"tags": [
+					"conjunction",
+					"adverb_discourse",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -70470,7 +80445,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1497,
 				"originalKo": "밤",
 				"originalEn": "night, chestnut",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -70496,7 +80475,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1771,
 				"originalKo": "에어컨",
 				"originalEn": "air conditioner",
-				"tags": [],
+				"tags": [
+					"appliance",
+					"home",
+					"electronics"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -70522,7 +80505,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1561,
 				"originalKo": "계속",
 				"originalEn": "continuously, keep on",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"aspect",
+					"continuity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -70540,7 +80529,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1982,
 				"originalKo": "켜다",
 				"originalEn": "to turn on, switch on (appliance, light)",
-				"tags": [],
+				"tags": [
+					"action",
+					"home",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -70566,7 +80559,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 359,
 				"originalKo": "자다",
 				"originalEn": "to sleep",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -70592,7 +80588,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1405,
 				"originalKo": "감기",
 				"originalEn": "cold (illness)",
-				"tags": [],
+				"tags": [
+					"illness",
+					"health",
+					"symptom"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -70618,7 +80618,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1424,
 				"originalKo": "심하다",
 				"originalEn": "severe, extreme",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"degree",
+					"evaluation",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -70651,7 +80656,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1837,
 				"originalKo": "때문",
 				"originalEn": "reason, cause, because of",
-				"tags": [],
+				"tags": [
+					"concept",
+					"causal",
+					"reason"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -70677,7 +80686,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1405,
 				"originalKo": "감기",
 				"originalEn": "cold (illness)",
-				"tags": [],
+				"tags": [
+					"illness",
+					"health",
+					"symptom"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -70703,7 +80716,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1408,
 				"originalKo": "나다",
 				"originalEn": "to break out, occur, sprout, grow",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"occurrence",
+					"state_change"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -70736,7 +80753,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1771,
 				"originalKo": "에어컨",
 				"originalEn": "air conditioner",
-				"tags": [],
+				"tags": [
+					"appliance",
+					"home",
+					"electronics"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -70762,7 +80783,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1982,
 				"originalKo": "켜다",
 				"originalEn": "to turn on, switch on (appliance, light)",
-				"tags": [],
+				"tags": [
+					"action",
+					"home",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -70788,7 +80813,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 359,
 				"originalKo": "자다",
 				"originalEn": "to sleep",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 573,
@@ -70821,7 +80849,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -70881,7 +80912,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1911,
 				"originalKo": "몸",
 				"originalEn": "body, physique, physical health",
-				"tags": [],
+				"tags": [
+					"body",
+					"health"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -70907,7 +80941,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 453,
 				"originalKo": "아프다",
 				"originalEn": "to be sick",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"descriptive_person_trait",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 53,
@@ -70933,7 +80971,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1633,
 				"originalKo": "공부",
 				"originalEn": "study, studying",
-				"tags": [],
+				"tags": [
+					"education",
+					"activity",
+					"cognition",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -70959,7 +81002,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 1815,
@@ -70999,7 +81045,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1798,
 				"originalKo": "생활하다",
 				"originalEn": "to live, lead a life, get by",
-				"tags": [],
+				"tags": [
+					"action",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -71025,7 +81074,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 581,
 				"originalKo": "것",
 				"originalEn": "thing",
-				"tags": [],
+				"tags": [
+					"object",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -71051,7 +81103,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 400,
 				"originalKo": "너무",
 				"originalEn": "too much",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -71069,7 +81127,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 371,
 				"originalKo": "힘들다",
 				"originalEn": "to be hard",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_person",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 1156,
@@ -71114,7 +81176,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1395,
 				"originalKo": "앞으로",
 				"originalEn": "from now on, in the future",
-				"tags": [],
+				"tags": [
+					"adverb_time",
+					"time",
+					"temporal_relation",
+					"temporal_future",
+					"future",
+					"no_time_particle"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -71140,7 +81209,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1771,
 				"originalKo": "에어컨",
 				"originalEn": "air conditioner",
-				"tags": [],
+				"tags": [
+					"appliance",
+					"home",
+					"electronics"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -71166,7 +81239,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1982,
 				"originalKo": "켜다",
 				"originalEn": "to turn on, switch on (appliance, light)",
-				"tags": [],
+				"tags": [
+					"action",
+					"home",
+					"technology"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -71192,7 +81269,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 359,
 				"originalKo": "자다",
 				"originalEn": "to sleep",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 1737,
@@ -71255,7 +81335,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 456,
 				"originalKo": "빨리",
 				"originalEn": "quickly",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"speed"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -71273,7 +81358,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1405,
 				"originalKo": "감기",
 				"originalEn": "cold (illness)",
-				"tags": [],
+				"tags": [
+					"illness",
+					"health",
+					"symptom"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -71299,7 +81388,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1408,
 				"originalKo": "나다",
 				"originalEn": "to break out, occur, sprout, grow",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"occurrence",
+					"state_change"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -71360,7 +81453,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 420,
 				"originalKo": "쉬다",
 				"originalEn": "to rest",
-				"tags": [],
+				"tags": [
+					"intransitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -71386,7 +81481,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1634,
 				"originalKo": "날",
 				"originalEn": "day, date",
-				"tags": [],
+				"tags": [
+					"time",
+					"calendar",
+					"day"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -71412,7 +81511,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 452,
 				"originalKo": "늦다",
 				"originalEn": "to be late",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_person",
+					"descriptive_speed",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -71438,7 +81542,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1497,
 				"originalKo": "밤",
 				"originalEn": "night, chestnut",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -71464,7 +81572,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1159,
 				"originalKo": "갑자기",
 				"originalEn": "suddenly, abruptly",
-				"tags": [],
+				"tags": [
+					"adverb_manner",
+					"manner"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -71482,7 +81593,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 453,
 				"originalKo": "아프다",
 				"originalEn": "to be sick",
-				"tags": [],
+				"tags": [
+					"descriptive_person",
+					"descriptive_person_trait",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -71515,7 +81630,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1861,
 				"originalKo": "걱정",
 				"originalEn": "worry, concern, anxiety",
-				"tags": [],
+				"tags": [
+					"emotion",
+					"abstract",
+					"concern"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -71533,7 +81652,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 126,
 				"originalKo": "많다",
 				"originalEn": "to be many/much",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"quantity",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -71593,7 +81716,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 446,
 				"originalKo": "병원",
 				"originalEn": "hospital",
-				"tags": [],
+				"tags": [
+					"place",
+					"facility",
+					"medical",
+					"inanimate_institution"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -71619,7 +81747,14 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 44,
 				"originalKo": "가다",
 				"originalEn": "to go",
-				"tags": [],
+				"tags": [
+					"intransitive_motion",
+					"koreanRoot",
+					"devtest",
+					"locative_goal",
+					"motion_concord",
+					"intransitive"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -71659,7 +81794,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1605,
 				"originalKo": "때",
 				"originalEn": "time, when, moment",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"bound_noun"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -71685,7 +81824,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 701,
 				"originalKo": "약",
 				"originalEn": "medicine",
-				"tags": [],
+				"tags": [
+					"object",
+					"medical"
+				],
 				"grammar": [
 					{
 						"unitId": 1453,
@@ -71775,7 +81917,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -71793,7 +81940,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 701,
 				"originalKo": "약",
 				"originalEn": "medicine",
-				"tags": [],
+				"tags": [
+					"object",
+					"medical"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -71811,7 +81961,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1322,
 				"originalKo": "상자",
 				"originalEn": "box",
-				"tags": [],
+				"tags": [
+					"container",
+					"object",
+					"postal"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -71837,7 +81991,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1160,
 				"originalKo": "급하다",
 				"originalEn": "urgent, hasty, in a hurry",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -71870,7 +82027,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1110,
 				"originalKo": "필요하다",
 				"originalEn": "to need, be necessary",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -71896,7 +82056,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 701,
 				"originalKo": "약",
 				"originalEn": "medicine",
-				"tags": [],
+				"tags": [
+					"object",
+					"medical"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -71929,7 +82092,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2004,
 				"originalKo": "들어있다",
 				"originalEn": "to be contained, to be inside",
-				"tags": [],
+				"tags": [
+					"state",
+					"spatial",
+					"existential"
+				],
 				"grammar": [
 					{
 						"unitId": 54,
@@ -71955,7 +82122,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 63,
 				"originalKo": "이것",
 				"originalEn": "this (thing)",
-				"tags": [],
+				"tags": [
+					"demonstrative",
+					"thing",
+					"deictic",
+					"proximal"
+				],
 				"grammar": [
 					{
 						"unitId": 1402,
@@ -71981,7 +82153,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -72007,7 +82184,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 413,
 				"originalKo": "쉽다",
 				"originalEn": "to be easy",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"devtest",
+					"descriptive_difficulty",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 800,
@@ -72033,7 +82215,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1995,
 				"originalKo": "치료하다",
 				"originalEn": "to treat, cure, heal",
-				"tags": [],
+				"tags": [
+					"action",
+					"medical",
+					"health"
+				],
 				"grammar": [
 					{
 						"unitId": 522,
@@ -72086,7 +82272,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 402,
 				"originalKo": "아이",
 				"originalEn": "child",
-				"tags": [],
+				"tags": [
+					"person",
+					"family"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -72112,7 +82301,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 313,
 				"originalKo": "놀다",
 				"originalEn": "to play/hang out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"devtest"
+				],
 				"grammar": [
 					{
 						"unitId": 1239,
@@ -72138,7 +82330,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1996,
 				"originalKo": "넘어지다",
 				"originalEn": "to fall down, trip over, tumble",
-				"tags": [],
+				"tags": [
+					"action",
+					"movement",
+					"body"
+				],
 				"grammar": [
 					{
 						"unitId": 335,
@@ -72178,7 +82374,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1562,
 				"originalKo": "그냥",
 				"originalEn": "just, simply, as it is",
-				"tags": [],
+				"tags": [
+					"adverb_manner",
+					"discourse"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -72196,7 +82395,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 701,
 				"originalKo": "약",
 				"originalEn": "medicine",
-				"tags": [],
+				"tags": [
+					"object",
+					"medical"
+				],
 				"grammar": [
 					{
 						"unitId": 1402,
@@ -72222,7 +82424,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1440,
 				"originalKo": "바르다",
 				"originalEn": "to apply, smear, spread",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"health",
+					"cosmetics"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -72272,7 +82478,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 122,
 				"originalKo": "아주",
 				"originalEn": "very",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -72290,7 +82501,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 128,
 				"originalKo": "작다",
 				"originalEn": "to be small",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"size",
+					"descriptive_dimension_scale",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -72316,7 +82532,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1422,
 				"originalKo": "상처",
 				"originalEn": "wound, injury, scar",
-				"tags": [],
+				"tags": [
+					"health",
+					"anatomy",
+					"psychology"
+				],
 				"grammar": [
 					{
 						"unitId": 366,
@@ -72342,7 +82562,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 456,
 				"originalKo": "빨리",
 				"originalEn": "quickly",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"speed"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -72360,7 +82585,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1997,
 				"originalKo": "소독하다",
 				"originalEn": "to disinfect, sanitize, sterilize",
-				"tags": [],
+				"tags": [
+					"action",
+					"medical",
+					"health"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -72393,7 +82622,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 98,
 				"originalKo": "안",
 				"originalEn": "inside",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -72411,7 +82642,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -72457,7 +82692,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1437,
 				"originalKo": "다치다",
 				"originalEn": "to get hurt, be injured",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"health",
+					"accident"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -72483,7 +82722,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 558,
 				"originalKo": "곳",
 				"originalEn": "place",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -72509,7 +82751,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1997,
 				"originalKo": "소독하다",
 				"originalEn": "to disinfect, sanitize, sterilize",
-				"tags": [],
+				"tags": [
+					"action",
+					"medical",
+					"health"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -72542,7 +82788,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 701,
 				"originalKo": "약",
 				"originalEn": "medicine",
-				"tags": [],
+				"tags": [
+					"object",
+					"medical"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -72568,7 +82817,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1440,
 				"originalKo": "바르다",
 				"originalEn": "to apply, smear, spread",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"health",
+					"cosmetics"
+				],
 				"grammar": [
 					{
 						"unitId": 1276,
@@ -72594,7 +82847,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1422,
 				"originalKo": "상처",
 				"originalEn": "wound, injury, scar",
-				"tags": [],
+				"tags": [
+					"health",
+					"anatomy",
+					"psychology"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -72620,7 +82877,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1424,
 				"originalKo": "심하다",
 				"originalEn": "severe, extreme",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"degree",
+					"evaluation",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 274,
@@ -72680,7 +82942,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1437,
 				"originalKo": "다치다",
 				"originalEn": "to get hurt, be injured",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"health",
+					"accident"
+				],
 				"grammar": [
 					{
 						"unitId": 644,
@@ -72706,7 +82972,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 558,
 				"originalKo": "곳",
 				"originalEn": "place",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatialNoun"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -72732,7 +83001,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1998,
 				"originalKo": "한두",
 				"originalEn": "one or two (determiner)",
-				"tags": [],
+				"tags": [
+					"number",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -72750,7 +83022,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 226,
 				"originalKo": "번",
 				"originalEn": "times/number",
-				"tags": [],
+				"tags": [
+					"measureWord",
+					"koreanMeasureWord",
+					"frequency"
+				],
 				"grammar": [
 					{
 						"unitId": 1402,
@@ -72776,7 +83052,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1440,
 				"originalKo": "바르다",
 				"originalEn": "to apply, smear, spread",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"health",
+					"cosmetics"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -72823,7 +83103,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -72867,7 +83151,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1412,
 				"originalKo": "두통",
 				"originalEn": "headache",
-				"tags": [],
+				"tags": [
+					"illness",
+					"health",
+					"symptom"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -72893,7 +83181,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1424,
 				"originalKo": "심하다",
 				"originalEn": "severe, extreme",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"degree",
+					"evaluation",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -72919,7 +83212,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1497,
 				"originalKo": "밤",
 				"originalEn": "night, chestnut",
-				"tags": [],
+				"tags": [
+					"time",
+					"temporal_relation",
+					"food"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -72945,7 +83242,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1999,
 				"originalKo": "잠",
 				"originalEn": "sleep (noun)",
-				"tags": [],
+				"tags": [
+					"body",
+					"health",
+					"daily",
+					"physiological_state"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -72971,7 +83273,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -72989,7 +83296,15 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1739,
 				"originalKo": "못",
 				"originalEn": "cannot, unable to (short negative adverb)",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"negative",
+					"inability",
+					"short_negation",
+					"action_verb_only"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -73007,7 +83322,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 508,
 				"originalKo": "주무시다",
 				"originalEn": "to sleep",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"honorificVerb"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -73059,7 +83377,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1412,
 				"originalKo": "두통",
 				"originalEn": "headache",
-				"tags": [],
+				"tags": [
+					"illness",
+					"health",
+					"symptom"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -73077,7 +83399,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1837,
 				"originalKo": "때문",
 				"originalEn": "reason, cause, because of",
-				"tags": [],
+				"tags": [
+					"concept",
+					"causal",
+					"reason"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -73103,7 +83429,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 236,
 				"originalKo": "일",
 				"originalEn": "one",
-				"tags": [],
+				"tags": [
+					"sinoNumber"
+				],
 				"grammar": [
 					{
 						"unitId": 1333,
@@ -73129,7 +83457,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1633,
 				"originalKo": "공부",
 				"originalEn": "study, studying",
-				"tags": [],
+				"tags": [
+					"education",
+					"activity",
+					"cognition",
+					"abstract"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -73155,7 +83488,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -73188,7 +83524,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 371,
 				"originalKo": "힘들다",
 				"originalEn": "to be hard",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"descriptive_person",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -73237,7 +83577,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2000,
 				"originalKo": "이런",
 				"originalEn": "this kind of, such, like this",
-				"tags": [],
+				"tags": [
+					"demonstrative",
+					"modifier"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -73255,7 +83598,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1639,
 				"originalKo": "분",
 				"originalEn": "person (honorific), counter for people",
-				"tags": [],
+				"tags": [
+					"person",
+					"honorific",
+					"counter",
+					"measureWord",
+					"koreanMeasureWord"
+				],
 				"grammar": [
 					{
 						"unitId": 550,
@@ -73288,7 +83637,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -73306,7 +83660,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 701,
 				"originalKo": "약",
 				"originalEn": "medicine",
-				"tags": [],
+				"tags": [
+					"object",
+					"medical"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -73332,7 +83689,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1110,
 				"originalKo": "필요하다",
 				"originalEn": "to need, be necessary",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -73375,7 +83735,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -73393,7 +83758,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 701,
 				"originalKo": "약",
 				"originalEn": "medicine",
-				"tags": [],
+				"tags": [
+					"object",
+					"medical"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -73419,7 +83787,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1179,
 				"originalKo": "하루",
 				"originalEn": "one day",
-				"tags": [],
+				"tags": [
+					"time",
+					"duration"
+				],
 				"grammar": [
 					{
 						"unitId": 275,
@@ -73445,7 +83816,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 214,
 				"originalKo": "세",
 				"originalEn": "three",
-				"tags": [],
+				"tags": [
+					"koreanNumber",
+					"attributive"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -73463,7 +83837,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 230,
 				"originalKo": "알다",
 				"originalEn": "to know/understand",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_information",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -73489,7 +83867,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1397,
 				"originalKo": "이상",
 				"originalEn": "more than, above, abnormal",
-				"tags": [],
+				"tags": [
+					"measurement",
+					"dimension",
+					"abstract"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -73507,7 +83889,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 505,
 				"originalKo": "드시다",
 				"originalEn": "to eat/drink",
-				"tags": [],
+				"tags": [
+					"transitive_food",
+					"transitive_drink",
+					"honorificVerb"
+				],
 				"grammar": [
 					{
 						"unitId": 573,
@@ -73557,7 +83943,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 38,
 				"originalKo": "밥",
 				"originalEn": "rice/meal",
-				"tags": [],
+				"tags": [
+					"food",
+					"koreanRoot",
+					"devtest",
+					"food_bowl"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -73583,7 +83974,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 408,
 				"originalKo": "많이",
 				"originalEn": "much/many",
-				"tags": [],
+				"tags": [
+					"adverb_quantity",
+					"quantity"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -73627,7 +84021,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1499,
 				"originalKo": "속",
 				"originalEn": "inside, interior, stomach",
-				"tags": [],
+				"tags": [
+					"spatial",
+					"spatial_relation",
+					"anatomy",
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -73653,7 +84052,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 900,
 				"originalKo": "불편하다",
 				"originalEn": "uncomfortable, inconvenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -73707,7 +84109,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1499,
 				"originalKo": "속",
 				"originalEn": "inside, interior, stomach",
-				"tags": [],
+				"tags": [
+					"spatial",
+					"spatial_relation",
+					"anatomy",
+					"position"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -73733,7 +84140,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 900,
 				"originalKo": "불편하다",
 				"originalEn": "uncomfortable, inconvenient",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -73766,7 +84176,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1423,
 				"originalKo": "소화",
 				"originalEn": "digestion",
-				"tags": [],
+				"tags": [
+					"health",
+					"anatomy",
+					"bodily_process"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -73792,7 +84206,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 98,
 				"originalKo": "안",
 				"originalEn": "inside",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -73810,7 +84226,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -73850,7 +84270,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -73868,7 +84293,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 701,
 				"originalKo": "약",
 				"originalEn": "medicine",
-				"tags": [],
+				"tags": [
+					"object",
+					"medical"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -73894,7 +84322,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 505,
 				"originalKo": "드시다",
 				"originalEn": "to eat/drink",
-				"tags": [],
+				"tags": [
+					"transitive_food",
+					"transitive_drink",
+					"honorificVerb"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -73927,7 +84359,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -73972,7 +84408,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1696,
 				"originalKo": "식사",
 				"originalEn": "meal, dining",
-				"tags": [],
+				"tags": [
+					"food",
+					"meal",
+					"event"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -73998,7 +84438,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 158,
 				"originalKo": "하다",
 				"originalEn": "to do",
-				"tags": [],
+				"tags": [
+					"transitive_general",
+					"transitive_activity"
+				],
 				"grammar": [
 					{
 						"unitId": 336,
@@ -74025,7 +84468,7 @@ const VERIFIED_SENTENCES = [
 				"originalKo": "~(으)ㄴ 후에 / ~기 전에",
 				"originalEn": "after / before doing",
 				"tags": [
-					"grammar"
+					"time_clause"
 				],
 				"grammar": [
 					{
@@ -74052,7 +84495,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 505,
 				"originalKo": "드시다",
 				"originalEn": "to eat/drink",
-				"tags": [],
+				"tags": [
+					"transitive_food",
+					"transitive_drink",
+					"honorificVerb"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -74120,7 +84567,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 402,
 				"originalKo": "아이",
 				"originalEn": "child",
-				"tags": [],
+				"tags": [
+					"person",
+					"family"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -74146,7 +84596,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1405,
 				"originalKo": "감기",
 				"originalEn": "cold (illness)",
-				"tags": [],
+				"tags": [
+					"illness",
+					"health",
+					"symptom"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -74172,7 +84626,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 651,
 				"originalKo": "걸리다",
 				"originalEn": "to take (time)",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"scalable",
+					"scalable_duration"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -74198,7 +84656,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 220,
 				"originalKo": "열",
 				"originalEn": "ten",
-				"tags": [],
+				"tags": [
+					"koreanNumber"
+				],
 				"grammar": [
 					{
 						"unitId": 96,
@@ -74224,7 +84684,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1408,
 				"originalKo": "나다",
 				"originalEn": "to break out, occur, sprout, grow",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"occurrence",
+					"state_change"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -74257,7 +84721,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1407,
 				"originalKo": "기침",
 				"originalEn": "cough",
-				"tags": [],
+				"tags": [
+					"illness",
+					"health",
+					"symptom"
+				],
 				"grammar": [
 					{
 						"unitId": 1826,
@@ -74283,7 +84751,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1424,
 				"originalKo": "심하다",
 				"originalEn": "severe, extreme",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"degree",
+					"evaluation",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 619,
@@ -74309,7 +84782,13 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 400,
 				"originalKo": "너무",
 				"originalEn": "too much",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_degree",
+					"quantity",
+					"degree",
+					"degree_pure"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -74327,7 +84806,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2005,
 				"originalKo": "걱정되다",
 				"originalEn": "to be worried, to be concerned",
-				"tags": [],
+				"tags": [
+					"emotion",
+					"mental",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 678,
@@ -74377,7 +84860,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1069,
 				"originalKo": "그렇다",
 				"originalEn": "to be so, be like that",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"demonstrative"
+				],
 				"grammar": [
 					{
 						"unitId": 646,
@@ -74410,7 +84896,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -74428,7 +84919,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 701,
 				"originalKo": "약",
 				"originalEn": "medicine",
-				"tags": [],
+				"tags": [
+					"object",
+					"medical"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -74480,7 +84974,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 121,
 				"originalKo": "좋다",
 				"originalEn": "to be good",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"emotion",
+					"gradable"
+				],
 				"grammar": [
 					{
 						"unitId": 50,
@@ -74530,7 +85028,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1618,
 				"originalKo": "이",
 				"originalEn": "this (determiner)",
-				"tags": [],
+				"tags": [
+					"determiner",
+					"demonstrative",
+					"proximal",
+					"deictic"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -74548,7 +85051,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 701,
 				"originalKo": "약",
 				"originalEn": "medicine",
-				"tags": [],
+				"tags": [
+					"object",
+					"medical"
+				],
 				"grammar": [
 					{
 						"unitId": 36,
@@ -74574,7 +85080,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2002,
 				"originalKo": "바닥",
 				"originalEn": "bottom, floor",
-				"tags": [],
+				"tags": [
+					"place",
+					"spatial",
+					"home"
+				],
 				"grammar": [
 					{
 						"unitId": 200,
@@ -74600,7 +85110,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 82,
 				"originalKo": "있다",
 				"originalEn": "to have",
-				"tags": [],
+				"tags": [
+					"descriptive_general",
+					"existence",
+					"locative_static",
+					"negation_suppletion"
+				],
 				"grammar": [
 					{
 						"unitId": 645,
@@ -74626,7 +85141,10 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 701,
 				"originalKo": "약",
 				"originalEn": "medicine",
-				"tags": [],
+				"tags": [
+					"object",
+					"medical"
+				],
 				"grammar": [
 					{
 						"unitId": 173,
@@ -74652,7 +85170,12 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1613,
 				"originalKo": "잘",
 				"originalEn": "well, skillfully, often",
-				"tags": [],
+				"tags": [
+					"adverb",
+					"adverb_manner",
+					"manner",
+					"proficiency"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -74670,7 +85193,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 944,
 				"originalKo": "섞다",
 				"originalEn": "to mix, blend",
-				"tags": [],
+				"tags": [
+					"transitive_general"
+				],
 				"grammar": [
 					{
 						"unitId": 1276,
@@ -74710,7 +85235,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1837,
 				"originalKo": "때문",
 				"originalEn": "reason, cause, because of",
-				"tags": [],
+				"tags": [
+					"concept",
+					"causal",
+					"reason"
+				],
 				"grammar": [
 					{
 						"unitId": 132,
@@ -74736,7 +85265,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 2003,
 				"originalKo": "흔들다",
 				"originalEn": "to shake, wave, swing",
-				"tags": [],
+				"tags": [
+					"action",
+					"movement",
+					"manual"
+				],
 				"grammar": [
 					{
 						"unitId": 459,
@@ -74795,7 +85328,9 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 98,
 				"originalKo": "안",
 				"originalEn": "inside",
-				"tags": [],
+				"tags": [
+					"position"
+				],
 				"grammar": [],
 				"morphTemplate": "",
 				"inflection": {
@@ -74813,7 +85348,11 @@ const VERIFIED_SENTENCES = [
 				"originalUnitId": 1615,
 				"originalKo": "되다",
 				"originalEn": "to become, to elapse (time), to work out",
-				"tags": [],
+				"tags": [
+					"intransitive_general",
+					"state",
+					"aspect"
+				],
 				"grammar": [
 					{
 						"unitId": 50,

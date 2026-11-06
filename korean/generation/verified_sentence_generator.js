@@ -473,6 +473,8 @@ function buildSlotFromToken(token, slotIndex) {
 		const primaryG = grammarItems[0];
 		const units = getUnitsArray();
 		const gUnit = primaryG.unitId !== null ? units[primaryG.unitId] : null;
+		const gRaw = gUnit ? gUnit[DATA_SCHEMA.SemanticTags] : null;
+		const gTags = (gRaw instanceof Set ? Array.from(gRaw) : (Array.isArray(gRaw) ? [...gRaw] : [])).filter(Boolean);
 		return {
 			index: slotIndex,
 			originalSurface: cleanSurface,
@@ -482,7 +484,7 @@ function buildSlotFromToken(token, slotIndex) {
 			originalUnitId: primaryG.unitId,
 			originalKo: gUnit ? gUnit[DATA_SCHEMA.Korean] : cleanSurface,
 			originalEn: gUnit ? gUnit[DATA_SCHEMA.English] : primaryG.en,
-			tags: gUnit && Array.isArray(gUnit[DATA_SCHEMA.SemanticTags]) ? [...gUnit[DATA_SCHEMA.SemanticTags]] : [K.GRAMMAR],
+			tags: gTags.length > 0 ? gTags : [K.GRAMMAR],
 			grammar: grammarItems,
 			morphTemplate: "",
 			inflection: { prefix: "", stemForm: "fixed_grammar", suffix: cleanSurface }
@@ -495,7 +497,8 @@ function buildSlotFromToken(token, slotIndex) {
 	const origId = lexUnit[DATA_SCHEMA.Id];
 	const origKo = lexUnit[DATA_SCHEMA.Korean];
 	const origEn = lexUnit[DATA_SCHEMA.English];
-	const tags = Array.isArray(lexUnit[DATA_SCHEMA.SemanticTags]) ? [...lexUnit[DATA_SCHEMA.SemanticTags]] : [];
+	const rawTags = lexUnit[DATA_SCHEMA.SemanticTags];
+	const tags = (rawTags instanceof Set ? Array.from(rawTags) : (Array.isArray(rawTags) ? [...rawTags] : [])).filter(Boolean);
 
 	let morphTemplate = "";
 	let inflection = { prefix: "", stemForm: "nominal", suffix: "" };
@@ -744,6 +747,7 @@ function analyzeTemplateStructure(template, options = {}) {
 	return {
 		slotStats,
 		singleChoiceCount,
+		hasSingleChoice: singleChoiceCount > 0,
 		zeroChoiceCount,
 		totalCombinations
 	};
@@ -980,6 +984,42 @@ function generateSentenceFromTemplate(templateOrId, options = {}) {
 		}
 	}
 
+	// Variation mode:
+	// 'selected' (renamed from 'single') = selected slots are varied; unselected slots are locked to
+	//                                     authentic study text Korean words, particles, and conjugations.
+	// 'all'                               = full random generation across all candidate slots (legacy mode).
+	const rawMode = options.varyMode || (options.unlockedSlots || options.varySlotIndices || options.varySlotIndex !== undefined || targetSlotIndex >= 0 ? 'selected' : 'all');
+	const isSelectedMode = (rawMode === 'selected' || rawMode === 'single');
+	const varyMode = isSelectedMode ? (rawMode === 'single' ? 'single' : 'selected') : 'all';
+
+	// Determine unlocked slots set in selected variability mode
+	let unlockedSlotSet = null;
+	if (isSelectedMode) {
+		unlockedSlotSet = new Set();
+		if (options.unlockedSlots) {
+			const arr = (options.unlockedSlots instanceof Set) ? Array.from(options.unlockedSlots) : options.unlockedSlots;
+			if (Array.isArray(arr)) {
+				for (const idx of arr) unlockedSlotSet.add(Number(idx));
+			}
+		} else if (options.varySlotIndices) {
+			const arr = (options.varySlotIndices instanceof Set) ? Array.from(options.varySlotIndices) : options.varySlotIndices;
+			if (Array.isArray(arr)) {
+				for (const idx of arr) unlockedSlotSet.add(Number(idx));
+			}
+		} else if (typeof options.varySlotIndex === 'number' && options.varySlotIndex >= 0) {
+			unlockedSlotSet.add(options.varySlotIndex);
+		} else if (targetSlotIndex >= 0) {
+			unlockedSlotSet.add(targetSlotIndex);
+		} else {
+			const nonFixedIndex = template.slots.findIndex(s => !(s.inflection && s.inflection.stemForm === "fixed_grammar"));
+			unlockedSlotSet.add(nonFixedIndex >= 0 ? nonFixedIndex : 0);
+		}
+
+		if (targetSlotIndex >= 0) {
+			unlockedSlotSet.add(targetSlotIndex);
+		}
+	}
+
 	const wordParts = [];
 	const litParts = [];
 	const allEojeols = [];
@@ -987,23 +1027,48 @@ function generateSentenceFromTemplate(templateOrId, options = {}) {
 
 	for (let sIdx = 0; sIdx < template.slots.length; sIdx++) {
 		const slot = template.slots[sIdx];
+		const slotPool = getSlotCandidates(slot, options);
 		let chosenUnit = null;
+		let isVariedSlot = false;
 
-		if (targetUnitId !== null && sIdx === targetSlotIndex && units[targetUnitId] && units[targetUnitId][DATA_SCHEMA.PartofSpeech] === slot.pos) {
-			chosenUnit = units[targetUnitId];
-		} else {
-			const pool = getSlotCandidates(slot, options);
-			if (pool.candidates.length > 0) {
-				chosenUnit = pickCandidateFromPool(pool.candidates, options, sIdx);
-			} else if (onlyFromSet) {
-				return {
-					ok: false,
-					insufficientSet: true,
-					missingRoles: [`${slot.pos} (${(slot.tags || []).join(', ') || 'any'})`],
-					message: `Practice set lacks a compatible ${slot.pos} for slot #${sIdx + 1}.`
-				};
-			} else if (typeof slot.originalUnitId === 'number' && units[slot.originalUnitId]) {
+		// Slot should vary if in 'all' mode, or if unlocked in 'selected' mode
+		const shouldVary = isSelectedMode ? unlockedSlotSet.has(sIdx) : true;
+
+		if (!shouldVary) {
+			// In selected mode, locked slots strictly use the original verified unit & surface
+			isVariedSlot = false;
+			if (typeof slot.originalUnitId === 'number' && units[slot.originalUnitId]) {
 				chosenUnit = units[slot.originalUnitId];
+			}
+		} else {
+			// Slot is selected for variation (or varyMode is 'all')
+			isVariedSlot = true;
+			if (targetUnitId !== null && sIdx === targetSlotIndex && units[targetUnitId] && units[targetUnitId][DATA_SCHEMA.PartofSpeech] === slot.pos) {
+				chosenUnit = units[targetUnitId];
+			} else {
+				let candidatePool = slotPool.candidates;
+
+				// In selected mode, if multiple candidates exist, prefer picking a candidate other than
+				// the original unit so generating a variation actually substitutes the term.
+				if (isSelectedMode && candidatePool.length > 1 && typeof slot.originalUnitId === 'number') {
+					const withoutOrig = candidatePool.filter(c => c[DATA_SCHEMA.Id] !== slot.originalUnitId);
+					if (withoutOrig.length > 0) {
+						candidatePool = withoutOrig;
+					}
+				}
+
+				if (candidatePool.length > 0) {
+					chosenUnit = pickCandidateFromPool(candidatePool, options, sIdx);
+				} else if (onlyFromSet) {
+					return {
+						ok: false,
+						insufficientSet: true,
+						missingRoles: [`${slot.pos} (${(slot.tags || []).join(', ') || 'any'})`],
+						message: `Practice set lacks a compatible ${slot.pos} for slot #${sIdx + 1}.`
+					};
+				} else if (typeof slot.originalUnitId === 'number' && units[slot.originalUnitId]) {
+					chosenUnit = units[slot.originalUnitId];
+				}
 			}
 		}
 
@@ -1016,6 +1081,13 @@ function generateSentenceFromTemplate(templateOrId, options = {}) {
 			slotIndex: sIdx,
 			pos: slot.pos,
 			tags: [...(slot.tags || [])],
+			isVariedSlot,
+			isSingleChoice: slotPool.isSingleChoice,
+			candidateCount: slotPool.count,
+			originalUnitId: slot.originalUnitId,
+			originalKo: slot.originalKo,
+			originalEn: slot.originalEn,
+			originalSurface: slot.originalSurface,
 			chosenUnitId: realizedSlot.chosenUnit ? realizedSlot.chosenUnit[DATA_SCHEMA.Id] : null,
 			chosenKo: realizedSlot.chosenUnit ? realizedSlot.chosenUnit[DATA_SCHEMA.Korean] : "",
 			chosenEn: realizedSlot.chosenUnit ? realizedSlot.chosenUnit[DATA_SCHEMA.English] : "",
@@ -1091,6 +1163,9 @@ function generateSentenceFromTemplate(templateOrId, options = {}) {
 
 	const unitIds = Array.from(seenUnitIds);
 
+	const unlockedList = isSelectedMode ? Array.from(unlockedSlotSet) : template.slots.map((_, i) => i);
+	const singleSlotIdx = isSelectedMode && unlockedSlotSet.size === 1 ? Array.from(unlockedSlotSet)[0] : -1;
+
 	return {
 		ok: true,
 		insufficientSet: false,
@@ -1098,6 +1173,10 @@ function generateSentenceFromTemplate(templateOrId, options = {}) {
 		verifiedTemplateId: template.id,
 		verifiedTemplateTitle: template.title,
 		verifiedSource: template.source,
+		originalKo: template.originalKo,
+		varyMode,
+		unlockedSlots: unlockedList,
+		varySlotIndex: singleSlotIdx,
 		targetUnitId,
 		ko: koWithPunct,
 		koBare,
@@ -1346,6 +1425,45 @@ function removeTagFromVerifiedSlot(id, slotIndex, tag) {
 	}
 	const currentTags = tpl.slots[slotIndex].tags || [];
 	return updateVerifiedSentenceSlotTags(id, slotIndex, currentTags.filter(t => t !== cleanTag));
+}
+
+/**
+ * Resets the semantic tag filters on a specific slot of a Verified Sentence back
+ * to the original filters of the default language unit in that slot.
+ */
+function resetVerifiedSlotTags(id, slotIndex) {
+	ensureRuntimeInitialized();
+	const tpl = getVerifiedSentenceById(id);
+	if (!tpl || !tpl.slots || !tpl.slots[slotIndex]) {
+		throw new Error(`Verified Sentence or slot not found: ${id}[${slotIndex}]`);
+	}
+	const slot = tpl.slots[slotIndex];
+	const units = getUnitsArray();
+	let originalTags = [];
+	if (typeof slot.originalUnitId === 'number' && units[slot.originalUnitId]) {
+		const origUnit = units[slot.originalUnitId];
+		const raw = origUnit[DATA_SCHEMA.SemanticTags];
+		originalTags = (raw instanceof Set ? Array.from(raw) : (Array.isArray(raw) ? [...raw] : [])).filter(Boolean);
+	} else if (slot.inflection && slot.inflection.stemForm === 'fixed_grammar') {
+		originalTags = [K.GRAMMAR];
+	}
+
+	// If hardcoded, also clear the specific slotTags override if present
+	if (tpl.isHardcoded) {
+		const existingOv = _hardcodedOverrides.get(id);
+		if (existingOv && existingOv.slotTags && existingOv.slotTags[slotIndex]) {
+			delete existingOv.slotTags[slotIndex];
+			if (Object.keys(existingOv.slotTags).length === 0 && !existingOv.title) {
+				_hardcodedOverrides.delete(id);
+			} else {
+				_hardcodedOverrides.set(id, existingOv);
+			}
+			_saveStateToLocalStorage();
+			return getVerifiedSentenceById(id);
+		}
+	}
+
+	return updateVerifiedSentenceSlotTags(id, slotIndex, originalTags);
 }
 
 /**
@@ -1677,6 +1795,7 @@ const verifiedGeneratorExports = {
 	updateVerifiedSentenceSlotTags,
 	addTagToVerifiedSlot,
 	removeTagFromVerifiedSlot,
+	resetVerifiedSlotTags,
 	resetHardcodedVerifiedSentence,
 	cloneVerifiedSentence,
 	deleteVerifiedSentence,

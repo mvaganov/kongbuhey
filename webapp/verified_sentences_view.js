@@ -30,6 +30,9 @@ class VerifiedSentencesView {
 		this.searchQuery = '';
 		this.sourceFilter = '';
 		this.typeFilter = 'all'; // 'all' | 'hardcoded' | 'custom' | 'singleChoice'
+		this.testVaryMode = 'selected'; // 'selected' | 'all'
+		this.unlockedSlotIndices = new Set(); // Set of slot indices to vary in 'selected' mode
+		this.testVarySlotIndex = 0;   // 0-based slot index to vary
 		this.testSentence = null;
 		this.testGenerationCount = 0;
 		this._cachedAvailableTags = null;
@@ -56,13 +59,18 @@ class VerifiedSentencesView {
 			: (typeof KR_EN_languageUnits !== 'undefined' ? KR_EN_languageUnits : []);
 		for (let i = 0; i < units.length; i++) {
 			const u = units[i];
-			if (u && Array.isArray(u[4])) {
+			if (!u || !u[4]) continue;
+			if (u[4] instanceof Set) {
 				for (const t of u[4]) {
-					if (t) tagSet.add(String(t));
+					if (t && typeof t === 'string') tagSet.add(t);
+				}
+			} else if (Array.isArray(u[4])) {
+				for (const t of u[4]) {
+					if (t && typeof t === 'string') tagSet.add(t);
 				}
 			}
 		}
-		this._cachedAvailableTags = Array.from(tagSet).sort();
+		this._cachedAvailableTags = Array.from(tagSet).sort((a, b) => a.localeCompare(b));
 		return this._cachedAvailableTags;
 	}
 
@@ -141,11 +149,185 @@ class VerifiedSentencesView {
 		return null;
 	}
 
+	_ensureUnlockedSlotsValid(tpl) {
+		if (!tpl || !Array.isArray(tpl.slots) || tpl.slots.length === 0) {
+			this.unlockedSlotIndices.clear();
+			return;
+		}
+		// Clear any out-of-bounds slot indices
+		for (const idx of Array.from(this.unlockedSlotIndices)) {
+			if (idx >= tpl.slots.length) {
+				this.unlockedSlotIndices.delete(idx);
+			}
+		}
+		// Default to unlocking the first non-fixed slot if empty
+		if (this.unlockedSlotIndices.size === 0) {
+			const nonFixed = tpl.slots.findIndex(s => !(s.inflection && s.inflection.stemForm === "fixed_grammar"));
+			this.unlockedSlotIndices.add(nonFixed >= 0 ? nonFixed : 0);
+		}
+	}
+
 	selectEntry(templateId) {
 		this.selectedTemplateId = templateId;
+		const gen = this._getGenerator();
+		if (gen) {
+			const tpl = gen.getVerifiedSentenceById(templateId);
+			if (tpl) {
+				this._ensureUnlockedSlotsValid(tpl);
+			}
+		}
 		this.generateTestSentence(templateId);
 		this.render();
 		return this.getSelectedEntry();
+	}
+
+	setVaryMode(mode) {
+		if (mode !== 'selected' && mode !== 'single' && mode !== 'all') return;
+		this.testVaryMode = (mode === 'single' ? 'selected' : mode);
+		this.generateTestSentence(this.selectedTemplateId);
+		if (this.container && this.container.querySelector('#verified-test-sentence-stage')) {
+			this._updateTestControlsAndStage();
+		} else {
+			this.render();
+		}
+	}
+
+	/**
+	 * Toggles a slot between locked (original word) and unlocked (varied).
+	 */
+	toggleSlotLock(slotIndex) {
+		const idx = Number(slotIndex);
+		if (isNaN(idx) || idx < 0) return;
+		const tpl = this.getSelectedEntry();
+
+		if (this.testVaryMode === 'all') {
+			// Transition from All Terms into Selected Variability with this slot toggled
+			this.testVaryMode = 'selected';
+			if (tpl && Array.isArray(tpl.slots)) {
+				this.unlockedSlotIndices.clear();
+				tpl.slots.forEach((s, sIdx) => {
+					if (sIdx !== idx && !(s.inflection && s.inflection.stemForm === "fixed_grammar")) {
+						this.unlockedSlotIndices.add(sIdx);
+					}
+				});
+			}
+		} else {
+			if (this.unlockedSlotIndices.has(idx)) {
+				this.unlockedSlotIndices.delete(idx);
+			} else {
+				this.unlockedSlotIndices.add(idx);
+			}
+		}
+		this.testVarySlotIndex = idx;
+		this.generateTestSentence(this.selectedTemplateId);
+
+		// Seamless in-place DOM update so scroll position never resets
+		if (this.container && this.container.querySelector('#verified-test-sentence-stage')) {
+			this._updateTestControlsAndStage();
+		} else {
+			this.render();
+		}
+	}
+
+	setVarySlotIndex(slotIndex) {
+		const idx = Math.max(0, Number(slotIndex) || 0);
+		this.testVaryMode = 'selected';
+		this.unlockedSlotIndices.clear();
+		this.unlockedSlotIndices.add(idx);
+		this.testVarySlotIndex = idx;
+		this.generateTestSentence(this.selectedTemplateId);
+
+		if (this.container && this.container.querySelector('#verified-test-sentence-stage')) {
+			this._updateTestControlsAndStage();
+		} else {
+			this.render();
+		}
+	}
+
+	lockAllSlots() {
+		this.testVaryMode = 'selected';
+		this.unlockedSlotIndices.clear();
+		this.generateTestSentence(this.selectedTemplateId);
+
+		if (this.container && this.container.querySelector('#verified-test-sentence-stage')) {
+			this._updateTestControlsAndStage();
+		} else {
+			this.render();
+		}
+	}
+
+	unlockAllSlots() {
+		const tpl = this.getSelectedEntry();
+		if (!tpl || !Array.isArray(tpl.slots)) return;
+		this.testVaryMode = 'selected';
+		this.unlockedSlotIndices.clear();
+		tpl.slots.forEach((s, idx) => {
+			if (!(s.inflection && s.inflection.stemForm === "fixed_grammar")) {
+				this.unlockedSlotIndices.add(idx);
+			}
+		});
+		this.generateTestSentence(this.selectedTemplateId);
+
+		if (this.container && this.container.querySelector('#verified-test-sentence-stage')) {
+			this._updateTestControlsAndStage();
+		} else {
+			this.render();
+		}
+	}
+
+	/**
+	 * Updates the interactive test sentence stage, mode switches, quick selectors,
+	 * and slot card action buttons in-place without rebuilding the parent DOM,
+	 * strictly preserving the user's current scroll position.
+	 */
+	_updateTestControlsAndStage() {
+		if (!this.container) return;
+		const tpl = this.getSelectedEntry();
+		if (!tpl) return;
+
+		// 1. Update Test Sentence Stage HTML in-place
+		const testStage = this.container.querySelector('#verified-test-sentence-stage');
+		if (testStage) {
+			testStage.innerHTML = this._renderTestSentenceHtml(tpl, this.testSentence);
+			this._bindTestStageEvents();
+		}
+
+		// 2. Update Mode Toggle Buttons
+		this.container.querySelectorAll('.btn-mode-toggle').forEach(btn => {
+			if (btn.dataset.mode === 'selected') {
+				btn.classList.toggle('active', this.testVaryMode !== 'all');
+			} else if (btn.dataset.mode === 'all') {
+				btn.classList.toggle('active', this.testVaryMode === 'all');
+			}
+		});
+
+		// 3. Update Quick Slot Selector dropdown and Quick Lock action groups
+		const slotSelectWrap = this.container.querySelector('.verified-slot-select-wrap');
+		if (slotSelectWrap) {
+			slotSelectWrap.classList.toggle('is-disabled', this.testVaryMode === 'all');
+		}
+
+		const quickLockWrap = this.container.querySelector('.verified-quick-lock-actions');
+		if (quickLockWrap) {
+			quickLockWrap.classList.toggle('is-disabled', this.testVaryMode === 'all');
+		}
+
+		const varySelect = this.container.querySelector('#verified-vary-slot-select');
+		if (varySelect) {
+			varySelect.disabled = (this.testVaryMode === 'all');
+			const singleIdx = (this.unlockedSlotIndices.size === 1) ? Array.from(this.unlockedSlotIndices)[0] : -1;
+			varySelect.value = String(singleIdx);
+		}
+
+		// 4. Update the Slot Card Action Buttons in Section 4
+		this.container.querySelectorAll('.btn-vary-this-slot').forEach(b => {
+			const sIdx = Number(b.dataset.slotIndex);
+			const slot = tpl.slots && tpl.slots[sIdx];
+			const isFixed = slot && slot.inflection && slot.inflection.stemForm === 'fixed_grammar';
+			const isU = this.unlockedSlotIndices.has(sIdx);
+			b.className = `btn btn-sm btn-vary-this-slot ${isU ? 'btn-primary' : 'btn-secondary'} ${isFixed ? 'btn-disabled-locked' : ''}`;
+			b.textContent = isFixed ? '🔒 Fixed' : (isU ? '⚡ Varied (Click to Lock)' : '🔒 Original (Click to Vary)');
+		});
 	}
 
 	/**
@@ -157,6 +339,12 @@ class VerifiedSentencesView {
 
 		const tpl = gen.getVerifiedSentenceById(templateId);
 		if (!tpl) return null;
+
+		this._ensureUnlockedSlotsValid(tpl);
+
+		const rawMode = options.varyMode || this.testVaryMode || 'selected';
+		const varyMode = (rawMode === 'single') ? 'selected' : rawMode;
+		const unlockedSlots = options.unlockedSlots || Array.from(this.unlockedSlotIndices);
 
 		const prevKo = this.testSentence && this.testSentence.verifiedTemplateId === templateId
 			? this.testSentence.ko
@@ -171,6 +359,10 @@ class VerifiedSentencesView {
 
 			candidate = gen.generateSentenceFromTemplate(tpl, {
 				...options,
+				varyMode,
+				unlockedSlots,
+				varySlotIndices: unlockedSlots,
+				varySlotIndex: (options.varySlotIndex !== undefined) ? options.varySlotIndex : this.testVarySlotIndex,
 				variationIndex: this.testGenerationCount + attempt,
 				seedOffset
 			});
@@ -242,6 +434,21 @@ class VerifiedSentencesView {
 	}
 
 	/**
+	 * Resets the semantic tag filters on a slot back to the original default unit's tags.
+	 */
+	resetSlotTags(templateId, slotIndex) {
+		const gen = this._getGenerator();
+		if (!gen || typeof gen.resetVerifiedSlotTags !== 'function') return null;
+		const updated = gen.resetVerifiedSlotTags(templateId, Number(slotIndex));
+		if (updated) {
+			this.generateTestSentence(templateId);
+			this.render();
+			this.onStateChange({ type: 'verified-slot-tags-reset', templateId, slotIndex });
+		}
+		return updated;
+	}
+
+	/**
 	 * Creates a new editable copy (duplicate) of a Verified Sentence entry.
 	 */
 	duplicateEntry(templateId, customTitle = null) {
@@ -297,6 +504,16 @@ class VerifiedSentencesView {
 
 	render() {
 		if (!this.container) return;
+
+		// Capture scroll positions across detail pane, entries list, container, and window
+		const prevDetailPane = this.container.querySelector('.verified-detail-pane');
+		const prevDetailScroll = prevDetailPane ? prevDetailPane.scrollTop : null;
+		const prevListPane = this.container.querySelector('#verified-entries-list');
+		const prevListScroll = prevListPane ? prevListPane.scrollTop : null;
+		const prevContainerScroll = this.container.scrollTop;
+		const prevWindowScrollY = (typeof window !== 'undefined') ? window.scrollY : 0;
+		const prevWindowScrollX = (typeof window !== 'undefined') ? window.scrollX : 0;
+
 		const gen = this._getGenerator();
 		const allEntries = this.getAllEntries();
 		const filteredEntries = this.getFilteredEntries();
@@ -398,6 +615,22 @@ class VerifiedSentencesView {
 		`;
 
 		this._bindEvents();
+
+		// Seamlessly restore previous scroll positions
+		if (prevDetailScroll !== null) {
+			const newDetail = this.container.querySelector('.verified-detail-pane');
+			if (newDetail) newDetail.scrollTop = prevDetailScroll;
+		}
+		if (prevListScroll !== null) {
+			const newList = this.container.querySelector('#verified-entries-list');
+			if (newList) newList.scrollTop = prevListScroll;
+		}
+		if (prevContainerScroll) {
+			this.container.scrollTop = prevContainerScroll;
+		}
+		if (typeof window !== 'undefined' && (prevWindowScrollY || prevWindowScrollX)) {
+			window.scrollTo(prevWindowScrollX, prevWindowScrollY);
+		}
 	}
 
 	_renderDetailPaneHtml(tpl, gen) {
@@ -426,7 +659,11 @@ class VerifiedSentencesView {
 		}
 
 		if (!this.testSentence || this.testSentence.verifiedTemplateId !== tpl.id) {
-			this.testSentence = gen ? gen.generateSentenceFromTemplate(tpl, { seedOffset: this.testGenerationCount * 13 }) : null;
+			this.testSentence = gen ? gen.generateSentenceFromTemplate(tpl, {
+				varyMode: this.testVaryMode,
+				varySlotIndex: this.testVarySlotIndex,
+				seedOffset: this.testGenerationCount * 13
+			}) : null;
 		}
 
 		return `
@@ -490,16 +727,62 @@ class VerifiedSentencesView {
 			<!-- 2. Interactive Test Sentence Generator Card -->
 			<section class="verified-test-generator-card">
 				<div class="verified-test-header">
-					<div>
+					<div class="verified-test-header-info">
 						<h3>🎲 Test Sentence Generator</h3>
 						<p class="verified-card-desc">
-							Generate random sentences using this Verified Sentence structure and its current slot tag filters.
+							Test sentence synthesis from this structure. Use <strong>Single Term</strong> mode to keep all other words authentic and verify coherence.
 						</p>
 					</div>
-					<button type="button" id="btn-verified-generate-test" class="btn btn-primary"
-						title="Generate a new random sentence from this Verified Sentence structure">
-						🎲 Generate / Regenerate Test Sentence
-					</button>
+
+					<div class="verified-test-controls-cluster">
+						<!-- Variation Mode Toggle: Selected Variability vs All Terms -->
+						<div class="verified-test-mode-toggle" role="radiogroup" aria-label="Variation Mode">
+							<button type="button" class="btn-mode-toggle ${this.testVaryMode !== 'all' ? 'active' : ''}"
+								data-mode="selected" title="Lock specific slots to authentic native text; only vary selected slots">
+								🎯 Selected Variability
+							</button>
+							<button type="button" class="btn-mode-toggle ${this.testVaryMode === 'all' ? 'active' : ''}"
+								data-mode="all" title="Vary all slots across available candidate pools">
+								🎲 All Terms
+							</button>
+						</div>
+
+						<!-- Quick Slot Selector (for Selected Variability Mode) -->
+						<div class="verified-slot-select-wrap ${this.testVaryMode !== 'all' ? '' : 'is-disabled'}"
+							title="${this.testVaryMode !== 'all' ? 'Quick preset: select a specific slot to vary exclusively' : 'Switch to Selected Variability mode to choose slots'}">
+							<label for="verified-vary-slot-select" class="verified-vary-slot-label">Quick Slot:</label>
+							<select id="verified-vary-slot-select" class="verified-filter-select verified-vary-slot-select"
+								${this.testVaryMode !== 'all' ? '' : 'disabled'}>
+								<option value="-1">-- Choose Slot Preset --</option>
+								${(tpl.slots || []).map((slot, sIdx) => {
+									const stat = analysis.slotStats[sIdx] || { count: 0, isSingleChoice: false };
+									const isSel = (this.unlockedSlotIndices.has(sIdx) && this.unlockedSlotIndices.size === 1);
+									const isFixed = slot.inflection && slot.inflection.stemForm === 'fixed_grammar';
+									const countNote = isFixed ? '🔒 fixed' : `${stat.count} candidate${stat.count === 1 ? '' : 's'}`;
+									return `<option value="${sIdx}" ${isSel ? 'selected' : ''}>
+										Slot #${sIdx + 1}: [${this._escapeHtml(slot.pos)}] "${this._escapeHtml(slot.originalKo)}" (${countNote})
+									</option>`;
+								}).join('')}
+							</select>
+						</div>
+
+						<!-- Quick Lock/Unlock All buttons -->
+						<div class="verified-quick-lock-actions ${this.testVaryMode !== 'all' ? '' : 'is-disabled'}">
+							<button type="button" id="btn-verified-lock-all" class="btn btn-ghost btn-sm"
+								title="Lock all slots to keep 100% original study text sentence">
+								🔒 Lock All
+							</button>
+							<button type="button" id="btn-verified-unlock-all" class="btn btn-ghost btn-sm"
+								title="Unlock all vocabulary slots for variation">
+								🔓 Unlock All
+							</button>
+						</div>
+
+						<button type="button" id="btn-verified-generate-test" class="btn btn-primary"
+							title="Generate a new variation from this Verified Sentence structure">
+							🎲 Generate
+						</button>
+					</div>
 				</div>
 				<div id="verified-test-sentence-stage" class="verified-test-sentence-stage">
 					${this._renderTestSentenceHtml(tpl, this.testSentence)}
@@ -555,21 +838,60 @@ class VerifiedSentencesView {
 		if (!sentenceObj || !sentenceObj.ok) {
 			return `
 				<div class="verified-test-empty">
-					Click <strong>🎲 Generate / Regenerate Test Sentence</strong> to synthesize a sentence from this template.
+					Click <strong>🎲 Generate</strong> to synthesize a test sentence from this structure.
 				</div>
 			`;
 		}
 
+		const gen = this._getGenerator();
+		const isSingleOrSelected = (sentenceObj.varyMode === 'selected' || sentenceObj.varyMode === 'single');
+		const unlockedSlots = Array.isArray(sentenceObj.unlockedSlots)
+			? sentenceObj.unlockedSlots
+			: (typeof sentenceObj.varySlotIndex === 'number' && sentenceObj.varySlotIndex >= 0 ? [sentenceObj.varySlotIndex] : []);
+		const unlockedCount = unlockedSlots.length;
+		const totalSlots = tpl.slots ? tpl.slots.length : 0;
+		const unlockedNames = unlockedSlots.map(i => `#${i + 1} ${tpl.slots[i] ? tpl.slots[i].pos : ''}`).join(', ');
+
 		return `
 			<div class="verified-test-output">
-				<div class="verified-test-main-row">
-					<div class="verified-test-ko-group">
-						<span class="verified-test-ko">${this._escapeHtml(sentenceObj.ko)}</span>
-						${sentenceObj.pronunciation && sentenceObj.pronunciation !== sentenceObj.ko ? `
-							<span class="verified-test-pron">[${this._escapeHtml(sentenceObj.pronunciation)}]</span>
-						` : ''}
+				<!-- Variation Mode telemetry banner -->
+				<div class="verified-test-mode-banner ${isSingleOrSelected ? 'banner-single' : 'banner-all'}">
+					${isSingleOrSelected ? `
+						<span class="banner-badge">🎯 Selected Variability</span>
+						<span class="banner-text">
+							${unlockedCount === 0 ? `
+								<strong>All slots locked.</strong> Showing the 100% authentic study text sentence. Click any <strong>🔒 Original</strong> button below to unlock and vary that term.
+							` : `
+								<strong>${unlockedCount} of ${totalSlots} slots unlocked (${unlockedNames}).</strong>
+								Locked slots remain strictly authentic to the study text. Click <strong>⚡ Varied</strong> or <strong>🔒 Original</strong> on any pill to toggle.
+							`}
+						</span>
+					` : `
+						<span class="banner-badge">🎲 All Terms Mode</span>
+						<span class="banner-text">
+							All constituent slots were independently varied across their respective candidate pools.
+						</span>
+					`}
+				</div>
+
+				<!-- Comparison: Original vs Generated -->
+				<div class="verified-test-comparison-block">
+					<div class="verified-compare-row original-row">
+						<span class="compare-label">Original:</span>
+						<span class="compare-ko">${this._escapeHtml(tpl.originalKo)}</span>
+					</div>
+					<div class="verified-compare-row generated-row">
+						<span class="compare-label">Generated:</span>
+						<div class="verified-test-ko-group">
+							<strong class="verified-test-ko">${this._escapeHtml(sentenceObj.ko)}</strong>
+							${sentenceObj.pronunciation && sentenceObj.pronunciation !== sentenceObj.ko ? `
+								<span class="verified-test-pron">[${this._escapeHtml(sentenceObj.pronunciation)}]</span>
+							` : ''}
+						</div>
 					</div>
 				</div>
+
+				<!-- English Translations -->
 				<div class="verified-test-translations">
 					<div class="verified-test-en-row">
 						<span class="en-type-badge">Literal</span>
@@ -580,19 +902,46 @@ class VerifiedSentencesView {
 						<span class="en-text">${this._escapeHtml(sentenceObj.enNatural || '')}</span>
 					</div>
 				</div>
+
+				<!-- Slot-by-slot Choice Breakdown with Interactive Lock/Unlock Toggles -->
 				${Array.isArray(sentenceObj.slotChoices) && sentenceObj.slotChoices.length > 0 ? `
 					<div class="verified-test-slot-breakdown">
-						${sentenceObj.slotChoices.map(sc => `
-							<div class="test-slot-pill">
-								<span class="test-slot-num">#${sc.slotIndex + 1} ${this._escapeHtml(sc.pos)}</span>
-								<strong class="test-slot-surface">${this._escapeHtml(sc.surfaceKo)}</strong>
-								<span class="test-slot-unit">
-									← ${this._escapeHtml(sc.chosenKo)}
-									${typeof sc.chosenUnitId === 'number' ? `(#${sc.chosenUnitId})` : ''}
-									"${this._escapeHtml(sc.chosenEn)}"
-								</span>
-							</div>
-						`).join('')}
+						${sentenceObj.slotChoices.map(sc => {
+							const isThisVaried = Boolean(sc.isVariedSlot);
+							const slotDef = tpl.slots && tpl.slots[sc.slotIndex];
+							const isFixed = slotDef?.inflection?.stemForm === 'fixed_grammar';
+							const stat = (gen && typeof gen.getSlotCandidates === 'function' && slotDef)
+								? gen.getSlotCandidates(slotDef)
+								: null;
+							const isSingleChoice = Boolean(sc.isSingleChoice || (stat && stat.isSingleChoice));
+							return `
+								<div class="test-slot-pill ${isThisVaried ? 'pill-varied' : 'pill-original'} ${isSingleChoice ? 'pill-single-choice' : ''}" data-slot-index="${sc.slotIndex}">
+									<div class="test-slot-pill-top">
+										<span class="test-slot-num">#${sc.slotIndex + 1} ${this._escapeHtml(sc.pos)}</span>
+										<div class="test-slot-pill-controls">
+											${isSingleChoice ? `
+												<span class="pill-single-choice-target" title="Filters limit this slot to 1 single Language Unit choice (Single Choice)">🎯</span>
+											` : ''}
+											<button type="button" class="btn-slot-lock-toggle ${isThisVaried ? 'btn-toggle-varied' : 'btn-toggle-original'} ${isFixed ? 'btn-toggle-fixed' : ''}"
+												data-slot-index="${sc.slotIndex}"
+												${isFixed ? 'disabled' : ''}
+												title="${isFixed ? 'Fixed grammar cannot be varied' : (isThisVaried ? 'Click to LOCK this slot (keep original word)' : 'Click to UNLOCK this slot (allow variation)')}">
+												${isFixed ? '🔒 Fixed' : (isThisVaried ? '⚡ Varied' : '🔒 Original')}
+											</button>
+										</div>
+									</div>
+									<strong class="test-slot-surface">${this._escapeHtml(sc.surfaceKo)}</strong>
+									<span class="test-slot-unit">
+										${isThisVaried ? `
+											<span class="pill-change-from">${this._escapeHtml(sc.originalKo || '')} ➔</span>
+										` : ''}
+										${this._escapeHtml(sc.chosenKo)}
+										${typeof sc.chosenUnitId === 'number' ? `(#${sc.chosenUnitId})` : ''}
+										"${this._escapeHtml(sc.chosenEn)}"
+									</span>
+								</div>
+							`;
+						}).join('')}
 					</div>
 				` : ''}
 			</div>
@@ -603,6 +952,7 @@ class VerifiedSentencesView {
 		const tags = Array.isArray(slot.tags) ? slot.tags : [];
 		const grammarList = Array.isArray(slot.grammar) ? slot.grammar : [];
 		const isFixedGrammar = slot.inflection && slot.inflection.stemForm === 'fixed_grammar';
+		const availableTags = this._getAvailableSemanticTags();
 
 		let poolBannerHtml = '';
 		if (stat.isSingleChoice) {
@@ -647,6 +997,17 @@ class VerifiedSentencesView {
 						<span class="slot-index-badge">Slot #${idx + 1}</span>
 						<span class="slot-pos-badge">${this._escapeHtml(slot.pos)}</span>
 						<strong class="slot-surface-preview">"${this._escapeHtml(slot.originalSurface)}"</strong>
+						<div class="slot-header-controls">
+							${stat.isSingleChoice ? `
+								<span class="pill-single-choice-target" title="Filters limit this slot to 1 single Language Unit choice (Single Choice)">🎯</span>
+							` : ''}
+							<button type="button" class="btn btn-sm btn-vary-this-slot ${this.unlockedSlotIndices.has(idx) ? 'btn-primary' : 'btn-secondary'} ${isFixedGrammar ? 'btn-disabled-locked' : ''}"
+								data-slot-index="${idx}"
+								${isFixedGrammar ? 'disabled' : ''}
+								title="${isFixedGrammar ? 'Fixed grammar cannot be varied' : (this.unlockedSlotIndices.has(idx) ? 'Slot is unlocked and varying (Click to Lock)' : 'Slot is locked to original word (Click to Vary)')}">
+								${isFixedGrammar ? '🔒 Fixed' : (this.unlockedSlotIndices.has(idx) ? '⚡ Varied (Click to Lock)' : '🔒 Original (Click to Vary)')}
+							</button>
+						</div>
 					</div>
 					<div class="slot-original-unit-meta">
 						Original: <strong>${this._escapeHtml(slot.originalKo)}</strong>
@@ -691,11 +1052,15 @@ class VerifiedSentencesView {
 
 					${!isFixedGrammar ? `
 						<div class="slot-add-tag-row">
-							<input type="text" class="slot-add-tag-input" data-slot-index="${idx}"
-								list="verified-semantic-tags-datalist"
-								placeholder="Add semantic tag filter (e.g. person, food, place)...">
-							<button type="button" class="btn btn-secondary btn-sm btn-add-slot-tag" data-slot-index="${idx}">
+							<select class="slot-add-tag-select" data-slot-index="${idx}" aria-label="Select semantic tag filter">
+								<option value="">-- Add semantic tag filter --</option>
+								${availableTags.map(t => `<option value="${this._escapeHtml(t)}">${this._escapeHtml(t)}</option>`).join('')}
+							</select>
+							<button type="button" class="btn btn-secondary btn-sm btn-add-slot-tag" data-slot-index="${idx}" title="Add selected tag filter">
 								+ Add Tag
+							</button>
+							<button type="button" class="btn btn-ghost btn-sm btn-reset-slot-tags" data-slot-index="${idx}" title="Reset filters to original semantic tags for '${this._escapeHtml(slot.originalKo)}'">
+								↺ Reset to Original
 							</button>
 						</div>
 					` : ''}
@@ -795,6 +1160,50 @@ class VerifiedSentencesView {
 			});
 		}
 
+		// Variation Mode Toggle buttons
+		this.container.querySelectorAll('.btn-mode-toggle').forEach(btn => {
+			btn.addEventListener('click', () => {
+				const mode = btn.dataset.mode;
+				if (mode && mode !== this.testVaryMode) {
+					this.setVaryMode(mode);
+				}
+			});
+		});
+
+		// Slot Selector dropdown for Selected Variability Mode
+		const varySelect = this.container.querySelector('#verified-vary-slot-select');
+		if (varySelect) {
+			varySelect.addEventListener('change', () => {
+				const val = Number(varySelect.value);
+				if (val >= 0) {
+					this.setVarySlotIndex(val);
+				}
+			});
+		}
+
+		// Quick Lock All / Unlock All buttons
+		const lockAllBtn = this.container.querySelector('#btn-verified-lock-all');
+		if (lockAllBtn) {
+			lockAllBtn.addEventListener('click', () => {
+				this.lockAllSlots();
+			});
+		}
+		const unlockAllBtn = this.container.querySelector('#btn-verified-unlock-all');
+		if (unlockAllBtn) {
+			unlockAllBtn.addEventListener('click', () => {
+				this.unlockAllSlots();
+			});
+		}
+
+		// "Vary This Slot" buttons on Slot Cards
+		this.container.querySelectorAll('.btn-vary-this-slot').forEach(btn => {
+			btn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				const slotIdx = Number(btn.dataset.slotIndex);
+				this.toggleSlotLock(slotIdx);
+			});
+		});
+
 		// Remove Tag from Slot buttons
 		this.container.querySelectorAll('.btn-remove-slot-tag').forEach(btn => {
 			btn.addEventListener('click', (e) => {
@@ -807,13 +1216,25 @@ class VerifiedSentencesView {
 			});
 		});
 
-		// Add Tag to Slot buttons & Enter key
+		// Add Tag to Slot buttons, Select change & Enter key
 		this.container.querySelectorAll('.btn-add-slot-tag').forEach(btn => {
 			btn.addEventListener('click', () => {
 				const slotIdx = Number(btn.dataset.slotIndex);
-				const input = this.container.querySelector(`.slot-add-tag-input[data-slot-index="${slotIdx}"]`);
-				if (input && input.value.trim() && this.selectedTemplateId) {
-					this.addTagToSlot(this.selectedTemplateId, slotIdx, input.value.trim());
+				const sel = this.container.querySelector(`.slot-add-tag-select[data-slot-index="${slotIdx}"]`);
+				const inp = this.container.querySelector(`.slot-add-tag-input[data-slot-index="${slotIdx}"]`);
+				const val = (sel ? sel.value : (inp ? inp.value : '')).trim();
+				if (val && this.selectedTemplateId) {
+					this.addTagToSlot(this.selectedTemplateId, slotIdx, val);
+				}
+			});
+		});
+
+		this.container.querySelectorAll('.slot-add-tag-select').forEach(select => {
+			select.addEventListener('change', () => {
+				const slotIdx = Number(select.dataset.slotIndex);
+				const val = select.value.trim();
+				if (val && this.selectedTemplateId) {
+					this.addTagToSlot(this.selectedTemplateId, slotIdx, val);
 				}
 			});
 		});
@@ -830,11 +1251,29 @@ class VerifiedSentencesView {
 			});
 		});
 
+		// Reset slot tags to original default word filters
+		this.container.querySelectorAll('.btn-reset-slot-tags').forEach(btn => {
+			btn.addEventListener('click', () => {
+				const slotIdx = Number(btn.dataset.slotIndex);
+				if (this.selectedTemplateId) {
+					this.resetSlotTags(this.selectedTemplateId, slotIdx);
+				}
+			});
+		});
+
 		this._bindTestStageEvents();
 	}
 
 	_bindTestStageEvents() {
-		// Reserved for any interactive controls inside the test sentence stage
+		if (!this.container) return;
+		// Varied/Original lock toggle buttons inside the test sentence stage breakdown
+		this.container.querySelectorAll('.btn-slot-lock-toggle').forEach(btn => {
+			btn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				const slotIdx = Number(btn.dataset.slotIndex);
+				this.toggleSlotLock(slotIdx);
+			});
+		});
 	}
 
 	_escapeHtml(str) {

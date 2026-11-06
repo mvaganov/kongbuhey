@@ -925,11 +925,18 @@ function realizeKoreanFromAST(ast) {
 		let isElderSubj = Boolean(clause.honorific || ast.honorific);
 		let isElderRecip = false;
 		let subjKo = "";
+		let hasFirstSecondSubj = false;
 
 		for (const con of constituents) {
 			const u = con.nounUnit || con.unit;
 			if ((con.role === "subject" || con.role === "topic") && u) {
-				subjKo = u[DATA_SCHEMA.Korean] || "";
+				const word = u[DATA_SCHEMA.Korean] || "";
+				if (!subjKo || con.role === "topic") {
+					subjKo = word;
+				}
+				if (["나", "내", "저", "제", "우리", "저희", "너", "네", "당신", "자네", "너희", "여러분"].includes(word)) {
+					hasFirstSecondSubj = true;
+				}
 				if (isElderNoun(u)) {
 					isElderSubj = true;
 				}
@@ -939,7 +946,7 @@ function realizeKoreanFromAST(ast) {
 			}
 		}
 
-		const isFirstOrSecond = ["나", "내", "저", "제", "우리", "저희", "너", "네", "당신", "자네", "너희", "여러분"].includes(subjKo);
+		const isFirstOrSecond = hasFirstSecondSubj || ["나", "내", "저", "제", "우리", "저희", "너", "네", "당신", "자네", "너희", "여러분"].includes(subjKo);
 		const isThirdPerson = !subjKo || !isFirstOrSecond;
 
 		// If subject is elder and object is a plain noun with an honorific counterpart (e.g. 밥 -> 진지), upgrade it
