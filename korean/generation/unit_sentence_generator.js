@@ -2430,7 +2430,7 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 			if (grammarUnit[DATA_SCHEMA.Korean] === "씨" || targetId === 23) {
 				const personalNames = allNouns.filter(
 					n => ["마리", "민수", "지훈", "수진", "영수", "유키", "올리비아", "미진", "리타오", "흐엉", "에릭", "민준"].includes(n[DATA_SCHEMA.Korean])
-						|| (hasTag(n, "properNoun") && hasTag(n, K.PERSON))
+						|| (hasTag(n, "properNoun", K.PROPER_NOUN) && hasTag(n, K.PERSON))
 				);
 				if (personalNames.length > 0) pool = personalNames;
 			} else {

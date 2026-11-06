@@ -173,8 +173,8 @@ function expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint)
 	if (tokenType === "Name" || tag === "name" || tag === "properName") {
 		return { text: getRandomProperName(), unit: null };
 	}
-	if (tokenType === "properNoun") {
-		const seeGrammar = getFilteredWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.HONORIFIC) || g[DATA_SCHEMA.Korean] === ssiSuffix) || getWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.HONORIFIC) || g[DATA_SCHEMA.Korean] === ssiSuffix);
+	if (tokenType === "properNoun" || tokenType === K.PROPER_NOUN) {
+		const seeGrammar = getFilteredWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.PROPER_NOUN, K.HONORIFIC) || g[DATA_SCHEMA.Korean] === ssiSuffix) || getWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.PROPER_NOUN, K.HONORIFIC) || g[DATA_SCHEMA.Korean] === ssiSuffix);
 		return { text: getRandomProperName() + ssiSuffix, unit: seeGrammar || null };
 	}
 
@@ -317,8 +317,8 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 		if (isProperName) {
 			replacementKo = getRandomProperName();
 			childNode = replacementKo;
-		} else if (tokenType === "properNoun") {
-			const seeGrammar = getFilteredWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.HONORIFIC) || g[DATA_SCHEMA.Korean] === ssiSuffix) || getWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.HONORIFIC) || g[DATA_SCHEMA.Korean] === ssiSuffix);
+		} else if (tokenType === "properNoun" || tokenType === K.PROPER_NOUN) {
+			const seeGrammar = getFilteredWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.PROPER_NOUN, K.HONORIFIC) || g[DATA_SCHEMA.Korean] === ssiSuffix) || getWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.PROPER_NOUN, K.HONORIFIC) || g[DATA_SCHEMA.Korean] === ssiSuffix);
 			const name = getRandomProperName();
 			replacementKo = name + ssiSuffix;
 			childNode = seeGrammar ? [seeGrammar[DATA_SCHEMA.Id], name] : replacementKo;

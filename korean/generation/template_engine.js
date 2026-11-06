@@ -61,9 +61,9 @@ function getTokenOptions(token, depth = 0) {
 
 	if (token.type === "Name" || token.isProperName || (token.type === "N" && (token.tag === "name" || token.tag === "properName"))) {
 		options = [new TokenOption(getRandomProperName(), [])];
-	} else if (token.type === "properNoun") {
+	} else if (token.type === "properNoun" || token.type === K.PROPER_NOUN) {
 		const ssiSuffix = state.TITLE_SUFFIX_SSI || "씨";
-		const seeGrammar = getFilteredWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.HONORIFIC) || g[KoreanWord] === ssiSuffix) || getWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.HONORIFIC) || g[KoreanWord] === ssiSuffix);
+		const seeGrammar = getFilteredWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.PROPER_NOUN, K.HONORIFIC) || g[KoreanWord] === ssiSuffix) || getWords(K.POS_GRAMMAR).find(g => hasTag(g, "properNoun", K.PROPER_NOUN, K.HONORIFIC) || g[KoreanWord] === ssiSuffix);
 		options = [new TokenOption(getRandomProperName() + ssiSuffix, seeGrammar ? [seeGrammar] : [])];
 	} else if (token.type === "N" || token.type === K.NOUN || token.type === "N_Phrase") {
 		let nouns = getFilteredWords(K.NOUN, token.tag);
