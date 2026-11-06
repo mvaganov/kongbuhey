@@ -279,17 +279,13 @@ function runTests(options = {}) {
 				failFast("Stage 1 (Data Integrity)", `Invalid PriorityScore '${score}' at ID ${id} (${ko}). Must be integer between 1 and 5.`);
 			}
 
-			// SemanticData JSON validation
+			// SemanticData Object validation
 			const vec = unit[DATA_SCHEMA.SemanticData];
-			if (vec) {
-				try {
-					const parsed = typeof vec === 'string' ? JSON.parse(vec) : vec;
-					if (!parsed.domain && !parsed.logic) {
-						failFast("Stage 1 (Data Integrity)", `SemanticData at ID ${id} (${ko}) is missing required 'domain' or 'logic' property: ${JSON.stringify(parsed)}.`);
-					}
-				} catch (jsonErr) {
-					failFast("Stage 1 (Data Integrity)", `Invalid JSON in SemanticData at ID ${id} (${ko}): ${jsonErr.message}\nContent: ${vec}`);
-				}
+			if (!vec || typeof vec !== 'object' || Array.isArray(vec)) {
+				failFast("Stage 1 (Data Integrity)", `SemanticData at ID ${id} (${ko}) is expected to be a native JavaScript object, but found: ${typeof vec} (${vec}).`);
+			}
+			if (!vec.domain && !vec.logic) {
+				failFast("Stage 1 (Data Integrity)", `SemanticData at ID ${id} (${ko}) is missing required 'domain' or 'logic' property: ${JSON.stringify(vec)}.`);
 			}
 
 			// Semantic argument selection rules & collocation filter validation

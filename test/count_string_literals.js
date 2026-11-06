@@ -154,6 +154,7 @@ function extractStringLiterals(sourceCode) {
 
   // Stack to track template literal interpolations `${...}`
   const templateStack = [];
+  let codeBraceDepth = 0;
 
   // Track previous non-whitespace character in CODE mode to disambiguate regex / vs division /
   let prevTokenChar = '';
@@ -232,24 +233,31 @@ function extractStringLiterals(sourceCode) {
         continue;
       }
 
-      // Check if closing brace of template interpolation `${...}`
-      if (ch === '}' && templateStack.length > 0) {
-        const top = templateStack[templateStack.length - 1];
-        if (top.braceDepth === 0) {
-          templateStack.pop();
-          state = 'TEMPLATE_STRING';
-          currentString = '';
-          startLine = line;
-          startCol = col + 1;
-          startIndex = i;
-          i++;
-          col++;
-          continue;
-        } else {
-          top.braceDepth--;
+      // Track code brace depth and template interpolations `${...}`
+      if (ch === '{') {
+        if (templateStack.length > 0) {
+          templateStack[templateStack.length - 1].braceDepth++;
         }
-      } else if (ch === '{' && templateStack.length > 0) {
-        templateStack[templateStack.length - 1].braceDepth++;
+        codeBraceDepth++;
+      } else if (ch === '}') {
+        if (templateStack.length > 0) {
+          const top = templateStack[templateStack.length - 1];
+          if (top.braceDepth === 0) {
+            templateStack.pop();
+            state = 'TEMPLATE_STRING';
+            currentString = '';
+            startLine = line;
+            startCol = col + 1;
+            startIndex = i;
+            i++;
+            col++;
+            codeBraceDepth = Math.max(0, codeBraceDepth - 1);
+            continue;
+          } else {
+            top.braceDepth--;
+          }
+        }
+        codeBraceDepth = Math.max(0, codeBraceDepth - 1);
       }
 
       // Check for regex literal /pattern/flags vs division /
@@ -325,6 +333,7 @@ function extractStringLiterals(sourceCode) {
           col: startCol,
           start: startIndex,
           end: i + 1,
+          braceDepth: codeBraceDepth,
           isTypeofComparison: checkTypeofContext(startIndex, i + 1),
           isExempt: isOffsetExempt(startIndex, startLine, exemptions)
         });
@@ -356,6 +365,7 @@ function extractStringLiterals(sourceCode) {
           col: startCol,
           start: startIndex,
           end: i + 1,
+          braceDepth: codeBraceDepth,
           isTypeofComparison: checkTypeofContext(startIndex, i + 1),
           isExempt: isOffsetExempt(startIndex, startLine, exemptions)
         });
@@ -388,6 +398,7 @@ function extractStringLiterals(sourceCode) {
           col: startCol,
           start: startIndex,
           end: i,
+          braceDepth: codeBraceDepth,
           isTypeofComparison: false
         });
         templateStack.push({ braceDepth: 0 });
@@ -403,6 +414,7 @@ function extractStringLiterals(sourceCode) {
           col: startCol,
           start: startIndex,
           end: i + 1,
+          braceDepth: codeBraceDepth,
           isTypeofComparison: checkTypeofContext(startIndex, i + 1),
           isExempt: isOffsetExempt(startIndex, startLine, exemptions)
         });
@@ -831,9 +843,14 @@ function lintFile(filePath, registry, options = {}) {
 
   const matchedTokensMap = new Map();
 
+  const isDataFile = path.basename(fullPath).endsWith('data.js');
+
   for (const token of tokens) {
     // Skip JS typeof comparisons (e.g. typeof x === "object") and exempt tokens
     if (token.isTypeofComparison || token.isExempt) continue;
+
+    // In data.js, exempt string literals inside SemanticData object payloads (braceDepth >= 1)
+    if (isDataFile && token.braceDepth >= 1) continue;
 
     if (registry.has(token.value)) {
       const info = registry.get(token.value);

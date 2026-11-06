@@ -368,7 +368,7 @@ check("scaffoldUnit automatically scaffolds proper names with taxonomy tags", ()
 	assert.strictEqual(unit.Korean, "수현");
 	assert.strictEqual(unit.PartofSpeech, K.NOUN);
 	assert.deepStrictEqual(unit.SemanticTags, ["name", K.PROPER_NOUN]);
-	const vector = JSON.parse(unit.SemanticVector);
+	const vector = typeof unit.SemanticVector === 'string' ? JSON.parse(unit.SemanticVector) : (unit.SemanticVector || unit.SemanticData);
 	assert.strictEqual(vector.domain, K.PERSON);
 	assert.strictEqual(vector.type, "name");
 });

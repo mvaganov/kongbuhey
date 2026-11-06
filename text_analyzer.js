@@ -66,7 +66,8 @@ function analyzePassage(passageText, passageName = "Passage") {
 					PriorityScore: 1,
 					FormalityLevel: K.UNIVERSAL,
 					HonorificRules: "",
-					SemanticVector: JSON.stringify({ domain: K.CONCEPT, type: K.GENERAL }),
+					SemanticData: { domain: K.CONCEPT, type: K.GENERAL },
+					SemanticVector: { domain: K.CONCEPT, type: K.GENERAL },
 					SyntaxFrame: ""
 				};
 				if (u) draftUnits.push(u);
@@ -87,7 +88,8 @@ function analyzePassage(passageText, passageName = "Passage") {
 					PriorityScore: 2,
 					FormalityLevel: K.UNIVERSAL,
 					HonorificRules: "",
-					SemanticVector: JSON.stringify({ domain: K.GRAMMAR, type: "verb_ending" }),
+					SemanticData: { domain: K.GRAMMAR, type: "verb_ending" },
+					SemanticVector: { domain: K.GRAMMAR, type: "verb_ending" },
 					SyntaxFrame: ""
 				};
 				if (gu) draftUnits.push(gu);

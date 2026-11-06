@@ -671,8 +671,8 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 			PriorityScore: context.priorityScore || 1,
 			FormalityLevel: K.UNIVERSAL,
 			HonorificRules: "",
-			SemanticData: JSON.stringify(vector),
-			SemanticVector: JSON.stringify(vector),
+			SemanticData: vector,
+			SemanticVector: vector,
 			SyntaxFrame: ""
 		};
 	}
@@ -743,8 +743,8 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 		PriorityScore: context.priorityScore || 1,
 		FormalityLevel: context.formality || K.UNIVERSAL,
 		HonorificRules: context.honorific || "",
-		SemanticData: JSON.stringify(vector),
-		SemanticVector: JSON.stringify(vector),
+		SemanticData: vector,
+		SemanticVector: vector,
 		SyntaxFrame: syntaxFrame || context.syntaxFrame || ""
 	};
 }

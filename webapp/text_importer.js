@@ -451,7 +451,8 @@ class TextImporterView {
 				PriorityScore: 1,
 				FormalityLevel: K.UNIVERSAL,
 				HonorificRules: '',
-				SemanticVector: JSON.stringify({ domain: K.CONCEPT, type: K.GENERAL }),
+				SemanticData: { domain: K.CONCEPT, type: K.GENERAL },
+				SemanticVector: { domain: K.CONCEPT, type: K.GENERAL },
 				SyntaxFrame: ''
 			});
 		}
@@ -472,7 +473,8 @@ class TextImporterView {
 				PriorityScore: 1,
 				FormalityLevel: K.UNIVERSAL,
 				HonorificRules: '',
-				SemanticVector: JSON.stringify({ domain: K.GRAMMAR, type: 'verb_ending' }),
+				SemanticData: { domain: K.GRAMMAR, type: 'verb_ending' },
+				SemanticVector: { domain: K.GRAMMAR, type: 'verb_ending' },
 				SyntaxFrame: ''
 			});
 		}
