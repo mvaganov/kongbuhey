@@ -2828,6 +2828,85 @@ body {
 	flex-wrap: wrap;
 }
 
+.verified-test-header-info {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 200px;
+	flex: 1;
+}
+
+.verified-test-controls-cluster {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.verified-test-mode-toggle {
+	display: inline-flex;
+	align-items: center;
+	background: #020617;
+	border: 1px solid #334155;
+	border-radius: 6px;
+	padding: 2px;
+	gap: 2px;
+}
+
+.btn-mode-toggle {
+	appearance: none;
+	border: none;
+	background: transparent;
+	color: #94a3b8;
+	padding: 4px 10px;
+	font-size: 0.78rem;
+	font-weight: 600;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.btn-mode-toggle:hover {
+	color: #f1f5f9;
+	background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-mode-toggle.active {
+	background: #1e293b;
+	color: #38bdf8;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.verified-slot-select-wrap {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	transition: opacity 0.15s ease;
+}
+
+.verified-slot-select-wrap.is-disabled {
+	opacity: 0.4;
+	pointer-events: none;
+}
+
+.verified-vary-slot-label {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: #94a3b8;
+	white-space: nowrap;
+}
+
+.verified-vary-slot-select {
+	font-size: 0.78rem;
+	padding: 4px 8px;
+	background: #020617;
+	border: 1px solid #334155;
+	color: #f1f5f9;
+	border-radius: 5px;
+	max-width: 280px;
+	cursor: pointer;
+}
+
 .verified-test-header h3,
 .verified-grammar-summary-card h3,
 .verified-slots-header h3 {
@@ -2850,6 +2929,80 @@ body {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+}
+
+.verified-test-mode-banner {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 6px 12px;
+	border-radius: 6px;
+	font-size: 0.78rem;
+	flex-wrap: wrap;
+}
+
+.verified-test-mode-banner.banner-single {
+	background: rgba(245, 158, 11, 0.12);
+	border: 1px solid rgba(245, 158, 11, 0.35);
+	color: #fef3c7;
+}
+
+.verified-test-mode-banner.banner-all {
+	background: rgba(56, 189, 248, 0.1);
+	border: 1px solid rgba(56, 189, 248, 0.25);
+	color: #bae6fd;
+}
+
+.banner-badge {
+	font-weight: 700;
+	padding: 1px 7px;
+	border-radius: 4px;
+	background: rgba(0, 0, 0, 0.25);
+	white-space: nowrap;
+}
+
+.banner-text {
+	flex: 1;
+	min-width: 200px;
+}
+
+.verified-test-comparison-block {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 8px 12px;
+	background: rgba(2, 6, 23, 0.6);
+	border-radius: 6px;
+	border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.verified-compare-row {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.compare-label {
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #94a3b8;
+	min-width: 72px;
+}
+
+.compare-ko {
+	font-size: 0.96rem;
+	color: #cbd5e1;
+}
+
+.verified-compare-row.original-row .compare-label {
+	color: #64748b;
+}
+
+.verified-compare-row.generated-row .compare-label {
+	color: #38bdf8;
 }
 
 .verified-test-ko-group {
@@ -2911,13 +3064,120 @@ body {
 
 .test-slot-pill {
 	font-size: 0.74rem;
-	padding: 3px 8px;
+	padding: 5px 9px;
 	background: rgba(30, 41, 59, 0.9);
 	border: 1px solid rgba(148, 163, 184, 0.22);
-	border-radius: 5px;
+	border-radius: 6px;
+	display: inline-flex;
+	flex-direction: column;
+	gap: 3px;
+	min-width: 120px;
+}
+
+.test-slot-pill.pill-varied {
+	border-color: rgba(245, 158, 11, 0.8);
+	background: rgba(245, 158, 11, 0.14);
+	box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.35);
+}
+
+.test-slot-pill.pill-original {
+	opacity: 0.85;
+}
+
+.test-slot-pill-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 6px;
+}
+
+.test-slot-status-badge {
+	font-size: 0.65rem;
+	font-weight: 700;
+	padding: 1px 5px;
+	border-radius: 3px;
+}
+
+.test-slot-status-badge.badge-varied {
+	background: #f59e0b;
+	color: #0f172a;
+}
+
+.test-slot-status-badge.badge-orig {
+	background: rgba(148, 163, 184, 0.2);
+	color: #94a3b8;
+}
+
+.test-slot-pill-controls,
+.slot-header-controls {
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
+	gap: 5px;
+}
+
+.pill-single-choice-target {
+	font-size: 0.82rem;
+	line-height: 1;
+	cursor: help;
+	display: inline-flex;
+	align-items: center;
+	filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.5));
+}
+
+.btn-slot-lock-toggle {
+	appearance: none;
+	border: 1px solid transparent;
+	font-size: 0.67rem;
+	font-weight: 700;
+	padding: 2px 7px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	line-height: 1.2;
+}
+
+.btn-slot-lock-toggle.btn-toggle-varied {
+	background: #f59e0b;
+	color: #0f172a;
+	border-color: #d97706;
+}
+
+.btn-slot-lock-toggle.btn-toggle-varied:hover {
+	background: #fbbf24;
+	box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
+	transform: translateY(-1px);
+}
+
+.btn-slot-lock-toggle.btn-toggle-original {
+	background: rgba(148, 163, 184, 0.15);
+	color: #94a3b8;
+	border-color: rgba(148, 163, 184, 0.3);
+}
+
+.btn-slot-lock-toggle.btn-toggle-original:hover {
+	background: rgba(56, 189, 248, 0.2);
+	color: #38bdf8;
+	border-color: #38bdf8;
+	transform: translateY(-1px);
+}
+
+.btn-slot-lock-toggle.btn-toggle-fixed {
+	background: rgba(100, 116, 139, 0.15);
+	color: #64748b;
+	border-color: transparent;
+	cursor: not-allowed;
+	opacity: 0.7;
+}
+
+.verified-quick-lock-actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.verified-quick-lock-actions.is-disabled {
+	opacity: 0.4;
+	pointer-events: none;
 }
 
 .test-slot-num {
@@ -2927,10 +3187,28 @@ body {
 
 .test-slot-surface {
 	color: #f8fafc;
+	font-size: 0.85rem;
 }
 
 .test-slot-unit {
 	color: #38bdf8;
+	font-size: 0.72rem;
+}
+
+.pill-change-from {
+	color: #f59e0b;
+	font-weight: 600;
+	margin-right: 2px;
+}
+
+.btn-vary-this-slot {
+	padding: 2px 7px;
+	font-size: 0.72rem;
+	font-weight: 600;
+	border-radius: 4px;
+	cursor: pointer;
+	margin-left: 6px;
+	white-space: nowrap;
 }
 
 /* Grammar Chips Summary */
@@ -3143,17 +3421,46 @@ body {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	max-width: 420px;
+	max-width: 600px;
+	flex-wrap: wrap;
 }
 
+.slot-add-tag-select,
 .slot-add-tag-input {
 	flex: 1;
+	min-width: 180px;
 	padding: 5px 9px;
 	background: #020617;
 	border: 1px solid #334155;
 	border-radius: 5px;
 	color: #f1f5f9;
 	font-size: 0.78rem;
+	cursor: pointer;
+}
+
+.slot-add-tag-select:focus,
+.slot-add-tag-input:focus {
+	outline: none;
+	border-color: #38bdf8;
+}
+
+.btn-reset-slot-tags {
+	white-space: nowrap;
+	font-size: 0.72rem;
+	font-weight: 600;
+	padding: 5px 10px;
+	color: #94a3b8;
+	border: 1px solid #334155;
+	border-radius: 5px;
+	background: rgba(30, 41, 59, 0.4);
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.btn-reset-slot-tags:hover {
+	color: #38bdf8;
+	border-color: #38bdf8;
+	background: rgba(56, 189, 248, 0.1);
 }
 
 /* Importer Discovered Verified Sentences Banner */

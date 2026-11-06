@@ -19,6 +19,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { K } = require('../constants.js');
 
 const { KR_EN_languageUnits, DATA_SCHEMA } = require('../data.js');
 const { DEFAULT_COLUMNS_SPEC, INITIAL_ADDITIONAL_COLUMNS, KongbuheyDB } = require('../webapp/db.js');
@@ -717,14 +718,106 @@ async function runSuite() {
 	// Select a hardcoded entry and test random sentence generation & regeneration
 	const hardcodedTarget = VERIFIED_SENTENCES[0];
 	verifiedView.selectEntry(hardcodedTarget.id);
-	const testSent1 = verifiedView.generateTestSentence(hardcodedTarget.id, { seedOffset: 1 });
-	const testSent2 = verifiedView.generateTestSentence(hardcodedTarget.id, { seedOffset: 19 });
+	const testSent1 = verifiedView.generateTestSentence(hardcodedTarget.id, { seedOffset: 1, varyMode: 'all' });
+	const testSent2 = verifiedView.generateTestSentence(hardcodedTarget.id, { seedOffset: 19, varyMode: 'all' });
 	assert(
 		testSent1 && testSent1.ok &&
 		testSent2 && testSent2.ok &&
 		typeof testSent1.ko === 'string' && testSent1.ko.length > 0 &&
 		testSent1.ko !== testSent2.ko,
 		`VerifiedSentencesView generates and regenerates random test sentences from structure ("${testSent1.ko}" vs "${testSent2.ko}")`
+	);
+
+	// Test single-term and selected variability mode where only designated slots are changed
+	const singleTermRes = verifiedGen.generateSentenceFromTemplate(hardcodedTarget, {
+		varyMode: 'single',
+		varySlotIndex: 3
+	});
+	assert(
+		singleTermRes && singleTermRes.ok &&
+		(singleTermRes.varyMode === 'single' || singleTermRes.varyMode === 'selected') &&
+		singleTermRes.varySlotIndex === 3 &&
+		singleTermRes.slotChoices[3].isVariedSlot === true &&
+		singleTermRes.slotChoices.every((sc, sIdx) => sIdx === 3 ? sc.isVariedSlot === true : (sc.isVariedSlot === false && sc.surfaceKo === hardcodedTarget.slots[sIdx].originalSurface)),
+		'generateSentenceFromTemplate in single-term mode varies ONLY the selected slot while keeping all other slots identical to original native text'
+	);
+
+	// Test multi-slot Selected Variability mode (e.g. unlocking slots 1 and 3 while locking 0, 2, 4)
+	const multiSlotRes = verifiedGen.generateSentenceFromTemplate(hardcodedTarget, {
+		varyMode: 'selected',
+		unlockedSlots: [1, 3]
+	});
+	assert(
+		multiSlotRes && multiSlotRes.ok &&
+		multiSlotRes.slotChoices[1].isVariedSlot === true &&
+		multiSlotRes.slotChoices[3].isVariedSlot === true &&
+		multiSlotRes.slotChoices[0].isVariedSlot === false &&
+		multiSlotRes.slotChoices[2].isVariedSlot === false,
+		'generateSentenceFromTemplate with unlockedSlots [1, 3] varies exactly slots 1 and 3 while locking unselected slots'
+	);
+
+	// Test VerifiedSentencesView Selected Variability mode and toggleSlotLock controls
+	verifiedView.setVaryMode('selected');
+	verifiedView.unlockedSlotIndices = new Set([3]);
+	verifiedView.toggleSlotLock(1); // Unlocks slot 1 as well
+	assert(
+		verifiedView.testVaryMode === 'selected' &&
+		verifiedView.unlockedSlotIndices.has(1) &&
+		verifiedView.unlockedSlotIndices.has(3),
+		'toggleSlotLock unlocks slot 1, creating a multi-slot variability set {1, 3}'
+	);
+
+	verifiedView.toggleSlotLock(3); // Locks slot 3 back
+	assert(
+		verifiedView.unlockedSlotIndices.has(1) &&
+		!verifiedView.unlockedSlotIndices.has(3),
+		'toggleSlotLock locks slot 3 back to original'
+	);
+
+	// Test scroll preservation on pill toggle and render
+	const mockDetailPane = { scrollTop: 345 };
+	const mockListPane = { scrollTop: 120 };
+	const mockStage = { innerHTML: '' };
+	const mockContainer = {
+		scrollTop: 10,
+		innerHTML: '',
+		querySelector: (sel) => {
+			if (sel === '.verified-detail-pane') return mockDetailPane;
+			if (sel === '#verified-entries-list') return mockListPane;
+			if (sel === '#verified-test-sentence-stage') return mockStage;
+			if (sel === '#verified-vary-slot-select') return { value: '-1', disabled: false, addEventListener: () => {} };
+			if (sel === '.verified-slot-select-wrap') return { classList: { toggle: () => {} } };
+			if (sel === '.verified-quick-lock-actions') return { classList: { toggle: () => {} } };
+			return { addEventListener: () => {}, classList: { toggle: () => {} } };
+		},
+		querySelectorAll: () => []
+	};
+	verifiedView.container = mockContainer;
+
+	// In-place update retains detail pane scrollTop
+	verifiedView.toggleSlotLock(1);
+	assert(
+		mockDetailPane.scrollTop === 345,
+		'toggleSlotLock updates stage in-place and preserves detail pane scrollTop without reset'
+	);
+
+	// Full render() also restores detail pane and entries list scrollTop
+	verifiedView.render();
+	assert(
+		mockDetailPane.scrollTop === 345 && mockListPane.scrollTop === 120,
+		'render() seamlessly restores detail pane (345px) and entries list (120px) scroll positions'
+	);
+	verifiedView.container = null;
+
+	const viewDetailHtml = verifiedView._renderDetailPaneHtml(hardcodedTarget, verifiedGen);
+	assert(
+		viewDetailHtml.includes('btn-mode-toggle') &&
+		viewDetailHtml.includes('Selected Variability') &&
+		viewDetailHtml.includes('btn-slot-lock-toggle') &&
+		viewDetailHtml.includes('verified-vary-slot-select') &&
+		viewDetailHtml.includes('btn-vary-this-slot') &&
+		viewDetailHtml.includes('verified-test-comparison-block'),
+		'VerifiedSentencesView renders "Selected Variability" mode, interactive lock toggle buttons on pills, and comparison block'
 	);
 
 	// 13d. Editing entry title, duplicating entry, and deleting custom vs hardcoded protection
@@ -750,17 +843,49 @@ async function runSuite() {
 	);
 
 	// 13e. Editing (adding and removing) semantic tag filters & single-choice slot detection
-	// Slot 1 of vs_1 is Noun ("독일" #1603, which has tags ['place', 'country'])
-	const afterAddPlace = verifiedView.addTagToSlot(clonedEntry.id, 1, 'country');
+	// Slot 1 of vs_1 is Noun ("독일" #1603, which starts with default tags ['country', 'place', 'geography'])
 	assert(
-		afterAddPlace && afterAddPlace.slots[1].tags.includes('country'),
-		'addTagToSlot adds semantic tag filter ("country") to slot #2'
+		clonedEntry.slots[1].tags.includes('country') && clonedEntry.slots[1].tags.includes(K.PLACE),
+		'slots by default start with every semantic tag of the original language unit as a filter'
 	);
 
 	const afterRemovePlace = verifiedView.removeTagFromSlot(clonedEntry.id, 1, 'country');
 	assert(
 		afterRemovePlace && !afterRemovePlace.slots[1].tags.includes('country'),
 		'removeTagFromSlot removes semantic tag filter ("country") from slot #2'
+	);
+
+	const afterAddPlace = verifiedView.addTagToSlot(clonedEntry.id, 1, 'country');
+	assert(
+		afterAddPlace && afterAddPlace.slots[1].tags.includes('country'),
+		'addTagToSlot adds semantic tag filter ("country") to slot #2'
+	);
+
+	// Test Reset to Original filters for slot #2 (default word is "독일" #1603 with tags country, place, geography)
+	verifiedView.removeTagFromSlot(clonedEntry.id, 1, 'country');
+	verifiedView.removeTagFromSlot(clonedEntry.id, 1, K.PLACE);
+	const afterResetTags = verifiedView.resetSlotTags(clonedEntry.id, 1);
+	assert(
+		afterResetTags &&
+		afterResetTags.slots[1].tags.includes('country') &&
+		afterResetTags.slots[1].tags.includes(K.PLACE),
+		'resetSlotTags resets filters to original semantic tags for the default word in that slot'
+	);
+
+	const availableTags = verifiedView._getAvailableSemanticTags();
+	assert(
+		Array.isArray(availableTags) && availableTags.length > 500 &&
+		availableTags[0] <= availableTags[1] &&
+		viewDetailHtml.includes('slot-add-tag-select') &&
+		viewDetailHtml.includes('btn-reset-slot-tags'),
+		'semantic tag filter input is rendered as a dropdown with a Reset to Original button next to it'
+	);
+
+	const singleChoiceTestStageHtml = verifiedView._renderTestSentenceHtml(hardcodedTarget, testSent1);
+	assert(
+		singleChoiceTestStageHtml.includes('pill-single-choice-target') &&
+		singleChoiceTestStageHtml.includes('🎯'),
+		'Single Choice icon 🎯 is rendered next to Varied/Original pill button when filters limit to 1 option'
 	);
 
 	// Verify single-choice detection and UI visualization when a slot has count === 1

@@ -208,7 +208,7 @@ function selectArgumentForActionVerb(verbUnit, options = {}, targetId = null) {
 		(sd.type === K.INTRANSITIVE && sd.req && sd.req !== K.PERSON && sd.req !== "any") ||
 		sd.req === "subject";
 
-	if (frameRequiresSubject || ["말씀하다", "끓다", "식다", "터지다"].includes(verbKo)) {
+	if (frameRequiresSubject || ["말씀하다", "끓다", "식다", "터지다", "들어있다"].includes(verbKo)) {
 		return { nounUnit: null, role: null, particleType: null };
 	}
 
@@ -566,7 +566,7 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
 	const arg = selectArgumentForActionVerb(verbUnit, options, targetId);
 	const isNominativeSubjectVerb = arg.role === "subject";
 	const verbKo = verbUnit[DATA_SCHEMA.Korean] || "";
-	const isInvoluntary = hasTag(verbUnit, "involuntary", "passive", K.WEATHER) || ["끝나다", "시작되다", "고장 나다", "죽다", "생기다", "열리다", "닫히다", "끓다", "식다", "터지다", "말씀하다"].some(k => verbKo.includes(k));
+	const isInvoluntary = hasTag(verbUnit, "involuntary", "passive", K.WEATHER, "state", "existential") || ["끝나다", "시작되다", "고장 나다", "죽다", "생기다", "열리다", "닫히다", "끓다", "식다", "터지다", "말씀하다", "들어있다"].some(k => verbKo.includes(k));
 	const modality = (variationIndex === 1 && !isHonVerb && !isNominativeSubjectVerb && !isInvoluntary && !options.onlyFromSet) ? "desire" : null;
 
 	let subjUnit = null;
@@ -581,6 +581,8 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
 		subjUnit = pickRandom(inflatables) || null;
 	} else if (verbKo === "말씀하다") {
 		subjUnit = selectSubjectUnit(options, targetId, true);
+	} else if (verbKo === "들어있다") {
+		subjUnit = null;
 	} else {
 		subjUnit = isNominativeSubjectVerb ? null : selectSubjectUnit(options, targetId, isHonVerb);
 	}
