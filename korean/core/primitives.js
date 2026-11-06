@@ -86,7 +86,7 @@ function parseSemanticData(unit) {
 	if (!unit) return EMPTY_SEMANTIC_DATA;
 	const raw = unit[DATA_SCHEMA.SemanticData];
 	if (!raw || raw === "") return EMPTY_SEMANTIC_DATA;
-	if (typeof raw === 'object') return raw;
+	if (typeof raw === 'object' && raw !== null) return raw;
 	if (unit._sdRaw === raw && unit._sdParsed) return unit._sdParsed;
 	try {
 		const parsed = JSON.parse(raw);

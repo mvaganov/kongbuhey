@@ -297,6 +297,10 @@ class SpreadsheetEngine {
 		if (colSpec.type === 'boolean') {
 			return value ? 'true' : 'false';
 		}
+		if (colSpec.type === 'json' || (typeof value === 'object' && value !== null)) {
+			if (value === null || value === undefined) return '';
+			return typeof value === 'object' ? JSON.stringify(value) : String(value);
+		}
 		if (value === null || value === undefined) return '';
 		return String(value);
 	}

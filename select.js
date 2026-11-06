@@ -245,10 +245,16 @@ function formatColumnValue(colName, val) {
 	}
 	if (canonical === 'SemanticData' || canonical === 'SemanticVector') {
 		if (val !== undefined && val !== null && val !== "") {
-			const s = typeof val === 'object' ? JSON.stringify(val) : String(val);
-			return (s.startsWith('{') && !s.includes("'")) ? `'${s}'` : JSON.stringify(s);
+			if (typeof val === 'object') {
+				return JSON.stringify(val);
+			}
+			const s = String(val).trim();
+			if (s.startsWith('{') && s.endsWith('}')) {
+				return s;
+			}
+			return JSON.stringify(s);
 		}
-		return '""';
+		return '{}';
 	}
 	if (typeof val === 'number') {
 		return String(val);
@@ -298,7 +304,13 @@ function buildUnitFromRecord(rec, resolvedSource, newId = 0, schemaCols = SCHEMA
 			return rec.PartofSpeech || rec.PartOfSpeech || rec.pos || K.NOUN;
 		}
 		if (col.name === 'SemanticData') {
-			return rec.SemanticData !== undefined ? rec.SemanticData : (rec.SemanticVector !== undefined ? rec.SemanticVector : "");
+			const rawVal = rec.SemanticData !== undefined ? rec.SemanticData : (rec.SemanticVector !== undefined ? rec.SemanticVector : null);
+			if (rawVal === null || rawVal === undefined || rawVal === "") return {};
+			if (typeof rawVal === 'object') return rawVal;
+			if (typeof rawVal === 'string' && rawVal.trim()) {
+				try { return JSON.parse(rawVal); } catch (_) { return rawVal; }
+			}
+			return {};
 		}
 		return rec[col.name] !== undefined ? rec[col.name] : (col.type === 'number' ? 0 : "");
 	});

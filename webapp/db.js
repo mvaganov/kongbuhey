@@ -120,6 +120,17 @@ function coerceColumnValue(value, colSpec) {
 	if (!colSpec) return value;
 	const type = colSpec.type;
 
+	if (type === 'json') {
+		if (value === null || value === undefined || value === '') {
+			return typeof colSpec.defaultValue === 'object' && colSpec.defaultValue !== null ? colSpec.defaultValue : {};
+		}
+		if (typeof value === 'object') return value;
+		if (typeof value === 'string' && value.trim()) {
+			try { return JSON.parse(value); } catch (_) { return value; }
+		}
+		return {};
+	}
+
 	if (type === 'boolean') {
 		if (typeof value === 'boolean') return value;
 		if (typeof value === 'string') {
