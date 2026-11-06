@@ -35,7 +35,8 @@ function loadVerifiedSentencesFromFile(filePath = VERIFIED_SENTENCES_PATH) {
 	try {
 		delete require.cache[require.resolve(filePath)];
 		const mod = require(filePath);
-		return Array.isArray(mod.VERIFIED_SENTENCES) ? mod.VERIFIED_SENTENCES : [];
+		if (!Array.isArray(mod.VERIFIED_SENTENCES)) return [];
+		return mod.VERIFIED_SENTENCES.map(row => verifiedGenerator.hydrateVerifiedSentence(row));
 	} catch (_) {
 		return [];
 	}
@@ -43,30 +44,75 @@ function loadVerifiedSentencesFromFile(filePath = VERIFIED_SENTENCES_PATH) {
 
 /**
  * Writes an array of Verified Sentence templates into verified_sentences.js.
+ * Compacts templates into array-of-arrays representation matching VERIFIED_TEMPLATE_SCHEMA.
  *
- * @param {Array<Object>} templates
+ * @param {Array<Object|Array>} templates
  * @param {string} [filePath]
  */
 function writeVerifiedSentencesToFile(templates, filePath = VERIFIED_SENTENCES_PATH) {
-	const serialized = JSON.stringify(templates, null, '\t');
+	const compactRows = templates.map(t => verifiedGenerator.serializeCompactTemplate(t));
+	const rowLines = compactRows.map(row => '\t' + JSON.stringify(row)).join(',\n');
+
 	const content = [
 		'// constants-disable',
 		'/**',
 		' * verified_sentences.js',
 		' *',
-		' * Static repository of Verified Sentence templates discovered from ingested',
-		' * Korean study texts. Used to generate natural example sentences from verified',
-		' * grammatical structures and part-of-speech semantic tag filters.',
+		' * Compact static repository of Verified Sentence templates discovered from ingested',
+		' * Korean study texts. Represented as an array of arrays conforming to VERIFIED_TEMPLATE_SCHEMA',
+		' * and VERIFIED_SLOT_SCHEMA, with lexical definitions and default tags derived from data.js.',
 		' */',
 		'',
-		`const VERIFIED_SENTENCES = ${serialized};`,
+		'const VERIFIED_TEMPLATE_SCHEMA = {',
+		'\tId: 0,',
+		'\tTitle: 1,',
+		'\tSource: 2,',
+		'\tOriginalKo: 3,',
+		'\tPunctuation: 4,',
+		'\tSlots: 5,',
+		"\t0: 'Id',",
+		"\t1: 'Title',",
+		"\t2: 'Source',",
+		"\t3: 'OriginalKo',",
+		"\t4: 'Punctuation',",
+		"\t5: 'Slots'",
+		'};',
+		'',
+		'const VERIFIED_SLOT_SCHEMA = {',
+		'\tUnitId: 0,',
+		'\tSurface: 1,',
+		'\tCategory: 2,',
+		'\tStemForm: 3,',
+		'\tSuffix: 4,',
+		'\tPrefix: 5,',
+		'\tGrammar: 6,',
+		'\tCustomTags: 7,',
+		'\tTrailingPunct: 8,',
+		"\t0: 'UnitId',",
+		"\t1: 'Surface',",
+		"\t2: 'Category',",
+		"\t3: 'StemForm',",
+		"\t4: 'Suffix',",
+		"\t5: 'Prefix',",
+		"\t6: 'Grammar',",
+		"\t7: 'CustomTags',",
+		"\t8: 'TrailingPunct'",
+		'};',
+		'',
+		`const VERIFIED_SENTENCES = [\n${rowLines}\n];`,
 		'',
 		"if (typeof window !== 'undefined') {",
+		'\twindow.VERIFIED_TEMPLATE_SCHEMA = VERIFIED_TEMPLATE_SCHEMA;',
+		'\twindow.VERIFIED_SLOT_SCHEMA = VERIFIED_SLOT_SCHEMA;',
 		'\twindow.VERIFIED_SENTENCES = VERIFIED_SENTENCES;',
 		'}',
 		'',
 		"if (typeof module !== 'undefined' && module.exports) {",
-		'\tmodule.exports = { VERIFIED_SENTENCES };',
+		'\tmodule.exports = {',
+		'\t\tVERIFIED_TEMPLATE_SCHEMA,',
+		'\t\tVERIFIED_SLOT_SCHEMA,',
+		'\t\tVERIFIED_SENTENCES',
+		'\t};',
 		'}',
 		'// constants-enable',
 		''
@@ -76,6 +122,9 @@ function writeVerifiedSentencesToFile(templates, filePath = VERIFIED_SENTENCES_P
 	try {
 		delete require.cache[require.resolve(filePath)];
 	} catch (_) {}
+	if (verifiedGenerator && typeof verifiedGenerator.resetHardcodedVerifiedCache === 'function') {
+		verifiedGenerator.resetHardcodedVerifiedCache();
+	}
 }
 
 /**

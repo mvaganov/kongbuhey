@@ -89,26 +89,233 @@ const {
 	generateSentencesForUnit
 } = (typeof require !== 'undefined' ? require('./unit_sentence_generator.js') : window);
 
+const VERIFIED_TEMPLATE_SCHEMA = (verifiedDataModule && verifiedDataModule.VERIFIED_TEMPLATE_SCHEMA) || {
+	Id: 0,
+	Title: 1,
+	Source: 2,
+	OriginalKo: 3,
+	Punctuation: 4,
+	Slots: 5,
+	0: 'Id',
+	1: 'Title',
+	2: 'Source',
+	3: 'OriginalKo',
+	4: 'Punctuation',
+	5: 'Slots'
+};
+
+const VERIFIED_SLOT_SCHEMA = (verifiedDataModule && verifiedDataModule.VERIFIED_SLOT_SCHEMA) || {
+	UnitId: 0,
+	Surface: 1,
+	Category: 2,
+	StemForm: 3,
+	Suffix: 4,
+	Prefix: 5,
+	Grammar: 6,
+	CustomTags: 7,
+	TrailingPunct: 8,
+	0: 'UnitId',
+	1: 'Surface',
+	2: 'Category',
+	3: 'StemForm',
+	4: 'Suffix',
+	5: 'Prefix',
+	6: K.POS_GRAMMAR,
+	7: 'CustomTags',
+	8: 'TrailingPunct'
+};
+
 function getUnitsArray() {
 	return dataModule.KR_EN_languageUnits || (typeof window !== 'undefined' ? window.KR_EN_languageUnits : []) || [];
 }
 
-function getHardcodedVerifiedArray() {
-	if (verifiedDataModule && Array.isArray(verifiedDataModule.VERIFIED_SENTENCES)) {
-		return verifiedDataModule.VERIFIED_SENTENCES;
+/**
+ * Hydrates a compact Verified Sentence row (array-of-arrays) into a rich canonical template object.
+ * If the input is already a rich template object, it returns it unchanged.
+ *
+ * Derives originalKo, originalEn, pos, default tags from data.js via originalUnitId,
+ * as well as template-level grammarUnitIds from slot grammar attachments.
+ */
+function hydrateVerifiedSentence(raw) {
+	if (!raw) return null;
+	if (!Array.isArray(raw)) {
+		return raw;
 	}
-	if (typeof require !== 'undefined') {
+
+	const id = raw[VERIFIED_TEMPLATE_SCHEMA.Id];
+	const title = raw[VERIFIED_TEMPLATE_SCHEMA.Title];
+	const source = raw[VERIFIED_TEMPLATE_SCHEMA.Source];
+	const originalKo = raw[VERIFIED_TEMPLATE_SCHEMA.OriginalKo];
+	const punctuation = raw[VERIFIED_TEMPLATE_SCHEMA.Punctuation] || '';
+	const rawSlots = raw[VERIFIED_TEMPLATE_SCHEMA.Slots] || [];
+
+	const units = getUnitsArray();
+	const grammarUnitIdsSet = new Set();
+
+	const hydratedSlots = rawSlots.map((s, idx) => {
+		if (!Array.isArray(s)) return s;
+		const unitId = s[VERIFIED_SLOT_SCHEMA.UnitId];
+		const unit = (units && typeof unitId === 'number') ? units[unitId] : null;
+
+		const originalKoStem = unit ? unit[DATA_SCHEMA.Korean] : '';
+		const originalEn = unit ? unit[DATA_SCHEMA.English] : '';
+		const pos = unit ? unit[DATA_SCHEMA.PartofSpeech] : '';
+
+		// If CustomTags is explicitly provided as an array, use it; otherwise derive from language unit
+		const customTags = s[VERIFIED_SLOT_SCHEMA.CustomTags];
+		let tags;
+		if (Array.isArray(customTags)) {
+			tags = [...customTags];
+		} else if (unit && unit[DATA_SCHEMA.SemanticTags]) {
+			const rawTags = unit[DATA_SCHEMA.SemanticTags];
+			tags = (rawTags instanceof Set ? Array.from(rawTags) : (Array.isArray(rawTags) ? [...rawTags] : [])).filter(Boolean);
+		} else {
+			tags = [];
+		}
+
+		// Grammar list hydration: [unitId, text, pos] -> { unitId, text, pos, ko, en }
+		const rawGrammar = s[VERIFIED_SLOT_SCHEMA.Grammar] || [];
+		const hydratedGrammar = rawGrammar.map(g => {
+			if (!Array.isArray(g)) return g;
+			const gUnitId = g[0];
+			const gText = g[1];
+			const gPos = g[2] || K.GRAMMAR;
+			if (typeof gUnitId === 'number') {
+				grammarUnitIdsSet.add(gUnitId);
+			}
+			const gUnit = (units && typeof gUnitId === 'number') ? units[gUnitId] : null;
+			return {
+				unitId: gUnitId,
+				text: gText,
+				pos: gPos,
+				ko: gUnit ? gUnit[DATA_SCHEMA.Korean] : gText,
+				en: gUnit ? gUnit[DATA_SCHEMA.English] : ''
+			};
+		});
+
+		const stemForm = s[VERIFIED_SLOT_SCHEMA.StemForm] || '';
+		const suffix = s[VERIFIED_SLOT_SCHEMA.Suffix] || '';
+		const prefix = s[VERIFIED_SLOT_SCHEMA.Prefix] || '';
+		const morphTemplate = (prefix && suffix) ? `${prefix}${suffix}` : (suffix || '');
+
+		return {
+			index: idx,
+			originalSurface: s[VERIFIED_SLOT_SCHEMA.Surface] || '',
+			trailingPunct: s[VERIFIED_SLOT_SCHEMA.TrailingPunct] || '',
+			category: s[VERIFIED_SLOT_SCHEMA.Category] || '',
+			pos: pos,
+			originalUnitId: unitId,
+			originalKo: originalKoStem,
+			originalEn: originalEn,
+			tags: tags,
+			grammar: hydratedGrammar,
+			morphTemplate: morphTemplate,
+			inflection: {
+				prefix: prefix,
+				stemForm: stemForm,
+				suffix: suffix
+			}
+		};
+	});
+
+	return {
+		id: id,
+		title: title,
+		source: source,
+		originalKo: originalKo,
+		punctuation: punctuation,
+		isHardcoded: true,
+		grammarUnitIds: Array.from(grammarUnitIdsSet).sort((a, b) => a - b),
+		slots: hydratedSlots
+	};
+}
+
+/**
+ * Serializes a rich Verified Sentence template into a compact array-of-arrays according to
+ * VERIFIED_TEMPLATE_SCHEMA and VERIFIED_SLOT_SCHEMA, stripping redundant derivable fields.
+ */
+function serializeCompactTemplate(tpl) {
+	if (!tpl) return null;
+	if (Array.isArray(tpl)) return tpl;
+
+	const slots = (tpl.slots || []).map(s => {
+		if (Array.isArray(s)) return s;
+		const stemForm = s.inflection ? (s.inflection.stemForm || '') : '';
+		const suffix = s.inflection ? (s.inflection.suffix || '') : (s.morphTemplate || '');
+		const prefix = s.inflection ? (s.inflection.prefix || '') : '';
+		const rawGrammar = (s.grammar || []).map(g => {
+			if (Array.isArray(g)) return g;
+			return [g.unitId, g.text, g.pos || K.GRAMMAR];
+		});
+
+		// Determine if tags deviate from default unit semantic tags
+		let customTags = null;
+		if (Array.isArray(s.tags) && s.originalUnitId != null) {
+			const units = getUnitsArray();
+			const u = units && units[s.originalUnitId];
+			if (u && u[DATA_SCHEMA.SemanticTags]) {
+				const uTags = u[DATA_SCHEMA.SemanticTags];
+				const uSet = uTags instanceof Set ? uTags : new Set(uTags || []);
+				if (s.tags.length !== uSet.size || !s.tags.every(t => uSet.has(t))) {
+					customTags = [...s.tags];
+				}
+			} else {
+				customTags = [...s.tags];
+			}
+		}
+
+		return [
+			s.originalUnitId != null ? s.originalUnitId : null,
+			s.originalSurface || '',
+			s.category || '',
+			stemForm,
+			suffix,
+			prefix,
+			rawGrammar,
+			customTags,
+			s.trailingPunct || ''
+		];
+	});
+
+	return [
+		tpl.id || '',
+		tpl.title || '',
+		tpl.source || '',
+		tpl.originalKo || '',
+		tpl.punctuation || '',
+		slots
+	];
+}
+
+let cachedHydratedStatic = null;
+
+function resetHardcodedVerifiedCache() {
+	cachedHydratedStatic = null;
+}
+
+function getHardcodedVerifiedArray() {
+	if (cachedHydratedStatic) {
+		return cachedHydratedStatic;
+	}
+	let raw = null;
+	if (verifiedDataModule && Array.isArray(verifiedDataModule.VERIFIED_SENTENCES)) {
+		raw = verifiedDataModule.VERIFIED_SENTENCES;
+	} else if (typeof require !== 'undefined') {
 		try {
+			delete require.cache[require.resolve('../../verified_sentences.js')];
 			verifiedDataModule = require('../../verified_sentences.js');
 			if (verifiedDataModule && Array.isArray(verifiedDataModule.VERIFIED_SENTENCES)) {
-				return verifiedDataModule.VERIFIED_SENTENCES;
+				raw = verifiedDataModule.VERIFIED_SENTENCES;
 			}
 		} catch (_) {}
 	}
-	if (typeof window !== 'undefined' && Array.isArray(window.VERIFIED_SENTENCES)) {
-		return window.VERIFIED_SENTENCES;
+	if (!raw && typeof window !== 'undefined' && Array.isArray(window.VERIFIED_SENTENCES)) {
+		raw = window.VERIFIED_SENTENCES;
 	}
-	return [];
+	if (!raw) return [];
+
+	cachedHydratedStatic = raw.map(hydrateVerifiedSentence);
+	return cachedHydratedStatic;
 }
 
 function getAnalyzer() {
@@ -1780,6 +1987,11 @@ function generateVerifiedSentencesForUnit(unitOrId, count = 3, options = {}) {
 }
 
 const verifiedGeneratorExports = {
+	VERIFIED_TEMPLATE_SCHEMA,
+	VERIFIED_SLOT_SCHEMA,
+	hydrateVerifiedSentence,
+	serializeCompactTemplate,
+	resetHardcodedVerifiedCache,
 	extractCleanSentenceStrings,
 	buildSlotFromToken,
 	extractVerifiedSentenceTemplate,
