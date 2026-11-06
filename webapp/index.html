@@ -25,6 +25,9 @@
 			<button type="button" class="spa-tab" data-view="importer" role="tab" aria-selected="false">
 				<span>📖 Text Analysis &amp; Ingestion</span>
 			</button>
+			<button type="button" class="spa-tab" data-view="verified" role="tab" aria-selected="false">
+				<span>🏛️ Verified Sentences</span>
+			</button>
 			<button type="button" class="spa-tab" data-view="spreadsheet" role="tab" aria-selected="false">
 				<span>📊 Language Units Spreadsheet</span>
 			</button>
@@ -63,6 +66,13 @@
 	<!-- ===================================================================== -->
 	<main id="view-importer" class="spa-view">
 		<section id="importer-container" class="importer-container" aria-label="Korean Text Ingestion and Passage Analysis"></section>
+	</main>
+
+	<!-- ===================================================================== -->
+	<!-- VIEW 2: VERIFIED SENTENCES VISUALIZATION & STRUCTURE EDITOR           -->
+	<!-- ===================================================================== -->
+	<main id="view-verified" class="spa-view">
+		<section id="verified-container" class="verified-container" aria-label="Verified Sentence Structures and Templates"></section>
 	</main>
 
 	<!-- ===================================================================== -->
@@ -307,6 +317,7 @@
 	<!-- Local File System Scripts (Standard script tags for file:// compatibility) -->
 	<script src="../constants.js"></script>
 	<script src="../data.js"></script>
+	<script src="../verified_sentences.js"></script>
 	<script src="../korean/core/primitives.js"></script>
 	<script src="../korean/core/stem_engine.js"></script>
 	<script src="../korean/constants/error_codes.js"></script>
@@ -334,10 +345,12 @@
 	<script src="../korean/analyzer/sentence_analyzer.js"></script>
 	<script src="../korean/analyzer/passage_analyzer.js"></script>
 	<script src="../korean/analyzer/index.js"></script>
+	<script src="../korean/generation/verified_sentence_generator.js"></script>
 	<script src="db.js"></script>
 	<script src="spreadsheet.js"></script>
 	<script src="selector.js"></script>
 	<script src="text_importer.js"></script>
+	<script src="verified_sentences_view.js"></script>
 	<script src="app.js"></script>
 </body>
 </html>

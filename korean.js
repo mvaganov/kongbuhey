@@ -84,6 +84,7 @@ const templateEngine = require('./korean/generation/template_engine.js');
 const semanticGenerator = require('./korean/generation/semantic_generator.js');
 const sentenceAst = require('./korean/generation/sentence_ast.js');
 const unitGenerator = require('./korean/generation/unit_sentence_generator.js');
+const verifiedSentenceGenerator = require('./korean/generation/verified_sentence_generator.js');
 const sentenceValidator = require('./korean/generation/sentence_validator.js');
 
 // 6. Text Analyzer Subsystem
@@ -390,6 +391,27 @@ const exportedMembers = {
 	realizeNaturalEnglish: naturalRealizer.realizeNaturalEnglish,
 	generateSentenceForUnit: unitGenerator.generateSentenceForUnit,
 	generateSentencesForUnit: unitGenerator.generateSentencesForUnit,
+	extractVerifiedSentenceTemplate: verifiedSentenceGenerator.extractVerifiedSentenceTemplate,
+	extractVerifiedSentencesFromPassage: verifiedSentenceGenerator.extractVerifiedSentencesFromPassage,
+	getSlotCandidates: verifiedSentenceGenerator.getSlotCandidates,
+	analyzeTemplateStructure: verifiedSentenceGenerator.analyzeTemplateStructure,
+	generateSentenceFromTemplate: verifiedSentenceGenerator.generateSentenceFromTemplate,
+	generateSentencesFromTemplate: verifiedSentenceGenerator.generateSentencesFromTemplate,
+	getAllVerifiedSentences: verifiedSentenceGenerator.getAllVerifiedSentences,
+	getVerifiedSentenceById: verifiedSentenceGenerator.getVerifiedSentenceById,
+	updateVerifiedSentenceTitle: verifiedSentenceGenerator.updateVerifiedSentenceTitle,
+	updateVerifiedSentenceSlotTags: verifiedSentenceGenerator.updateVerifiedSentenceSlotTags,
+	addTagToVerifiedSlot: verifiedSentenceGenerator.addTagToVerifiedSlot,
+	removeTagFromVerifiedSlot: verifiedSentenceGenerator.removeTagFromVerifiedSlot,
+	resetHardcodedVerifiedSentence: verifiedSentenceGenerator.resetHardcodedVerifiedSentence,
+	cloneVerifiedSentence: verifiedSentenceGenerator.cloneVerifiedSentence,
+	deleteVerifiedSentence: verifiedSentenceGenerator.deleteVerifiedSentence,
+	addRuntimeVerifiedSentences: verifiedSentenceGenerator.addRuntimeVerifiedSentences,
+	exportVerifiedSentencesState: verifiedSentenceGenerator.exportVerifiedSentencesState,
+	importVerifiedSentencesState: verifiedSentenceGenerator.importVerifiedSentencesState,
+	findMatchingTemplatesForUnit: verifiedSentenceGenerator.findMatchingTemplatesForUnit,
+	generateVerifiedSentenceForUnit: verifiedSentenceGenerator.generateVerifiedSentenceForUnit,
+	generateVerifiedSentencesForUnit: verifiedSentenceGenerator.generateVerifiedSentencesForUnit,
 	validateSentenceAST: sentenceValidator.validateSentenceAST,
 	validateSentenceString: sentenceValidator.validateSentenceString,
 	SentenceValidator: sentenceValidator,

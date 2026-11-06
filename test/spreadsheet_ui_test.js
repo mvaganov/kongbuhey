@@ -31,6 +31,9 @@ const {
 	UnitSelectorView
 } = require('../webapp/selector.js');
 const { TextImporterView } = require('../webapp/text_importer.js');
+const { VerifiedSentencesView } = require('../webapp/verified_sentences_view.js');
+const { VERIFIED_SENTENCES } = require('../verified_sentences.js');
+const verifiedGen = require('../korean/generation/verified_sentence_generator.js');
 const { sortPracticeSetUnits, evaluateFlashcardAttempt } = require('../webapp/app.js');
 
 let passed = 0;
@@ -665,6 +668,163 @@ async function runSuite() {
 		indexHtmlContent.includes('id="importer-container"') &&
 		indexHtmlContent.includes('text_importer.js'),
 		'webapp/index.html includes Text Analysis tab, view container, and text_importer.js script tag'
+	);
+
+	// -------------------------------------------------------------------------
+	// 13. Verified Sentences: Static Data, Runtime Ingestion, Visualization,
+	//     Single-Choice Detection, Tag Filter Editing, Copy/Delete & Generation
+	// -------------------------------------------------------------------------
+	console.log(`\n--- 13. Verified Sentences: Templates, Visualization, Editing & Generation ---`);
+
+	// 13a. Static verified_sentences.js repository
+	assert(
+		Array.isArray(VERIFIED_SENTENCES) && VERIFIED_SENTENCES.length >= 300,
+		`verified_sentences.js exports static VERIFIED_SENTENCES array (${VERIFIED_SENTENCES.length} templates discovered from study texts)`
+	);
+	const firstStaticVs = VERIFIED_SENTENCES[0];
+	assert(
+		firstStaticVs &&
+		typeof firstStaticVs.id === 'string' &&
+		typeof firstStaticVs.title === 'string' &&
+		typeof firstStaticVs.originalKo === 'string' &&
+		firstStaticVs.isHardcoded === true &&
+		Array.isArray(firstStaticVs.grammarUnitIds) &&
+		Array.isArray(firstStaticVs.slots) &&
+		firstStaticVs.slots.length >= 2,
+		'Each Verified Sentence template records id, title, originalKo, isHardcoded=true, grammarUnitIds, and POS slots with semantic tags'
+	);
+
+	// 13b. Runtime ingestion via TextImporterView adds Verified Sentences at runtime
+	assert(
+		Array.isArray(analyzeRes.verifiedSentences) &&
+		analyzeRes.verifiedSentences.length >= 2 &&
+		Array.isArray(analyzeRes.addedVerifiedSentences) &&
+		analyzeRes.addedVerifiedSentences.length >= 1,
+		`TextImporterView extracts and adds Verified Sentence templates at runtime (${analyzeRes.verifiedSentences.length} discovered)`
+	);
+
+	// 13c. VerifiedSentencesView listing, structure inspection & single-choice highlighting
+	const verifiedView = new VerifiedSentencesView({
+		engine: selectorEngine,
+		onStateChange: () => {}
+	});
+	const allEntries = verifiedView.getAllEntries();
+	assert(
+		allEntries.length >= VERIFIED_SENTENCES.length + analyzeRes.addedVerifiedSentences.length,
+		`VerifiedSentencesView lists both hardcoded and runtime-ingested Verified Sentences (${allEntries.length} total)`
+	);
+
+	// Select a hardcoded entry and test random sentence generation & regeneration
+	const hardcodedTarget = VERIFIED_SENTENCES[0];
+	verifiedView.selectEntry(hardcodedTarget.id);
+	const testSent1 = verifiedView.generateTestSentence(hardcodedTarget.id, { seedOffset: 1 });
+	const testSent2 = verifiedView.generateTestSentence(hardcodedTarget.id, { seedOffset: 19 });
+	assert(
+		testSent1 && testSent1.ok &&
+		testSent2 && testSent2.ok &&
+		typeof testSent1.ko === 'string' && testSent1.ko.length > 0 &&
+		testSent1.ko !== testSent2.ko,
+		`VerifiedSentencesView generates and regenerates random test sentences from structure ("${testSent1.ko}" vs "${testSent2.ko}")`
+	);
+
+	// 13d. Editing entry title, duplicating entry, and deleting custom vs hardcoded protection
+	const hardcodedDeleteAttempt = verifiedView.deleteEntry(hardcodedTarget.id);
+	assert(
+		hardcodedDeleteAttempt.ok === false,
+		'Hardcoded Verified Sentence entries cannot be deleted (protected from deletion)'
+	);
+
+	const clonedEntry = verifiedView.duplicateEntry(hardcodedTarget.id, 'Custom Copy of Studytext12 #1');
+	assert(
+		clonedEntry &&
+		clonedEntry.isHardcoded === false &&
+		clonedEntry.id !== hardcodedTarget.id &&
+		clonedEntry.title === 'Custom Copy of Studytext12 #1',
+		`duplicateEntry creates a new editable copy (isHardcoded=false, id="${clonedEntry.id}")`
+	);
+
+	const renamedEntry = verifiedView.updateTitle(clonedEntry.id, 'Updated Custom Structure Title');
+	assert(
+		renamedEntry && renamedEntry.title === 'Updated Custom Structure Title',
+		'updateTitle updates the entry title for a better description in the listing'
+	);
+
+	// 13e. Editing (adding and removing) semantic tag filters & single-choice slot detection
+	// Slot 1 of vs_1 is Noun ("독일" #1603, which has tags ['place', 'country'])
+	const afterAddPlace = verifiedView.addTagToSlot(clonedEntry.id, 1, 'country');
+	assert(
+		afterAddPlace && afterAddPlace.slots[1].tags.includes('country'),
+		'addTagToSlot adds semantic tag filter ("country") to slot #2'
+	);
+
+	const afterRemovePlace = verifiedView.removeTagFromSlot(clonedEntry.id, 1, 'country');
+	assert(
+		afterRemovePlace && !afterRemovePlace.slots[1].tags.includes('country'),
+		'removeTagFromSlot removes semantic tag filter ("country") from slot #2'
+	);
+
+	// Verify single-choice detection and UI visualization when a slot has count === 1
+	// Find or configure a slot that narrows down to 1 choice (e.g. fixed_grammar or unique tag combination)
+	const singleChoiceTemplate = allEntries.find(tpl => {
+		const analysis = verifiedGen.analyzeTemplateStructure(tpl);
+		return analysis.singleChoiceCount > 0;
+	});
+	assert(
+		Boolean(singleChoiceTemplate),
+		`analyzeTemplateStructure identifies templates with single-choice slots (e.g. "${singleChoiceTemplate?.id}")`
+	);
+	const detailHtml = verifiedView._renderDetailPaneHtml(singleChoiceTemplate, verifiedGen);
+	assert(
+		detailHtml.includes('data-single-choice="true"') &&
+		detailHtml.includes('SINGLE LANGUAGE UNIT CHOICE'),
+		'VerifiedSentencesView clearly highlights slots where tag requirements limit choices to a single Language Unit'
+	);
+
+	// Delete the custom cloned entry
+	const customDeleteRes = verifiedView.deleteEntry(clonedEntry.id);
+	assert(
+		customDeleteRes && customDeleteRes.ok === true && !verifiedGen.getVerifiedSentenceById(clonedEntry.id),
+		'deleteEntry deletes custom/copied entries cleanly'
+	);
+
+	// 13f. Prioritized Sentence Generation Method (Verified Sentences first, AST fallback)
+	const prioritizedRes = generateSentencesForUnit(2, 3); // Unit #2 '저' (Pronoun)
+	assert(
+		Array.isArray(prioritizedRes) &&
+		prioritizedRes.length === 3 &&
+		prioritizedRes.some(s => s.isVerifiedStructure === true && typeof s.verifiedTemplateId === 'string'),
+		`generateSentencesForUnit prioritizes Verified Sentence structures (template: "${prioritizedRes[0]?.verifiedTemplateId}")`
+	);
+
+	// Verify webapp/index.html integrates Verified Sentences tab, view container, and scripts
+	assert(
+		indexHtmlContent.includes('data-view="verified"') &&
+		indexHtmlContent.includes('id="view-verified"') &&
+		indexHtmlContent.includes('id="verified-container"') &&
+		indexHtmlContent.includes('verified_sentences.js') &&
+		indexHtmlContent.includes('verified_sentence_generator.js') &&
+		indexHtmlContent.includes('verified_sentences_view.js'),
+		'webapp/index.html includes Verified Sentences tab, view container, and script tags'
+	);
+
+	// 13g. Browser Global Context Simulation (ensuring window.verifiedSentenceGenerator and VerifiedSentencesView work with 0 node require)
+	const vm = require('vm');
+	const mockWindow = {
+		Math, Date, Set, Map, Array, Object, String, Number, Boolean, JSON,
+		VERIFIED_SENTENCES,
+		KR_EN_languageUnits,
+		DATA_SCHEMA
+	};
+	mockWindow.window = mockWindow;
+	const vsGenCode = fs.readFileSync(path.resolve(__dirname, '../korean/generation/verified_sentence_generator.js'), 'utf8');
+	vm.runInNewContext(vsGenCode, mockWindow);
+	const vsViewCode = fs.readFileSync(path.resolve(__dirname, '../webapp/verified_sentences_view.js'), 'utf8');
+	vm.runInNewContext(vsViewCode, mockWindow);
+	const browserSimView = new mockWindow.VerifiedSentencesView();
+	const browserSimEntries = browserSimView.getAllEntries();
+	assert(
+		browserSimEntries.length >= VERIFIED_SENTENCES.length,
+		`VerifiedSentencesView in pure browser global context (window) resolves all ${browserSimEntries.length} templates without require`
 	);
 
 	console.log(`\n======================================================`);

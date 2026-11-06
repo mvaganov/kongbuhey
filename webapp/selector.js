@@ -295,6 +295,19 @@ const _unitGeneratorEngine = (() => {
  * Also attaches `.ok`, `.insufficientSet`, `.missingRoles`, and `.message` onto the
  * returned array when `options.onlyFromSet` is used.
  */
+const _verifiedGeneratorEngine = (() => {
+	if (typeof require === 'function') {
+		try {
+			return require('../korean/generation/verified_sentence_generator.js');
+		} catch (_) {}
+	}
+	if (typeof window !== 'undefined') {
+		if (window.verifiedSentenceGenerator) return window.verifiedSentenceGenerator;
+		if (typeof window.generateVerifiedSentencesForUnit === 'function') return window;
+	}
+	return null;
+})();
+
 function generateSentencesForUnit(unitId, count = 3, optionsOrRawUnits = null, dataSchema = null) {
 	let options = {};
 	if (
@@ -305,9 +318,14 @@ function generateSentencesForUnit(unitId, count = 3, optionsOrRawUnits = null, d
 		options = { ...optionsOrRawUnits };
 	}
 
-	const engineBatchFn = _unitGeneratorEngine && (
+	const verifiedBatchFn = (!options.useAstOnly && _verifiedGeneratorEngine)
+		? _verifiedGeneratorEngine.generateVerifiedSentencesForUnit
+		: null;
+	const astBatchFn = _unitGeneratorEngine && (
 		_unitGeneratorEngine.generateUnitSentencesAST || _unitGeneratorEngine.generateSentencesForUnit
 	);
+	const engineBatchFn = typeof verifiedBatchFn === 'function' ? verifiedBatchFn : astBatchFn;
+
 	if (typeof engineBatchFn === 'function' && engineBatchFn !== generateSentencesForUnit) {
 		const res = engineBatchFn(unitId, count, options);
 		const list = (res && Array.isArray(res.sentences) ? res.sentences : []).map(s => ({
@@ -316,6 +334,9 @@ function generateSentencesForUnit(unitId, count = 3, optionsOrRawUnits = null, d
 			enNatural: s.enNatural || '',
 			en: s.enLiteral || s.enNatural || '',
 			pronunciation: s.pronunciation || s.ko || '',
+			isVerifiedStructure: Boolean(s.isVerifiedStructure),
+			verifiedTemplateId: s.verifiedTemplateId || null,
+			verifiedTemplateTitle: s.verifiedTemplateTitle || null,
 			eojeols: Array.isArray(s.eojeols) ? s.eojeols.map(ej => ({
 				surfaceKo: ej.surfaceKo,
 				surfaceEnLit: ej.surfaceEnLit || '',

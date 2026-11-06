@@ -178,6 +178,29 @@ class TextImporterView {
 				URL.revokeObjectURL(url);
 			});
 		}
+
+		const openVerifiedBtn = this.container.querySelector('#btn-importer-open-verified');
+		if (openVerifiedBtn) {
+			openVerifiedBtn.addEventListener('click', () => {
+				this.onStateChange({
+					type: 'importer-open-verified',
+					source: this.sourceName
+				});
+			});
+		}
+	}
+
+	_getVerifiedEngine() {
+		if (typeof window !== 'undefined') {
+			if (window.verifiedSentenceGenerator) return window.verifiedSentenceGenerator;
+			if (typeof window.extractVerifiedSentencesFromPassage === 'function') return window;
+		}
+		if (typeof require !== 'undefined') {
+			try {
+				return require('../korean/generation/verified_sentence_generator.js');
+			} catch (_) {}
+		}
+		return null;
 	}
 
 	async analyzePassageText(text, sourceName) {
@@ -194,6 +217,20 @@ class TextImporterView {
 		}
 
 		const result = analyzer.analyzePassage(text, sourceName);
+
+		// Discover Verified Sentence templates from passage and add them at runtime
+		const verifiedEngine = this._getVerifiedEngine();
+		let verifiedSentences = [];
+		let addedVerifiedSentences = [];
+		if (verifiedEngine && typeof verifiedEngine.extractVerifiedSentencesFromPassage === 'function') {
+			verifiedSentences = verifiedEngine.extractVerifiedSentencesFromPassage(text, sourceName);
+			if (verifiedSentences.length > 0 && typeof verifiedEngine.addRuntimeVerifiedSentences === 'function') {
+				addedVerifiedSentences = verifiedEngine.addRuntimeVerifiedSentences(verifiedSentences, sourceName);
+			}
+		}
+		result.verifiedSentences = verifiedSentences;
+		result.addedVerifiedSentences = addedVerifiedSentences;
+
 		this.lastResult = result;
 
 		// Automatically add all recognized Language Units to the Practice Set (InSet = true)
@@ -218,6 +255,8 @@ class TextImporterView {
 			type: 'importer-passage-analyzed',
 			source: sourceName,
 			addedCount: idList.length,
+			verifiedSentencesCount: verifiedSentences.length,
+			addedVerifiedCount: addedVerifiedSentences.length,
 			missingVocabCount: result.missingVocab?.length || 0,
 			missingGrammarCount: result.missingGrammar?.length || 0
 		});
@@ -228,7 +267,12 @@ class TextImporterView {
 			this._bindResultsEvents();
 		}
 
-		return { result, addedUnitIds: idList };
+		return {
+			result,
+			addedUnitIds: idList,
+			verifiedSentences,
+			addedVerifiedSentences
+		};
 	}
 
 	_renderResultsHtml(result, addedCount = null) {
@@ -237,6 +281,8 @@ class TextImporterView {
 		const knownGrammar = result.knownGrammar || [];
 		const missingVocab = result.missingVocab || [];
 		const missingGrammar = result.missingGrammar || [];
+		const verifiedSentences = result.verifiedSentences || [];
+		const addedVerified = result.addedVerifiedSentences || [];
 		const addedTotal = addedCount !== null ? addedCount : (knownVocab.length + knownGrammar.length);
 
 		const totalMissing = missingVocab.length + missingGrammar.length;
@@ -255,10 +301,39 @@ class TextImporterView {
 					<div class="stat-sub">${missingVocab.length} Vocab · ${missingGrammar.length} Grammar</div>
 				</div>
 				<div class="importer-stat-card stat-blue">
-					<div class="stat-number">${totalSentences}</div>
-					<div class="stat-meta">Total Sentences Decomposed</div>
-					<div class="stat-sub">${result.summary?.disambiguationsCount || 0} Disambiguations</div>
+					<div class="stat-number">${verifiedSentences.length}</div>
+					<div class="stat-meta">Verified Sentence Structures Discovered</div>
+					<div class="stat-sub">${addedVerified.length} New Runtime Templates Added · ${totalSentences} Total Sentences</div>
 				</div>
+			</div>
+
+			<!-- Discovered Verified Sentences Banner -->
+			<div class="importer-verified-banner">
+				<div class="importer-verified-banner-header">
+					<div>
+						<strong>🏛️ Verified Sentence Structures Discovered (${verifiedSentences.length})</strong>
+						<p class="tooling-desc">
+							Cleanly decomposed sentences have been extracted as reusable Verified Sentence templates
+							(${addedVerified.length} added to runtime templates; CLI: <code>node text_analyzer.js ${this.sourceName} --add-verified</code>).
+						</p>
+					</div>
+					<button type="button" id="btn-importer-open-verified" class="btn btn-primary btn-sm">
+						🏛️ View in Verified Sentences
+					</button>
+				</div>
+				${verifiedSentences.length > 0 ? `
+					<div class="importer-verified-list">
+						${verifiedSentences.map(vs => `
+							<div class="importer-verified-row">
+								<span class="rec-pos-badge badge-grammar">${vs.slots ? vs.slots.length : 0} slots</span>
+								<strong class="rec-ko">${vs.originalKo}</strong>
+								<span class="rec-en">${vs.title}</span>
+							</div>
+						`).join('')}
+					</div>
+				` : `
+					<p class="empty-list-notice">No complete gap-free multi-token sentences discovered yet. Ingest missing vocabulary above to unlock Verified Sentence extraction for those sentences.</p>
+				`}
 			</div>
 
 			<!-- Dual Decomposition Grid -->

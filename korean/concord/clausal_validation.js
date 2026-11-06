@@ -183,7 +183,8 @@ function parseSentenceToClauses(sentence) {
 
 		for (const rule of state.DYNAMIC_SUFFIX_RULES) {
 			if (w === "해서" && c1Prefix && (c1Prefix.endsWith("으로") || c1Prefix.endsWith("로"))) continue;
-			if (w === "어서") continue;
+			if (w === "어서" || w === "그래서" || w === "그래도") continue;
+			if (state.DISCOURSE_ADVERBS && state.DISCOURSE_ADVERBS.has(w)) continue;
 			if (w.endsWith(rule.suffix)) {
 				if (rule.isSeoRule) {
 					if (w.endsWith("께서") || w.endsWith("에게서") || w.endsWith("한테서")) continue;
