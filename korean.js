@@ -127,6 +127,7 @@ const exportedMembers = {
 	// Constants
 	ERROR_CODES: errorCodes.ERROR_CODES,
 	GRAMMAR_TAGS: grammarTags.GRAMMAR_TAGS,
+	CURRICULUM_TAXONOMY_TAGS: grammarTags.CURRICULUM_TAXONOMY_TAGS,
 
 	// Primitives
 	DATA_SCHEMA: primitives.DATA_SCHEMA,

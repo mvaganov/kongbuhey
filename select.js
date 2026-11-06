@@ -621,18 +621,23 @@ function validateLanguageUnitSemanticSelection(unit, allUnits, schemaCols = SCHE
  * identifying unregistered selection tags, zero-candidate starvation, and low-diversity verbs.
  */
 function auditSemanticRules(options = {}) {
+	const silent = !!options.silent;
 	const dataPath = options.dataFile || DATA_FILE_PATH;
 	const { KR_EN_languageUnits, DATA_SCHEMA } = loadData(dataPath);
-	console.log(`\n======================================================`);
-	console.log(` AUDITING SEMANTIC SELECTION RULES & CANDIDATE POOLS  `);
-	console.log(` Dataset: ${path.basename(dataPath)} (${KR_EN_languageUnits.length} units)`);
-	console.log(`======================================================\n`);
+	if (!silent) {
+		console.log(`\n======================================================`);
+		console.log(` AUDITING SEMANTIC SELECTION RULES & CANDIDATE POOLS  `);
+		console.log(` Dataset: ${path.basename(dataPath)} (${KR_EN_languageUnits.length} units)`);
+		console.log(`======================================================\n`);
+	}
 
 	let verbCount = 0;
 	let starvedCount = 0;
 	let lowDiversityCount = 0;
 	let unregTagCount = 0;
 	let ambiguousCount = 0;
+	const unregisteredList = [];
+	const starvedList = [];
 
 	const actionTags = new Set(ACTION_VERB_SPECS.map(s => s.tag));
 	const descriptiveTags = new Set(DESCRIPTIVE_VERB_SPECS.map(s => s.tag));
@@ -649,7 +654,7 @@ function auditSemanticRules(options = {}) {
 			const ambig = detectUndifferentiatedHomonym(unit, DATA_SCHEMA);
 			if (ambig && ambig.length > 0) {
 				ambiguousCount++;
-				console.warn(`[AMBIGUOUS HOMONYM] ${pos} '${ko}' (Id: ${id}): ${ambig.join('; ')}`);
+				if (!silent) console.warn(`[AMBIGUOUS HOMONYM] ${pos} '${ko}' (Id: ${id}): ${ambig.join('; ')}`);
 			}
 		}
 
@@ -662,23 +667,26 @@ function auditSemanticRules(options = {}) {
 			for (const t of tags) {
 				if (t.startsWith("descriptive_") && !descriptiveTags.has(t)) {
 					unregTagCount++;
-					console.warn(`[UNREGISTERED TAG] Descriptive Verb '${ko}' (Id: ${id}): tag '${t}' not in DESCRIPTIVE_VERB_SPECS in korean.js`);
+					unregisteredList.push({ pos, korean: ko, id, tag: t, expectedIn: 'DESCRIPTIVE_VERB_SPECS' });
+					if (!silent) console.warn(`[UNREGISTERED TAG] Descriptive Verb '${ko}' (Id: ${id}): tag '${t}' not in DESCRIPTIVE_VERB_SPECS in korean.js`);
 				}
 			}
 			const cands = getSubjectCandidatesForDescriptiveVerb(unit);
 			const constraint = getVerbSemanticConstraint(unit, DATA_SCHEMA);
 			if (cands.length === 0) {
 				starvedCount++;
-				console.error(`[STARVATION] Descriptive Verb '${ko}' (Id: ${id}) has 0 candidate subjects under constraint '${constraint}'!`);
+				starvedList.push({ pos, korean: ko, id, constraint });
+				if (!silent) console.error(`[STARVATION] Descriptive Verb '${ko}' (Id: ${id}) has 0 candidate subjects under constraint '${constraint}'!`);
 			} else if (cands.length < 3 && !hasSuppressDiversity) {
 				lowDiversityCount++;
-				console.warn(`[LOW DIVERSITY] Descriptive Verb '${ko}' (Id: ${id}) has only ${cands.length} candidate(s): ${cands.map(c => c[DATA_SCHEMA.Korean]).join(', ')} under constraint '${constraint}'`);
+				if (!silent) console.warn(`[LOW DIVERSITY] Descriptive Verb '${ko}' (Id: ${id}) has only ${cands.length} candidate(s): ${cands.map(c => c[DATA_SCHEMA.Korean]).join(', ')} under constraint '${constraint}'`);
 			}
 		} else if (pos === K.ACTION_VERB) {
 			for (const t of tags) {
 				if ((t.startsWith("transitive_") || t.startsWith("intransitive_") || t.startsWith("dative_")) && !actionTags.has(t)) {
 					unregTagCount++;
-					console.warn(`[UNREGISTERED TAG] Action Verb '${ko}' (Id: ${id}): tag '${t}' not in ACTION_VERB_SPECS in korean.js`);
+					unregisteredList.push({ pos, korean: ko, id, tag: t, expectedIn: 'ACTION_VERB_SPECS' });
+					if (!silent) console.warn(`[UNREGISTERED TAG] Action Verb '${ko}' (Id: ${id}): tag '${t}' not in ACTION_VERB_SPECS in korean.js`);
 				}
 			}
 			const isPureIntransitive = hasTag(unit, K.INTRANSITIVE_GENERAL) || hasTag(unit, "intransitive_food");
@@ -687,27 +695,32 @@ function auditSemanticRules(options = {}) {
 				const constraint = getVerbSemanticConstraint(unit, DATA_SCHEMA);
 				if (cands.length === 0) {
 					starvedCount++;
-					console.error(`[STARVATION] Action Verb '${ko}' (Id: ${id}) has 0 candidate objects under constraint '${constraint}'!`);
+					starvedList.push({ pos, korean: ko, id, constraint });
+					if (!silent) console.error(`[STARVATION] Action Verb '${ko}' (Id: ${id}) has 0 candidate objects under constraint '${constraint}'!`);
 				} else if (cands.length < 3 && !hasSuppressDiversity) {
 					lowDiversityCount++;
-					console.warn(`[LOW DIVERSITY] Action Verb '${ko}' (Id: ${id}) has only ${cands.length} candidate(s): ${cands.map(c => c[DATA_SCHEMA.Korean]).join(', ')} under constraint '${constraint}'`);
+					if (!silent) console.warn(`[LOW DIVERSITY] Action Verb '${ko}' (Id: ${id}) has only ${cands.length} candidate(s): ${cands.map(c => c[DATA_SCHEMA.Korean]).join(', ')} under constraint '${constraint}'`);
 				}
 			}
 		}
 	}
 
-	console.log(`\n------------------------------------------------------`);
-	console.log(`Audited ${verbCount} verbs in ${path.basename(dataPath)}:`);
-	console.log(`  Unregistered selection tags : ${unregTagCount}`);
-	console.log(`  Starved verbs (0 candidates): ${starvedCount}`);
-	console.log(`  Low diversity (<3 candidates): ${lowDiversityCount}`);
-	console.log(`  Ambiguous homonym conflations: ${ambiguousCount}`);
-	console.log(`======================================================\n`);
+	if (!silent) {
+		console.log(`\n------------------------------------------------------`);
+		console.log(`Audited ${verbCount} verbs in ${path.basename(dataPath)}:`);
+		console.log(`  Unregistered selection tags : ${unregTagCount}`);
+		console.log(`  Starved verbs (0 candidates): ${starvedCount}`);
+		console.log(`  Low diversity (<3 candidates): ${lowDiversityCount}`);
+		console.log(`  Ambiguous homonym conflations: ${ambiguousCount}`);
+		console.log(`======================================================\n`);
+	}
 
 	return {
 		totalVerbs: verbCount,
 		unregisteredTags: unregTagCount,
+		unregisteredList,
 		starvedVerbs: starvedCount,
+		starvedList,
 		lowDiversityVerbs: lowDiversityCount,
 		ambiguousHomonyms: ambiguousCount,
 		format: 'text'

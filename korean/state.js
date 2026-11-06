@@ -425,7 +425,7 @@ function initSemanticSets(dm = dataModule) {
 		if (hasTag(unit, "dative_humble")) {
 			HUMBLE_DATIVE_VERBS.add(ko);
 		}
-		if (pos === K.POS_GRAMMAR && hasTag(unit, "properNoun", K.HONORIFIC) && !TITLE_SUFFIX_SSI) {
+		if (pos === K.POS_GRAMMAR && hasTag(unit, "properNoun", K.PROPER_NOUN, K.HONORIFIC) && !TITLE_SUFFIX_SSI) {
 			TITLE_SUFFIX_SSI = ko;
 		}
 

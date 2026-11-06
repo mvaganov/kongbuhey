@@ -80,11 +80,86 @@ const GRAMMAR_TAGS = Object.freeze({
 	LOCATIVE_STATIC: "locative_static"
 });
 
+/**
+ * Recognized Topical Curriculum Taxonomy Categories
+ *
+ * Formal whitelist of authorized educational vocabulary domains and topical groupings.
+ * Used by schema analysis and tag hygiene linters to distinguish valid educational topics
+ * from orphaned, misspelt, or dead semantic tags.
+ */
+const CURRICULUM_TAXONOMY_TAGS = Object.freeze([
+	// Food & Dining
+	K.FOOD, "drink", "beverage", "cooking", "dish", "meal", "snack", "dessert", "fruit",
+	"vegetable", "meat", "seafood", "fish", "grain", "soup", "sideDish", "condiment",
+	"flavor", "taste", "restaurant", "cafe", "bakery", "ingredient", "alcohol",
+
+	// Clothing & Apparel
+	K.CLOTHING, K.WEARABLE, "footwear", "headwear", "handwear", "neckwear", "accessory",
+	"jewelry", "bag", "fabric", "style", "fashion",
+
+	// Living, Home & Furniture
+	"home", "house", "furniture", "room", "kitchen", "bathroom", "bedroom", "appliance",
+	"tool", "bedding", "cleaning", "housework", "household", "living", "housing",
+
+	// Body, Health & Hygiene
+	"body", "bodyPart", K.HEALTH, "medical", "medicine", "hospital", "pharmacy", "illness",
+	"disease", "symptom", "treatment", "hygiene", "wellness", "fitness",
+
+	// People, Family & Relationships
+	K.PERSON, "people", K.FAMILY, "kinship", "relationship", "friend", "parent", "child",
+	"sibling", "spouse", "occupation", "profession", "job", "worker", "role", "title",
+	"adult", "elder",
+
+	// Nature, Animals & Environment
+	K.NATURE, K.WEATHER, "season", "climate", "animal", "pet", "plant", "flower", "tree",
+	"landscape", "sky", "earth", "water", "geography", "mountain", "sea", "river",
+
+	// Time & Calendar
+	K.TIME, "calendar", "date", "day", "month", "year", "hour", "minute", "second",
+	"morning", "afternoon", "evening", "night", "dawn", "holiday", "duration",
+
+	// Travel, Spatial & Transportation
+	K.TRAVEL, "trip", "transport", K.TRANSPORTATION, "vehicle", "car", "bus", "train",
+	"subway", "bicycle", "airplane", "ship", "station", "airport", "road", "street",
+	"traffic", "route", "direction", "distance",
+
+	// Education, Academic & Language
+	"education", K.ACADEMIC, "school", "university", "college", "student", "teacher",
+	"classroom", "study", "learning", "exam", "grade", "major", "subject", "language",
+	"linguistics", "reading", "writing", "book", "stationery",
+
+	// Culture, Arts & Entertainment
+	"culture", "art", "music", "song", "media", "film", "movie", "drama", "broadcast",
+	"literature", "entertainment", "recreation", "leisure", "hobby", "sports", "sport",
+	"game", "exercise", "tradition", "festival",
+
+	// Economy, Commerce & Shopping
+	"economy", K.COMMERCE, "finance", "money", "currency", "bank", "price", "cost",
+	"shopping", "market", "store", "product", "goods", "commodity", "business",
+
+	// Technology, Science & Devices
+	"technology", "science", "electronics", "device", "machine", "computer", "internet",
+	"phone", "digital",
+
+	// Society, Public & Institutions
+	"society", K.SOCIAL, "institution", K.FACILITY, "organization", "government",
+	"public", "community", "law", "rule", "security", "postal",
+
+	// Emotions, Traits & Mental States
+	K.EMOTION, "feeling", "mood", "mental", "mind", "personality", "trait", "attitude",
+	"cognition", "thought", "belief", "sensation", "sensory",
+
+	// Abstract & General Concepts
+	K.CONCEPT, K.ABSTRACT, K.GENERAL, K.ACTIVITY, "event", "schedule", "state", "status",
+	"situation", "condition", "attribute", "property", "measurement", "quantity", K.DEGREE
+]);
+
 if (typeof window !== "undefined") {
 	window.GRAMMAR_TAGS = GRAMMAR_TAGS;
+	window.CURRICULUM_TAXONOMY_TAGS = CURRICULUM_TAXONOMY_TAGS;
 }
 
 if (typeof module !== "undefined" && module.exports) {
-	module.exports = { GRAMMAR_TAGS };
+	module.exports = { GRAMMAR_TAGS, CURRICULUM_TAXONOMY_TAGS };
 }
 })();

@@ -211,8 +211,8 @@ function runTests(options = {}) {
 		const lintRes = lintProject();
 		if (lintRes.totalRecommendations > 0) {
 			const details = lintRes.files.map(f => {
-				const samples = f.diagnostics.slice(0, 3).map(d => `"${d.value}" -> ${d.suggestedReplacement}`).join(', ');
-				const more = f.diagnostics.length > 3 ? ` (+${f.diagnostics.length - 3} more)` : '';
+				const samples = (f.matches || []).slice(0, 3).map(d => `"${d.value}" -> ${(d.info && d.info.recommended) || d.suggestedReplacement}`).join(', ');
+				const more = (f.matches && f.matches.length > 3) ? ` (+${f.matches.length - 3} more)` : '';
 				return `  - ${f.file}: ${f.totalMatches} bare string literal(s) [${samples}${more}]`;
 			}).join('\n');
 			failFast("Stage 0 (Code Quality & Static Hygiene - Constants Linter)",
@@ -308,9 +308,9 @@ function runTests(options = {}) {
 	}
 
 	// -----------------------------------------------------------------------------
-	// [2/7] Schema Taxonomy & Metadata Freshness
+	// [2/7] Schema Taxonomy & Tag Hygiene
 	// -----------------------------------------------------------------------------
-	process.stdout.write(`[2/7] Schema Taxonomy Sync ............... `);
+	process.stdout.write(`[2/7] Schema Taxonomy & Tag Hygiene ...... `);
 	try {
 		delete require.cache[SCHEMA_ANALYSIS_PATH];
 		const schemaAnalysis = require(SCHEMA_ANALYSIS_PATH);
@@ -326,7 +326,42 @@ function runTests(options = {}) {
 			schemaAnalysis.updateSchemaSummary();
 		}
 
-		console.log(`[ PASS ] (${summary.partsOfSpeech.length} POS, ${summary.semanticTags.length} tags, ${summary.semanticVectors.domains.length} domains)`);
+		// Comprehensive Semantic Taxonomy & Tag Hygiene Audit
+		const audit = schemaAnalysis.auditSemanticTaxonomy(DATA_PATH);
+
+		// Assert 0 ghost specifications
+		if (audit.ghostSpecs.length > 0) {
+			const ghostDetails = audit.ghostSpecs.map(g => `  - [${g.source}] Tag '${g.tag}' (field: ${g.field}) matches 0 units`).join('\n');
+			failFast("Stage 2 (Tag Hygiene - Ghost Specifications)",
+				`Found ${audit.ghostSpecs.length} ghost specification(s) targeting non-existent tags:\n${ghostDetails}\n` +
+				`Ensure verb_argument_specs.js references tags present on units in data.js.`);
+		}
+
+		// Assert 0 unregistered selection tags
+		if (audit.unregisteredSelectionTags > 0) {
+			const unregDetails = audit.unregisteredList.slice(0, 5).map(u => `  - ${u.pos} '${u.korean}' (ID ${u.id}): '${u.tag}' not in ${u.expectedIn}`).join('\n');
+			failFast("Stage 2 (Tag Hygiene - Unregistered Selection Tags)",
+				`Found ${audit.unregisteredSelectionTags} verb(s) with unregistered selection tags:\n${unregDetails}\n` +
+				`Register new selection frames in verb_argument_specs.js or correct tags in data.js.`);
+		}
+
+		// Assert 0 starved candidate pools
+		if (audit.starvedVerbs > 0) {
+			const starvedDetails = audit.starvedList.slice(0, 5).map(s => `  - ${s.pos} '${s.korean}' (ID ${s.id}) constraint: ${s.constraint}`).join('\n');
+			failFast("Stage 2 (Tag Hygiene - Starved Candidate Pools)",
+				`Found ${audit.starvedVerbs} verb(s) with 0 candidate nouns/subjects under their selection constraint:\n${starvedDetails}\n` +
+				`Add compatible noun units in data.js or adjust verb selection tags.`);
+		}
+
+		// Assert 0 casing inconsistencies (e.g. properNoun vs proper_noun)
+		if (audit.casingInconsistencies.length > 0) {
+			const casingDetails = audit.casingInconsistencies.map(c => `  - '${c.normalized}': ${c.variants.map(v => `'${v.tag}' (${v.count})`).join(' vs ')}`).join('\n');
+			failFast("Stage 2 (Tag Hygiene - Casing Inconsistencies)",
+				`Found ${audit.casingInconsistencies.length} casing inconsistency collision(s):\n${casingDetails}\n` +
+				`Normalize tags in data.js to canonical snake_case.`);
+		}
+
+		console.log(`[ PASS ] (${summary.partsOfSpeech.length} POS, ${summary.semanticTags.length} tags, 0 ghost specs, 0 starved pools)`);
 	} catch (err) {
 		failFast("Stage 2 (Schema Taxonomy)", err.stack || err.message);
 	}

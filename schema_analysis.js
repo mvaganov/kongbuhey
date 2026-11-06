@@ -749,7 +749,284 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 	};
 }
 
+/**
+ * Calculates Levenshtein distance between two strings using dynamic programming.
+ * Pure-JS, zero-dependency implementation.
+ *
+ * @param {string} a
+ * @param {string} b
+ * @returns {number}
+ */
+function levenshteinDistance(a, b) {
+	if (a === b) return 0;
+	if (!a || !a.length) return (b ? b.length : 0);
+	if (!b || !b.length) return a.length;
+
+	const strA = String(a);
+	const strB = String(b);
+	const row = [];
+	for (let i = 0; i <= strB.length; i++) row[i] = i;
+
+	for (let i = 1; i <= strA.length; i++) {
+		let prev = i;
+		for (let j = 1; j <= strB.length; j++) {
+			let val;
+			if (strA.charAt(i - 1) === strB.charAt(j - 1)) {
+				val = row[j - 1];
+			} else {
+				val = Math.min(row[j - 1] + 1, prev + 1, row[j] + 1);
+			}
+			row[j - 1] = prev;
+			prev = val;
+		}
+		row[strB.length] = prev;
+	}
+	return row[strB.length];
+}
+
+/**
+ * Audits all semantic tags and verb specifications across data.js for:
+ *   1. Consumer-side Ghost Specifications (specs targeting tags with 0 units)
+ *   2. Producer-side Dormant Tags (tags never consumed by grammar rules or taxonomy)
+ *   3. Selection Rule Hygiene (unregistered prefixes, starved candidate pools)
+ *   4. Casing Collisions (snake_case vs camelCase variants)
+ *   5. Near-Miss Typos (Levenshtein distance <= 2 on singleton tags vs canonical tags)
+ *
+ * @param {string} [dataPath=DEFAULT_DATA_PATH]
+ * @param {Object} [options={}]
+ * @returns {Object} Comprehensive audit report
+ */
+function auditSemanticTaxonomy(dataPath = DEFAULT_DATA_PATH, options = {}) {
+	const summary = analyzeSchema(dataPath);
+	const resolvedDataPath = path.resolve(dataPath);
+	delete require.cache[resolvedDataPath];
+	const { KR_EN_languageUnits, DATA_SCHEMA } = require(resolvedDataPath);
+	const allTagsSet = new Set(summary.semanticTags);
+	const tagCounts = summary.tagCounts;
+
+	// Lazy require specs & rules
+	const { ACTION_VERB_SPECS, DESCRIPTIVE_VERB_SPECS } = require('./korean/specs/verb_argument_specs.js');
+	const { GRAMMAR_TAGS, CURRICULUM_TAXONOMY_TAGS } = require('./korean/constants/tags.js');
+	const { auditSemanticRules } = require('./select.js');
+
+	// 1. Ghost Specs Detection (Consumer-side orphan check)
+	const ghostSpecs = [];
+	const checkedSpecTags = new Set();
+	function verifySpecTag(tag, source, field) {
+		if (!tag || checkedSpecTags.has(tag)) return;
+		checkedSpecTags.add(tag);
+		if (!allTagsSet.has(tag)) {
+			ghostSpecs.push({ tag, source, field, unitCount: 0 });
+		}
+	}
+
+	ACTION_VERB_SPECS.forEach(s => {
+		verifySpecTag(s.tag, 'ACTION_VERB_SPECS', 'tag');
+		verifySpecTag(s.nounTag, 'ACTION_VERB_SPECS', 'nounTag');
+		verifySpecTag(s.fallbackTag, 'ACTION_VERB_SPECS', 'fallbackTag');
+	});
+	DESCRIPTIVE_VERB_SPECS.forEach(s => {
+		verifySpecTag(s.tag, 'DESCRIPTIVE_VERB_SPECS', 'tag');
+		verifySpecTag(s.nounTag, 'DESCRIPTIVE_VERB_SPECS', 'nounTag');
+		verifySpecTag(s.fallbackTag, 'DESCRIPTIVE_VERB_SPECS', 'fallbackTag');
+	});
+
+	// Check GRAMMAR_TAGS
+	const ghostGrammarTags = [];
+	if (typeof GRAMMAR_TAGS === 'object' && GRAMMAR_TAGS !== null) {
+		for (const [key, val] of Object.entries(GRAMMAR_TAGS)) {
+			if (typeof val === 'string' && val.trim() && !allTagsSet.has(val)) {
+				ghostGrammarTags.push({ key, tag: val, source: 'GRAMMAR_TAGS', unitCount: 0 });
+			}
+		}
+	}
+
+	// 2. Selection Rules & Candidate Pools Audit
+	const selectionAudit = auditSemanticRules({ dataFile: resolvedDataPath, silent: true });
+
+	// 3. Casing & Naming Convention Audit (e.g. properNoun vs proper_noun)
+	const normMap = new Map();
+	const casingInconsistencies = [];
+	for (const tag of summary.semanticTags) {
+		const norm = tag.toLowerCase().replace(/_/g, '');
+		if (!normMap.has(norm)) {
+			normMap.set(norm, []);
+		}
+		normMap.get(norm).push(tag);
+	}
+	for (const [norm, variants] of normMap.entries()) {
+		if (variants.length > 1) {
+			casingInconsistencies.push({
+				normalized: norm,
+				variants: variants.map(v => ({ tag: v, count: tagCounts[v] || 0 }))
+			});
+		}
+	}
+
+	// 4. Functional vs Taxonomy vs Dormant Classification
+	const functionalSet = new Set();
+	checkedSpecTags.forEach(t => functionalSet.add(t));
+	if (typeof GRAMMAR_TAGS === 'object' && GRAMMAR_TAGS !== null) {
+		Object.values(GRAMMAR_TAGS).forEach(t => {
+			if (typeof t === 'string') functionalSet.add(t);
+		});
+	}
+	for (const t of summary.semanticTags) {
+		if (t.startsWith('transitive_') || t.startsWith('intransitive_') || t.startsWith('descriptive_') || t.startsWith('dative_')) {
+			functionalSet.add(t);
+		}
+	}
+
+	const taxonomyWhitelist = new Set(CURRICULUM_TAXONOMY_TAGS || []);
+	if (summary.semanticVectors && Array.isArray(summary.semanticVectors.domains)) {
+		summary.semanticVectors.domains.forEach(d => taxonomyWhitelist.add(d));
+	}
+
+	const functionalTags = [];
+	const taxonomyTags = [];
+	const dormantTags = [];
+	const singletonTags = [];
+
+	for (const tag of summary.semanticTags) {
+		const count = tagCounts[tag] || 0;
+		if (count <= 1) {
+			singletonTags.push({ tag, count });
+		}
+		if (functionalSet.has(tag)) {
+			functionalTags.push(tag);
+		} else if (taxonomyWhitelist.has(tag)) {
+			taxonomyTags.push(tag);
+		} else {
+			dormantTags.push({ tag, count });
+		}
+	}
+
+	// Sort dormant tags by frequency descending
+	dormantTags.sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+
+	// 5. Suspected Typos in Singleton/Dormant Tags
+	const canonicalTags = summary.semanticTags.filter(t => (tagCounts[t] || 0) >= 5);
+	const suspectedTypos = [];
+	const typoCandidates = dormantTags.filter(d => (tagCounts[d.tag] || 0) <= 2);
+
+	for (const cand of typoCandidates) {
+		const candTag = cand.tag;
+		const maxLen = candTag.length;
+		for (const canon of canonicalTags) {
+			if (candTag === canon) continue;
+			const maxL = Math.max(maxLen, canon.length);
+			const dist = levenshteinDistance(candTag, canon);
+			const ratio = dist / maxL;
+			if ((dist === 1 && maxL >= 5) || (dist === 2 && maxL >= 7 && ratio <= 0.25)) {
+				suspectedTypos.push({
+					candidate: candTag,
+					candidateCount: tagCounts[candTag] || 0,
+					canonical: canon,
+					canonicalCount: tagCounts[canon] || 0,
+					distance: dist
+				});
+			}
+		}
+	}
+
+	return {
+		totalUnits: summary.totalUnits,
+		totalTags: summary.semanticTags.length,
+		ghostSpecs,
+		ghostGrammarTags,
+		unregisteredSelectionTags: selectionAudit.unregisteredTags,
+		unregisteredList: selectionAudit.unregisteredList || [],
+		starvedVerbs: selectionAudit.starvedVerbs,
+		starvedList: selectionAudit.starvedList || [],
+		lowDiversityVerbs: selectionAudit.lowDiversityVerbs,
+		ambiguousHomonyms: selectionAudit.ambiguousHomonyms,
+		casingInconsistencies,
+		functionalTags,
+		taxonomyTags,
+		dormantTags,
+		singletonTags,
+		suspectedTypos
+	};
+}
+
 if (require.main === module) {
+	const args = process.argv.slice(2);
+	if (args.includes('--audit-tags')) {
+		const isJson = args.includes('--json');
+		const report = auditSemanticTaxonomy();
+
+		if (isJson) {
+			console.log(JSON.stringify(report, null, 2));
+			const hasErrors = report.ghostSpecs.length > 0 ||
+				report.unregisteredSelectionTags > 0 ||
+				report.starvedVerbs > 0 ||
+				report.casingInconsistencies.length > 0;
+			process.exit(hasErrors ? 1 : 0);
+		}
+
+		console.log(`\n================================================================================`);
+		console.log(`                 KONGBUHEY SEMANTIC TAG HYGIENE & AUDIT REPORT                  `);
+		console.log(`================================================================================`);
+		console.log(`Total Language Units:         ${report.totalUnits.toLocaleString()}`);
+		console.log(`Total Unique Semantic Tags:   ${report.totalTags.toLocaleString()}`);
+		console.log(`Active Functional Tags:       ${report.functionalTags.length} (specs, grammar, and argument selectors)`);
+		console.log(`Curriculum Taxonomy Tags:     ${report.taxonomyTags.length} (approved topical domain whitelist)`);
+		console.log(`Dormant / Unused Tags:        ${report.dormantTags.length} (not queried by grammar rules or taxonomy)`);
+		console.log(`Singleton Tags (count <= 1):  ${report.singletonTags.length} (single-use labels)`);
+		console.log(`Suspected Typos:              ${report.suspectedTypos.length} (near-misses with canonical tags)`);
+		console.log(`Ghost Specifications:         ${report.ghostSpecs.length} (specs targeting non-existent tags)`);
+		console.log(`Unregistered Selection Tags:  ${report.unregisteredSelectionTags} (unregistered transitive_/descriptive_)`);
+		console.log(`Starved Candidate Pools:      ${report.starvedVerbs} (verbs with 0 argument candidates)`);
+		console.log(`Casing Inconsistencies:       ${report.casingInconsistencies.length} (camelCase vs snake_case collisions)`);
+		console.log(`--------------------------------------------------------------------------------`);
+
+		console.log(`[1] GHOST SPECIFICATIONS (Referenced in specs, but 0 units in data.js):`);
+		if (report.ghostSpecs.length === 0) {
+			console.log(`    None. (100% clean)`);
+		} else {
+			report.ghostSpecs.forEach(g => {
+				console.log(`    - [${g.source}] Tag '${g.tag}' (field: ${g.field}) matches 0 units!`);
+			});
+		}
+
+		console.log(`\n[2] CASING INCONSISTENCIES:`);
+		if (report.casingInconsistencies.length === 0) {
+			console.log(`    None. (100% clean)`);
+		} else {
+			report.casingInconsistencies.forEach(c => {
+				console.log(`    - Collision for '${c.normalized}': ${c.variants.map(v => `'${v.tag}' (${v.count})`).join(' vs ')}`);
+			});
+		}
+
+		console.log(`\n[3] SUSPECTED TYPOS (Near matches with canonical tags >= 5 units):`);
+		if (report.suspectedTypos.length === 0) {
+			console.log(`    None.`);
+		} else {
+			report.suspectedTypos.slice(0, 15).forEach(t => {
+				console.log(`    - '${t.candidate}' (${t.candidateCount} unit${t.candidateCount === 1 ? '' : 's'}) -> Did you mean '${t.canonical}' (${t.canonicalCount} units)? [edit dist: ${t.distance}]`);
+			});
+			if (report.suspectedTypos.length > 15) {
+				console.log(`    ... and ${report.suspectedTypos.length - 15} more.`);
+			}
+		}
+
+		console.log(`\n[4] TOP DORMANT TAGS (Candidates for pruning / migration):`);
+		report.dormantTags.slice(0, 15).forEach(d => {
+			console.log(`    - '${d.tag}' (${d.count} unit${d.count === 1 ? '' : 's'})`);
+		});
+		if (report.dormantTags.length > 15) {
+			console.log(`    ... and ${report.dormantTags.length - 15} more dormant tags.`);
+		}
+
+		console.log(`================================================================================\n`);
+
+		const hasErrors = report.ghostSpecs.length > 0 ||
+			report.unregisteredSelectionTags > 0 ||
+			report.starvedVerbs > 0 ||
+			report.casingInconsistencies.length > 0;
+		process.exit(hasErrors ? 1 : 0);
+	}
+
 	console.log("Analyzing schema in data.js...");
 	const summary = updateSchemaSummary();
 	console.log(`\n======================================================`);
@@ -782,5 +1059,7 @@ module.exports = {
 	generateVerbSuffixSnippet,
 	detectProperNameCandidate,
 	recognizeCompoundParticle,
-	decomposeCompoundParticle
+	decomposeCompoundParticle,
+	levenshteinDistance,
+	auditSemanticTaxonomy
 };
