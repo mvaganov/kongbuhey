@@ -123,6 +123,13 @@ class KongbuheyApp {
 			engine: this.engine,
 			onStateChange: (evt) => this.handleEngineEvent(evt)
 		}) : null;
+		const VerifiedClass = (typeof VerifiedSentencesView !== 'undefined')
+			? VerifiedSentencesView
+			: (typeof require !== 'undefined' ? require('./verified_sentences_view.js').VerifiedSentencesView : null);
+		this.verifiedView = VerifiedClass ? new VerifiedClass({
+			engine: this.engine,
+			onStateChange: (evt) => this.handleEngineEvent(evt)
+		}) : null;
 		this.activeView = 'selector';
 		this.flashcardRevealed = false;
 	}
@@ -141,6 +148,11 @@ class KongbuheyApp {
 		const importerMountEl = document.getElementById('importer-container');
 		if (importerMountEl && this.importerView) {
 			this.importerView.mount(importerMountEl);
+		}
+
+		const verifiedMountEl = document.getElementById('verified-container');
+		if (verifiedMountEl && this.verifiedView) {
+			this.verifiedView.mount(verifiedMountEl);
 		}
 
 		const mountEl = document.getElementById('spreadsheet-container');
@@ -192,6 +204,13 @@ class KongbuheyApp {
 		}
 		if (evt.type === 'request-move-row') {
 			this.openMoveRowModal(evt.unitId, evt.currentIndex);
+			return;
+		}
+		if (evt.type === 'importer-open-verified') {
+			if (this.verifiedView && evt.source) {
+				this.verifiedView.sourceFilter = evt.source;
+			}
+			this.switchView('verified');
 			return;
 		}
 
@@ -284,10 +303,12 @@ class KongbuheyApp {
 
 		const selectorViewEl = document.getElementById('view-selector');
 		const importerViewEl = document.getElementById('view-importer');
+		const verifiedViewEl = document.getElementById('view-verified');
 		const sheetView = document.getElementById('view-spreadsheet');
 		const practiceView = document.getElementById('view-practice');
 		if (selectorViewEl) selectorViewEl.classList.toggle('active', viewName === 'selector');
 		if (importerViewEl) importerViewEl.classList.toggle('active', viewName === 'importer');
+		if (verifiedViewEl) verifiedViewEl.classList.toggle('active', viewName === 'verified');
 		if (sheetView) sheetView.classList.toggle('active', viewName === 'spreadsheet');
 		if (practiceView) practiceView.classList.toggle('active', viewName === 'practice');
 
@@ -295,6 +316,8 @@ class KongbuheyApp {
 			this.selectorView.render();
 		} else if (viewName === 'importer' && this.importerView) {
 			this.importerView.render();
+		} else if (viewName === 'verified' && this.verifiedView) {
+			this.verifiedView.render();
 		} else if (viewName === 'spreadsheet') {
 			this.engine.renderHeader();
 			this.engine.renderViewport();

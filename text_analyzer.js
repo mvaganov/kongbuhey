@@ -20,17 +20,188 @@ const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (ty
 const fs = require('fs');
 const path = require('path');
 const analyzer = require('./korean/analyzer/index.js');
+const verifiedGenerator = require('./korean/generation/verified_sentence_generator.js');
+
+const VERIFIED_SENTENCES_PATH = path.resolve(__dirname, 'verified_sentences.js');
 
 /**
- * Analyzes a passage, and if running in Node with curriculum gaps, generates
- * scaffolded draft units into scratch/new_units_<passageName>.json.
+ * Loads existing static Verified Sentence entries from verified_sentences.js.
+ *
+ * @param {string} [filePath]
+ * @returns {Array<Object>}
+ */
+function loadVerifiedSentencesFromFile(filePath = VERIFIED_SENTENCES_PATH) {
+	if (!fs.existsSync(filePath)) return [];
+	try {
+		delete require.cache[require.resolve(filePath)];
+		const mod = require(filePath);
+		return Array.isArray(mod.VERIFIED_SENTENCES) ? mod.VERIFIED_SENTENCES : [];
+	} catch (_) {
+		return [];
+	}
+}
+
+/**
+ * Writes an array of Verified Sentence templates into verified_sentences.js.
+ *
+ * @param {Array<Object>} templates
+ * @param {string} [filePath]
+ */
+function writeVerifiedSentencesToFile(templates, filePath = VERIFIED_SENTENCES_PATH) {
+	const serialized = JSON.stringify(templates, null, '\t');
+	const content = [
+		'// constants-disable',
+		'/**',
+		' * verified_sentences.js',
+		' *',
+		' * Static repository of Verified Sentence templates discovered from ingested',
+		' * Korean study texts. Used to generate natural example sentences from verified',
+		' * grammatical structures and part-of-speech semantic tag filters.',
+		' */',
+		'',
+		`const VERIFIED_SENTENCES = ${serialized};`,
+		'',
+		"if (typeof window !== 'undefined') {",
+		'\twindow.VERIFIED_SENTENCES = VERIFIED_SENTENCES;',
+		'}',
+		'',
+		"if (typeof module !== 'undefined' && module.exports) {",
+		'\tmodule.exports = { VERIFIED_SENTENCES };',
+		'}',
+		'// constants-enable',
+		''
+	].join('\n');
+
+	fs.writeFileSync(filePath, content, 'utf8');
+	try {
+		delete require.cache[require.resolve(filePath)];
+	} catch (_) {}
+}
+
+/**
+ * Adds newly discovered Verified Sentence templates to verified_sentences.js,
+ * deduplicating by Korean sentence text and source.
+ *
+ * @param {Array<Object>} newTemplates
+ * @param {string} [filePath]
+ * @param {Object} [options]
+ * @returns {{ added: number, updated: number, total: number, templates: Array<Object> }}
+ */
+function addVerifiedSentencesToFile(newTemplates, filePath = VERIFIED_SENTENCES_PATH, options = {}) {
+	const existing = loadVerifiedSentencesFromFile(filePath);
+	const overwrite = Boolean(options.overwrite);
+	const byKey = new Map();
+
+	for (const item of existing) {
+		const koText = item && (item.originalKo || item.korean);
+		if (!koText) continue;
+		const key = `${item.source || ''}::${koText}`;
+		byKey.set(key, item);
+	}
+
+	let added = 0;
+	let updated = 0;
+
+	for (const tmpl of (newTemplates || [])) {
+		const koText = tmpl && (tmpl.originalKo || tmpl.korean);
+		if (!koText) continue;
+		const cleanCopy = JSON.parse(JSON.stringify(tmpl));
+		cleanCopy.isHardcoded = true;
+		const key = `${cleanCopy.source || ''}::${koText}`;
+		if (!byKey.has(key)) {
+			existing.push(cleanCopy);
+			byKey.set(key, cleanCopy);
+			added++;
+		} else if (overwrite) {
+			const prev = byKey.get(key);
+			const idx = existing.indexOf(prev);
+			if (idx !== -1) {
+				existing[idx] = cleanCopy;
+			}
+			byKey.set(key, cleanCopy);
+			updated++;
+		}
+	}
+
+	if (added > 0 || updated > 0 || !fs.existsSync(filePath)) {
+		writeVerifiedSentencesToFile(existing, filePath);
+	}
+
+	return {
+		added,
+		updated,
+		total: existing.length,
+		templates: existing
+	};
+}
+
+/**
+ * Synchronizes verified_sentences.js across all ingested study texts defined in test.js.
+ *
+ * @param {string} [filePath]
+ * @returns {{ totalPassages: number, totalTemplates: number }}
+ */
+function syncAllStudyTextsVerifiedSentences(filePath = VERIFIED_SENTENCES_PATH) {
+	const studytexts = require('./studytexts.js');
+	const testPath = path.resolve(__dirname, 'test.js');
+	let passages = Object.keys(studytexts).filter(k => k.startsWith('studytext'));
+
+	if (fs.existsSync(testPath)) {
+		const testContent = fs.readFileSync(testPath, 'utf8');
+		const m = testContent.match(/const INGESTED_STUDY_TEXTS = \[([^\]]+)\];/);
+		if (m) {
+			const parsed = m[1].replace(/["'\s\n]/g, '').split(',').filter(Boolean);
+			if (parsed.length > 0) passages = parsed;
+		}
+	}
+
+	const index = analyzer.getIndex();
+	const allTemplates = [];
+	const seenKorean = new Set();
+
+	for (const pName of passages) {
+		const text = studytexts[pName];
+		if (!text) continue;
+		const extracted = verifiedGenerator.extractVerifiedSentencesFromPassage(text, pName, { index, isHardcoded: true });
+		for (const tmpl of extracted) {
+			const koText = tmpl.originalKo || tmpl.korean;
+			if (!koText || seenKorean.has(koText)) continue;
+			seenKorean.add(koText);
+			tmpl.id = `vs_${allTemplates.length + 1}`;
+			tmpl.isHardcoded = true;
+			allTemplates.push(tmpl);
+		}
+	}
+
+	writeVerifiedSentencesToFile(allTemplates, filePath);
+	return {
+		totalPassages: passages.length,
+		totalTemplates: allTemplates.length
+	};
+}
+
+/**
+ * Analyzes a passage, extracts Verified Sentence templates, and if running in Node
+ * with curriculum gaps, generates scaffolded draft units into scratch/new_units_<passageName>.json.
  * 
  * @param {string} passageText The text of the passage to analyze
  * @param {string} passageName Identifier/source name for the passage
+ * @param {Object} [options] Optional flags ({ saveVerified: boolean })
  * @returns {Object} Comprehensive analysis result object
  */
-function analyzePassage(passageText, passageName = "Passage") {
+function analyzePassage(passageText, passageName = "Passage", options = {}) {
 	const result = analyzer.analyzePassage(passageText, passageName);
+
+	// Extract Verified Sentence templates from the passage
+	result.verifiedSentences = verifiedGenerator.extractVerifiedSentencesFromPassage(
+		passageText,
+		passageName,
+		{ index: analyzer.getIndex() }
+	);
+
+	if (options && options.saveVerified && result.verifiedSentences.length > 0) {
+		result.verifiedSaveStats = addVerifiedSentencesToFile(result.verifiedSentences);
+	}
 
 	// Automatically generate pre-populated draft file of missing words using schema_analysis.js
 	if (result.missingVocab.length > 0 || result.missingGrammar.length > 0) {
@@ -116,6 +287,13 @@ function analyzePassage(passageText, passageName = "Passage") {
 function runCli() {
 	const studytexts = require('./studytexts.js');
 	const args = process.argv.slice(2);
+
+	if (args.includes('--sync-verified')) {
+		const stats = syncAllStudyTextsVerifiedSentences();
+		console.log(`[VERIFIED SENTENCES] Synchronized ${stats.totalTemplates} Verified Sentence templates across ${stats.totalPassages} ingested study texts into verified_sentences.js.`);
+		return;
+	}
+
 	let passageName = "studytext12";
 	let textToAnalyze = studytexts.studytext12;
 
@@ -130,12 +308,19 @@ function runCli() {
 		}
 	}
 
-	const report = analyzePassage(textToAnalyze, passageName);
+	const saveVerified = args.includes('--add-verified') || args.includes('--save-verified');
+	const report = analyzePassage(textToAnalyze, passageName, { saveVerified });
 
 	if (args.includes("--json")) {
 		console.log(JSON.stringify(report, null, 2));
 	} else {
 		console.log(analyzer.formatAnalysisReport(report));
+		if (report.verifiedSentences) {
+			console.log(`[VERIFIED SENTENCES] Discovered ${report.verifiedSentences.length} Verified Sentence templates in "${passageName}".`);
+		}
+		if (report.verifiedSaveStats) {
+			console.log(`[VERIFIED SENTENCES] Saved to verified_sentences.js (+${report.verifiedSaveStats.added} added, ${report.verifiedSaveStats.total} total).`);
+		}
 	}
 }
 
@@ -145,6 +330,12 @@ if (require.main === module) {
 
 module.exports = {
 	analyzePassage,
+	loadVerifiedSentencesFromFile,
+	writeVerifiedSentencesToFile,
+	addVerifiedSentencesToFile,
+	syncAllStudyTextsVerifiedSentences,
+	extractVerifiedSentencesFromPassage: verifiedGenerator.extractVerifiedSentencesFromPassage,
+	extractVerifiedSentenceTemplate: verifiedGenerator.extractVerifiedSentenceTemplate,
 	getIndex: analyzer.getIndex,
 	analyzeSentence: analyzer.analyzeSentence,
 	analyzeSingleToken: analyzer.analyzeSingleToken,
@@ -152,5 +343,6 @@ module.exports = {
 	disambiguateCandidates: analyzer.disambiguateCandidates,
 	formatAnalysisReport: analyzer.formatAnalysisReport,
 	// Export submodule engine for fine-grained access
-	analyzer
+	analyzer,
+	verifiedGenerator
 };

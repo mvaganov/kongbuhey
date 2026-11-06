@@ -92,6 +92,7 @@ OPTIONS:
   --file <path>       Read Korean text or JSON draft units from file (.txt, .json)
   --draft <path>      Insert scaffolded JSON units exported from web app or scratch/
   --source <tag>      Curriculum source tag (default: custom_passage or filename)
+  --sync-verified     Synchronize verified_sentences.js across all ingested study texts
   --dry-run           Preview curriculum gaps and morphology hints without modifying data
   --auto, -y, --yes   Non-interactive mode (automatically confirm insertions)
   -h, --help          Display this help message and exit
@@ -115,6 +116,12 @@ async function main() {
 	const args = process.argv.slice(2);
 	if (args.includes('-h') || args.includes('--help')) {
 		printHelp();
+		process.exit(0);
+	}
+
+	if (args.includes('--sync-verified')) {
+		const stats = textAnalyzer.syncAllStudyTextsVerifiedSentences();
+		console.log(`[INGEST] Synchronized ${stats.totalTemplates} Verified Sentence templates across ${stats.totalPassages} study texts into verified_sentences.js.`);
 		process.exit(0);
 	}
 
@@ -345,9 +352,15 @@ async function main() {
 			if (isDryRun) process.exit(0);
 		} else {
 			console.log(`[SUCCESS] 0 curriculum gaps! All words are fully recognized.`);
+			const discoveredVerified = report.verifiedSentences || [];
+			console.log(`[VERIFIED SENTENCES] Discovered ${discoveredVerified.length} Verified Sentence templates in "${passageName}".`);
 			if (isDryRun) {
-				console.log(`\n[DRY RUN COMPLETE] 0 gaps detected in passage "${passageName}".`);
+				console.log(`\n[DRY RUN COMPLETE] 0 gaps detected in passage "${passageName}" (${discoveredVerified.length} Verified Sentence templates ready).`);
 				process.exit(0);
+			}
+			if (discoveredVerified.length > 0) {
+				const vsStats = textAnalyzer.addVerifiedSentencesToFile(discoveredVerified);
+				console.log(`[VERIFIED SENTENCES] Updated verified_sentences.js (+${vsStats.added} added, ${vsStats.total} total).`);
 			}
 			if (studytexts[passageName]) {
 				registerPassageInTest(passageName);
@@ -383,7 +396,8 @@ async function main() {
 				PriorityScore: 1,
 				FormalityLevel: K.UNIVERSAL,
 				HonorificRules: "",
-				SemanticVector: JSON.stringify({ domain: K.CONCEPT, type: K.GENERAL }),
+				SemanticData: { domain: K.CONCEPT, type: K.GENERAL },
+				SemanticVector: { domain: K.CONCEPT, type: K.GENERAL },
 				SyntaxFrame: ""
 			};
 			draftUnits.push(u);
@@ -391,7 +405,8 @@ async function main() {
 		}
 
 		if (isDryRun) {
-			console.log(`\n[DRY RUN COMPLETE] Found ${trueMissing.length} new units, ${morphologyHints.length} morphology hints, and ${compoundParticleHints.length} compound particle hints.`);
+			const discoveredCount = (report.verifiedSentences || []).length;
+			console.log(`\n[DRY RUN COMPLETE] Found ${trueMissing.length} new units, ${morphologyHints.length} morphology hints, ${compoundParticleHints.length} compound particle hints, and ${discoveredCount} Verified Sentence templates.`);
 			process.exit(0);
 		}
 
@@ -420,7 +435,7 @@ async function main() {
 			passageName
 		], { stdio: 'inherit' });
 
-		console.log(`[4/5] Synchronizing homonyms.js and schema summary...`);
+		console.log(`[4/5] Synchronizing homonyms.js, schema summary, and verified_sentences.js...`);
 		child_process.execFileSync(process.execPath, [
 			HOMONYMS_PATH,
 			'update',
@@ -429,6 +444,13 @@ async function main() {
 		], { stdio: 'inherit' });
 
 		updateSchemaSummary();
+
+		// Re-run Verified Sentence extraction in a fresh child process after data.js insertion
+		child_process.execFileSync(process.execPath, [
+			TEXT_ANALYZER_PATH,
+			passageName,
+			'--add-verified'
+		], { stdio: 'inherit' });
 
 		if (studytexts[passageName]) {
 			registerPassageInTest(passageName);

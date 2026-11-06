@@ -94,7 +94,7 @@ function conjugateAoStem(rawStem, conjRule = K.REGULAR) {
 	}
 
 	// 6. 르 irregular (모르다 -> 몰라, 빠르다 -> 빨라, 부르다 -> 불러)
-	if ((rule.includes(K.REU_IRREGULAR) || lastChar === '르') && lastChar === '르' && prefix.length > 0 && !rule.includes(K.REGULAR)) {
+	if ((rule.includes(K.REU_IRREGULAR) || lastChar === '르') && lastChar === '르' && prefix.length > 0 && rule !== K.REGULAR) {
 		const prevChar = prefix.slice(-1);
 		const prevPrefix = prefix.slice(0, -1);
 		const prevVh = getVowelHarmony(prevChar);
