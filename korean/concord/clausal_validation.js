@@ -91,7 +91,14 @@ function detectClauseMood(clause) {
 				continue;
 			}
 			if (entry.mood === "imperative" && (entry.suffix === "세요" || entry.suffix === "십시오")) {
+				if (clean.includes("께서") || clean.includes("마음에 드")) {
+					continue;
+				}
 				const lastWord = clean.split(/\s+/).pop();
+				if (lastWord === "세요") {
+					// Standalone '세요' is the indicative of '세다' (e.g. '자리를 세요', '힘이 세요'); imperative is '세세요'
+					continue;
+				}
 				const dvKo = state.FORBIDDEN_DV_IMPERATIVE_FORMS ? state.FORBIDDEN_DV_IMPERATIVE_FORMS.get(lastWord) : null;
 				if (dvKo && dvKo !== "싸다" && dvKo !== "낫다") {
 					// Descriptive verbs ending in -(으)세요 / -(으)십시오 are subject honorific declaratives, NOT imperatives
