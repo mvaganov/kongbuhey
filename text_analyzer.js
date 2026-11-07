@@ -200,8 +200,11 @@ function syncAllStudyTextsVerifiedSentences(filePath = VERIFIED_SENTENCES_PATH) 
 		const m = testContent.match(/const INGESTED_STUDY_TEXTS = \[([^\]]+)\];/);
 		if (m) {
 			const parsed = m[1].replace(/["'\s\n]/g, '').split(',').filter(Boolean);
-			if (parsed.length > 0) passages = parsed;
+			if (parsed.length > 0) passages = [...parsed];
 		}
+	}
+	if (studytexts.justKorean && !passages.includes('justKorean')) {
+		passages.push('justKorean');
 	}
 
 	const index = analyzer.getIndex();

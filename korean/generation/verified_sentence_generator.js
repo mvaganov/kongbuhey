@@ -591,7 +591,7 @@ function realizeVerbInflection(unit, inflection, isOriginalUnit = false, origina
 function extractCleanSentenceStrings(passageText) {
 	const rawLines = (passageText || '')
 		.split(/\r?\n/)
-		.map(l => l.replace(/^[#↳★①②③④⑤\-*\s]+/, '').replace(/\[-\]/g, '').trim())
+		.map(l => l.replace(/^[#↳★①②③④⑤\-*\s]+/, '').replace(/^(?:[가나]|[AB]):\s*/, '').replace(/\[-\]/g, '').trim())
 		.filter(Boolean);
 
 	const normalizedLines = [];

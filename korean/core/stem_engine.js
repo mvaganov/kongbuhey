@@ -276,7 +276,7 @@ function resolvePureMorphology(text, stateObj = null) {
 	if (state && state.PRONOUN_REPLACEMENTS) {
 		state.PRONOUN_REPLACEMENTS.forEach(([pat, rep]) => {
 			if (String(pat).includes("나가")) {
-				resolvedKo = resolvedKo.replace(/(^|[^가-힣])나가(?=[^가-힣]|$)(?!\s+(?:보|봐|봤|본|볼|주|줘|줬|준|줄|버리|버려|버렸|버린|버릴|있|계시|계셔|계셨|계세|계신|계실|가지|오|와|왔|온|올|가|갔|간|갈|두|둬|뒀|둔|둘|놓|놔|놨|대|댔|내|냈))/g, '$1내가');
+				resolvedKo = resolvedKo.replace(/(^|[^가-힣])나가(?=[^가-힣]|$)(?!\s+(?:보|봐|봤|본|볼|주|줘|줬|준|줄|달라|버리|버려|버렸|버린|버릴|있|계시|계셔|계셨|계세|계신|계실|가지|오|와|왔|온|올|가|갔|간|갈|두|둬|뒀|둔|둘|놓|놔|놨|대|댔|내|냈))/g, '$1내가');
 				return;
 			}
 			resolvedKo = resolvedKo.replace(pat, rep);
