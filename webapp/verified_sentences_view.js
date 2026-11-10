@@ -811,9 +811,13 @@ class VerifiedSentencesView {
 			<!-- 4. Slot-by-Slot Structure & Semantic Tag Filter Editor -->
 			<section class="verified-slots-section">
 				<div class="verified-slots-header">
-					<h3>🔬 Sentence Structure Slots &amp; Semantic Tag Filters (${tpl.slots ? tpl.slots.length : 0} Slots)</h3>
+					<div class="slots-header-title-row">
+						<h3>🔬 Sentence Structure Slots &amp; Semantic Tag Filters (${tpl.slots ? tpl.slots.length : 0} Slots)</h3>
+						<span class="slot-saved-live-badge" title="Tag filter modifications made here are auto-saved to IndexedDB and actively constrain sentence generation in the Unit Selector &amp; Details UI">💾 Saved &amp; Live for Unit Details</span>
+					</div>
 					<p class="verified-card-desc">
 						Add or remove semantic tags on any slot to broaden or narrow which Language Units can be chosen.
+						Modifications are saved automatically and directly govern candidate word selection when sentences are generated for words in the Unit Selector &amp; Details UI.
 						Slots narrowed to a single Language Unit choice are highlighted with 🎯.
 					</p>
 				</div>

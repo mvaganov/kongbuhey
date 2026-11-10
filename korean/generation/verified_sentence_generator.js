@@ -59,6 +59,15 @@ const {
 	hasBatchim
 } = (typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 
+function _hasTag(unit, tag) {
+	if (!unit || !tag) return false;
+	if (typeof hasTag === 'function') return hasTag(unit, tag);
+	const tags = unit[DATA_SCHEMA.SemanticTags];
+	if (tags instanceof Set) return tags.has(tag);
+	if (Array.isArray(tags)) return tags.includes(tag);
+	return false;
+}
+
 const {
 	getConjugatedStem,
 	conjugateAoStem,
@@ -890,7 +899,7 @@ function getSlotCandidates(slot, options = {}) {
 		// Check all required semantic tags
 		let matchesAllTags = true;
 		for (let tIdx = 0; tIdx < requiredTags.length; tIdx++) {
-			if (!hasTag(u, requiredTags[tIdx])) {
+			if (!_hasTag(u, requiredTags[tIdx])) {
 				matchesAllTags = false;
 				break;
 			}
@@ -1134,15 +1143,44 @@ function pickCandidateFromPool(candidates, options = {}, slotIndex = 0) {
 	if (!candidates || candidates.length === 0) return null;
 	if (candidates.length === 1) return candidates[0];
 
+	let pool = candidates;
+	const tier = options.difficultyTier || options.tier;
+
+	if (tier === 'easiest') {
+		// Tier 1: Easiest vocabulary (lowest PriorityScore available)
+		let minScore = 999;
+		for (let i = 0; i < candidates.length; i++) {
+			const sc = candidates[i][DATA_SCHEMA.PriorityScore] || 3;
+			if (sc < minScore) minScore = sc;
+		}
+		const easyGroup = candidates.filter(u => (u[DATA_SCHEMA.PriorityScore] || 3) <= minScore);
+		if (easyGroup.length > 0) pool = easyGroup;
+	} else if (tier === 'easy_and_inset') {
+		// Tier 2: 50% in-set vocabulary / 50% easy vocabulary (PriorityScore <= 2)
+		const allowedSet = options.allowedUnitIds instanceof Set ? options.allowedUnitIds : null;
+		const inSetPool = allowedSet ? candidates.filter(u => allowedSet.has(u[DATA_SCHEMA.Id])) : [];
+		const easyPool = candidates.filter(u => (u[DATA_SCHEMA.PriorityScore] || 3) <= 2);
+
+		const rndChoice = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
+		if (inSetPool.length > 0 && easyPool.length > 0) {
+			pool = (rndChoice < 0.5) ? inSetPool : easyPool;
+		} else if (inSetPool.length > 0) {
+			pool = inSetPool;
+		} else if (easyPool.length > 0) {
+			pool = easyPool;
+		}
+	}
+	// Tier 3 ('challenging') or default: use full candidate pool for maximum diversity & challenge
+
 	if (options.random === true) {
-		return candidates[Math.floor(Math.random() * candidates.length)];
+		return pool[Math.floor(Math.random() * pool.length)];
 	}
 	if (typeof options.seedOffset === 'number' || typeof options.variationIndex === 'number') {
 		const base = (Number(options.seedOffset) || 0) + (Number(options.variationIndex) || 0) * 7 + slotIndex * 13;
-		return candidates[Math.abs(base) % candidates.length];
+		return pool[Math.abs(base) % pool.length];
 	}
 	const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
-	return candidates[Math.floor(rnd * candidates.length)];
+	return pool[Math.floor(rnd * pool.length)];
 }
 
 /**
@@ -1251,7 +1289,12 @@ function generateSentenceFromTemplate(templateOrId, options = {}) {
 			// Slot is selected for variation (or varyMode is 'all')
 			isVariedSlot = true;
 			if (targetUnitId !== null && sIdx === targetSlotIndex && units[targetUnitId] && units[targetUnitId][DATA_SCHEMA.PartofSpeech] === slot.pos) {
-				chosenUnit = units[targetUnitId];
+				const tUnit = units[targetUnitId];
+				const reqTags = Array.isArray(slot.tags) ? slot.tags : [];
+				const satisfiesSlotTags = reqTags.every(t => _hasTag(tUnit, t)) || slot.originalUnitId === targetUnitId;
+				if (satisfiesSlotTags) {
+					chosenUnit = tUnit;
+				}
 			} else {
 				let candidatePool = slotPool.candidates;
 
@@ -1391,6 +1434,9 @@ function generateSentenceFromTemplate(templateOrId, options = {}) {
 		enLiteral,
 		enNatural,
 		en: enLiteral,
+		difficultyTier: options.difficultyTier || null,
+		difficultyLabel: options.difficultyTier === 'easiest' ? 'Easiest' : (options.difficultyTier === 'easy_and_inset' ? 'Easy + In-Set' : (options.difficultyTier === 'challenging' ? 'Challenging' : null)),
+		templateDifficulty: template ? computeTemplateDifficulty(template).difficultyScore : null,
 		eojeols: allEojeols,
 		unitsUsed,
 		unitIds,
@@ -1469,10 +1515,135 @@ function _saveStateToLocalStorage() {
 	} catch (_) {}
 }
 
+let _posDecks = null;
+let _prioritizedTemplates = null;
+
+/**
+ * Builds prioritized POS decks sorted by Difficulty / PriorityScore (element 8) ascending (1 easiest..5 hardest).
+ * Secondary sort by Id ascending.
+ */
+function buildPosDecks(unitsArray = null) {
+	const units = unitsArray || getUnitsArray();
+	if (!units || units.length === 0) return {};
+	const decks = {};
+	for (let i = 0; i < units.length; i++) {
+		const u = units[i];
+		if (!u) continue;
+		const pos = u[DATA_SCHEMA.PartofSpeech];
+		if (!pos) continue;
+		if (!decks[pos]) decks[pos] = [];
+		decks[pos].push(u);
+	}
+	for (const pos of Object.keys(decks)) {
+		decks[pos].sort((a, b) => {
+			const pa = a[DATA_SCHEMA.PriorityScore] || 3;
+			const pb = b[DATA_SCHEMA.PriorityScore] || 3;
+			if (pa !== pb) return pa - pb;
+			return a[DATA_SCHEMA.Id] - b[DATA_SCHEMA.Id];
+		});
+	}
+	_posDecks = decks;
+	return _posDecks;
+}
+
+function getPosDecks() {
+	if (!_posDecks) buildPosDecks();
+	return _posDecks;
+}
+
+function getPosDeck(pos) {
+	const decks = getPosDecks();
+	return (decks && decks[pos]) ? decks[pos] : [];
+}
+
+/**
+ * Computes the difficulty score of a Verified Sentence structure based on the
+ * average PriorityScore of its mandatory slots (fixed grammar or single choice) and grammar units.
+ */
+function computeTemplateDifficulty(tpl) {
+	if (!tpl) return { difficultyScore: 2.5, mandatoryElements: [], mandatoryElementsCount: 0 };
+	const units = getUnitsArray();
+	const mandatoryScores = [];
+	const mandatoryElements = [];
+
+	(tpl.slots || []).forEach((slot, sIdx) => {
+		if (slot.inflection && slot.inflection.stemForm === "fixed_grammar") {
+			const u = typeof slot.originalUnitId === 'number' ? units[slot.originalUnitId] : null;
+			if (u) {
+				const sc = u[DATA_SCHEMA.PriorityScore] || 1;
+				mandatoryScores.push(sc);
+				mandatoryElements.push({ type: 'fixed_grammar', slotIndex: sIdx, unitId: u[DATA_SCHEMA.Id], ko: u[DATA_SCHEMA.Korean], score: sc });
+			}
+		} else {
+			const cands = getSlotCandidates(slot);
+			if (cands.isSingleChoice && cands.singleChoiceUnit) {
+				const u = cands.singleChoiceUnit;
+				const sc = u[DATA_SCHEMA.PriorityScore] || 1;
+				mandatoryScores.push(sc);
+				mandatoryElements.push({ type: 'single_choice', slotIndex: sIdx, unitId: u[DATA_SCHEMA.Id], ko: u[DATA_SCHEMA.Korean], score: sc });
+			}
+		}
+	});
+
+	const grammarIds = new Set(tpl.grammarUnitIds || []);
+	(tpl.slots || []).forEach(slot => {
+		(slot.grammar || []).forEach(g => {
+			if (typeof g.unitId === 'number') grammarIds.add(g.unitId);
+		});
+	});
+
+	grammarIds.forEach(gId => {
+		const gu = units[gId];
+		if (gu) {
+			const sc = gu[DATA_SCHEMA.PriorityScore] || 1;
+			mandatoryScores.push(sc);
+			mandatoryElements.push({ type: 'grammar_unit', unitId: gId, ko: gu[DATA_SCHEMA.Korean], score: sc });
+		}
+	});
+
+	if (mandatoryScores.length === 0) {
+		(tpl.slots || []).forEach(slot => {
+			if (typeof slot.originalUnitId === 'number' && units[slot.originalUnitId]) {
+				const u = units[slot.originalUnitId];
+				const sc = u[DATA_SCHEMA.PriorityScore] || 2;
+				mandatoryScores.push(sc);
+				mandatoryElements.push({ type: 'slot_original', unitId: u[DATA_SCHEMA.Id], ko: u[DATA_SCHEMA.Korean], score: sc });
+			}
+		});
+	}
+
+	const avg = mandatoryScores.length > 0
+		? mandatoryScores.reduce((a, b) => a + b, 0) / mandatoryScores.length
+		: 2.0;
+
+	return {
+		id: tpl.id,
+		title: tpl.title,
+		originalKo: tpl.originalKo,
+		difficultyScore: Number(avg.toFixed(2)),
+		mandatoryElementsCount: mandatoryScores.length,
+		mandatoryElements
+	};
+}
+
+function getPrioritizedVerifiedSentences() {
+	ensureRuntimeInitialized();
+	const all = getAllVerifiedSentences();
+	const scored = all.map(tpl => ({
+		template: tpl,
+		...computeTemplateDifficulty(tpl)
+	}));
+	scored.sort((a, b) => a.difficultyScore - b.difficultyScore || a.id.localeCompare(b.id));
+	_prioritizedTemplates = scored;
+	return scored;
+}
+
 function ensureRuntimeInitialized() {
 	if (_runtimeInitialized) return;
 	_runtimeInitialized = true;
 	_loadStateFromLocalStorage();
+	buildPosDecks();
+	getPrioritizedVerifiedSentences();
 }
 
 function exportVerifiedSentencesState() {
@@ -1821,7 +1992,7 @@ function findMatchingTemplatesForUnit(unitOrId) {
 			const reqTags = Array.isArray(slot.tags) ? slot.tags : [];
 			let satisfiesTags = true;
 			for (let t = 0; t < reqTags.length; t++) {
-				if (!hasTag(targetUnit, reqTags[t])) {
+				if (!_hasTag(targetUnit, reqTags[t])) {
 					satisfiesTags = false;
 					break;
 				}
@@ -1900,9 +2071,26 @@ function generateVerifiedSentenceForUnit(unitOrId, options = {}) {
 	return fallback;
 }
 
+function getTierForIndex(i, totalCount) {
+	if (i === 0) return 'easiest';
+	if (totalCount >= 3 && i === totalCount - 1) return 'challenging';
+	return 'easy_and_inset';
+}
+
+function getTierLabel(tier) {
+	if (tier === 'easiest') return 'Easiest';
+	if (tier === 'easy_and_inset') return 'Easy + In-Set';
+	if (tier === 'challenging') return 'Challenging';
+	return 'Standard';
+}
+
 /**
  * Generates `count` (default 3) sentences for `unitOrId`, prioritizing Verified
  * Sentence structures first and using random AST generation as a fallback.
+ * Generates sentences in progressive difficulty order:
+ *  - Sentence 0: Easiest possible vocabulary and grammar (PriorityScore 1)
+ *  - Sentences 1..N-2: 50% In-Set + 50% Easy vocabulary
+ *  - Sentence N-1 (when N>=3): Full curriculum variability (challenging)
  */
 function generateVerifiedSentencesForUnit(unitOrId, count = 3, options = {}) {
 	const units = getUnitsArray();
@@ -1930,50 +2118,128 @@ function generateVerifiedSentencesForUnit(unitOrId, count = 3, options = {}) {
 		};
 	}
 
+	const numSentences = Math.max(1, Number(count) || 3);
 	const targetId = targetUnit[DATA_SCHEMA.Id];
-	const matches = findMatchingTemplatesForUnit(targetUnit);
+	const rawMatches = findMatchingTemplatesForUnit(targetUnit);
+
+	// Pre-score all matching templates by difficulty and sort ascending
+	const scoredMatches = rawMatches.map(m => ({
+		...m,
+		diff: computeTemplateDifficulty(m.template)
+	}));
+	scoredMatches.sort((a, b) => a.diff.difficultyScore - b.diff.difficultyScore || a.template.id.localeCompare(b.template.id));
+
 	const sentences = [];
 	const seenKo = new Set();
+	const seedOff = typeof options.seedOffset === 'number' ? options.seedOffset : 0;
 
-	if (matches.length > 0) {
-		const seedOff = typeof options.seedOffset === 'number' ? options.seedOffset : 0;
-		const maxVerifiedAttempts = Math.max(count * 4, matches.length * 2);
+	if (scoredMatches.length > 0) {
+		// Pass 1: Try distinct matching templates with tiered difficulty progression
+		for (let attempt = 0; attempt < scoredMatches.length && sentences.length < numSentences; attempt++) {
+			const targetIdx = sentences.length;
+			const tier = getTierForIndex(targetIdx, numSentences);
 
-		for (let attempt = 0; attempt < maxVerifiedAttempts && sentences.length < count; attempt++) {
-			const matchItem = matches[(attempt + seedOff) % matches.length];
+			let matchItem;
+			if (tier === 'easiest') {
+				matchItem = scoredMatches[seedOff % Math.min(3, scoredMatches.length)];
+			} else if (tier === 'challenging' && scoredMatches.length > 2) {
+				matchItem = scoredMatches[scoredMatches.length - 1 - (seedOff % Math.min(3, scoredMatches.length))];
+			} else {
+				matchItem = scoredMatches[(attempt + seedOff) % scoredMatches.length];
+			}
+
 			const res = generateSentenceFromTemplate(matchItem.template, {
 				...options,
 				targetUnitId: targetId,
 				targetSlotIndex: matchItem.slotIndex,
+				varyMode: 'selected',
+				unlockedSlots: [matchItem.slotIndex],
+				difficultyTier: tier,
 				variationIndex: attempt,
 				seedOffset: seedOff + attempt * 5
 			});
 			if (res && res.ok && res.ko && !seenKo.has(res.ko)) {
 				seenKo.add(res.ko);
+				res.difficultyTier = tier;
+				res.difficultyLabel = getTierLabel(tier);
+				res.templateDifficulty = matchItem.diff.difficultyScore;
 				sentences.push(res);
+			}
+		}
+
+		// Pass 2: Multi-variation for remaining sentences with tier-conforming candidate selection
+		if (sentences.length < numSentences) {
+			const maxVariationPasses = Math.max(numSentences * 6, scoredMatches.length * 4);
+			for (let v = 0; v < maxVariationPasses && sentences.length < numSentences; v++) {
+				const targetIdx = sentences.length;
+				const tier = getTierForIndex(targetIdx, numSentences);
+				const matchItem = scoredMatches[(v + seedOff) % scoredMatches.length];
+				const tpl = matchItem.template;
+				if (!tpl || !Array.isArray(tpl.slots)) continue;
+
+				// Find variable slots
+				const variableSlots = [];
+				for (let sIdx = 0; sIdx < tpl.slots.length; sIdx++) {
+					if (sIdx === matchItem.slotIndex) continue;
+					const sl = tpl.slots[sIdx];
+					if (sl.inflection && sl.inflection.stemForm === "fixed_grammar") continue;
+					const pool = getSlotCandidates(sl, options);
+					if (pool.count > 1) {
+						variableSlots.push(sIdx);
+					}
+				}
+
+				if (variableSlots.length === 0) continue;
+
+				const chosenSlotToVary = variableSlots[v % variableSlots.length];
+				const unlocked = [matchItem.slotIndex, chosenSlotToVary];
+
+				const res = generateSentenceFromTemplate(tpl, {
+					...options,
+					targetUnitId: targetId,
+					targetSlotIndex: matchItem.slotIndex,
+					unlockedSlots: unlocked,
+					varyMode: 'selected',
+					difficultyTier: tier,
+					variationIndex: v + 1,
+					seedOffset: seedOff + v * 11 + 7
+				});
+
+				if (res && res.ok && res.ko && !seenKo.has(res.ko)) {
+					seenKo.add(res.ko);
+					res.difficultyTier = tier;
+					res.difficultyLabel = getTierLabel(tier);
+					res.templateDifficulty = matchItem.diff.difficultyScore;
+					sentences.push(res);
+				}
 			}
 		}
 	}
 
-	// Fallback to random AST generator for any remaining slots up to `count`
-	if (sentences.length < count) {
-		const needed = count - sentences.length;
-		const fallbackRes = generateSentencesForUnit(targetUnit, needed + 2, options);
-		if (fallbackRes && Array.isArray(fallbackRes.sentences)) {
-			for (const s of fallbackRes.sentences) {
-				if (sentences.length >= count) break;
-				if (s && s.ko && !seenKo.has(s.ko)) {
-					seenKo.add(s.ko);
-					sentences.push({
-						...s,
-						isVerifiedStructure: false,
-						verifiedTemplateId: null,
-						verifiedTemplateTitle: null
-					});
-				}
+	// Fallback to AST generator for any remaining slots up to `numSentences`
+	if (sentences.length < numSentences) {
+		const needed = numSentences - sentences.length;
+		for (let a = 0; a < needed * 4 && sentences.length < numSentences; a++) {
+			const targetIdx = sentences.length;
+			const tier = getTierForIndex(targetIdx, numSentences);
+			const fallback = generateSentenceForUnit(targetUnit, {
+				...options,
+				difficultyTier: tier,
+				variationIndex: a + 10,
+				seedOffset: seedOff + (a + 1) * 11
+			});
+			if (fallback && fallback.ok && fallback.ko && !seenKo.has(fallback.ko)) {
+				seenKo.add(fallback.ko);
+				sentences.push({
+					...fallback,
+					isVerifiedStructure: false,
+					verifiedTemplateId: null,
+					verifiedTemplateTitle: null,
+					difficultyTier: tier,
+					difficultyLabel: getTierLabel(tier),
+					templateDifficulty: null
+				});
 			}
-		} else if (sentences.length === 0 && fallbackRes) {
-			return fallbackRes;
 		}
 	}
 
@@ -2016,7 +2282,14 @@ const verifiedGeneratorExports = {
 	importVerifiedSentencesState,
 	findMatchingTemplatesForUnit,
 	generateVerifiedSentenceForUnit,
-	generateVerifiedSentencesForUnit
+	generateVerifiedSentencesForUnit,
+	buildPosDecks,
+	getPosDecks,
+	getPosDeck,
+	computeTemplateDifficulty,
+	getPrioritizedVerifiedSentences,
+	getTierForIndex,
+	getTierLabel
 };
 
 if (typeof window !== 'undefined') {

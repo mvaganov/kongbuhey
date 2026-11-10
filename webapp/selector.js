@@ -24,183 +24,112 @@
  *        Regenerate button
  */
 
-// ============================================================================
 // 1. Markdown + Inline HTML Renderer (with Tiered Lists Support)
-// ============================================================================
-
 function formatInlineMarkdown(text) {
 	if (!text) return '';
-	// Strip any unsafe <script> tags while keeping legitimate inline HTML intact
 	let out = String(text).replace(/<\s*\/?\s*script[^>]*>/gi, '');
-
-	// Protect inline code spans first
 	const codeTokens = [];
 	out = out.replace(/`([^`]+)`/g, (_, code) => {
-		const idx = codeTokens.length;
-		const escaped = code
-			.replace(/&/g, '&amp;')
-			.replace(/</g, '&lt;')
-			.replace(/>/g, '&gt;');
-		codeTokens.push(`<code>${escaped}</code>`);
-		return `\u0000CODE_${idx}\u0000`;
+		const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		return `\u0000CODE_${codeTokens.push(`<code>${escaped}</code>`) - 1}\u0000`;
 	});
-
-	// Links: [label](url)
-	out = out.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-	// Bold: **text** or __text__
-	out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-	out = out.replace(/__([^_]+)__/g, '<strong>$1</strong>');
-	// Strikethrough: ~~text~~
-	out = out.replace(/~~([^~]+)~~/g, '<del>$1</del>');
-	// Italic: *text* or _text_
-	out = out.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
-	out = out.replace(/(^|[^_])_([^_\n]+)_(?!_)/g, '$1<em>$2</em>');
-
-	// Restore inline code spans
-	out = out.replace(/\u0000CODE_(\d+)\u0000/g, (_, idx) => codeTokens[Number(idx)] || '');
-	return out;
+	out = out
+		.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+		.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+		.replace(/__([^_]+)__/g, '<strong>$1</strong>')
+		.replace(/~~([^~]+)~~/g, '<del>$1</del>')
+		.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>')
+		.replace(/(^|[^_])_([^_\n]+)_(?!_)/g, '$1<em>$2</em>');
+	return out.replace(/\u0000CODE_(\d+)\u0000/g, (_, idx) => codeTokens[Number(idx)] || '');
 }
 
-/**
- * Renders Markdown string to HTML, supporting tiered (nested) unordered/ordered
- * lists, headings, blockquotes, fenced code blocks, and inline HTML.
- */
 function renderMarkdownWithHtml(markdownStr) {
 	if (!markdownStr || !String(markdownStr).trim()) return '';
 	const lines = String(markdownStr).replace(/\r\n/g, '\n').split('\n');
-	const htmlParts = [];
-	const listStack = []; // Array<{ type: 'ul' | 'ol', indent: number }>
-	let inCodeBlock = false;
-	let codeBuffer = [];
+	const htmlParts = [], listStack = [];
+	let inCodeBlock = false, codeBuffer = [];
 
-	const closeListsToIndent = (targetIndent) => {
+	const closeListsTo = (targetIndent) => {
 		while (listStack.length > 0 && listStack[listStack.length - 1].indent > targetIndent) {
-			const popped = listStack.pop();
-			htmlParts.push(`</li></${popped.type}>`);
+			htmlParts.push(`</li></${listStack.pop().type}>`);
 		}
 	};
-
-	const closeAllLists = () => {
-		while (listStack.length > 0) {
-			const popped = listStack.pop();
-			htmlParts.push(`</li></${popped.type}>`);
-		}
-	};
+	const closeAllLists = () => closeListsTo(-1);
 
 	for (let i = 0; i < lines.length; i++) {
 		const rawLine = lines[i];
-
-		// Fenced code blocks
 		if (rawLine.trim().startsWith('```')) {
 			closeAllLists();
-			if (!inCodeBlock) {
-				inCodeBlock = true;
-				codeBuffer = [];
-			} else {
+			if (!inCodeBlock) { inCodeBlock = true; codeBuffer = []; }
+			else {
 				inCodeBlock = false;
-				const escaped = codeBuffer.join('\n')
-					.replace(/&/g, '&amp;')
-					.replace(/</g, '&lt;')
-					.replace(/>/g, '&gt;');
-				htmlParts.push(`<pre><code>${escaped}</code></pre>`);
+				const esc = codeBuffer.join('\n').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+				htmlParts.push(`<pre><code>${esc}</code></pre>`);
 			}
 			continue;
 		}
-		if (inCodeBlock) {
-			codeBuffer.push(rawLine);
-			continue;
-		}
+		if (inCodeBlock) { codeBuffer.push(rawLine); continue; }
 
-		// Check for list item (unordered: -, *, + | ordered: 1., 2., a.)
 		const listMatch = rawLine.match(/^([ \t]*)(?:([-*+])|(\d+|[a-zA-Z])[.)])\s+(.*)$/);
 		if (listMatch) {
-			const indentRaw = listMatch[1].replace(/\t/g, '  ');
-			const indent = indentRaw.length;
+			const indent = listMatch[1].replace(/\t/g, '  ').length;
 			const listType = listMatch[2] ? 'ul' : 'ol';
 			const itemContent = formatInlineMarkdown(listMatch[4]);
+			const top = listStack[listStack.length - 1];
 
-			if (listStack.length === 0) {
+			if (!top || indent > top.indent) {
 				listStack.push({ type: listType, indent });
 				htmlParts.push(`<${listType}><li>${itemContent}`);
-			} else {
-				const top = listStack[listStack.length - 1];
-				if (indent > top.indent) {
+			} else if (indent === top.indent) {
+				if (top.type !== listType) {
+					htmlParts.push(`</li></${listStack.pop().type}>`);
 					listStack.push({ type: listType, indent });
 					htmlParts.push(`<${listType}><li>${itemContent}`);
-				} else if (indent === top.indent) {
-					if (top.type !== listType) {
-						listStack.pop();
-						htmlParts.push(`</li></${top.type}>`);
-						listStack.push({ type: listType, indent });
-						htmlParts.push(`<${listType}><li>${itemContent}`);
-					} else {
-						htmlParts.push(`</li><li>${itemContent}`);
-					}
 				} else {
-					closeListsToIndent(indent);
-					const currentTop = listStack[listStack.length - 1];
-					if (!currentTop) {
-						listStack.push({ type: listType, indent });
-						htmlParts.push(`<${listType}><li>${itemContent}`);
-					} else if (currentTop.type !== listType) {
-						listStack.pop();
-						htmlParts.push(`</li></${currentTop.type}>`);
-						listStack.push({ type: listType, indent });
-						htmlParts.push(`<${listType}><li>${itemContent}`);
-					} else {
-						htmlParts.push(`</li><li>${itemContent}`);
-					}
+					htmlParts.push(`</li><li>${itemContent}`);
+				}
+			} else {
+				closeListsTo(indent);
+				const curTop = listStack[listStack.length - 1];
+				if (!curTop || curTop.indent < indent) {
+					listStack.push({ type: listType, indent });
+					htmlParts.push(`<${listType}><li>${itemContent}`);
+				} else if (curTop.type !== listType) {
+					htmlParts.push(`</li></${listStack.pop().type}>`);
+					listStack.push({ type: listType, indent });
+					htmlParts.push(`<${listType}><li>${itemContent}`);
+				} else {
+					htmlParts.push(`</li><li>${itemContent}`);
 				}
 			}
 			continue;
 		}
 
-		// Non-list line closes any open lists
 		closeAllLists();
-
 		const trimmed = rawLine.trim();
 		if (!trimmed) continue;
 
-		// Headings (# .. ######)
 		const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
 		if (headingMatch) {
-			const level = headingMatch[1].length;
-			htmlParts.push(`<h${level}>${formatInlineMarkdown(headingMatch[2])}</h${level}>`);
+			htmlParts.push(`<h${headingMatch[1].length}>${formatInlineMarkdown(headingMatch[2])}</h${headingMatch[1].length}>`);
 			continue;
 		}
-
-		// Horizontal rule
-		if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
-			htmlParts.push('<hr>');
-			continue;
-		}
-
-		// Blockquote
+		if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) { htmlParts.push('<hr>'); continue; }
 		if (trimmed.startsWith('>')) {
-			const quoteText = trimmed.replace(/^>\s?/, '');
-			htmlParts.push(`<blockquote>${formatInlineMarkdown(quoteText)}</blockquote>`);
+			htmlParts.push(`<blockquote>${formatInlineMarkdown(trimmed.replace(/^>\s?/, ''))}</blockquote>`);
 			continue;
 		}
-
 		htmlParts.push(`<p>${formatInlineMarkdown(rawLine)}</p>`);
 	}
-
 	closeAllLists();
 	if (inCodeBlock && codeBuffer.length > 0) {
-		const escaped = codeBuffer.join('\n')
-			.replace(/&/g, '&amp;')
-			.replace(/</g, '&lt;')
-			.replace(/>/g, '&gt;');
-		htmlParts.push(`<pre><code>${escaped}</code></pre>`);
+		const esc = codeBuffer.join('\n').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		htmlParts.push(`<pre><code>${esc}</code></pre>`);
 	}
-
 	return htmlParts.join('\n');
 }
 
-// ============================================================================
 // 2. Minimalist Videogame HUD Formatter
-// ============================================================================
-
 const LTR_HUD_SPECS = {
 	unknown: { icon: '🔒', code: 'UNK', label: 'Unknown', tierClass: 'hud-tier-0' },
 	recognized: { icon: '🥉', code: 'REC', label: 'Recognized', tierClass: 'hud-tier-1' },
@@ -222,11 +151,7 @@ function formatPithyTime(unixSeconds, nowSeconds = Math.floor(Date.now() / 1000)
 }
 
 function formatHudTelemetry(scoreOrObj, ltr, lastCorrect, lastSeen, nowSeconds = Math.floor(Date.now() / 1000)) {
-	let s = scoreOrObj;
-	let l = ltr;
-	let lc = lastCorrect;
-	let ls = lastSeen;
-	let now = nowSeconds;
+	let s = scoreOrObj, l = ltr, lc = lastCorrect, ls = lastSeen, now = nowSeconds;
 	if (scoreOrObj && typeof scoreOrObj === 'object') {
 		s = scoreOrObj.RecognitionScore;
 		l = scoreOrObj.LongTermRecognition;
@@ -254,52 +179,24 @@ function formatHudTelemetry(scoreOrObj, ltr, lastCorrect, lastSeen, nowSeconds =
 	};
 }
 
-// ============================================================================
 // 3. Unified AST Sentence Generator & Dual English Translation Adapter
-// ============================================================================
-
 const _unitGeneratorEngine = (() => {
 	if (typeof require === 'function') {
-		try {
-			return require('../korean/generation/unit_sentence_generator.js');
-		} catch (_) {}
+		try { return require('../korean/generation/unit_sentence_generator.js'); } catch (_) {}
 	}
 	if (typeof window !== 'undefined') {
 		const batchFn = window.generateUnitSentencesAST || window.generateSentencesForUnit;
 		const singleFn = window.generateSingleUnitSentenceAST || window.generateSentenceForUnit;
 		if (typeof batchFn === 'function') {
-			return {
-				generateSentenceForUnit: singleFn,
-				generateSentencesForUnit: batchFn,
-				generateUnitSentencesAST: batchFn
-			};
+			return { generateSentenceForUnit: singleFn, generateSentencesForUnit: batchFn, generateUnitSentencesAST: batchFn };
 		}
 	}
 	return null;
 })();
 
-/**
- * Generates `count` (default 3) grammatical, semantically concordant Korean sentences
- * for `unitId` using the unified SentenceAST & Dual English Translation engine.
- *
- * Each returned item contains:
- *   - `ko`: Surface Korean sentence
- *   - `enLiteral`: Direct Korean-word-order English translation with role tags ([topic], [obj], etc.)
- *   - `enNatural`: Idiomatic SVO English translation
- *   - `en`: Alias for `enLiteral` (backward-compatible string property)
- *   - `pronunciation`: Standard Korean Pronunciation (표준 발음법)
- *   - `eojeols`: Array of eojeols with morpheme `segments` (`{ textKo, textEn, unitId, kind }`)
- *   - `unitsUsed`: Ordered array of Language Unit metadata objects used in the sentence
- *   - `unitIds`: Ordered array of Language Unit IDs used in the sentence
- *
- * Also attaches `.ok`, `.insufficientSet`, `.missingRoles`, and `.message` onto the
- * returned array when `options.onlyFromSet` is used.
- */
 const _verifiedGeneratorEngine = (() => {
 	if (typeof require === 'function') {
-		try {
-			return require('../korean/generation/verified_sentence_generator.js');
-		} catch (_) {}
+		try { return require('../korean/generation/verified_sentence_generator.js'); } catch (_) {}
 	}
 	if (typeof window !== 'undefined') {
 		if (window.verifiedSentenceGenerator) return window.verifiedSentenceGenerator;
@@ -309,21 +206,11 @@ const _verifiedGeneratorEngine = (() => {
 })();
 
 function generateSentencesForUnit(unitId, count = 3, optionsOrRawUnits = null, dataSchema = null) {
-	let options = {};
-	if (
-		optionsOrRawUnits &&
-		typeof optionsOrRawUnits === 'object' &&
-		!Array.isArray(optionsOrRawUnits)
-	) {
-		options = { ...optionsOrRawUnits };
-	}
-
-	const verifiedBatchFn = (!options.useAstOnly && _verifiedGeneratorEngine)
-		? _verifiedGeneratorEngine.generateVerifiedSentencesForUnit
-		: null;
-	const astBatchFn = _unitGeneratorEngine && (
-		_unitGeneratorEngine.generateUnitSentencesAST || _unitGeneratorEngine.generateSentencesForUnit
-	);
+	const options = (optionsOrRawUnits && typeof optionsOrRawUnits === 'object' && !Array.isArray(optionsOrRawUnits))
+		? { ...optionsOrRawUnits } : {};
+	const activeVerifiedEngine = (typeof window !== 'undefined' && window.verifiedSentenceGenerator) || _verifiedGeneratorEngine;
+	const verifiedBatchFn = (!options.useAstOnly && activeVerifiedEngine) ? activeVerifiedEngine.generateVerifiedSentencesForUnit : null;
+	const astBatchFn = _unitGeneratorEngine && (_unitGeneratorEngine.generateUnitSentencesAST || _unitGeneratorEngine.generateSentencesForUnit);
 	const engineBatchFn = typeof verifiedBatchFn === 'function' ? verifiedBatchFn : astBatchFn;
 
 	if (typeof engineBatchFn === 'function' && engineBatchFn !== generateSentencesForUnit) {
@@ -337,6 +224,9 @@ function generateSentencesForUnit(unitId, count = 3, optionsOrRawUnits = null, d
 			isVerifiedStructure: Boolean(s.isVerifiedStructure),
 			verifiedTemplateId: s.verifiedTemplateId || null,
 			verifiedTemplateTitle: s.verifiedTemplateTitle || null,
+			difficultyTier: s.difficultyTier || null,
+			difficultyLabel: s.difficultyLabel || null,
+			templateDifficulty: (typeof s.templateDifficulty === 'number') ? s.templateDifficulty : null,
 			eojeols: Array.isArray(s.eojeols) ? s.eojeols.map(ej => ({
 				surfaceKo: ej.surfaceKo,
 				surfaceEnLit: ej.surfaceEnLit || '',
@@ -365,14 +255,10 @@ function generateSentencesForUnit(unitId, count = 3, optionsOrRawUnits = null, d
 		});
 		return list;
 	}
-
 	return [];
 }
 
-// ============================================================================
 // 4. Streamlined Unit Selector & Details View Controller
-// ============================================================================
-
 class UnitSelectorView {
 	constructor(options = {}) {
 		this.engine = options.engine;
@@ -386,6 +272,18 @@ class UnitSelectorView {
 		this.lastGenerationError = null;
 		this.lastGenerationMode = 'all';
 		this.searchQuery = '';
+
+		let initialSentenceCount = 3;
+		if (typeof window !== 'undefined' && window.localStorage) {
+			try {
+				const savedCount = parseInt(window.localStorage.getItem('kongbuhey_selector_sentence_count'), 10);
+				if (!isNaN(savedCount) && savedCount >= 1 && savedCount <= 10) {
+					initialSentenceCount = savedCount;
+				}
+			} catch (_) {}
+		}
+		this.sentenceCount = initialSentenceCount;
+		this.isEditingSentenceCount = false;
 
 		this.container = null;
 		this.sourcesListEl = null;
@@ -627,18 +525,12 @@ class UnitSelectorView {
 	}
 
 	toggleSourceExpanded(sourceName) {
-		if (this.expandedSources.has(sourceName)) {
-			this.expandedSources.delete(sourceName);
-		} else {
-			this.expandedSources.add(sourceName);
-		}
+		if (this.expandedSources.has(sourceName)) this.expandedSources.delete(sourceName);
+		else this.expandedSources.add(sourceName);
 		this.renderSourcesList();
 		return this.expandedSources.has(sourceName);
 	}
-
-	toggleSourceExpand(sourceName) {
-		return this.toggleSourceExpanded(sourceName);
-	}
+	toggleSourceExpand(sourceName) { return this.toggleSourceExpanded(sourceName); }
 
 	async toggleUnitInclusion(unitId, checked) {
 		const nextVal = checked !== undefined ? Boolean(checked) : !this.engine.getCellValue(unitId, 'InSet');
@@ -706,6 +598,21 @@ class UnitSelectorView {
 		return this.generatedSentences;
 	}
 
+	setSentenceCount(count) {
+		const parsed = Math.max(1, Math.min(10, parseInt(count, 10) || 3));
+		this.sentenceCount = parsed;
+		this.isEditingSentenceCount = false;
+		if (typeof window !== 'undefined' && window.localStorage) {
+			try {
+				window.localStorage.setItem('kongbuhey_selector_sentence_count', String(parsed));
+			} catch (_) {}
+		}
+		this.invalidateGeneratedSentences(this.selectedUnitId);
+		if (this.container) {
+			this.renderDetailsPane();
+		}
+	}
+
 	regenerateSentences(unitId = this.selectedUnitId, options = {}) {
 		const targetId = unitId !== undefined && unitId !== null ? unitId : this.selectedUnitId;
 		if (targetId === null || targetId === undefined) {
@@ -714,6 +621,7 @@ class UnitSelectorView {
 			return [];
 		}
 
+		const reqCount = (typeof options.count === 'number' && options.count > 0) ? options.count : this.sentenceCount;
 		const onlyFromSet = Boolean(options && options.onlyFromSet);
 		this.lastGenerationMode = onlyFromSet ? 'onlyFromSet' : 'all';
 
@@ -722,7 +630,7 @@ class UnitSelectorView {
 				? (options.allowedUnitIds instanceof Set ? options.allowedUnitIds : new Set(options.allowedUnitIds))
 				: this.getActiveSetUnitIds();
 
-			const next = generateSentencesForUnit(targetId, 3, {
+			const next = generateSentencesForUnit(targetId, reqCount, {
 				onlyFromSet: true,
 				allowedUnitIds
 			});
@@ -740,7 +648,7 @@ class UnitSelectorView {
 		const prevJson = JSON.stringify(this.generatedSentences || []);
 		let next = [];
 		for (let attempt = 0; attempt < 5; attempt++) {
-			next = generateSentencesForUnit(targetId, 3, { seedOffset: Math.floor(Math.random() * 997) + attempt * 13 });
+			next = generateSentencesForUnit(targetId, reqCount, { seedOffset: Math.floor(Math.random() * 997) + attempt * 13 });
 			if (JSON.stringify(next) !== prevJson) break;
 		}
 		this.generatedSentences = next;
@@ -749,6 +657,17 @@ class UnitSelectorView {
 
 	regenerateSentencesOnlyFromSet(unitId = this.selectedUnitId, allowedUnitIds = null) {
 		return this.regenerateSentences(unitId, { onlyFromSet: true, allowedUnitIds });
+	}
+
+	invalidateGeneratedSentences(unitId = null) {
+		if (unitId === null || unitId === undefined || this.selectedUnitId === unitId) {
+			this.generatedSentences = [];
+			this.lastGenerationError = null;
+			if (this.selectedUnitId !== null && this.selectedUnitId !== undefined && this.container) {
+				this.regenerateSentences(this.selectedUnitId);
+				this.renderDetailsPane();
+			}
+		}
 	}
 
 	setEditMode(isEditing) {
@@ -1221,13 +1140,61 @@ class UnitSelectorView {
 
 		const sentTitleGroup = document.createElement('div');
 		sentTitleGroup.className = 'details-sentences-title-group';
-		sentTitleGroup.innerHTML = `
-			<span class="details-field-label">Generated Example Sentences (3)</span>
-			<span class="pill-legend" title="Click any Korean or English word/particle pill below to toggle its inclusion in your Practice Set">
-				<span class="pill-legend-item"><span class="pill-dot is-in-set"></span> In Set</span>
-				<span class="pill-legend-item"><span class="pill-dot not-in-set"></span> Not in Set</span>
-			</span>
+
+		const legend = document.createElement('span');
+		legend.className = 'pill-legend';
+		legend.title = 'Click any Korean or English word/particle pill below to toggle its inclusion in your Practice Set';
+		legend.innerHTML = `
+			<span class="pill-legend-item"><span class="pill-dot is-in-set"></span> In Set</span>
+			<span class="pill-legend-item"><span class="pill-dot not-in-set"></span> Not in Set</span>
 		`;
+
+		if (this.isEditingSentenceCount) {
+			const editorWrap = document.createElement('div');
+			editorWrap.className = 'sentence-count-editor-inline';
+			editorWrap.innerHTML = `
+				<label class="details-field-label" for="input-custom-sentence-count">Sentences (1-10):</label>
+				<input type="number" id="input-custom-sentence-count" class="input-sentence-count" min="1" max="10" value="${this.sentenceCount}" />
+				<button type="button" class="btn btn-sm btn-primary" id="btn-save-sentence-count">Apply</button>
+				<button type="button" class="btn btn-sm btn-ghost" id="btn-cancel-sentence-count">✕</button>
+			`;
+			const inp = editorWrap.querySelector('#input-custom-sentence-count');
+			const saveBtn = editorWrap.querySelector('#btn-save-sentence-count');
+			const cancelBtn = editorWrap.querySelector('#btn-cancel-sentence-count');
+
+			const applyVal = () => {
+				const val = inp ? inp.value : this.sentenceCount;
+				this.setSentenceCount(val);
+			};
+
+			saveBtn.addEventListener('click', applyVal);
+			cancelBtn.addEventListener('click', () => {
+				this.isEditingSentenceCount = false;
+				this.renderDetailsPane();
+			});
+			inp.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter') applyVal();
+				if (e.key === 'Escape') {
+					this.isEditingSentenceCount = false;
+					this.renderDetailsPane();
+				}
+			});
+			sentTitleGroup.appendChild(editorWrap);
+		} else {
+			const countBtn = document.createElement('button');
+			countBtn.type = 'button';
+			countBtn.className = 'btn-sentence-count-toggle';
+			countBtn.id = 'btn-toggle-sentence-count';
+			countBtn.title = `Click to customize how many example sentences are generated (currently ${this.sentenceCount})`;
+			countBtn.innerHTML = `Generated Example Sentences (${this.sentenceCount}) <span class="count-edit-icon" aria-hidden="true">✏️</span>`;
+			countBtn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				this.isEditingSentenceCount = true;
+				this.renderDetailsPane();
+			});
+			sentTitleGroup.appendChild(countBtn);
+		}
+		sentTitleGroup.appendChild(legend);
 		sentHeader.appendChild(sentTitleGroup);
 
 		const sentActions = document.createElement('div');
@@ -1238,7 +1205,7 @@ class UnitSelectorView {
 		regenBtn.id = 'btn-regenerate-sentences';
 		regenBtn.className = `btn ${this.lastGenerationMode === 'all' ? 'btn-secondary' : 'btn-ghost'}`;
 		regenBtn.textContent = '↻ Regenerate';
-		regenBtn.title = 'Generate 3 new example sentences using all curriculum language units';
+		regenBtn.title = `Generate ${this.sentenceCount} new example sentences using all curriculum language units`;
 		regenBtn.addEventListener('click', () => {
 			this.regenerateSentences(unitId, { onlyFromSet: false });
 			this.renderDetailsPane();
@@ -1250,7 +1217,7 @@ class UnitSelectorView {
 		onlySetBtn.id = 'btn-regenerate-only-from-set';
 		onlySetBtn.className = `btn ${this.lastGenerationMode === 'onlyFromSet' ? 'btn-emerald' : 'btn-secondary'}`;
 		onlySetBtn.textContent = '🎯 Only From Set';
-		onlySetBtn.title = 'Regenerate 3 sentences using ONLY language units currently included in your Practice Set (InSet = true)';
+		onlySetBtn.title = `Regenerate ${this.sentenceCount} sentences using ONLY language units currently included in your Practice Set (InSet = true)`;
 		onlySetBtn.addEventListener('click', () => {
 			this.regenerateSentencesOnlyFromSet(unitId);
 			this.renderDetailsPane();
@@ -1322,6 +1289,43 @@ class UnitSelectorView {
 		for (const item of this.generatedSentences) {
 			const li = document.createElement('li');
 			li.className = 'details-sentence-item';
+
+			// Sentence Origin Indicator (Verified Sentence Structure vs Random AST)
+			const originHeader = document.createElement('div');
+			originHeader.className = 'sentence-origin-header';
+
+			const originPill = document.createElement('span');
+			if (item.isVerifiedStructure) {
+				originPill.className = 'sentence-origin-pill origin-verified';
+				const tplId = item.verifiedTemplateId || '';
+				originPill.title = `Generated from Verified Sentence Structure${tplId ? ' [' + tplId + ']' : ''}${item.verifiedTemplateTitle ? ': ' + item.verifiedTemplateTitle : ''}`;
+				originPill.innerHTML = `<span class="origin-icon" aria-hidden="true">📜</span> <span class="origin-label">Verified Structure</span>${tplId ? ` <span class="origin-tag">[${tplId}]</span>` : ''}`;
+			} else {
+				originPill.className = 'sentence-origin-pill origin-ast';
+				originPill.title = 'Generated from Random Abstract Syntax Tree (AST) grammar combinations';
+				originPill.innerHTML = `<span class="origin-icon" aria-hidden="true">🎲</span> <span class="origin-label">Random AST</span>`;
+			}
+			originHeader.appendChild(originPill);
+
+			// Progressive Difficulty Tier Badge
+			if (item.difficultyTier) {
+				const tierBadge = document.createElement('span');
+				tierBadge.className = `sentence-tier-badge tier-${item.difficultyTier}`;
+				let tierIcon = '🌱';
+				let tierDesc = 'Level 1: Easiest grammar & vocabulary (lowest difficulty)';
+				if (item.difficultyTier === 'easy_and_inset') {
+					tierIcon = '🌿';
+					tierDesc = 'Level 2: Balanced between easy vocabulary and language units in your current Practice Set';
+				} else if (item.difficultyTier === 'challenging') {
+					tierIcon = '🔥';
+					tierDesc = 'Level 3: Full curriculum exploration (broadest vocabulary and higher difficulty challenge)';
+				}
+				tierBadge.title = tierDesc;
+				tierBadge.innerHTML = `<span class="tier-icon" aria-hidden="true">${tierIcon}</span> <span class="tier-label">${item.difficultyLabel || item.difficultyTier}</span>`;
+				originHeader.appendChild(tierBadge);
+			}
+
+			li.appendChild(originHeader);
 
 			// 1. Interactive Hangul Sentence Row (shares space with generated Korean text)
 			const koRow = document.createElement('div');

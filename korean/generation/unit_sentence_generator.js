@@ -80,13 +80,38 @@ const {
 	realizeKoreanFromAST
 } = (typeof require !== 'undefined' ? require('./sentence_ast.js') : window);
 
-function pickRandom(arr, seedOffset = null) {
+function pickRandom(arr, seedOffset = null, options = null) {
 	if (!arr || arr.length === 0) return null;
+	let pool = arr;
+	if (options && options.difficultyTier) {
+		const tier = options.difficultyTier;
+		if (tier === 'easiest') {
+			let minScore = 999;
+			for (let i = 0; i < arr.length; i++) {
+				const sc = arr[i][DATA_SCHEMA.PriorityScore] || 3;
+				if (sc < minScore) minScore = sc;
+			}
+			const easy = arr.filter(u => (u[DATA_SCHEMA.PriorityScore] || 3) <= minScore);
+			if (easy.length > 0) pool = easy;
+		} else if (tier === 'easy_and_inset') {
+			const allowed = options.allowedUnitIds instanceof Set ? options.allowedUnitIds : null;
+			const inSetPool = allowed ? arr.filter(u => allowed.has(u[DATA_SCHEMA.Id])) : [];
+			const easyPool = arr.filter(u => (u[DATA_SCHEMA.PriorityScore] || 3) <= 2);
+			const rndChoice = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
+			if (inSetPool.length > 0 && easyPool.length > 0) {
+				pool = (rndChoice < 0.5) ? inSetPool : easyPool;
+			} else if (inSetPool.length > 0) {
+				pool = inSetPool;
+			} else if (easyPool.length > 0) {
+				pool = easyPool;
+			}
+		}
+	}
 	if (typeof seedOffset === 'number' && seedOffset >= 0) {
-		return arr[seedOffset % arr.length];
+		return pool[seedOffset % pool.length];
 	}
 	const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
-	return arr[Math.floor(rnd * arr.length)];
+	return pool[Math.floor(rnd * pool.length)];
 }
 
 /**
@@ -2706,8 +2731,11 @@ function generateSentencesForUnit(unitOrId, count = 3, options = {}) {
 	const maxAttempts = count * 4;
 
 	for (let attempt = 0; attempt < maxAttempts && sentences.length < count; attempt++) {
+		const targetIdx = sentences.length;
+		const tier = (targetIdx === 0) ? 'easiest' : (count >= 3 && targetIdx === count - 1 ? 'challenging' : 'easy_and_inset');
 		const res = generateSentenceForUnit(unitOrId, {
 			...options,
+			difficultyTier: tier,
 			variationIndex: attempt
 		});
 		if (!res.ok) {
@@ -2724,6 +2752,8 @@ function generateSentencesForUnit(unitOrId, count = 3, options = {}) {
 		}
 		if (res.ko && !seenKo.has(res.ko)) {
 			seenKo.add(res.ko);
+			res.difficultyTier = tier;
+			res.difficultyLabel = (tier === 'easiest' ? 'Easiest' : (tier === 'easy_and_inset' ? 'Easy + In-Set' : 'Challenging'));
 			sentences.push(res);
 		}
 	}

@@ -641,6 +641,19 @@ class KongbuheyDB {
 		await this._putRecord('view_settings', { id: 'saved_practice_sets', sets: filtered });
 		return true;
 	}
+
+	async getVerifiedSentencesCustomizations() {
+		const rec = await this._getRecord('view_settings', 'verified_sentences_customizations');
+		return rec ? rec.state : null;
+	}
+
+	async saveVerifiedSentencesCustomizations(state) {
+		return this._putRecord('view_settings', {
+			id: 'verified_sentences_customizations',
+			state,
+			updatedAt: Date.now()
+		});
+	}
 }
 
 if (typeof window !== 'undefined') {

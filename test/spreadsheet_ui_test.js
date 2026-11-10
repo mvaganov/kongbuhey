@@ -826,13 +826,14 @@ async function runSuite() {
 	);
 
 	// 13d. Editing entry title, duplicating entry, and deleting custom vs hardcoded protection
-	const hardcodedDeleteAttempt = verifiedView.deleteEntry(hardcodedTarget.id);
+	const vs1Entry = verifiedGen.getVerifiedSentenceById('vs_1') || hardcodedTarget;
+	const hardcodedDeleteAttempt = verifiedView.deleteEntry(vs1Entry.id);
 	assert(
 		hardcodedDeleteAttempt.ok === false,
 		'Hardcoded Verified Sentence entries cannot be deleted (protected from deletion)'
 	);
 
-	const clonedEntry = verifiedView.duplicateEntry(hardcodedTarget.id, 'Custom Copy of Studytext12 #1');
+	const clonedEntry = verifiedView.duplicateEntry(vs1Entry.id, 'Custom Copy of Studytext12 #1');
 	assert(
 		clonedEntry &&
 		clonedEntry.isHardcoded === false &&
@@ -937,15 +938,53 @@ async function runSuite() {
 		'webapp/index.html includes Verified Sentences tab, view container, and script tags'
 	);
 
-	// 13g. Browser Global Context Simulation (ensuring window.verifiedSentenceGenerator and VerifiedSentencesView work with 0 node require)
+	// 13g. Unit Selector & Details UI Origin Indicators and Customization Persistence
+	const testSelector = new UnitSelectorView({
+		engine: selectorEngine,
+		onStateChange: () => {}
+	});
+	testSelector.selectedUnitId = 2; // '저' (Pronoun)
+	const sents = testSelector.regenerateSentences(2);
+	assert(
+		Array.isArray(sents) && sents.length === 3 &&
+		sents[0].isVerifiedStructure === true,
+		'UnitSelectorView generates sentences with isVerifiedStructure provenance flag'
+	);
+	assert(
+		typeof testSelector.invalidateGeneratedSentences === 'function',
+		'UnitSelectorView provides invalidateGeneratedSentences method'
+	);
+	testSelector.invalidateGeneratedSentences(2);
+	assert(
+		testSelector.generatedSentences.length === 0,
+		'invalidateGeneratedSentences clears stale cached sentences'
+	);
+
+	// Test DB Verified Sentences Customizations storage
+	const mockDb = new KongbuheyDB();
+	mockDb.useMemoryFallback = true;
+	await mockDb.open();
+	await mockDb.saveVerifiedSentencesCustomizations({ hardcodedOverrides: { vs_1: { title: 'Custom Title' } } });
+	const retrievedCustomizations = await mockDb.getVerifiedSentencesCustomizations();
+	assert(
+		retrievedCustomizations && retrievedCustomizations.hardcodedOverrides?.vs_1?.title === 'Custom Title',
+		'KongbuheyDB reliably saves and retrieves Verified Sentences customizations'
+	);
+
+	// 13h. Browser Global Context Simulation (ensuring window.verifiedSentenceGenerator and VerifiedSentencesView work with 0 node require)
 	const vm = require('vm');
 	const mockWindow = {
 		Math, Date, Set, Map, Array, Object, String, Number, Boolean, JSON,
+		K,
 		VERIFIED_SENTENCES,
 		VERIFIED_TEMPLATE_SCHEMA,
 		VERIFIED_SLOT_SCHEMA,
 		KR_EN_languageUnits,
-		DATA_SCHEMA
+		DATA_SCHEMA,
+		hasTag: (u, t) => {
+			const s = u[DATA_SCHEMA.SemanticTags];
+			return s instanceof Set ? s.has(t) : (Array.isArray(s) ? s.includes(t) : false);
+		}
 	};
 	mockWindow.window = mockWindow;
 	const vsGenCode = fs.readFileSync(path.resolve(__dirname, '../korean/generation/verified_sentence_generator.js'), 'utf8');
@@ -957,6 +996,95 @@ async function runSuite() {
 	assert(
 		browserSimEntries.length >= VERIFIED_SENTENCES.length,
 		`VerifiedSentencesView in pure browser global context (window) resolves all ${browserSimEntries.length} templates without require`
+	);
+
+	// -------------------------------------------------------------------------
+	// 14. Difficulty Decks, Prioritized Structures, Variable Count & Progressive Difficulty
+	// -------------------------------------------------------------------------
+	console.log(`\n--- 14. POS Difficulty Decks, Prioritized Structures, Variable Count & Progressive Difficulty ---`);
+
+	// 14a. POS Decks organized as separate decks by difficulty (PriorityScore 1=easiest)
+	const posDecks = verifiedGen.getPosDecks();
+	assert(
+		posDecks && typeof posDecks === 'object' && Object.keys(posDecks).length >= 8,
+		'verified_sentence_generator initializes separate POS difficulty decks for each part of speech'
+	);
+	const nounDeck = verifiedGen.getPosDeck(K.N);
+	assert(
+		Array.isArray(nounDeck) && nounDeck.length > 500 &&
+		(nounDeck[0][DATA_SCHEMA.PriorityScore] || 3) <= (nounDeck[nounDeck.length - 1][DATA_SCHEMA.PriorityScore] || 3) &&
+		(nounDeck[0][DATA_SCHEMA.PriorityScore] || 3) === 1,
+		'Each POS deck is sorted by PriorityScore ascending with easiest elements (PriorityScore: 1) first'
+	);
+
+	// 14b. Prioritized Verified Sentence Structures by Difficulty Score
+	const prioritizedTemplates = verifiedGen.getPrioritizedVerifiedSentences();
+	assert(
+		Array.isArray(prioritizedTemplates) && prioritizedTemplates.length >= 500 &&
+		prioritizedTemplates[0].difficultyScore <= prioritizedTemplates[prioritizedTemplates.length - 1].difficultyScore,
+		`Prioritized Verified Sentences are ordered by difficulty score ascending (${prioritizedTemplates[0]?.difficultyScore} to ${prioritizedTemplates[prioritizedTemplates.length - 1]?.difficultyScore})`
+	);
+	assert(
+		typeof prioritizedTemplates[0].mandatoryElementsCount === 'number' &&
+		Array.isArray(prioritizedTemplates[0].mandatoryElements),
+		'Template difficulty calculation computes average score of mandatory slots and grammar elements'
+	);
+
+	// 14c. Configurable Sentence Count in Unit Selector & Details UI
+	const selectorForCount = new UnitSelectorView({
+		engine: selectorEngine,
+		onStateChange: () => {}
+	});
+	assert(
+		selectorForCount.sentenceCount === 3,
+		'UnitSelectorView defaults sentenceCount to 3'
+	);
+	selectorForCount.setSentenceCount(5);
+	assert(
+		selectorForCount.sentenceCount === 5,
+		'setSentenceCount updates sentenceCount to 5'
+	);
+
+	// 14d. Progressive Difficulty Order in Generated Sentences (Easiest -> Easy+InSet -> Challenging)
+	const progressive5 = verifiedGen.generateVerifiedSentencesForUnit(0, 5); // Unit 0 '미국 사람'
+	assert(
+		Array.isArray(progressive5.sentences) && progressive5.sentences.length === 5,
+		'generateVerifiedSentencesForUnit generates requested variable count (5 sentences)'
+	);
+	assert(
+		progressive5.sentences[0].difficultyTier === 'easiest' &&
+		progressive5.sentences[1].difficultyTier === 'easy_and_inset' &&
+		progressive5.sentences[2].difficultyTier === 'easy_and_inset' &&
+		progressive5.sentences[3].difficultyTier === 'easy_and_inset' &&
+		progressive5.sentences[4].difficultyTier === 'challenging',
+		'Generated sentences maintain progressive difficulty order: first easiest, intermediate easy+in-set, last challenging'
+	);
+
+	// Single sentence request always uses easiest tier
+	const singleSent = verifiedGen.generateVerifiedSentencesForUnit(0, 1);
+	assert(
+		Array.isArray(singleSent.sentences) && singleSent.sentences.length === 1 &&
+		singleSent.sentences[0].difficultyTier === 'easiest',
+		'When user requests 1 sentence, it always uses the easiest possible tier'
+	);
+
+	// 14e. DecksView (Secret Debug UI) & Webapp Integration
+	const { DecksView } = require('../webapp/decks_view.js');
+	const decksView = new DecksView({
+		engine: selectorEngine,
+		onStateChange: () => {}
+	});
+	assert(
+		typeof decksView.logDecksToConsole === 'function' &&
+		typeof decksView.logTemplatesToConsole === 'function',
+		'DecksView provides console logging methods for POS decks and prioritized templates'
+	);
+	assert(
+		indexHtmlContent.includes('data-view="decks"') &&
+		indexHtmlContent.includes('id="view-decks"') &&
+		indexHtmlContent.includes('id="decks-container"') &&
+		indexHtmlContent.includes('decks_view.js'),
+		'webapp/index.html includes Decks Inspector tab, view container, and script tag'
 	);
 
 	console.log(`\n======================================================`);

@@ -35,6 +35,9 @@
 				<span>🗂️ Practice Set &amp; Flashcard Queue</span>
 				<span id="nav-inset-badge" class="tab-badge">0</span>
 			</button>
+			<button type="button" class="spa-tab debug-tab" data-view="decks" role="tab" aria-selected="false" title="Debug Inspector: POS difficulty decks &amp; prioritized verified sentences">
+				<span>🛠️ Decks Inspector</span>
+			</button>
 		</nav>
 
 		<!-- Live Telemetry & DB Status -->
@@ -213,6 +216,13 @@
 	</main>
 
 	<!-- ===================================================================== -->
+	<!-- VIEW 5: DIFFICULTY DECKS & PRIORITIZED TEMPLATES INSPECTOR (DEBUG)    -->
+	<!-- ===================================================================== -->
+	<main id="view-decks" class="spa-view">
+		<div id="decks-container" class="decks-container"></div>
+	</main>
+
+	<!-- ===================================================================== -->
 	<!-- MODAL 1: CREATE / EDIT ADDITIONAL COLUMN                              -->
 	<!-- ===================================================================== -->
 	<div id="modal-column-form" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-col-title">
@@ -351,6 +361,7 @@
 	<script src="selector.js"></script>
 	<script src="text_importer.js"></script>
 	<script src="verified_sentences_view.js"></script>
+	<script src="decks_view.js"></script>
 	<script src="app.js"></script>
 </body>
 </html>

@@ -130,6 +130,13 @@ class KongbuheyApp {
 			engine: this.engine,
 			onStateChange: (evt) => this.handleEngineEvent(evt)
 		}) : null;
+		const DecksClass = (typeof DecksView !== 'undefined')
+			? DecksView
+			: (typeof require !== 'undefined' ? require('./decks_view.js').DecksView : null);
+		this.decksView = DecksClass ? new DecksClass({
+			engine: this.engine,
+			onStateChange: (evt) => this.handleEngineEvent(evt)
+		}) : null;
 		this.activeView = 'selector';
 		this.flashcardRevealed = false;
 	}
@@ -155,6 +162,11 @@ class KongbuheyApp {
 			this.verifiedView.mount(verifiedMountEl);
 		}
 
+		const decksMountEl = document.getElementById('decks-container');
+		if (decksMountEl && this.decksView) {
+			this.decksView.mount(decksMountEl);
+		}
+
 		const mountEl = document.getElementById('spreadsheet-container');
 		if (mountEl) {
 			this.engine.mount(mountEl);
@@ -162,6 +174,17 @@ class KongbuheyApp {
 
 		this._setDbStatus('Loading DB...', true);
 		await this.engine.init();
+
+		// Hydrate Verified Sentences user overrides from persistent IndexedDB
+		if (this.db && typeof window !== 'undefined' && window.verifiedSentenceGenerator) {
+			try {
+				const savedVsState = await this.db.getVerifiedSentencesCustomizations();
+				if (savedVsState) {
+					window.verifiedSentenceGenerator.importVerifiedSentencesState(savedVsState);
+				}
+			} catch (_) {}
+		}
+
 		this._setDbStatus('DB Synced', false);
 		this.updateStatsBar();
 		if (this.selectorView) {
@@ -212,6 +235,18 @@ class KongbuheyApp {
 			}
 			this.switchView('verified');
 			return;
+		}
+
+		if (String(evt.type || '').startsWith('verified-')) {
+			if (this.selectorView && typeof this.selectorView.invalidateGeneratedSentences === 'function') {
+				this.selectorView.invalidateGeneratedSentences();
+			}
+			if (this.db && typeof window !== 'undefined' && window.verifiedSentenceGenerator) {
+				try {
+					const currentState = window.verifiedSentenceGenerator.exportVerifiedSentencesState();
+					this.db.saveVerifiedSentencesCustomizations(currentState).catch(() => {});
+				} catch (_) {}
+			}
 		}
 
 		this._setDbStatus('DB Synced', false);
@@ -306,11 +341,13 @@ class KongbuheyApp {
 		const verifiedViewEl = document.getElementById('view-verified');
 		const sheetView = document.getElementById('view-spreadsheet');
 		const practiceView = document.getElementById('view-practice');
+		const decksViewEl = document.getElementById('view-decks');
 		if (selectorViewEl) selectorViewEl.classList.toggle('active', viewName === 'selector');
 		if (importerViewEl) importerViewEl.classList.toggle('active', viewName === 'importer');
 		if (verifiedViewEl) verifiedViewEl.classList.toggle('active', viewName === 'verified');
 		if (sheetView) sheetView.classList.toggle('active', viewName === 'spreadsheet');
 		if (practiceView) practiceView.classList.toggle('active', viewName === 'practice');
+		if (decksViewEl) decksViewEl.classList.toggle('active', viewName === 'decks');
 
 		if (viewName === 'selector' && this.selectorView) {
 			this.selectorView.render();
@@ -318,6 +355,8 @@ class KongbuheyApp {
 			this.importerView.render();
 		} else if (viewName === 'verified' && this.verifiedView) {
 			this.verifiedView.render();
+		} else if (viewName === 'decks' && this.decksView) {
+			this.decksView.render();
 		} else if (viewName === 'spreadsheet') {
 			this.engine.renderHeader();
 			this.engine.renderViewport();
