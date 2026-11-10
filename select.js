@@ -282,9 +282,15 @@ function buildUnitFromRecord(rec, resolvedSource, newId = 0, schemaCols = SCHEMA
 		}
 		if (col.name === 'PriorityScore') {
 			const score = rec.PriorityScore ?? rec.priorityScore ?? rec.FrequencyRank;
-			return (score !== undefined && score !== null && score !== "" && !isNaN(score))
-				? Number(score)
-				: 1;
+			if (typeof score === 'string' && (score.includes('TODO') || score.includes('PriorityScore') || isNaN(Number(score)))) {
+				throw new Error(`Unassigned scaffold PriorityScore for "${rec.Korean || 'unit'}": "${score}". Please evaluate and assign a valid numeric PriorityScore (0.5, 1, 2, 3, 4, or 5).`);
+			}
+			const num = (score !== undefined && score !== null && score !== "" && !isNaN(score)) ? Number(score) : null;
+			const validScores = [0.5, 1, 2, 3, 4, 5];
+			if (num === null || !validScores.includes(num)) {
+				throw new Error(`Invalid PriorityScore "${score}" for "${rec.Korean || 'unit'}". Must be one of: 0.5, 1, 2, 3, 4, or 5.`);
+			}
+			return num;
 		}
 		if (col.name === 'SemanticTags') {
 			let tagsArr = [];
@@ -1959,6 +1965,7 @@ module.exports = {
 	executeAddColumn,
 	auditSemanticRules,
 	validateLanguageUnitSemanticSelection,
+	buildUnitFromRecord,
 	detectUndifferentiatedHomonym,
 	getVerbSemanticConstraint,
 	formatResults,

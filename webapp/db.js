@@ -32,7 +32,7 @@ const DEFAULT_COLUMNS_SPEC = [
 	{ key: 'Disambiguation', schemaIndex: 5, label: 'Disambiguation', type: 'string', isDefault: true, defaultWidth: 180, editable: true },
 	{ key: 'Conjugation', schemaIndex: 6, label: 'Conjugation', type: 'conjugation', isDefault: true, defaultWidth: 150, editable: true },
 	{ key: 'Source', schemaIndex: 7, label: 'Source', type: 'string', isDefault: true, defaultWidth: 110, editable: true },
-	{ key: 'PriorityScore', schemaIndex: 8, label: 'PriorityScore', type: 'int', isDefault: true, defaultWidth: 115, editable: true },
+	{ key: 'PriorityScore', schemaIndex: 8, label: 'PriorityScore', type: 'number', isDefault: true, defaultWidth: 115, editable: true },
 	{ key: 'FormalityLevel', schemaIndex: 9, label: 'FormalityLevel', type: 'string', isDefault: true, defaultWidth: 130, editable: true },
 	{ key: 'HonorificRules', schemaIndex: 10, label: 'HonorificRules', type: 'string', isDefault: true, defaultWidth: 190, editable: true },
 	{ key: 'SemanticData', schemaIndex: 11, label: 'SemanticData', type: 'json', isDefault: true, defaultWidth: 240, editable: true },

@@ -282,9 +282,9 @@ class DecksView {
 						</div>
 						<div class="decks-score-pills">
 							<span class="score-pills-label">Difficulty:</span>
-							${['All', '1', '2', '3', '4', '5'].map(sc => `
+							${['All', '0.5', '1', '2', '3', '4', '5'].map(sc => `
 								<button type="button" class="deck-score-pill ${this.selectedScore === sc ? 'active' : ''}" data-score="${sc}">
-									${sc === 'All' ? 'All Scores' : `P${sc} ${sc === '1' ? '(Easiest)' : ''}`}
+									${sc === 'All' ? 'All Scores' : sc === '0.5' ? 'P0.5 (Ultra-Basic)' : `P${sc} ${sc === '1' ? '(Easiest)' : ''}`}
 								</button>
 							`).join('')}
 						</div>

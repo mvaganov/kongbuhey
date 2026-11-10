@@ -23,6 +23,7 @@ const analyzer = require('./korean/analyzer/index.js');
 const verifiedGenerator = require('./korean/generation/verified_sentence_generator.js');
 
 const VERIFIED_SENTENCES_PATH = path.resolve(__dirname, 'verified_sentences.js');
+const SCAFFOLD_PRIORITY_INSTRUCTION = "TODO: PriorityScore [0.5=ultra-simple, 1=top essential ~200, 2=beginner ~1k, 3=elementary ~2.5k, 4=intermediate ~5k, 5=niche]";
 
 /**
  * Loads existing static Verified Sentence entries from verified_sentences.js.
@@ -286,7 +287,7 @@ function analyzePassage(passageText, passageName = "Passage", options = {}) {
 					Disambiguation: "",
 					Conjugation: mv.text.endsWith("하다") ? K.HADA : "",
 					Source: passageName,
-					PriorityScore: 1,
+					PriorityScore: SCAFFOLD_PRIORITY_INSTRUCTION,
 					FormalityLevel: K.UNIVERSAL,
 					HonorificRules: "",
 					SemanticData: { domain: K.CONCEPT, type: K.GENERAL },
@@ -308,7 +309,7 @@ function analyzePassage(passageText, passageName = "Passage", options = {}) {
 					Disambiguation: "",
 					Conjugation: ["{VP_AVst}"],
 					Source: passageName,
-					PriorityScore: 2,
+					PriorityScore: SCAFFOLD_PRIORITY_INSTRUCTION,
 					FormalityLevel: K.UNIVERSAL,
 					HonorificRules: "",
 					SemanticData: { domain: K.GRAMMAR, type: "verb_ending" },

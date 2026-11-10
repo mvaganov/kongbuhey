@@ -660,6 +660,11 @@ async function runSuite() {
 		sampleScaffoldUnit.Source === 'passage_demo',
 		'Scaffolded unit contains all mandatory schema fields (Korean, English, POS, Tags, Source)'
 	);
+	assert(
+		typeof sampleScaffoldUnit.PriorityScore === 'string' &&
+		sampleScaffoldUnit.PriorityScore.includes('TODO: PriorityScore'),
+		'Scaffolded unit uses instruction string placeholder for PriorityScore instead of default number 1'
+	);
 
 	// Verify webapp/index.html integrates Text Importer tab and view container
 	const indexHtmlContent = fs.readFileSync(path.resolve(__dirname, '../webapp/index.html'), 'utf8');
@@ -1013,8 +1018,8 @@ async function runSuite() {
 	assert(
 		Array.isArray(nounDeck) && nounDeck.length > 500 &&
 		(nounDeck[0][DATA_SCHEMA.PriorityScore] || 3) <= (nounDeck[nounDeck.length - 1][DATA_SCHEMA.PriorityScore] || 3) &&
-		(nounDeck[0][DATA_SCHEMA.PriorityScore] || 3) === 1,
-		'Each POS deck is sorted by PriorityScore ascending with easiest elements (PriorityScore: 1) first'
+		(nounDeck[0][DATA_SCHEMA.PriorityScore] || 3) <= 1,
+		'Each POS deck is sorted by PriorityScore ascending with easiest elements (PriorityScore: <= 1) first'
 	);
 
 	// 14b. Prioritized Verified Sentence Structures by Difficulty Score
@@ -1086,6 +1091,28 @@ async function runSuite() {
 		indexHtmlContent.includes('decks_view.js'),
 		'webapp/index.html includes Decks Inspector tab, view container, and script tag'
 	);
+
+	// 14f. PriorityScore Validation & Tier 0.5 Support
+	const selectModule = require('../select.js');
+	let threwOnPlaceholder = false;
+	try {
+		selectModule.buildUnitFromRecord({
+			Korean: '테스트단어',
+			PriorityScore: 'TODO: PriorityScore [0.5=ultra-simple]'
+		}, 'test_source');
+	} catch (e) {
+		threwOnPlaceholder = true;
+	}
+	assert(threwOnPlaceholder, 'select.js buildUnitFromRecord rejects unassigned scaffold PriorityScore string');
+
+	const unitWithHalf = selectModule.buildUnitFromRecord({
+		Korean: '가다',
+		PriorityScore: 0.5
+	}, 'test_source');
+	assert(unitWithHalf[DATA_SCHEMA.PriorityScore] === 0.5, 'select.js buildUnitFromRecord accepts PriorityScore 0.5');
+
+	const psCol = DEFAULT_COLUMNS_SPEC.find(c => c.key === 'PriorityScore');
+	assert(psCol && psCol.type === 'number', 'webapp/db.js defines PriorityScore with type number to support decimal tiers');
 
 	console.log(`\n======================================================`);
 	console.log(`TOTAL TESTS: ${passed + failed}`);

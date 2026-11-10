@@ -616,6 +616,8 @@ function detectProperNameCandidate(word, passageText = "", vocabByKo = null) {
 	return null;
 }
 
+const SCAFFOLD_PRIORITY_INSTRUCTION = "TODO: PriorityScore [0.5=ultra-simple, 1=top essential ~200, 2=beginner ~1k, 3=elementary ~2.5k, 4=intermediate ~5k, 5=niche]";
+
 /**
  * Generates an intelligent draft language unit skeleton using the schema taxonomy.
  */
@@ -668,7 +670,7 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 			Disambiguation: context.disambiguation || "",
 			Conjugation: "",
 			Source: source,
-			PriorityScore: context.priorityScore || 1,
+			PriorityScore: context.priorityScore !== undefined ? context.priorityScore : SCAFFOLD_PRIORITY_INSTRUCTION,
 			FormalityLevel: K.UNIVERSAL,
 			HonorificRules: "",
 			SemanticData: vector,
@@ -740,7 +742,7 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 		Disambiguation: context.disambiguation || "",
 		Conjugation: conjugation,
 		Source: source,
-		PriorityScore: context.priorityScore || 1,
+		PriorityScore: context.priorityScore !== undefined ? context.priorityScore : SCAFFOLD_PRIORITY_INSTRUCTION,
 		FormalityLevel: context.formality || K.UNIVERSAL,
 		HonorificRules: context.honorific || "",
 		SemanticData: vector,

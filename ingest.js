@@ -33,6 +33,8 @@ const HOMONYMS_PATH = path.resolve(__dirname, 'homonyms.js');
 const SCHEMA_ANALYSIS_PATH = path.resolve(__dirname, 'schema_analysis.js');
 const TEXT_ANALYZER_PATH = path.resolve(__dirname, 'text_analyzer.js');
 
+const SCAFFOLD_PRIORITY_INSTRUCTION = "TODO: PriorityScore [0.5=ultra-simple, 1=top essential ~200, 2=beginner ~1k, 3=elementary ~2.5k, 4=intermediate ~5k, 5=niche]";
+
 const studytexts = require(STUDYTEXTS_PATH);
 const {
 	findExistingUnit,
@@ -393,7 +395,7 @@ async function main() {
 				Disambiguation: "",
 				Conjugation: tm.text.endsWith("하다") ? K.HADA : "",
 				Source: passageName,
-				PriorityScore: 1,
+				PriorityScore: SCAFFOLD_PRIORITY_INSTRUCTION,
 				FormalityLevel: K.UNIVERSAL,
 				HonorificRules: "",
 				SemanticData: { domain: K.CONCEPT, type: K.GENERAL },

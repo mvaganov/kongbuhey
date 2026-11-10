@@ -275,8 +275,12 @@ function runTests(options = {}) {
 
 			// Priority score check
 			const score = unit[DATA_SCHEMA.PriorityScore];
-			if (typeof score !== 'number' || score < 1 || score > 5) {
-				failFast("Stage 1 (Data Integrity)", `Invalid PriorityScore '${score}' at ID ${id} (${ko}). Must be integer between 1 and 5.`);
+			const validPriorityScores = [0.5, 1, 2, 3, 4, 5];
+			if (typeof score === 'string') {
+				failFast("Stage 1 (Data Integrity)", `Unassigned scaffold PriorityScore '${score}' at ID ${id} (${ko}). Must be explicitly evaluated and assigned a valid numeric tier (0.5, 1, 2, 3, 4, or 5).`);
+			}
+			if (typeof score !== 'number' || isNaN(score) || !validPriorityScores.includes(score)) {
+				failFast("Stage 1 (Data Integrity)", `Invalid PriorityScore '${score}' at ID ${id} (${ko}). Must be one of: 0.5, 1, 2, 3, 4, 5.`);
 			}
 
 			// SemanticData Object validation
