@@ -25,6 +25,9 @@ OPTIONS:
   --status            Display current verification progress and history
   --reset             Reset verification progress back to Unit ID 0
   --unit <id>         Inspect a specific unit without advancing the saved pointer
+  --range <start>-<end> Inspect an inclusive range of unit IDs (e.g. --range 3-27)
+  --dump              Print sentences non-interactively without prompting or saving
+  --json              Format --dump output as machine-readable JSON
   --limit <N>         Limit verification loop to N units in this session
   --yes               Non-interactive mode: automatically approve all units
   --no                Non-interactive mode: automatically flag error on current unit
@@ -217,15 +220,71 @@ async function runCli() {
 		process.exit(0);
 	}
 
-	// 4. Specific Unit Inspection (without modifying saved pointer)
+	// 4. Specific Unit / Range Inspection (without modifying saved pointer)
 	let singleUnitInspection = null;
 	if (args.includes('--unit') && !args.includes('--seed')) {
 		singleUnitInspection = parseInt(args[args.indexOf('--unit') + 1], 10);
 	}
 
-	// 5. Interactive / Automated Testing Loop
+	let rangeStart = null;
+	let rangeEnd = null;
+	if (args.includes('--range')) {
+		const rangeStr = args[args.indexOf('--range') + 1] || '';
+		const m = rangeStr.match(/^(\d+)-(\d+)$/);
+		if (!m) {
+			console.error(`[ERROR] Invalid --range format '${rangeStr}'. Expected '<start>-<end>' (e.g. 3-27).`);
+			process.exit(1);
+		}
+		rangeStart = parseInt(m[1], 10);
+		rangeEnd = parseInt(m[2], 10);
+	}
+
+	const isDump = args.includes('--dump');
+	const isJson = args.includes('--json');
+
+	// 5. Non-Interactive Dump Mode (Read-Only Batch Output)
+	if (isDump) {
+		const progress = loadProgress();
+		const maxUnits = args.includes('--limit') ? parseInt(args[args.indexOf('--limit') + 1], 10) : Infinity;
+		const startId = rangeStart !== null ? rangeStart : (singleUnitInspection !== null ? singleUnitInspection : progress.currentUnitId);
+		const endId = rangeEnd !== null ? rangeEnd : (singleUnitInspection !== null ? singleUnitInspection : KR_EN_languageUnits.length - 1);
+
+		const dumpResults = [];
+		let count = 0;
+		for (let id = startId; id <= endId && id < KR_EN_languageUnits.length && count < maxUnits; id++) {
+			const unit = KR_EN_languageUnits[id];
+			if (!unit) continue;
+			const batch = generate10SentencesForUnit(id);
+			if (isJson) {
+				dumpResults.push({
+					unitId: id,
+					korean: unit[DATA_SCHEMA.Korean],
+					english: unit[DATA_SCHEMA.English],
+					pos: unit[DATA_SCHEMA.PartofSpeech],
+					sentences: batch
+				});
+			} else {
+				printUnitHeader(unit);
+				if (batch.length === 0) {
+					console.log(`  [WARN] 0 sentences generated for Unit #${id}.`);
+				} else {
+					for (const item of batch) {
+						console.log(formatSingleSentenceDisplay(item));
+					}
+				}
+			}
+			count++;
+		}
+		if (isJson) {
+			console.log(JSON.stringify(dumpResults, null, 2));
+		}
+		process.exit(0);
+	}
+
+	// 6. Interactive / Automated Testing Loop
 	const progress = loadProgress();
-	let currentId = singleUnitInspection !== null ? singleUnitInspection : progress.currentUnitId;
+	let currentId = rangeStart !== null ? rangeStart : (singleUnitInspection !== null ? singleUnitInspection : progress.currentUnitId);
+	const loopEndId = rangeEnd !== null ? rangeEnd : KR_EN_languageUnits.length - 1;
 
 	const autoYes = args.includes('--yes');
 	const autoNo = args.includes('--no');
@@ -238,7 +297,7 @@ async function runCli() {
 	});
 
 	try {
-		while (currentId < KR_EN_languageUnits.length && processedInSession < maxUnits) {
+		while (currentId <= loopEndId && currentId < KR_EN_languageUnits.length && processedInSession < maxUnits) {
 			const unit = KR_EN_languageUnits[currentId];
 			if (!unit) {
 				currentId++;
@@ -267,8 +326,9 @@ async function runCli() {
 				decision = decision.toLowerCase();
 			}
 
+			const isInspectionMode = singleUnitInspection !== null || rangeStart !== null;
 			if (decision === 'y' || decision === 'yes') {
-				if (singleUnitInspection === null) {
+				if (!isInspectionMode) {
 					progress.lastVerifiedUnitId = currentId;
 					progress.totalVerified = (progress.totalVerified || 0) + 1;
 					progress.history.push({
@@ -280,13 +340,16 @@ async function runCli() {
 					currentId++;
 					progress.currentUnitId = currentId;
 					saveProgress(progress);
-				} else {
+				} else if (singleUnitInspection !== null) {
 					console.log(`[OK] Unit #${currentId} verified in single inspection mode.`);
 					break;
+				} else {
+					console.log(`[OK] Unit #${currentId} verified in range inspection mode.`);
+					currentId++;
 				}
 				processedInSession++;
 			} else if (decision === 'n' || decision === 'no') {
-				if (singleUnitInspection === null) {
+				if (!isInspectionMode) {
 					progress.history.push({
 						unitId: currentId,
 						korean: unit[DATA_SCHEMA.Korean],
