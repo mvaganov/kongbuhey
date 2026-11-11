@@ -652,7 +652,7 @@ function realizeVerbInflection(unit, inflection, isOriginalUnit = false, origina
 function extractCleanSentenceStrings(passageText) {
 	const rawLines = (passageText || '')
 		.split(/\r?\n/)
-		.map(l => l.replace(/^[#↳★①②③④⑤\-*\s]+/, '').replace(/^(?:[가나]|[AB]):\s*/, '').replace(/\[-\]/g, '').trim())
+		.map(l => l.replace(/^[#↳★①②③④⑤※•\-*\s]+/, '').replace(/^(?:[가나]|[AB]|Q|A):\s*|^(?:Q|A)\s+/, '').replace(/\[-\]/g, '').trim())
 		.filter(Boolean);
 
 	const normalizedLines = [];
@@ -673,7 +673,7 @@ function extractCleanSentenceStrings(passageText) {
 		}
 
 		const parts = line
-			.split(/(?<=[.?!~])\s+/)
+			.split(/(?<=[.?!~]["“”'‘’]?,?)\s+/)
 			.map(s => s.replace(/^["“”'‘’]+|["“”'‘’]+$/g, '').trim())
 			.filter(Boolean);
 
@@ -870,7 +870,7 @@ function extractVerifiedSentenceTemplate(sentOrText, sourceName = K.CUSTOM_PASSA
 	const safeSource = String(sourceName || K.CUSTOM_PASSAGE).replace(/[^a-zA-Z0-9_-]/g, '_');
 	const id = `vs_${safeSource}_${seqNum}`;
 
-	return {
+	const tpl = {
 		id,
 		title: buildDefaultTemplateTitle(slots, sourceName, seqNum, originalKo),
 		source: sourceName || K.CUSTOM_PASSAGE,
@@ -880,6 +880,29 @@ function extractVerifiedSentenceTemplate(sentOrText, sourceName = K.CUSTOM_PASSA
 		grammarUnitIds: Array.from(grammarUnitIdsSet),
 		slots
 	};
+
+	// AST Recomposition Validation Gate: Verify grammatical & syntactic integrity
+	const units = getUnitsArray();
+	const slotChoices = slots.map(s => {
+		const u = s.originalUnitId != null ? (units && units[s.originalUnitId]) : null;
+		return {
+			slotIndex: s.index,
+			chosenUnit: u,
+			chosenUnitId: s.originalUnitId,
+			surfaceKo: s.originalSurface,
+			isVariedSlot: false,
+			pos: u ? u[DATA_SCHEMA.PartofSpeech] : s.pos,
+			grammar: s.grammar
+		};
+	});
+	const realized = { ko: originalKo, en: '' };
+	const ast = recomposeASTFromVerifiedSentence(tpl, slotChoices, realized);
+	const valResult = validateVerifiedSentence(ast, realized, slotChoices);
+	if (!valResult.valid || (valResult.errors && valResult.errors.length > 0)) {
+		return null;
+	}
+
+	return tpl;
 }
 
 /**
@@ -1592,10 +1615,17 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 						const validCands = getNounCandidatesForVerb(targetVerb);
 						if (Array.isArray(validCands) && validCands.length > 0 && !validCands.some(n => n[DATA_SCHEMA.Id] === objUnit[DATA_SCHEMA.Id])) {
 							const objKo = objUnit[DATA_SCHEMA.Korean] || "";
-							errors.push({
-								code: "VERB_OBJECT_COLLOCATION_MISMATCH",
-								message: `Verb '${vKo}' does not collocate with direct object '${objKo}' in: "${realized.ko}"`
-							});
+							const hasGoverningAdnominal = constituents.some(c =>
+								(c.role === "adnominal_modifier" || c.category === "adnominal_modifier" || (c.inflection && c.inflection.stemForm === "adnominal"))
+							);
+							if (objKo === "것" && hasGoverningAdnominal) {
+								// Valid adnominally modified object pronoun (e.g. 다른 걸 먹읍시다)
+							} else {
+								errors.push({
+									code: "VERB_OBJECT_COLLOCATION_MISMATCH",
+									message: `Verb '${vKo}' does not collocate with direct object '${objKo}' in: "${realized.ko}"`
+								});
+							}
 						}
 					}
 				}
@@ -2492,6 +2522,28 @@ function addRuntimeVerifiedSentences(templates, sourceName = null) {
 		if (!copy.id || allExisting.some(e => e.id === copy.id) || added.some(a => a.id === copy.id)) {
 			copy.id = `vs_runtime_${copy.source || 'custom'}_${Date.now()}_${i}`;
 		}
+
+		// AST Recomposition Validation Gate: Verify grammatical & syntactic integrity
+		const units = getUnitsArray();
+		const slotChoices = (copy.slots || []).map(s => {
+			const u = s.originalUnitId != null ? (units && units[s.originalUnitId]) : null;
+			return {
+				slotIndex: s.index,
+				chosenUnit: u,
+				chosenUnitId: s.originalUnitId,
+				surfaceKo: s.originalSurface,
+				isVariedSlot: false,
+				pos: u ? u[DATA_SCHEMA.PartofSpeech] : s.pos,
+				grammar: s.grammar
+			};
+		});
+		const realized = { ko: ko, en: '' };
+		const ast = recomposeASTFromVerifiedSentence(copy, slotChoices, realized);
+		const valResult = validateVerifiedSentence(ast, realized, slotChoices);
+		if (!valResult.valid || (valResult.errors && valResult.errors.length > 0)) {
+			continue;
+		}
+
 		if (ko) existingKoSet.add(ko);
 		_customTemplates.unshift(copy);
 		added.push(copy);

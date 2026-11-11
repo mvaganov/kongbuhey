@@ -22,6 +22,8 @@ const path = require('path');
 const analyzer = require('./korean/analyzer/index.js');
 const verifiedGenerator = require('./korean/generation/verified_sentence_generator.js');
 
+const { DATA_SCHEMA } = (typeof require !== 'undefined') ? require('./data.js') : (typeof window !== 'undefined' ? window : {});
+
 const VERIFIED_SENTENCES_PATH = path.resolve(__dirname, 'verified_sentences.js');
 const SCAFFOLD_PRIORITY_INSTRUCTION = "TODO: PriorityScore [0.5=ultra-simple, 1=top essential ~200, 2=beginner ~1k, 3=elementary ~2.5k, 4=intermediate ~5k, 5=niche]";
 
@@ -157,6 +159,30 @@ function addVerifiedSentencesToFile(newTemplates, filePath = VERIFIED_SENTENCES_
 		if (!koText) continue;
 		const cleanCopy = JSON.parse(JSON.stringify(tmpl));
 		cleanCopy.isHardcoded = true;
+
+		// AST Recomposition Validation Gate: Verify grammatical & syntactic integrity
+		if (typeof verifiedGenerator !== 'undefined' && typeof verifiedGenerator.recomposeASTFromVerifiedSentence === 'function') {
+			const units = require('./data.js').KR_EN_languageUnits;
+			const slotChoices = (cleanCopy.slots || []).map(s => {
+				const u = s.originalUnitId != null ? units[s.originalUnitId] : null;
+				return {
+					slotIndex: s.index,
+					chosenUnit: u,
+					chosenUnitId: s.originalUnitId,
+					surfaceKo: s.originalSurface,
+					isVariedSlot: false,
+					pos: u ? u[DATA_SCHEMA.PartofSpeech] : s.pos,
+					grammar: s.grammar
+				};
+			});
+			const realized = { ko: koText, en: '' };
+			const ast = verifiedGenerator.recomposeASTFromVerifiedSentence(cleanCopy, slotChoices, realized);
+			const valResult = verifiedGenerator.validateVerifiedSentence(ast, realized, slotChoices);
+			if (!valResult.valid || (valResult.errors && valResult.errors.length > 0)) {
+				continue; // Reject erroneous template from entering verified_sentences.js
+			}
+		}
+
 		const key = `${cleanCopy.source || ''}::${koText}`;
 		if (!byKey.has(key)) {
 			existing.push(cleanCopy);
