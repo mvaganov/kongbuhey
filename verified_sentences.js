@@ -590,17 +590,149 @@ const VERIFIED_SENTENCES = [
 	["vs_362","[studytext162 #17] ","studytext162","",".",[[1618,"이","exact_lexical","nominal","","",[],null,""],[701,"약은","noun_particle","nominal","은/는","",[[36,"은","Particle"]],null,""],[2002,"바닥에","noun_particle","nominal","에","",[[200,"에","Particle"]],null,""],[82,"있는","adnominal_modifier","conj","는","",[[645,"-는","Adnominal Ending"]],null,""],[701,"약을","noun_particle","nominal","을/를","",[[173,"을","Particle"]],null,""],[1613,"잘","exact_lexical","nominal","","",[],null,""],[944,"섞어야 하기","auxiliary_construction","ao","야 하기","",[[1276,"-아/어야","Verb Ending"],[574,"-아/어야 하다","Grammar Pattern"],[1815,"-기","Nominalizing Suffix"]],null,""],[1837,"때문에","noun_particle","nominal","에","",[[132,"에","Particle"]],null,""],[2003,"흔들어서","conjugated_verb","ao","서","",[[459,"-아/어서","Verb Ending"]],null,""],[40,"먹지 않으면","auxiliary_construction","raw","지 않으면","",[[274,"-지 않다","Grammar Pattern"],[619,"-(으)면","Verb Ending"]],null,""],[98,"안","exact_lexical","nominal","","",[],null,""],[1615,"됩니다","conjugated_verb","conj","습니다/ㅂ니다","",[[50,"-ㅂ니다","Verb Ending"]],null,""]]],
 ];
 
+function printHelp() {
+	console.log(`verified_sentences.js - Verified Sentence Templates Repository & CLI
+
+USAGE:
+  node verified_sentences.js [options]
+  node verified_sentences.js <unitId> <seed>
+  node verified_sentences.js --status
+  node verified_sentences.js --list [limit]
+  node verified_sentences.js --find <query>
+  node verified_sentences.js --verify [args]
+
+OPTIONS:
+  --status            Display repository statistics and verification testing progress
+  --list [N]          List verified sentence templates (default: 20)
+  --find <query>      Search verified sentences by Korean text, ID, or study text source
+  --verify [args]     Run the interactive verification testing tool (verify_sentences_cli.js)
+  <unitId> <seed>     Deterministically regenerate a specific sentence for a unit
+  -h, --help          Display this help message and exit
+
+EXAMPLES:
+  node verified_sentences.js --help
+  node verified_sentences.js --status
+  node verified_sentences.js --list 10
+  node verified_sentences.js --find "친구"
+  node verified_sentences.js 0 1007
+  node verified_sentences.js --verify
+`);
+}
+
+function runCli() {
+	const args = process.argv.slice(2);
+
+	if (args.includes('-h') || args.includes('--help')) {
+		printHelp();
+		process.exit(0);
+	}
+
+	if (args.includes('--status')) {
+		const sources = new Set(VERIFIED_SENTENCES.map(s => s[2]));
+		const totalSlots = VERIFIED_SENTENCES.reduce((acc, s) => acc + (s[5] ? s[5].length : 0), 0);
+		const avgSlots = (totalSlots / VERIFIED_SENTENCES.length).toFixed(1);
+
+		console.log(`\n================================================================================`);
+		console.log(`                    VERIFIED SENTENCES REPOSITORY & STATUS                      `);
+		console.log(`================================================================================`);
+		console.log(`Repository Templates:     ${VERIFIED_SENTENCES.length} verified sentence templates`);
+		console.log(`Study Text Sources:       ${sources.size} unique study texts`);
+		console.log(`Total Lexical Slots:      ${totalSlots} slots (average ${avgSlots} slots/template)`);
+
+		const path = require('path');
+		const fs = require('fs');
+		const progPath = path.resolve(__dirname, 'scratch', 'sentence_verification_progress.json');
+		if (fs.existsSync(progPath)) {
+			try {
+				const prog = JSON.parse(fs.readFileSync(progPath, 'utf8'));
+				console.log(`\n--- Sentence Verification Testing Progress ---`);
+				console.log(`Current Unit ID:          ${prog.currentUnitId}`);
+				console.log(`Last Verified ID:         ${prog.lastVerifiedUnitId !== null ? prog.lastVerifiedUnitId : 'None'}`);
+				console.log(`Total Units Verified:     ${prog.totalVerified || 0} / 2045`);
+				console.log(`Last Updated:             ${prog.lastUpdated || 'Never'}`);
+			} catch (_) {}
+		}
+
+		console.log(`\nNext Actions:`);
+		console.log(`  Run 'node verify_sentences_cli.js' or 'node verified_sentences.js --verify' to test sentence generation.`);
+		console.log(`  Run 'node verified_sentences.js --list' to browse templates.`);
+		console.log(`  Run 'node verified_sentences.js --help' for all options.`);
+		console.log(`================================================================================\n`);
+		process.exit(0);
+	}
+
+	if (args.includes('--list')) {
+		const limitIdx = args.indexOf('--list') + 1;
+		const limit = (limitIdx < args.length && !args[limitIdx].startsWith('-')) ? parseInt(args[limitIdx], 10) : 20;
+		console.log(`\n--- Verified Sentence Templates (Showing ${Math.min(limit, VERIFIED_SENTENCES.length)} of ${VERIFIED_SENTENCES.length}) ---`);
+		for (let i = 0; i < Math.min(limit, VERIFIED_SENTENCES.length); i++) {
+			const s = VERIFIED_SENTENCES[i];
+			console.log(`[${s[0]}] (${s[2]}) ${s[3]}`);
+		}
+		console.log(``);
+		process.exit(0);
+	}
+
+	if (args.includes('--find')) {
+		const queryIdx = args.indexOf('--find') + 1;
+		const query = (queryIdx < args.length) ? args[queryIdx] : '';
+		if (!query) {
+			console.log(`[ERROR] Please specify a search query: node verified_sentences.js --find <query>`);
+			process.exit(1);
+		}
+		const matches = VERIFIED_SENTENCES.filter(s =>
+			s[0].toLowerCase().includes(query.toLowerCase()) ||
+			s[2].toLowerCase().includes(query.toLowerCase()) ||
+			s[3].includes(query)
+		);
+		console.log(`\n--- Search Results for "${query}" (${matches.length} matches) ---`);
+		for (const m of matches.slice(0, 30)) {
+			console.log(`[${m[0]}] (${m[2]}) ${m[3]}`);
+		}
+		if (matches.length > 30) {
+			console.log(`... and ${matches.length - 30} more.`);
+		}
+		console.log(``);
+		process.exit(0);
+	}
+
+	// Two numeric arguments: <unitId> <seed>
+	if (args.length >= 2 && !args[0].startsWith('-') && !args[1].startsWith('-') && !isNaN(parseInt(args[0], 10)) && !isNaN(parseInt(args[1], 10))) {
+		const cli = require('./verify_sentences_cli.js');
+		return cli.runCli();
+	}
+
+	if (args.includes('--verify')) {
+		const cliArgs = args.filter(a => a !== '--verify');
+		process.argv = [process.argv[0], process.argv[1], ...cliArgs];
+		const cli = require('./verify_sentences_cli.js');
+		return cli.runCli();
+	}
+
+	// No arguments or unhandled arguments: display banner and help
+	console.log(`verified_sentences.js: Contains ${VERIFIED_SENTENCES.length} verified Korean sentence templates across 28 study texts.\n`);
+	printHelp();
+	process.exit(0);
+}
+
 if (typeof window !== 'undefined') {
 	window.VERIFIED_TEMPLATE_SCHEMA = VERIFIED_TEMPLATE_SCHEMA;
 	window.VERIFIED_SLOT_SCHEMA = VERIFIED_SLOT_SCHEMA;
 	window.VERIFIED_SENTENCES = VERIFIED_SENTENCES;
+	window.printHelp = printHelp;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = {
 		VERIFIED_TEMPLATE_SCHEMA,
 		VERIFIED_SLOT_SCHEMA,
-		VERIFIED_SENTENCES
+		VERIFIED_SENTENCES,
+		printHelp,
+		runCli
 	};
+}
+
+if (typeof require !== 'undefined' && require.main === module) {
+	runCli();
 }
 // constants-enable

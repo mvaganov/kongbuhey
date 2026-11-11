@@ -981,6 +981,28 @@ function getSlotCandidates(slot, options = {}) {
 		}
 		if (!matchesAllTags) continue;
 
+		// Relational position nouns (e.g. 앞, 뒤, 위, 맞은편, 건너편) can only be substituted if slot explicitly requires 'position'
+		if (!requiredTags.includes("position") && _hasTag(u, "position")) {
+			continue;
+		}
+
+		// Measure words / counters (e.g. 개, 명, 권, 마리) can only be substituted if slot explicitly requires 'measureWord'
+		if (!requiredTags.includes(K.MEASUREWORD) && !requiredTags.includes("counter") && _hasTag(u, K.MEASUREWORD, "counter")) {
+			continue;
+		}
+
+		// NPI (Negative Polarity Item) adverbs can only be used in negative clauses
+		if (requiredPos === K.POS_ADVERB) {
+			const isNpi = _hasTag(u, "npi") || (state.ALL_NPI_WORDS && state.ALL_NPI_WORDS.has(u[DATA_SCHEMA.Korean]));
+			if (isNpi) {
+				const slotTpl = slot.morphTemplate || "";
+				const isNegativeSlot = slotTpl.includes("지 않") || slotTpl.includes("없다") || slotTpl.includes("못하");
+				if (!isNegativeSlot && !options.isNegativeClause) {
+					continue;
+				}
+			}
+		}
+
 		if (onlyFromSet && allowedUnitIds) {
 			const id = u[DATA_SCHEMA.Id];
 			if (id !== targetUnitId && !allowedUnitIds.has(id)) {
@@ -1342,7 +1364,7 @@ function recomposeASTFromVerifiedSentence(template, slotChoices, realizedResult)
 		const grammarList = templateSlot.grammar || sc.grammar || [];
 		const surf = sc.surfaceKo || "";
 
-		const isAdverbial = category === "adverbial_modifier" ||
+		const isAdverbial = pos === K.POS_ADVERB || category === "adverbial_modifier" ||
 			(templateSlot.inflection && templateSlot.inflection.stemForm === "adv") ||
 			grammarList.some(g => {
 				const gPos = Array.isArray(g) ? g[2] : g.pos;
@@ -1611,7 +1633,12 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 						"입다", "신다", "쓰다", "끼다", "매다", "벗다",
 						"마시다", "먹다", "피우다", "타다", "치다"
 					]);
-					if (targetVerb && (STRICT_COLLOCATION_VERBS.has(vKo) || _hasTag(targetVerb, "transitive_clothing", "transitive_food", "transitive_drink", "transitive_vehicle", "transitive_instrument"))) {
+					const targetSemData = parseSemanticData(targetVerb);
+					const hasCollocationRestrictions = STRICT_COLLOCATION_VERBS.has(vKo) ||
+						_hasTag(targetVerb, "transitive_clothing", "transitive_food", "transitive_drink", "transitive_vehicle", "transitive_instrument", "transitive_person") ||
+						Boolean(targetSemData && targetSemData.collocation_filter) ||
+						Boolean(targetSemData && targetSemData.req && targetSemData.req !== K.OBJECT && targetSemData.req !== "any");
+					if (targetVerb && hasCollocationRestrictions) {
 						const validCands = getNounCandidatesForVerb(targetVerb);
 						if (Array.isArray(validCands) && validCands.length > 0 && !validCands.some(n => n[DATA_SCHEMA.Id] === objUnit[DATA_SCHEMA.Id])) {
 							const objKo = objUnit[DATA_SCHEMA.Korean] || "";
@@ -1639,17 +1666,44 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 					const vKo = verbUnit[DATA_SCHEMA.Korean] || "";
 					const STRICT_DESCRIPTIVE_VERBS = new Set([
 						"맵다", "달다", "짜다", "시다", "싱겁다",
-						"높다", "낮다", "깊다", "넓다", "좁다", "무겁다", "가볍다"
+						"높다", "낮다", "깊다", "넓다", "좁다", "무겁다", "가볍다",
+						"따뜻하다", "춥다", "덥다", "쌀쌀하다", "시원하다"
 					]);
-					if (STRICT_DESCRIPTIVE_VERBS.has(vKo) || _hasTag(verbUnit, "taste", "spatial_dimension")) {
+					const isHumanSubj = _hasTag(subjUnit, K.PERSON, K.FAMILY, "pronoun_1st", "pronoun_2nd", "pronoun_3rd");
+					const isWeatherOrTaste = _hasTag(verbUnit, K.WEATHER, "taste", "descriptive_weather", "descriptive_taste") ||
+						["맵다", "달다", "짜다", "시다", "싱겁다", "따뜻하다", "춥다", "덥다", "쌀쌀하다", "시원하다"].includes(vKo);
+
+					if (isHumanSubj && isWeatherOrTaste) {
+						const subjKo = subjUnit[DATA_SCHEMA.Korean] || "";
+						errors.push({
+							code: "DESCRIPTIVE_VERB_SUBJECT_COLLOCATION_MISMATCH",
+							message: `Weather/taste adjective '${vKo}' cannot take human subject '${subjKo}' in: "${realized.ko}"`
+						});
+					} else if (STRICT_DESCRIPTIVE_VERBS.has(vKo) || _hasTag(verbUnit, "taste", "spatial_dimension")) {
 						const validSubjs = getSubjectCandidatesForDescriptiveVerb(verbUnit);
 						if (Array.isArray(validSubjs) && validSubjs.length > 0 && !validSubjs.some(n => n[DATA_SCHEMA.Id] === subjUnit[DATA_SCHEMA.Id])) {
 							const subjKo = subjUnit[DATA_SCHEMA.Korean] || "";
 							errors.push({
 								code: "DESCRIPTIVE_VERB_SUBJECT_COLLOCATION_MISMATCH",
-								message: `Descriptive verb '${verbKo}' does not collocate with subject '${subjKo}' in: "${realized.ko}"`
+								message: `Descriptive verb '${vKo}' does not collocate with subject '${subjKo}' in: "${realized.ko}"`
 							});
 						}
+					}
+				}
+			}
+
+			// Check for illegal adnominal modification of relational position nouns
+			for (let i = 0; i < constituents.length - 1; i++) {
+				const cCurrent = constituents[i];
+				const cNext = constituents[i + 1];
+				if (cCurrent && (cCurrent.role === "adnominal_modifier" || cCurrent.category === "adnominal_modifier") && cCurrent.unit) {
+					const modVerb = cCurrent.unit;
+					const headNoun = cNext ? (cNext.nounUnit || cNext.unit) : null;
+					if (headNoun && _hasTag(headNoun, "position") && _hasTag(modVerb, "transitive", K.TRANSITIVE_GENERAL)) {
+						errors.push({
+							code: "INVALID_ADNOMINAL_POSITION_MODIFICATION",
+							message: `Transitive verb '${modVerb[DATA_SCHEMA.Korean]}' cannot adnominally modify relational position noun '${headNoun[DATA_SCHEMA.Korean]}' in: "${realized.ko}"`
+						});
 					}
 				}
 			}

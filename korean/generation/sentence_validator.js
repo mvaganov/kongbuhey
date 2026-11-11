@@ -224,6 +224,23 @@ function validateSentenceAST(ast, realized) {
 			}
 		}
 
+		// D. DESCRIPTIVE_VERB_HUMAN_SUBJECT_MISMATCH
+		if (subjCon && verbUnit && predType === "descriptive") {
+			const subjUnit = subjCon.nounUnit || subjCon.unit;
+			if (subjUnit) {
+				const subjKo = subjUnit[DATA_SCHEMA.Korean] || "";
+				const isPerson = hasTag(subjUnit, K.PERSON, K.FAMILY, "pronoun_1st", "pronoun_2nd", "pronoun_3rd");
+				const isWeatherOrTaste = hasTag(verbUnit, K.WEATHER, "taste", "descriptive_weather", "descriptive_taste") ||
+					["맵다", "달다", "짜다", "시다", "쓰다", "싱겁다", "따뜻하다", "덥다", "춥다", "쌀쌀하다", "시원하다"].includes(verbKo);
+				if (isPerson && isWeatherOrTaste) {
+					errors.push({
+						code: "DESCRIPTIVE_VERB_SUBJECT_COLLOCATION_MISMATCH",
+						message: `Weather/taste adjective '${verbKo}' cannot take human subject '${subjKo}' in: "${ko}"`
+					});
+				}
+			}
+		}
+
 		// D. CLASSIFIER_DOMAIN_MISMATCH
 		if (numCon && numCon.classifierUnit && numCon.nounUnit) {
 			const cKo = numCon.classifierUnit[DATA_SCHEMA.Korean];

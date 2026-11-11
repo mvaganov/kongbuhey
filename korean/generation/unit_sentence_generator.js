@@ -446,10 +446,12 @@ function selectActionVerbForNoun(nounUnit, options = {}, targetId = null) {
  * Selects a compatible Descriptive Verb for a given Noun unit.
  */
 function selectDescriptiveVerbForNoun(nounUnit, options = {}, targetId = null) {
+	const isElder = isElderNoun(nounUnit);
 	const allDVs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId).filter(dv => {
 		const ko = dv[DATA_SCHEMA.Korean];
 		if (!ko || ko.includes(" ")) return false;
 		if (["안녕하다", "싶다", "결과 다르다"].includes(ko)) return false;
+		if (!isElder && state.HONORIFIC_WORDS && state.HONORIFIC_WORDS.has(ko)) return false;
 		return true;
 	});
 	if (allDVs.length === 0) return null;
@@ -457,52 +459,52 @@ function selectDescriptiveVerbForNoun(nounUnit, options = {}, targetId = null) {
 	const nounKo = nounUnit[DATA_SCHEMA.Korean] || "";
 	if (hasTag(nounUnit, "teeth") || nounKo === "이") {
 		const teethDVs = allDVs.filter(dv => ["아프다", "시리다", "좋다", "튼튼하다", "하얗다"].includes(dv[DATA_SCHEMA.Korean]));
-		if (teethDVs.length > 0) return pickRandom(teethDVs);
+		if (teethDVs.length > 0) return pickRandom(teethDVs, options.seedOffset, options);
 	}
 
 	if (nounKo === "잠") {
 		const sleepDVs = allDVs.filter(dv => ["달다", "부족하다", "많다", "적다", "깊다"].includes(dv[DATA_SCHEMA.Korean]));
-		if (sleepDVs.length > 0) return pickRandom(sleepDVs);
+		if (sleepDVs.length > 0) return pickRandom(sleepDVs, options.seedOffset, options);
 	}
 
 	if (nounKo === "길이") {
 		const lenDVs = allDVs.filter(dv => ["길다", "짧다", "적당하다", "좋다"].includes(dv[DATA_SCHEMA.Korean]));
-		if (lenDVs.length > 0) return pickRandom(lenDVs);
+		if (lenDVs.length > 0) return pickRandom(lenDVs, options.seedOffset, options);
 	}
 
 	if (nounKo === "소화") {
 		const digDVs = allDVs.filter(dv => ["잘되다", "안되다", "좋다", "힘들다"].includes(dv[DATA_SCHEMA.Korean]));
-		if (digDVs.length > 0) return pickRandom(digDVs);
+		if (digDVs.length > 0) return pickRandom(digDVs, options.seedOffset, options);
 	}
 
 	if (nounKo === "기온") {
 		const tempDVs = allDVs.filter(dv => ["높다", "낮다", "따뜻하다", "쌀쌀하다"].includes(dv[DATA_SCHEMA.Korean]));
-		if (tempDVs.length > 0) return pickRandom(tempDVs);
+		if (tempDVs.length > 0) return pickRandom(tempDVs, options.seedOffset, options);
 	}
 
 	if (nounKo === "기분") {
 		const moodDVs = allDVs.filter(dv => ["좋다", "나쁘다", "상쾌하다", "괜찮다"].includes(dv[DATA_SCHEMA.Korean]));
-		if (moodDVs.length > 0) return pickRandom(moodDVs);
+		if (moodDVs.length > 0) return pickRandom(moodDVs, options.seedOffset, options);
 	}
 
 	if (nounKo === "휴대") {
 		const carryDVs = allDVs.filter(dv => ["편하다", "쉽다", "좋다"].includes(dv[DATA_SCHEMA.Korean]));
-		if (carryDVs.length > 0) return pickRandom(carryDVs);
+		if (carryDVs.length > 0) return pickRandom(carryDVs, options.seedOffset, options);
 	}
 
 	if (nounKo === "강남스타일") {
 		const styleDVs = allDVs.filter(dv => ["유명하다", "재미있다", "신나다"].includes(dv[DATA_SCHEMA.Korean]));
-		if (styleDVs.length > 0) return pickRandom(styleDVs);
+		if (styleDVs.length > 0) return pickRandom(styleDVs, options.seedOffset, options);
 	}
 
 	if (hasTag(nounUnit, "soup", "stew") || ["설렁탕", "미역국", "된장찌개", "김치찌개"].includes(nounKo)) {
 		const soupDVs = allDVs.filter(dv => ["맛있다", "뜨겁다", "따뜻하다", "싱겁다", "짜다", "얼큰하다"].includes(dv[DATA_SCHEMA.Korean]));
-		if (soupDVs.length > 0) return pickRandom(soupDVs);
+		if (soupDVs.length > 0) return pickRandom(soupDVs, options.seedOffset, options);
 	}
 
 	if (nounKo === "주차 금지" || hasTag(nounUnit, "prohibition", "rule")) {
 		const ruleDVs = allDVs.filter(dv => ["필요하다", "중요하다", "엄격하다", "있다", "없다"].includes(dv[DATA_SCHEMA.Korean]));
-		if (ruleDVs.length > 0) return pickRandom(ruleDVs);
+		if (ruleDVs.length > 0) return pickRandom(ruleDVs, options.seedOffset, options);
 	}
 
 	const nounId = nounUnit[DATA_SCHEMA.Id];
@@ -510,11 +512,11 @@ function selectDescriptiveVerbForNoun(nounUnit, options = {}, targetId = null) {
 		const cands = getSubjectCandidatesForDescriptiveVerb(dv);
 		return cands.some(c => c[DATA_SCHEMA.Id] === nounId);
 	});
-	if (matchingDVs.length > 0) return pickRandom(matchingDVs);
+	if (matchingDVs.length > 0) return pickRandom(matchingDVs, options.seedOffset, options);
 
 	if (hasTag(nounUnit, "teeth", "bodyPart") || parseSemanticData(nounUnit).domain === "body") {
 		const bodyDVs = allDVs.filter(dv => ["아프다", "시리다", "좋다", "튼튼하다", "괜찮다", "하얗다"].includes(dv[DATA_SCHEMA.Korean]));
-		if (bodyDVs.length > 0) return pickRandom(bodyDVs);
+		if (bodyDVs.length > 0) return pickRandom(bodyDVs, options.seedOffset, options);
 	}
 
 	const isPricingEligible = hasTag(nounUnit, "commercial_item", "commodity", "goods", "merchandise", "fee", "currency", K.FOOD, K.CLOTHING, "ticket", K.COMMERCE) ||
@@ -525,7 +527,7 @@ function selectDescriptiveVerbForNoun(nounUnit, options = {}, targetId = null) {
 		const ko = dv[DATA_SCHEMA.Korean];
 		if (!ko || ko.includes(" ")) return false;
 		if (["날씬하다", "뚱뚱하다", "잘생기다", "못생기다", "마르다"].includes(ko)) return false;
-		if (["맑다", "흐리다", "쌀쌀하다", "화창하다", "무덥다", "춥다", "덥다"].includes(ko)) return false;
+		if (["맑다", "흐리다", "쌀쌀하다", "화창하다", "무덥다", "춥다", "덥다", "따뜻하다", "시원하다"].includes(ko)) return false;
 		return true;
 	});
 
@@ -535,13 +537,13 @@ function selectDescriptiveVerbForNoun(nounUnit, options = {}, targetId = null) {
 			generalDVs = generalDVs.filter(dv => !["비싸다", "싸다"].includes(dv[DATA_SCHEMA.Korean]));
 		}
 		if (hasTag(nounUnit, K.PERSON, K.FAMILY)) {
-			generalDVs = generalDVs.filter(dv => !["울퉁불퉁하다", "매끄럽다", "비싸다", "싸다", "맑다", "흐리다"].includes(dv[DATA_SCHEMA.Korean]));
+			generalDVs = generalDVs.filter(dv => !["울퉁불퉁하다", "매끄럽다", "비싸다", "싸다", "맑다", "흐리다", "따뜻하다", "시원하다", "춥다", "덥다", "적다"].includes(dv[DATA_SCHEMA.Korean]));
 		}
-		if (generalDVs.length > 0) return pickRandom(generalDVs);
-		return pickRandom(cleanDVs);
+		if (generalDVs.length > 0) return pickRandom(generalDVs, options.seedOffset, options);
+		return pickRandom(cleanDVs, options.seedOffset, options);
 	}
 
-	return pickRandom(allDVs);
+	return pickRandom(allDVs, options.seedOffset, options);
 }
 
 /**
@@ -1472,13 +1474,12 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 			if ((!isElder || isFirstPerson || isJunior) && state.HONORIFIC_WORDS.has(vKo)) return false;
 			return true;
 		});
-		const dvs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId).filter(v => {
-			const vKo = v[DATA_SCHEMA.Korean] || "";
-			if ((!isElder || isFirstPerson || isJunior) && state.HONORIFIC_WORDS.has(vKo)) return false;
-			if (["울퉁불퉁하다", "매끄럽다", "비싸다", "싸다", "맑다", "흐리다", "파랗다", "하얗다", "노랗다", "빨갛다", "까맣다", "푸르다", "안녕하다"].includes(vKo)) return false;
-			return true;
-		});
-		const verbUnit = (variationIndex % 2 === 0 && avs.length > 0) ? pickRandom(avs) : (pickRandom(dvs) || pickRandom(avs));
+		const matchedDV = selectDescriptiveVerbForNoun(nominalUnit, options, targetId);
+		let chosenDV = matchedDV;
+		if (chosenDV && (!isElder || isFirstPerson || isJunior) && state.HONORIFIC_WORDS.has(chosenDV[DATA_SCHEMA.Korean])) {
+			chosenDV = null;
+		}
+		const verbUnit = (variationIndex % 2 === 0 && avs.length > 0) ? pickRandom(avs, options.seedOffset, options) : (chosenDV || pickRandom(avs, options.seedOffset, options));
 
 		if (!verbUnit) {
 			// Fallback to Copula if another noun is in set
@@ -2724,6 +2725,23 @@ function generateSentenceForUnit(unitOrId, options = {}) {
 	}
 
 	const realized = realizeKoreanFromAST(buildRes.ast);
+	let sentenceValidatorModule;
+	try {
+		sentenceValidatorModule = (typeof require !== 'undefined') ? require('./sentence_validator.js') : (typeof window !== 'undefined' ? window : null);
+	} catch (e) {
+		sentenceValidatorModule = null;
+	}
+	if (sentenceValidatorModule && typeof sentenceValidatorModule.validateSentenceAST === 'function') {
+		const valRes = sentenceValidatorModule.validateSentenceAST(buildRes.ast, realized);
+		if (valRes && !valRes.valid && valRes.errors.length > 0) {
+			return {
+				ok: false,
+				insufficientSet: false,
+				missingRoles: [],
+				message: `Generated AST failed semantic validation: ${valRes.errors.map(e => e.message).join('; ')}`
+			};
+		}
+	}
 	return {
 		ok: true,
 		insufficientSet: false,
