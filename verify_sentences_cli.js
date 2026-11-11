@@ -3,13 +3,6 @@
  * verify_sentences_cli.js
  * 
  * Command-line Testing & Verification Tool for Verified Sentences Generation System.
- * 
- * Usage:
- *   node verify_sentences_cli.js                  # Interactive testing loop (starts or resumes at currentUnitId)
- *   node verify_sentences_cli.js <unitId> <seed>  # Deterministically regenerate a specific sentence
- *   node verify_sentences_cli.js --unit <unitId>  # Test a specific unit ID without advancing saved pointer
- *   node verify_sentences_cli.js --status         # Display current verification progress
- *   node verify_sentences_cli.js --reset          # Reset progress back to unit ID 0
  */
 
 const fs = require('fs');
@@ -19,6 +12,34 @@ const { K } = require('./constants.js');
 const { KR_EN_languageUnits, DATA_SCHEMA } = require('./data.js');
 const state = require('./korean/state.js');
 const { generateVerifiedSentencesForUnit } = require('./korean/generation/verified_sentence_generator.js');
+
+function printHelp() {
+	console.log(`verify_sentences_cli.js - Interactive CLI Sentence Verification System
+
+USAGE:
+  node verify_sentences_cli.js [options]
+  node verify_sentences_cli.js <unitId> <seed>
+
+OPTIONS:
+  <unitId> <seed>     Deterministically regenerate a specific sentence for a unit
+  --status            Display current verification progress and history
+  --reset             Reset verification progress back to Unit ID 0
+  --unit <id>         Inspect a specific unit without advancing the saved pointer
+  --limit <N>         Limit verification loop to N units in this session
+  --yes               Non-interactive mode: automatically approve all units
+  --no                Non-interactive mode: automatically flag error on current unit
+  -h, --help          Display this help message and exit
+
+WORKFLOW:
+  1. Start or resume testing:  node verify_sentences_cli.js
+  2. For each unit, review the 10 generated candidate sentences:
+     - 'y': Pass and advance to next language unit
+     - 'n': Fail and halt, saving progress at the failed unit
+     - 'q': Quit session without advancing
+  3. When an error is flagged ('n'), inspect and fix the generator/data code.
+  4. Re-run 'node verify_sentences_cli.js' to verify your fix on the exact same unit.
+`);
+}
 
 const PROGRESS_PATH = path.resolve(__dirname, 'scratch', 'sentence_verification_progress.json');
 
@@ -133,34 +154,6 @@ function promptUser(rl, questionText) {
 			resolve(String(answer || '').trim());
 		});
 	});
-}
-
-function printHelp() {
-	console.log(`verify_sentences_cli.js - Interactive CLI Sentence Verification System
-
-USAGE:
-  node verify_sentences_cli.js [options]
-  node verify_sentences_cli.js <unitId> <seed>
-
-OPTIONS:
-  <unitId> <seed>     Deterministically regenerate a specific sentence for a unit
-  --status            Display current verification progress and history
-  --reset             Reset verification progress back to Unit ID 0
-  --unit <id>         Inspect a specific unit without advancing the saved pointer
-  --limit <N>         Limit verification loop to N units in this session
-  --yes               Non-interactive mode: automatically approve all units
-  --no                Non-interactive mode: automatically flag error on current unit
-  -h, --help          Display this help message and exit
-
-WORKFLOW:
-  1. Start or resume testing:  node verify_sentences_cli.js
-  2. For each unit, review the 10 generated candidate sentences:
-     - 'y': Pass and advance to next language unit
-     - 'n': Fail and halt, saving progress at the failed unit
-     - 'q': Quit session without advancing
-  3. When an error is flagged ('n'), inspect and fix the generator/data code.
-  4. Re-run 'node verify_sentences_cli.js' to verify your fix on the exact same unit.
-`);
 }
 
 async function runCli() {

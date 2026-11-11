@@ -2,10 +2,37 @@
 /**
  * verified_sentences.js
  *
- * Compact static repository of Verified Sentence templates discovered from ingested
- * Korean study texts. Represented as an array of arrays conforming to VERIFIED_TEMPLATE_SCHEMA
- * and VERIFIED_SLOT_SCHEMA, with lexical definitions and default tags derived from data.js.
+ * Compact static repository and CLI tool for Verified Sentence templates.
  */
+
+function printHelp() {
+	console.log(`verified_sentences.js - Verified Sentence Templates Repository & CLI
+
+USAGE:
+  node verified_sentences.js [options]
+  node verified_sentences.js <unitId> <seed>
+  node verified_sentences.js --status
+  node verified_sentences.js --list [limit]
+  node verified_sentences.js --find <query>
+  node verified_sentences.js --verify [args]
+
+OPTIONS:
+  --status            Display repository statistics and verification testing progress
+  --list [N]          List verified sentence templates (default: 20)
+  --find <query>      Search verified sentences by Korean text, ID, or study text source
+  --verify [args]     Run the interactive verification testing tool (verify_sentences_cli.js)
+  <unitId> <seed>     Deterministically regenerate a specific sentence for a unit
+  -h, --help          Display this help message and exit
+
+EXAMPLES:
+  node verified_sentences.js --help
+  node verified_sentences.js --status
+  node verified_sentences.js --list 10
+  node verified_sentences.js --find "친구"
+  node verified_sentences.js 0 1007
+  node verified_sentences.js --verify
+`);
+}
 
 const VERIFIED_TEMPLATE_SCHEMA = {
 	Id: 0,
@@ -589,35 +616,6 @@ const VERIFIED_SENTENCES = [
 	["vs_361","[studytext162 #16] ","studytext162","",".",[[1069,"그럴 때","auxiliary_construction","conj","으/ㄹ 때","",[[646,"-(으)ㄹ","Adnominal Ending"],[855,"-(으)ㄹ 때","Grammar Pattern"]],null,""],[1618,"이","exact_lexical","nominal","","",[],null,""],[701,"약을","noun_particle","nominal","을/를","",[[173,"을","Particle"]],null,""],[40,"먹으면","conjugated_verb","conj","으/면","",[[619,"-(으)면","Verb Ending"]],null,""],[121,"좋습니다","conjugated_verb","conj","습니다/ㅂ니다","",[[50,"-습니다","Verb Ending"]],null,""]]],
 	["vs_362","[studytext162 #17] ","studytext162","",".",[[1618,"이","exact_lexical","nominal","","",[],null,""],[701,"약은","noun_particle","nominal","은/는","",[[36,"은","Particle"]],null,""],[2002,"바닥에","noun_particle","nominal","에","",[[200,"에","Particle"]],null,""],[82,"있는","adnominal_modifier","conj","는","",[[645,"-는","Adnominal Ending"]],null,""],[701,"약을","noun_particle","nominal","을/를","",[[173,"을","Particle"]],null,""],[1613,"잘","exact_lexical","nominal","","",[],null,""],[944,"섞어야 하기","auxiliary_construction","ao","야 하기","",[[1276,"-아/어야","Verb Ending"],[574,"-아/어야 하다","Grammar Pattern"],[1815,"-기","Nominalizing Suffix"]],null,""],[1837,"때문에","noun_particle","nominal","에","",[[132,"에","Particle"]],null,""],[2003,"흔들어서","conjugated_verb","ao","서","",[[459,"-아/어서","Verb Ending"]],null,""],[40,"먹지 않으면","auxiliary_construction","raw","지 않으면","",[[274,"-지 않다","Grammar Pattern"],[619,"-(으)면","Verb Ending"]],null,""],[98,"안","exact_lexical","nominal","","",[],null,""],[1615,"됩니다","conjugated_verb","conj","습니다/ㅂ니다","",[[50,"-ㅂ니다","Verb Ending"]],null,""]]],
 ];
-
-function printHelp() {
-	console.log(`verified_sentences.js - Verified Sentence Templates Repository & CLI
-
-USAGE:
-  node verified_sentences.js [options]
-  node verified_sentences.js <unitId> <seed>
-  node verified_sentences.js --status
-  node verified_sentences.js --list [limit]
-  node verified_sentences.js --find <query>
-  node verified_sentences.js --verify [args]
-
-OPTIONS:
-  --status            Display repository statistics and verification testing progress
-  --list [N]          List verified sentence templates (default: 20)
-  --find <query>      Search verified sentences by Korean text, ID, or study text source
-  --verify [args]     Run the interactive verification testing tool (verify_sentences_cli.js)
-  <unitId> <seed>     Deterministically regenerate a specific sentence for a unit
-  -h, --help          Display this help message and exit
-
-EXAMPLES:
-  node verified_sentences.js --help
-  node verified_sentences.js --status
-  node verified_sentences.js --list 10
-  node verified_sentences.js --find "친구"
-  node verified_sentences.js 0 1007
-  node verified_sentences.js --verify
-`);
-}
 
 function runCli() {
 	const args = process.argv.slice(2);
