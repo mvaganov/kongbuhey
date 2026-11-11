@@ -337,6 +337,14 @@ function runTests(options = {}) {
 				`Ensure verb_argument_specs.js references tags present on units in data.js.`);
 		}
 
+		// Assert 0 invalid whitelist entries
+		if (audit.invalidWhitelistEntries && audit.invalidWhitelistEntries.length > 0) {
+			const details = audit.invalidWhitelistEntries.map(e => `  - Tag '${e.tag}': ${e.error}`).join('\n');
+			failFast("Stage 2 (Tag Hygiene - Selection Whitelist Verification)",
+				`Found ${audit.invalidWhitelistEntries.length} invalid selection tag whitelist entry/entries:\n${details}\n` +
+				`Ensure all whitelisted tags have written rationale and are actively checked by the deterministic selection engine.`);
+		}
+
 		// Assert 0 unregistered selection tags
 		if (audit.unregisteredSelectionTags > 0) {
 			const unregDetails = audit.unregisteredList.slice(0, 5).map(u => `  - ${u.pos} '${u.korean}' (ID ${u.id}): '${u.tag}' not in ${u.expectedIn}`).join('\n');

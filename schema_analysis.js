@@ -808,7 +808,7 @@ function auditSemanticTaxonomy(dataPath = DEFAULT_DATA_PATH, options = {}) {
 
 	// Lazy require specs & rules
 	const { ACTION_VERB_SPECS, DESCRIPTIVE_VERB_SPECS } = require('./korean/specs/verb_argument_specs.js');
-	const { GRAMMAR_TAGS, CURRICULUM_TAXONOMY_TAGS } = require('./korean/constants/tags.js');
+	const { GRAMMAR_TAGS, CURRICULUM_TAXONOMY_TAGS, SEMANTIC_TAG_SELECTION_WHITELIST } = require('./korean/constants/tags.js');
 	const { auditSemanticRules } = require('./select.js');
 
 	// 1. Ghost Specs Detection (Consumer-side orphan check)
@@ -879,6 +879,37 @@ function auditSemanticTaxonomy(dataPath = DEFAULT_DATA_PATH, options = {}) {
 		}
 	}
 
+	// 4b. Selection Engine Whitelist Verification & Ingestion
+	const invalidWhitelistEntries = [];
+	if (SEMANTIC_TAG_SELECTION_WHITELIST && typeof SEMANTIC_TAG_SELECTION_WHITELIST === 'object') {
+		const activeFilterTags = new Set();
+		for (const u of KR_EN_languageUnits) {
+			if (!u) continue;
+			const sd = u[DATA_SCHEMA.SemanticData];
+			if (sd && typeof sd.collocation_filter === 'string') {
+				const matches = sd.collocation_filter.matchAll(/hasTag\(\s*[a-zA-Z0-9_]+\s*,\s*['"]([^'"]+)['"]\s*\)/g);
+				for (const m of matches) {
+					activeFilterTags.add(m[1]);
+				}
+			}
+		}
+
+		for (const [tag, meta] of Object.entries(SEMANTIC_TAG_SELECTION_WHITELIST)) {
+			if (!meta || typeof meta.rationale !== 'string' || meta.rationale.trim().length === 0) {
+				invalidWhitelistEntries.push({ tag, error: 'Missing or empty rationale' });
+			} else if (typeof meta.checkedBy !== 'string' || meta.checkedBy.trim().length === 0) {
+				invalidWhitelistEntries.push({ tag, error: 'Missing or empty checkedBy location' });
+			} else {
+				const isCheckedInSelect = (tag === 'SUPPRESS_SEMANTIC_DIVERSITY_WARNING');
+				const isCheckedInFilter = activeFilterTags.has(tag);
+				if (!isCheckedInSelect && !isCheckedInFilter) {
+					invalidWhitelistEntries.push({ tag, error: 'Tag is not actively queried by select.js or any collocation_filter' });
+				}
+			}
+			functionalSet.add(tag);
+		}
+	}
+
 	const taxonomyWhitelist = new Set(CURRICULUM_TAXONOMY_TAGS || []);
 	if (summary.semanticVectors && Array.isArray(summary.semanticVectors.domains)) {
 		summary.semanticVectors.domains.forEach(d => taxonomyWhitelist.add(d));
@@ -936,6 +967,7 @@ function auditSemanticTaxonomy(dataPath = DEFAULT_DATA_PATH, options = {}) {
 		totalTags: summary.semanticTags.length,
 		ghostSpecs,
 		ghostGrammarTags,
+		invalidWhitelistEntries,
 		unregisteredSelectionTags: selectionAudit.unregisteredTags,
 		unregisteredList: selectionAudit.unregisteredList || [],
 		starvedVerbs: selectionAudit.starvedVerbs,
@@ -1020,9 +1052,19 @@ if (require.main === module) {
 			console.log(`    ... and ${report.dormantTags.length - 15} more dormant tags.`);
 		}
 
+		console.log(`\n[5] SELECTION TAG WHITELIST VERIFICATION:`);
+		if (!report.invalidWhitelistEntries || report.invalidWhitelistEntries.length === 0) {
+			console.log(`    None. (100% clean - all whitelist entries have valid rationale and are actively queried)`);
+		} else {
+			report.invalidWhitelistEntries.forEach(e => {
+				console.log(`    - Whitelist entry '${e.tag}' error: ${e.error}`);
+			});
+		}
+
 		console.log(`================================================================================\n`);
 
 		const hasErrors = report.ghostSpecs.length > 0 ||
+			(report.invalidWhitelistEntries && report.invalidWhitelistEntries.length > 0) ||
 			report.unregisteredSelectionTags > 0 ||
 			report.starvedVerbs > 0 ||
 			report.casingInconsistencies.length > 0;
