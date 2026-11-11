@@ -53,8 +53,9 @@ function validateMoodConcord(text, context = {}) {
 		if (dvUnit) {
 			const dvKo = dvUnit[DATA_SCHEMA.Korean];
 			// 싸다 is both an Action Verb (to pack) and Descriptive Verb (to be cheap).
-			// With '못', it is the Action Verb ("cannot pack"), so skip false positive.
-			if (dvKo === "싸다") {
+			// 낫다 is both an Action Verb (to recover) and Descriptive Verb (to be better).
+			// With '못', it is the Action Verb ("cannot pack", "cannot recover"), so skip false positive.
+			if (dvKo === "싸다" || dvKo === "낫다") {
 				continue;
 			}
 			errors.push(`Descriptive verb '${dvKo}' cannot take inability negation '못' in: "${text}"`);
@@ -153,8 +154,9 @@ function applyMoodConcord(input, options = {}) {
 		if (dvUnit) {
 			const dvKo = dvUnit[DATA_SCHEMA.Korean];
 			// 싸다 is both an Action Verb (to pack) and Descriptive Verb (to be cheap).
-			// With '못', it is the Action Verb ("cannot pack"), not the Descriptive Verb.
-			if (dvKo === "싸다") {
+			// 낫다 is both an Action Verb (to recover) and Descriptive Verb (to be better).
+			// With '못', it is the Action Verb ("cannot pack", "cannot recover"), not the Descriptive Verb.
+			if (dvKo === "싸다" || dvKo === "낫다") {
 				return match;
 			}
 			return `${prefix}안 ${word}`;

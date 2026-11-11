@@ -98,6 +98,58 @@ const {
 	generateSentencesForUnit
 } = (typeof require !== 'undefined' ? require('./unit_sentence_generator.js') : window);
 
+let sentenceValidatorModule;
+if (typeof require !== 'undefined') {
+	try {
+		sentenceValidatorModule = require('./sentence_validator.js');
+	} catch (_) {
+		sentenceValidatorModule = typeof window !== 'undefined' ? window : {};
+	}
+} else {
+	sentenceValidatorModule = typeof window !== 'undefined' ? window : {};
+}
+const validateSentenceAST = (sentenceValidatorModule && sentenceValidatorModule.validateSentenceAST) || (typeof window !== 'undefined' ? window.validateSentenceAST : null);
+const validateSentenceString = (sentenceValidatorModule && sentenceValidatorModule.validateSentenceString) || (typeof window !== 'undefined' ? window.validateSentenceString : null);
+
+let morphologyModule;
+if (typeof require !== 'undefined') {
+	try {
+		morphologyModule = require('../core/morphology.js');
+	} catch (_) {
+		morphologyModule = typeof window !== 'undefined' ? window : {};
+	}
+} else {
+	morphologyModule = typeof window !== 'undefined' ? window : {};
+}
+const getNounCandidatesForVerb = (morphologyModule && morphologyModule.getNounCandidatesForVerb) || (typeof window !== 'undefined' ? window.getNounCandidatesForVerb : null);
+const getSubjectCandidatesForDescriptiveVerb = (morphologyModule && morphologyModule.getSubjectCandidatesForDescriptiveVerb) || (typeof window !== 'undefined' ? window.getSubjectCandidatesForDescriptiveVerb : null);
+const validateTemporalConcord = (morphologyModule && morphologyModule.validateTemporalConcord) || (typeof window !== 'undefined' ? window.validateTemporalConcord : null);
+const validateHonorificConcord = (morphologyModule && morphologyModule.validateHonorificConcord) || (typeof window !== 'undefined' ? window.validateHonorificConcord : null);
+
+let spatialModule;
+if (typeof require !== 'undefined') {
+	try {
+		spatialModule = require('../concord/spatial_concord.js');
+	} catch (_) {
+		spatialModule = typeof window !== 'undefined' ? window : {};
+	}
+} else {
+	spatialModule = typeof window !== 'undefined' ? window : {};
+}
+const validateSpatialConcord = (spatialModule && spatialModule.validateSpatialConcord) || (typeof window !== 'undefined' ? window.validateSpatialConcord : null);
+
+let adverbialModule;
+if (typeof require !== 'undefined') {
+	try {
+		adverbialModule = require('../concord/adverbial_concord.js');
+	} catch (_) {
+		adverbialModule = typeof window !== 'undefined' ? window : {};
+	}
+} else {
+	adverbialModule = typeof window !== 'undefined' ? window : {};
+}
+const validateAdverbConcord = (adverbialModule && adverbialModule.validateAdverbConcord) || (typeof window !== 'undefined' ? window.validateAdverbConcord : null);
+
 const VERIFIED_TEMPLATE_SCHEMA = (verifiedDataModule && verifiedDataModule.VERIFIED_TEMPLATE_SCHEMA) || {
 	Id: 0,
 	Title: 1,
@@ -1034,8 +1086,37 @@ function realizeSlot(slot, chosenUnit) {
 			if (isOrig && slot.originalSurface) {
 				surfaceKo = slot.originalSurface;
 			} else {
-				const rawNominal = ko + (inf.suffix || slot.morphTemplate || "");
-				surfaceKo = resolvePureMorphology(rawNominal, state);
+				// Pronoun clitic allomorphy (저/제, 나/내, 너/네, 누구/누가)
+				const mTemp = inf.suffix || slot.morphTemplate || "";
+				const gTexts = (slot.grammar || []).map(g => g.text || "").join(" ");
+				const isTopic = mTemp.includes("은/는") || gTexts.includes("은") || gTexts.includes("는");
+				const isSubject = mTemp.includes("이/가") || gTexts.includes("이") || gTexts.includes("가");
+				const isObject = mTemp.includes("을/를") || gTexts.includes("을") || gTexts.includes("를");
+
+				if ((ko === "저" || ko === "제") && isTopic) {
+					surfaceKo = "저는";
+				} else if ((ko === "저" || ko === "제") && isSubject) {
+					surfaceKo = "제가";
+				} else if ((ko === "저" || ko === "제") && isObject) {
+					surfaceKo = "저를";
+				} else if ((ko === "나" || ko === "내") && isTopic) {
+					surfaceKo = "나는";
+				} else if ((ko === "나" || ko === "내") && isSubject) {
+					surfaceKo = "내가";
+				} else if ((ko === "나" || ko === "내") && isObject) {
+					surfaceKo = "나를";
+				} else if ((ko === "너" || ko === "네") && isTopic) {
+					surfaceKo = "너는";
+				} else if ((ko === "너" || ko === "네") && isSubject) {
+					surfaceKo = "네가";
+				} else if ((ko === "너" || ko === "네") && isObject) {
+					surfaceKo = "너를";
+				} else if (ko === "누구" && isSubject) {
+					surfaceKo = "누가";
+				} else {
+					const rawNominal = ko + (inf.suffix || slot.morphTemplate || "");
+					surfaceKo = resolvePureMorphology(rawNominal, state);
+				}
 			}
 		}
 	} else {
@@ -1184,6 +1265,431 @@ function pickCandidateFromPool(candidates, options = {}, slotIndex = 0) {
 }
 
 /**
+ * Recomposes a candidate realized Verified Sentence into a full SentenceAST.
+ * Maps non-predicate slots to ConstituentNodes and predicate slots to PredicateNodes,
+ * structured into clauses matching the clausal boundary markers.
+ */
+function recomposeASTFromVerifiedSentence(template, slotChoices, realizedResult) {
+	if (!template || !Array.isArray(slotChoices) || slotChoices.length === 0) {
+		return null;
+	}
+
+	const punctuation = template.punctuation || (realizedResult && realizedResult.ko && realizedResult.ko.slice(-1)) || ".";
+	const isQuestion = punctuation === "?";
+	const speechAct = isQuestion ? "interrogative" : "declarative";
+
+	const lastSlot = slotChoices[slotChoices.length - 1];
+	let overallPoliteness = K.POLITE;
+	let overallTense = "present";
+	let overallPolarity = "affirmative";
+
+	if (lastSlot) {
+		const surf = lastSlot.surfaceKo || "";
+		if (surf.includes("습니다") || surf.includes("ㅂ니다") || surf.includes("십니까") || surf.includes("십시오")) {
+			overallPoliteness = "formal_high";
+		} else if (surf.endsWith("다") && !surf.endsWith("마다") && !surf.endsWith("보다")) {
+			overallPoliteness = K.PLAIN;
+		}
+		if (/(?:았|었|였)(?:다|습니다|어요|네요)/.test(surf)) {
+			overallTense = "past";
+		} else if (/(?:ㄹ|을)\s*거/.test(surf) || /(?:겠)(?:다|습니다|어요)/.test(surf)) {
+			overallTense = "future";
+		}
+	}
+
+	for (const sc of slotChoices) {
+		const surf = sc.surfaceKo || "";
+		if (surf === "안" || surf === "못" || surf.includes("지 않") || surf.includes("지 못하")) {
+			overallPolarity = "negative";
+			break;
+		}
+	}
+
+	const units = getUnitsArray();
+	const clauses = [];
+	let currentConstituents = [];
+	let currentPredicate = null;
+
+	for (let i = 0; i < slotChoices.length; i++) {
+		const sc = slotChoices[i];
+		const templateSlot = template.slots && template.slots[i] ? template.slots[i] : {};
+		const unit = sc.chosenUnit || (typeof sc.chosenUnitId === 'number' ? units[sc.chosenUnitId] : null);
+		const pos = sc.pos || templateSlot.pos;
+		const category = templateSlot.category || sc.category || "";
+		const grammarList = templateSlot.grammar || sc.grammar || [];
+		const surf = sc.surfaceKo || "";
+
+		const isAdverbial = category === "adverbial_modifier" ||
+			(templateSlot.inflection && templateSlot.inflection.stemForm === "adv") ||
+			grammarList.some(g => {
+				const gPos = Array.isArray(g) ? g[2] : g.pos;
+				const gText = Array.isArray(g) ? g[1] : g.text;
+				return gPos === "Adverbial Suffix" || gText === "-게" || gText === "게";
+			});
+
+		const isAdnominal = !isAdverbial && (category === "adnominal_modifier" ||
+			(templateSlot.inflection && templateSlot.inflection.stemForm === "adnominal" && category !== "auxiliary_construction") ||
+			grammarList.some(g => {
+				const gPos = Array.isArray(g) ? g[2] : g.pos;
+				return gPos === "Adnominal Ending";
+			}));
+
+		const isVerb = (pos === K.ACTION_VERB || pos === K.DESCRIPTIVE_VERB) && !isAdnominal && !isAdverbial;
+		const isCopula = category.includes("copula") ||
+			grammarList.some(g => {
+				const gId = Array.isArray(g) ? g[0] : g.unitId;
+				const gPos = Array.isArray(g) ? g[2] : g.pos;
+				const gText = Array.isArray(g) ? g[1] : g.text;
+				return gId === 56 || gPos === "Copula" || gText === "이다" || gText === "입니다" || gText === "이에요" || gText === "예요" || gText === "이야" || gText === "야" || gText === "이고";
+			});
+
+		if (isVerb) {
+			currentPredicate = {
+				role: "predicate",
+				predType: pos === K.DESCRIPTIVE_VERB ? "descriptive" : K.ACTION,
+				verbUnit: unit,
+				endingUnit: grammarList.length > 0 ? grammarList[grammarList.length - 1].unit : null,
+				isVariedSlot: sc.isVariedSlot,
+				surfaceKo: surf,
+				tense: /(?:았|었|였)/.test(surf) ? "past" : overallTense,
+				polarity: overallPolarity,
+				speechAct,
+				politeness: overallPoliteness,
+				eojeols: sc.eojeols || []
+			};
+
+			clauses.push({
+				constituents: currentConstituents,
+				predicate: currentPredicate
+			});
+			currentConstituents = [];
+			currentPredicate = null;
+		} else if (isCopula) {
+			currentPredicate = {
+				role: "predicate",
+				predType: "copula",
+				nounUnit: unit,
+				copulaUnit: grammarList.length > 0 ? grammarList[0].unit : null,
+				isVariedSlot: sc.isVariedSlot,
+				surfaceKo: surf,
+				tense: overallTense,
+				polarity: overallPolarity,
+				speechAct,
+				politeness: overallPoliteness,
+				eojeols: sc.eojeols || []
+			};
+
+			clauses.push({
+				constituents: currentConstituents,
+				predicate: currentPredicate
+			});
+			currentConstituents = [];
+			currentPredicate = null;
+		} else if (isAdnominal) {
+			currentConstituents.push({
+				role: "adnominal_modifier",
+				category: "adnominal_modifier",
+				unit,
+				isVariedSlot: sc.isVariedSlot,
+				surfaceKo: surf,
+				eojeols: sc.eojeols || []
+			});
+		} else if (isAdverbial) {
+			currentConstituents.push({
+				role: K.ADVERB,
+				category: "adverbial_modifier",
+				unit,
+				isVariedSlot: sc.isVariedSlot,
+				surfaceKo: surf,
+				eojeols: sc.eojeols || []
+			});
+		} else {
+			let role = "constituent";
+			let particleType = null;
+			let primaryGrammar = grammarList.length > 0 ? grammarList[0].unit : null;
+
+			const mTemp = templateSlot.morphTemplate || "";
+			const isTopicParticle = mTemp.includes("은/는") || category.includes("topic") ||
+				grammarList.some(g => g.unitId === 36 || (g.pos === "Particle" && (g.text === "은" || g.text === "는")));
+			const isSubjectParticle = mTemp.includes("이/가") || category.includes("subject") ||
+				grammarList.some(g => g.unitId === 96 || (g.pos === "Particle" && (g.text === "이" || g.text === "가")));
+			const isObjectParticle = mTemp.includes("을/를") || category.includes(K.OBJECT) ||
+				grammarList.some(g => g.unitId === 173 || (g.pos === "Particle" && (g.text === "을" || g.text === "를")));
+			const isLocDyn = mTemp.includes("에서") || grammarList.some(g => g.unitId === 199 || (g.pos === "Particle" && g.text === "에서"));
+			const isLocStat = (mTemp === "에" || grammarList.some(g => g.unitId === 132 || (g.pos === "Particle" && g.text === "에"))) && !isLocDyn;
+			const isDir = mTemp.includes("로") || grammarList.some(g => g.unitId === 1241 || (g.pos === "Particle" && (g.text === "로" || g.text === "으로")));
+			const isRecip = grammarList.some(g => g.pos === "Particle" && (g.text === "에게" || g.text === "한테" || g.text === "께"));
+
+			if (isTopicParticle) {
+				role = "topic";
+				particleType = "topic";
+			} else if (isSubjectParticle) {
+				role = "subject";
+				particleType = "subject";
+			} else if (isObjectParticle) {
+				role = K.OBJECT;
+				particleType = K.OBJECT;
+			} else if (isLocDyn) {
+				role = "location_dynamic";
+				particleType = "location_dynamic";
+			} else if (isLocStat) {
+				role = "location_static";
+				particleType = "location_static";
+			} else if (isDir) {
+				role = "direction";
+				particleType = "direction";
+			} else if (isRecip) {
+				role = "recipient";
+				particleType = "recipient";
+			} else if (pos === K.ADVERB || pos === K.POS_ADVERB) {
+				role = K.ADVERB;
+				particleType = K.ADVERB;
+			} else if (pos === K.DETERMINER) {
+				role = K.DETERMINER;
+			} else if (pos === K.NUMBER) {
+				role = "number";
+			}
+
+			currentConstituents.push({
+				role,
+				particleType,
+				particleUnit: primaryGrammar,
+				nounUnit: (pos === K.NOUN || pos === K.PRONOUN) ? unit : null,
+				determinerUnit: pos === K.DETERMINER ? unit : null,
+				numeralUnit: pos === K.NUMBER ? unit : null,
+				unit,
+				isVariedSlot: sc.isVariedSlot,
+				surfaceKo: surf,
+				eojeols: sc.eojeols || []
+			});
+		}
+	}
+
+	if (currentConstituents.length > 0 || currentPredicate) {
+		clauses.push({
+			constituents: currentConstituents,
+			predicate: currentPredicate || { role: "predicate", predType: "unspecified", surfaceKo: "" }
+		});
+	}
+
+	return {
+		type: "Sentence",
+		isVerifiedStructure: true,
+		verifiedTemplateId: template.id,
+		speechAct,
+		politeness: overallPoliteness,
+		tense: overallTense,
+		polarity: overallPolarity,
+		clauses
+	};
+}
+
+/**
+ * Validates a recomposed AST, realized string, and slot choices against standard
+ * AST syntactic, valency, collocation, and phonological concord rules.
+ */
+function validateVerifiedSentence(ast, realized, slotChoices) {
+	const errors = [];
+	const warnings = [];
+
+	if (!realized || !realized.ko) {
+		return { valid: false, errors: [{ code: "EMPTY_REALIZATION", message: "Sentence has no realized Korean string" }], warnings };
+	}
+
+	// 1. Run standard AST and string validations if available
+	if (typeof validateSentenceAST === 'function' && ast) {
+		const astVal = validateSentenceAST(ast, realized);
+		if (astVal && Array.isArray(astVal.errors)) errors.push(...astVal.errors);
+		if (astVal && Array.isArray(astVal.warnings)) warnings.push(...astVal.warnings);
+	}
+
+	if (typeof validateSentenceString === 'function') {
+		const strVal = validateSentenceString(realized.ko);
+		if (strVal && Array.isArray(strVal.errors)) errors.push(...strVal.errors);
+		if (strVal && Array.isArray(strVal.warnings)) warnings.push(...strVal.warnings);
+	}
+
+	// 2. Phonological & Pronoun-Particle Concord Checks
+	const units = getUnitsArray();
+	for (const sc of (slotChoices || [])) {
+		const u = sc.chosenUnit || (typeof sc.chosenUnitId === 'number' ? units[sc.chosenUnitId] : null);
+		if (!u) continue;
+		const ko = u[DATA_SCHEMA.Korean] || "";
+		const surf = sc.surfaceKo || "";
+
+		// 제 cannot attach 는 (*제는 -> 저는) or 를 (*제를 -> 저를)
+		if (ko === "제" && (/^제(?:는|은|를|을)/.test(surf))) {
+			errors.push({
+				code: "ILLEGAL_PRONOUN_PARTICLE_CONCORD",
+				message: `Possessive pronoun '제' cannot attach topic/object particle ('${surf}'). Must be '저'.`
+			});
+		}
+		// 내 cannot attach 는 (*내는 -> 나는) or 를 (*내를 -> 나를)
+		if (ko === "내" && _hasTag(u, "pronoun_1st", "possessive") && (/^내(?:는|은|를|을)/.test(surf))) {
+			errors.push({
+				code: "ILLEGAL_PRONOUN_PARTICLE_CONCORD",
+				message: `Possessive pronoun '내' cannot attach topic/object particle ('${surf}'). Must be '나'.`
+			});
+		}
+		// 저 cannot attach 가 directly without allomorphic change (*저가 -> 제가)
+		if (ko === "저" && (/^저가\b/.test(surf))) {
+			errors.push({
+				code: "ILLEGAL_PRONOUN_PARTICLE_CONCORD",
+				message: `Pronoun '저' + '가' must contract to '제가', not '저가'.`
+			});
+		}
+		// 나 cannot attach 가 directly without allomorphic change (*나가 -> 내가)
+		if (ko === "나" && (/^나가\b/.test(surf))) {
+			errors.push({
+				code: "ILLEGAL_PRONOUN_PARTICLE_CONCORD",
+				message: `Pronoun '나' + '가' must contract to '내가', not '나가'.`
+			});
+		}
+		// 누구 cannot attach 가 directly without allomorphic change (*누구가 -> 누가)
+		if (ko === "누구" && (/^누구가\b/.test(surf))) {
+			errors.push({
+				code: "ILLEGAL_PRONOUN_PARTICLE_CONCORD",
+				message: `Interrogative '누구' + '가' must contract to '누가', not '누구가'.`
+			});
+		}
+	}
+
+	// 3. Clause-level Syntactic, Collocation, and Concord Checks
+	if (ast && Array.isArray(ast.clauses)) {
+		for (const clause of ast.clauses) {
+			const constituents = clause.constituents || [];
+			const pred = clause.predicate || {};
+			const verbUnit = pred.verbUnit || null;
+			const verbKo = verbUnit ? (verbUnit[DATA_SCHEMA.Korean] || "") : "";
+
+			// A. Multiple topic markers in single clause
+			const topicCount = constituents.filter(c => c.particleType === "topic" || c.role === "topic").length;
+			if (topicCount > 1 && ast.clauses.length === 1) {
+				errors.push({
+					code: "REDUNDANT_TOPIC_MARKERS",
+					message: `Single clause contains ${topicCount} topic markers, causing semantic ambiguity in: "${realized.ko}"`
+				});
+			}
+
+			// B. Verb-Object Collocation Check
+			const objCon = constituents.find(c => c.role === K.OBJECT || c.particleType === K.OBJECT);
+			if (objCon && verbUnit && pred.predType === K.ACTION && typeof getNounCandidatesForVerb === 'function') {
+				const objIndex = constituents.indexOf(objCon);
+				const governingAdnominal = constituents.find((c, idx) =>
+					idx > objIndex &&
+					(c.role === "adnominal_modifier" || c.category === "adnominal_modifier" || (c.inflection && c.inflection.stemForm === "adnominal")) &&
+					c.unit && (c.unit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || _hasTag(c.unit, "transitive", K.TRANSITIVE_GENERAL))
+				);
+				const targetVerb = governingAdnominal ? governingAdnominal.unit : verbUnit;
+				const objUnit = objCon.nounUnit || objCon.unit;
+				if (objUnit && (objCon.isVariedSlot || pred.isVariedSlot)) {
+					const vKo = targetVerb ? (targetVerb[DATA_SCHEMA.Korean] || "") : "";
+					const STRICT_COLLOCATION_VERBS = new Set([
+						"입다", "신다", "쓰다", "끼다", "매다", "벗다",
+						"마시다", "먹다", "피우다", "타다", "치다"
+					]);
+					if (targetVerb && (STRICT_COLLOCATION_VERBS.has(vKo) || _hasTag(targetVerb, "transitive_clothing", "transitive_food", "transitive_drink", "transitive_vehicle", "transitive_instrument"))) {
+						const validCands = getNounCandidatesForVerb(targetVerb);
+						if (Array.isArray(validCands) && validCands.length > 0 && !validCands.some(n => n[DATA_SCHEMA.Id] === objUnit[DATA_SCHEMA.Id])) {
+							const objKo = objUnit[DATA_SCHEMA.Korean] || "";
+							errors.push({
+								code: "VERB_OBJECT_COLLOCATION_MISMATCH",
+								message: `Verb '${vKo}' does not collocate with direct object '${objKo}' in: "${realized.ko}"`
+							});
+						}
+					}
+				}
+			}
+
+			// C. Descriptive Verb Subject Collocation Check
+			const subjCon = constituents.find(c => c.role === "subject" || c.role === "topic");
+			if (subjCon && verbUnit && pred.predType === "descriptive" && typeof getSubjectCandidatesForDescriptiveVerb === 'function') {
+				const subjUnit = subjCon.nounUnit || subjCon.unit;
+				if (subjUnit && (subjCon.isVariedSlot || pred.isVariedSlot)) {
+					const vKo = verbUnit[DATA_SCHEMA.Korean] || "";
+					const STRICT_DESCRIPTIVE_VERBS = new Set([
+						"맵다", "달다", "짜다", "시다", "싱겁다",
+						"높다", "낮다", "깊다", "넓다", "좁다", "무겁다", "가볍다"
+					]);
+					if (STRICT_DESCRIPTIVE_VERBS.has(vKo) || _hasTag(verbUnit, "taste", "spatial_dimension")) {
+						const validSubjs = getSubjectCandidatesForDescriptiveVerb(verbUnit);
+						if (Array.isArray(validSubjs) && validSubjs.length > 0 && !validSubjs.some(n => n[DATA_SCHEMA.Id] === subjUnit[DATA_SCHEMA.Id])) {
+							const subjKo = subjUnit[DATA_SCHEMA.Korean] || "";
+							errors.push({
+								code: "DESCRIPTIVE_VERB_SUBJECT_COLLOCATION_MISMATCH",
+								message: `Descriptive verb '${verbKo}' does not collocate with subject '${subjKo}' in: "${realized.ko}"`
+							});
+						}
+					}
+				}
+			}
+
+			// D. Spatial Concord Check
+			if (typeof validateSpatialConcord === 'function' && verbUnit) {
+				const locDynCon = constituents.find(c => c.particleType === "location_dynamic");
+				if (locDynCon) {
+					const locUnit = locDynCon.nounUnit || locDynCon.unit;
+					const spatRes = validateSpatialConcord(verbUnit, locUnit, "location_action");
+					if (spatRes && !spatRes.valid) {
+						errors.push({
+							code: "SPATIAL_CONCORD_MISMATCH",
+							message: `Spatial mismatch: ${spatRes.reason} in: "${realized.ko}"`
+						});
+					}
+				}
+				const locStatCon = constituents.find(c => c.particleType === "location_static");
+				if (locStatCon) {
+					const locUnit = locStatCon.nounUnit || locStatCon.unit;
+					const spatRes = validateSpatialConcord(verbUnit, locUnit, "location");
+					if (spatRes && !spatRes.valid) {
+						errors.push({
+							code: "SPATIAL_CONCORD_MISMATCH",
+							message: `Spatial mismatch: ${spatRes.reason} in: "${realized.ko}"`
+						});
+					}
+				}
+			}
+
+			// E. Temporal Concord Check
+			if (typeof validateTemporalConcord === 'function' && (pred.tense || ast.tense)) {
+				const timeCon = constituents.find(c => _hasTag(c.nounUnit || c.unit, K.TIME, "temporal"));
+				if (timeCon) {
+					const timeUnit = timeCon.nounUnit || timeCon.unit;
+					const tempRes = validateTemporalConcord(timeUnit, pred.tense || ast.tense);
+					if (tempRes && !tempRes.valid) {
+						errors.push({
+							code: "TEMPORAL_CONCORD_MISMATCH",
+							message: `Temporal mismatch: ${tempRes.reason} in: "${realized.ko}"`
+						});
+					}
+				}
+			}
+
+			// F. Adverb Concord Check
+			if (typeof validateAdverbConcord === 'function' && verbUnit) {
+				const advCon = constituents.find(c => c.role === K.ADVERB);
+				if (advCon) {
+					const advUnit = advCon.unit || advCon.nounUnit;
+					const advRes = validateAdverbConcord(advUnit, verbUnit, pred.polarity || ast.polarity || "affirmative");
+					if (advRes && !advRes.valid) {
+						errors.push({
+							code: "ADVERB_CONCORD_MISMATCH",
+							message: `Adverb mismatch: ${advRes.reason} in: "${realized.ko}"`
+						});
+					}
+				}
+			}
+		}
+	}
+
+	return {
+		valid: errors.length === 0,
+		errors,
+		warnings
+	};
+}
+
+/**
  * Generates a complete Korean sentence from a Verified Sentence template.
  */
 function generateSentenceFromTemplate(templateOrId, options = {}) {
@@ -1265,183 +1771,235 @@ function generateSentenceFromTemplate(templateOrId, options = {}) {
 		}
 	}
 
-	const wordParts = [];
-	const litParts = [];
-	const allEojeols = [];
-	const slotChoices = [];
+	const MAX_VALIDATION_ATTEMPTS = 10;
+	let lastValidationResult = null;
 
-	for (let sIdx = 0; sIdx < template.slots.length; sIdx++) {
-		const slot = template.slots[sIdx];
-		const slotPool = getSlotCandidates(slot, options);
-		let chosenUnit = null;
-		let isVariedSlot = false;
+	for (let attempt = 0; attempt < MAX_VALIDATION_ATTEMPTS; attempt++) {
+		const wordParts = [];
+		const litParts = [];
+		const allEojeols = [];
+		const slotChoices = [];
+		let attemptInsufficientSet = false;
+		let attemptMissingRoles = [];
+		let attemptMessage = "";
 
-		// Slot should vary if in 'all' mode, or if unlocked in 'selected' mode
-		const shouldVary = isSelectedMode ? unlockedSlotSet.has(sIdx) : true;
+		for (let sIdx = 0; sIdx < template.slots.length; sIdx++) {
+			const slot = template.slots[sIdx];
+			const slotPool = getSlotCandidates(slot, options);
+			let chosenUnit = null;
+			let isVariedSlot = false;
 
-		if (!shouldVary) {
-			// In selected mode, locked slots strictly use the original verified unit & surface
-			isVariedSlot = false;
-			if (typeof slot.originalUnitId === 'number' && units[slot.originalUnitId]) {
-				chosenUnit = units[slot.originalUnitId];
-			}
-		} else {
-			// Slot is selected for variation (or varyMode is 'all')
-			isVariedSlot = true;
-			if (targetUnitId !== null && sIdx === targetSlotIndex && units[targetUnitId] && units[targetUnitId][DATA_SCHEMA.PartofSpeech] === slot.pos) {
-				const tUnit = units[targetUnitId];
-				const reqTags = Array.isArray(slot.tags) ? slot.tags : [];
-				const satisfiesSlotTags = reqTags.every(t => _hasTag(tUnit, t)) || slot.originalUnitId === targetUnitId;
-				if (satisfiesSlotTags) {
-					chosenUnit = tUnit;
-				}
-			} else {
-				let candidatePool = slotPool.candidates;
+			// Slot should vary if in 'all' mode, or if unlocked in 'selected' mode
+			const shouldVary = isSelectedMode ? unlockedSlotSet.has(sIdx) : true;
 
-				// In selected mode, if multiple candidates exist, prefer picking a candidate other than
-				// the original unit so generating a variation actually substitutes the term.
-				if (isSelectedMode && candidatePool.length > 1 && typeof slot.originalUnitId === 'number') {
-					const withoutOrig = candidatePool.filter(c => c[DATA_SCHEMA.Id] !== slot.originalUnitId);
-					if (withoutOrig.length > 0) {
-						candidatePool = withoutOrig;
-					}
-				}
-
-				if (candidatePool.length > 0) {
-					chosenUnit = pickCandidateFromPool(candidatePool, options, sIdx);
-				} else if (onlyFromSet) {
-					return {
-						ok: false,
-						insufficientSet: true,
-						missingRoles: [`${slot.pos} (${(slot.tags || []).join(', ') || 'any'})`],
-						message: `Practice set lacks a compatible ${slot.pos} for slot #${sIdx + 1}.`
-					};
-				} else if (typeof slot.originalUnitId === 'number' && units[slot.originalUnitId]) {
+			if (!shouldVary) {
+				// In selected mode, locked slots strictly use the original verified unit & surface
+				isVariedSlot = false;
+				if (typeof slot.originalUnitId === 'number' && units[slot.originalUnitId]) {
 					chosenUnit = units[slot.originalUnitId];
 				}
+			} else {
+				// Slot is selected for variation (or varyMode is 'all')
+				isVariedSlot = true;
+				if (targetUnitId !== null && sIdx === targetSlotIndex && units[targetUnitId] && units[targetUnitId][DATA_SCHEMA.PartofSpeech] === slot.pos) {
+					const tUnit = units[targetUnitId];
+					const reqTags = Array.isArray(slot.tags) ? slot.tags : [];
+					const satisfiesSlotTags = reqTags.every(t => _hasTag(tUnit, t)) || slot.originalUnitId === targetUnitId;
+					if (satisfiesSlotTags) {
+						chosenUnit = tUnit;
+					}
+				} else {
+					let candidatePool = slotPool.candidates;
+
+					// In selected mode, if multiple candidates exist, prefer picking a candidate other than
+					// the original unit so generating a variation actually substitutes the term.
+					if (isSelectedMode && candidatePool.length > 1 && typeof slot.originalUnitId === 'number') {
+						const withoutOrig = candidatePool.filter(c => c[DATA_SCHEMA.Id] !== slot.originalUnitId);
+						if (withoutOrig.length > 0) {
+							candidatePool = withoutOrig;
+						}
+					}
+
+					if (candidatePool.length > 0) {
+						const attemptOpts = attempt > 0 ? {
+							...options,
+							seedOffset: (options.seedOffset || 0) + attempt * 7 + sIdx * 3
+						} : options;
+						chosenUnit = pickCandidateFromPool(candidatePool, attemptOpts, sIdx);
+					} else if (onlyFromSet) {
+						attemptInsufficientSet = true;
+						attemptMissingRoles = [`${slot.pos} (${(slot.tags || []).join(', ') || 'any'})`];
+						attemptMessage = `Practice set lacks a compatible ${slot.pos} for slot #${sIdx + 1}.`;
+						break;
+					} else if (typeof slot.originalUnitId === 'number' && units[slot.originalUnitId]) {
+						chosenUnit = units[slot.originalUnitId];
+					}
+				}
 			}
+
+			const realizedSlot = realizeSlot(slot, chosenUnit);
+			wordParts.push(realizedSlot.surfaceKo);
+			if (realizedSlot.surfaceEnLit) litParts.push(realizedSlot.surfaceEnLit);
+			allEojeols.push(...realizedSlot.eojeols);
+
+			slotChoices.push({
+				slotIndex: sIdx,
+				pos: slot.pos,
+				tags: [...(slot.tags || [])],
+				isVariedSlot,
+				isSingleChoice: slotPool.isSingleChoice,
+				candidateCount: slotPool.count,
+				originalUnitId: slot.originalUnitId,
+				originalKo: slot.originalKo,
+				originalEn: slot.originalEn,
+				originalSurface: slot.originalSurface,
+				chosenUnit: realizedSlot.chosenUnit || null,
+				chosenUnitId: realizedSlot.chosenUnit ? realizedSlot.chosenUnit[DATA_SCHEMA.Id] : null,
+				chosenKo: realizedSlot.chosenUnit ? realizedSlot.chosenUnit[DATA_SCHEMA.Korean] : "",
+				chosenEn: realizedSlot.chosenUnit ? realizedSlot.chosenUnit[DATA_SCHEMA.English] : "",
+				category: slot.category || "",
+				grammar: slot.grammar || [],
+				inflection: slot.inflection || null,
+				morphTemplate: slot.morphTemplate || "",
+				surfaceKo: realizedSlot.surfaceKo,
+				surfaceEnLit: realizedSlot.surfaceEnLit,
+				eojeols: realizedSlot.eojeols || []
+			});
 		}
 
-		const realizedSlot = realizeSlot(slot, chosenUnit);
-		wordParts.push(realizedSlot.surfaceKo);
-		if (realizedSlot.surfaceEnLit) litParts.push(realizedSlot.surfaceEnLit);
-		allEojeols.push(...realizedSlot.eojeols);
+		if (attemptInsufficientSet) {
+			return {
+				ok: false,
+				insufficientSet: true,
+				missingRoles: attemptMissingRoles,
+				message: attemptMessage
+			};
+		}
 
-		slotChoices.push({
-			slotIndex: sIdx,
-			pos: slot.pos,
-			tags: [...(slot.tags || [])],
-			isVariedSlot,
-			isSingleChoice: slotPool.isSingleChoice,
-			candidateCount: slotPool.count,
-			originalUnitId: slot.originalUnitId,
-			originalKo: slot.originalKo,
-			originalEn: slot.originalEn,
-			originalSurface: slot.originalSurface,
-			chosenUnitId: realizedSlot.chosenUnit ? realizedSlot.chosenUnit[DATA_SCHEMA.Id] : null,
-			chosenKo: realizedSlot.chosenUnit ? realizedSlot.chosenUnit[DATA_SCHEMA.Korean] : "",
-			chosenEn: realizedSlot.chosenUnit ? realizedSlot.chosenUnit[DATA_SCHEMA.English] : "",
-			surfaceKo: realizedSlot.surfaceKo,
-			surfaceEnLit: realizedSlot.surfaceEnLit
+		const rawJoined = wordParts.join(" ").trim();
+		const punct = template.punctuation || ".";
+		const koWithPunct = /[.?!~]$/.test(rawJoined) ? rawJoined : (rawJoined ? rawJoined + punct : "");
+		const koBare = koWithPunct.replace(/[.?!~]+$/, '');
+
+		const enLiteralRaw = litParts.join(" ").trim();
+		const enLiteral = enLiteralRaw
+			? (enLiteralRaw.charAt(0).toUpperCase() + enLiteralRaw.slice(1) + (/[.?!]$/.test(enLiteralRaw) ? "" : punct))
+			: "";
+
+		// Build a clean natural English summary from slot glosses
+		const natClauses = slotChoices
+			.filter(sc => sc.chosenEn)
+			.map(sc => {
+				const cleanGloss = String(sc.chosenEn).replace(/\([^)]*\)/g, '').split(/[;,/]/)[0].trim();
+				return cleanGloss;
+			});
+		const enNatural = natClauses.length > 0
+			? (natClauses.join(" · ") + (/[.?!]$/.test(natClauses[natClauses.length - 1]) ? "" : punct))
+			: enLiteral;
+
+		const unitsUsed = [];
+		const seenUnitIds = new Set();
+
+		allEojeols.forEach((eojeol, idx) => {
+			eojeol.index = idx;
+			for (const seg of (eojeol.segments || [])) {
+				if (typeof seg.unitId === 'number' && !seenUnitIds.has(seg.unitId)) {
+					seenUnitIds.add(seg.unitId);
+					unitsUsed.push({
+						unitId: seg.unitId,
+						ko: seg.koDict,
+						en: seg.enDict,
+						pos: seg.pos,
+						kind: seg.kind,
+						role: seg.role || eojeol.role,
+						surfaceKo: seg.textKo,
+						surfaceEn: seg.textEn || "",
+						eojeolIndex: idx
+					});
+				}
+			}
 		});
-	}
 
-	const rawJoined = wordParts.join(" ").trim();
-	const punct = template.punctuation || ".";
-	const koWithPunct = /[.?!~]$/.test(rawJoined) ? rawJoined : (rawJoined ? rawJoined + punct : "");
-	const koBare = koWithPunct.replace(/[.?!~]+$/, '');
-
-	const enLiteralRaw = litParts.join(" ").trim();
-	const enLiteral = enLiteralRaw
-		? (enLiteralRaw.charAt(0).toUpperCase() + enLiteralRaw.slice(1) + (/[.?!]$/.test(enLiteralRaw) ? "" : punct))
-		: "";
-
-	// Build a clean natural English summary from slot glosses
-	const natClauses = slotChoices
-		.filter(sc => sc.chosenEn)
-		.map(sc => {
-			const cleanGloss = String(sc.chosenEn).replace(/\([^)]*\)/g, '').split(/[;,/]/)[0].trim();
-			return cleanGloss;
-		});
-	const enNatural = natClauses.length > 0
-		? (natClauses.join(" · ") + (/[.?!]$/.test(natClauses[natClauses.length - 1]) ? "" : punct))
-		: enLiteral;
-
-	const unitsUsed = [];
-	const seenUnitIds = new Set();
-
-	allEojeols.forEach((eojeol, idx) => {
-		eojeol.index = idx;
-		for (const seg of (eojeol.segments || [])) {
-			if (typeof seg.unitId === 'number' && !seenUnitIds.has(seg.unitId)) {
-				seenUnitIds.add(seg.unitId);
-				unitsUsed.push({
-					unitId: seg.unitId,
-					ko: seg.koDict,
-					en: seg.enDict,
-					pos: seg.pos,
-					kind: seg.kind,
-					role: seg.role || eojeol.role,
-					surfaceKo: seg.textKo,
-					surfaceEn: seg.textEn || "",
-					eojeolIndex: idx
-				});
+		// Also ensure all grammar unit IDs from slots are recorded in unitsUsed / unitIds
+		for (const slot of template.slots) {
+			for (const g of (slot.grammar || [])) {
+				if (typeof g.unitId === 'number' && !seenUnitIds.has(g.unitId) && units[g.unitId]) {
+					seenUnitIds.add(g.unitId);
+					const gu = units[g.unitId];
+					unitsUsed.push({
+						unitId: g.unitId,
+						ko: gu[DATA_SCHEMA.Korean],
+						en: gu[DATA_SCHEMA.English],
+						pos: gu[DATA_SCHEMA.PartofSpeech],
+						kind: K.GRAMMAR,
+						role: g.pos || K.GRAMMAR,
+						surfaceKo: g.text || gu[DATA_SCHEMA.Korean],
+						surfaceEn: g.en || gu[DATA_SCHEMA.English],
+						eojeolIndex: 0
+					});
+				}
 			}
 		}
-	});
 
-	// Also ensure all grammar unit IDs from slots are recorded in unitsUsed / unitIds
-	for (const slot of template.slots) {
-		for (const g of (slot.grammar || [])) {
-			if (typeof g.unitId === 'number' && !seenUnitIds.has(g.unitId) && units[g.unitId]) {
-				seenUnitIds.add(g.unitId);
-				const gu = units[g.unitId];
-				unitsUsed.push({
-					unitId: g.unitId,
-					ko: gu[DATA_SCHEMA.Korean],
-					en: gu[DATA_SCHEMA.English],
-					pos: gu[DATA_SCHEMA.PartofSpeech],
-					kind: K.GRAMMAR,
-					role: g.pos || K.GRAMMAR,
-					surfaceKo: g.text || gu[DATA_SCHEMA.Korean],
-					surfaceEn: g.en || gu[DATA_SCHEMA.English],
-					eojeolIndex: 0
-				});
-			}
+		const unitIds = Array.from(seenUnitIds);
+
+		const candidateResult = {
+			ko: koWithPunct,
+			eojeols: allEojeols,
+			unitsUsed
+		};
+
+		// Recompose AST from slot choices and candidate realization
+		const ast = recomposeASTFromVerifiedSentence(template, slotChoices, candidateResult);
+
+		// Validate using AST syntactic, valency, collocation, and concord validators
+		const valResult = validateVerifiedSentence(ast, candidateResult, slotChoices);
+
+		if (valResult.valid) {
+			const unlockedList = isSelectedMode ? Array.from(unlockedSlotSet) : template.slots.map((_, i) => i);
+			const singleSlotIdx = isSelectedMode && unlockedSlotSet.size === 1 ? Array.from(unlockedSlotSet)[0] : -1;
+
+			return {
+				ok: true,
+				insufficientSet: false,
+				isVerifiedStructure: true,
+				verifiedTemplateId: template.id,
+				verifiedTemplateTitle: template.title,
+				verifiedSource: template.source,
+				originalKo: template.originalKo,
+				varyMode,
+				unlockedSlots: unlockedList,
+				varySlotIndex: singleSlotIdx,
+				targetUnitId,
+				ko: koWithPunct,
+				koBare,
+				pronunciation: koWithPunct ? getPronunciation(koWithPunct) : "",
+				enLiteral,
+				enNatural,
+				en: enLiteral,
+				difficultyTier: options.difficultyTier || null,
+				difficultyLabel: options.difficultyTier === 'easiest' ? 'Easiest' : (options.difficultyTier === 'easy_and_inset' ? 'Easy + In-Set' : (options.difficultyTier === 'challenging' ? 'Challenging' : null)),
+				templateDifficulty: template ? computeTemplateDifficulty(template).difficultyScore : null,
+				eojeols: allEojeols,
+				unitsUsed,
+				unitIds,
+				tree: unitIds,
+				ast,
+				validation: valResult,
+				slotChoices
+			};
 		}
+
+		lastValidationResult = valResult;
 	}
-
-	const unitIds = Array.from(seenUnitIds);
-
-	const unlockedList = isSelectedMode ? Array.from(unlockedSlotSet) : template.slots.map((_, i) => i);
-	const singleSlotIdx = isSelectedMode && unlockedSlotSet.size === 1 ? Array.from(unlockedSlotSet)[0] : -1;
 
 	return {
-		ok: true,
+		ok: false,
 		insufficientSet: false,
 		isVerifiedStructure: true,
 		verifiedTemplateId: template.id,
-		verifiedTemplateTitle: template.title,
-		verifiedSource: template.source,
-		originalKo: template.originalKo,
-		varyMode,
-		unlockedSlots: unlockedList,
-		varySlotIndex: singleSlotIdx,
-		targetUnitId,
-		ko: koWithPunct,
-		koBare,
-		pronunciation: koWithPunct ? getPronunciation(koWithPunct) : "",
-		enLiteral,
-		enNatural,
-		en: enLiteral,
-		difficultyTier: options.difficultyTier || null,
-		difficultyLabel: options.difficultyTier === 'easiest' ? 'Easiest' : (options.difficultyTier === 'easy_and_inset' ? 'Easy + In-Set' : (options.difficultyTier === 'challenging' ? 'Challenging' : null)),
-		templateDifficulty: template ? computeTemplateDifficulty(template).difficultyScore : null,
-		eojeols: allEojeols,
-		unitsUsed,
-		unitIds,
-		tree: unitIds,
-		slotChoices
+		message: "Failed to generate a valid sentence satisfying AST and collocation rules: " + ((lastValidationResult && lastValidationResult.errors[0]) ? lastValidationResult.errors[0].message : "Validation failed"),
+		validation: lastValidationResult
 	};
 }
 
@@ -2045,16 +2603,18 @@ function generateVerifiedSentenceForUnit(unitOrId, options = {}) {
 	if (matches.length > 0) {
 		const varIdx = typeof options.variationIndex === 'number' ? options.variationIndex : 0;
 		const seedOff = typeof options.seedOffset === 'number' ? options.seedOffset : 0;
-		const pickIdx = Math.abs(varIdx + seedOff) % matches.length;
-		const chosen = matches[pickIdx];
+		for (let mAttempt = 0; mAttempt < matches.length; mAttempt++) {
+			const pickIdx = Math.abs(varIdx + seedOff + mAttempt) % matches.length;
+			const chosen = matches[pickIdx];
 
-		const res = generateSentenceFromTemplate(chosen.template, {
-			...options,
-			targetUnitId: targetId,
-			targetSlotIndex: chosen.slotIndex
-		});
-		if (res && res.ok) {
-			return res;
+			const res = generateSentenceFromTemplate(chosen.template, {
+				...options,
+				targetUnitId: targetId,
+				targetSlotIndex: chosen.slotIndex
+			});
+			if (res && res.ok) {
+				return res;
+			}
 		}
 	}
 
@@ -2255,6 +2815,8 @@ function generateVerifiedSentencesForUnit(unitOrId, count = 3, options = {}) {
 const verifiedGeneratorExports = {
 	VERIFIED_TEMPLATE_SCHEMA,
 	VERIFIED_SLOT_SCHEMA,
+	recomposeASTFromVerifiedSentence,
+	validateVerifiedSentence,
 	hydrateVerifiedSentence,
 	serializeCompactTemplate,
 	resetHardcodedVerifiedCache,

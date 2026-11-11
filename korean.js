@@ -412,6 +412,8 @@ const exportedMembers = {
 	findMatchingTemplatesForUnit: verifiedSentenceGenerator.findMatchingTemplatesForUnit,
 	generateVerifiedSentenceForUnit: verifiedSentenceGenerator.generateVerifiedSentenceForUnit,
 	generateVerifiedSentencesForUnit: verifiedSentenceGenerator.generateVerifiedSentencesForUnit,
+	recomposeASTFromVerifiedSentence: verifiedSentenceGenerator.recomposeASTFromVerifiedSentence,
+	validateVerifiedSentence: verifiedSentenceGenerator.validateVerifiedSentence,
 	validateSentenceAST: sentenceValidator.validateSentenceAST,
 	validateSentenceString: sentenceValidator.validateSentenceString,
 	SentenceValidator: sentenceValidator,

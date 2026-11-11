@@ -791,6 +791,25 @@ function realizePredicateKo(predNode, clauseContext = {}) {
 			if (humUnit) activeVerbUnit = humUnit;
 		}
 	}
+
+	// Apply negative verb suppletion (e.g. 있다 -> 없다, 알다 -> 모르다, 약속이 있다 -> 약속이 없다)
+	if (activeVerbUnit && predNode.polarity === "negative") {
+		const vKo = activeVerbUnit[DATA_SCHEMA.Korean];
+		let suppKo = (state && state.NEGATION_SUPPLETIONS && state.NEGATION_SUPPLETIONS.get(vKo)) || null;
+		if (!suppKo) {
+			if (vKo === "있다") suppKo = "없다";
+			else if (vKo === "알다") suppKo = "모르다";
+			else if (vKo.endsWith("있다")) suppKo = vKo.slice(0, -2) + "없다";
+		}
+		if (suppKo) {
+			const suppUnit = getVerbUnit(suppKo);
+			if (suppUnit) {
+				activeVerbUnit = suppUnit;
+				predNode.verbUnit = suppUnit;
+				predNode.polarity = "affirmative"; // Suppletive lexical verb already inherently carries negation
+			}
+		}
+	}
 	predNode.verbUnit = activeVerbUnit;
 	predNode.endingUnit = resolveEndingUnit(predNode);
 

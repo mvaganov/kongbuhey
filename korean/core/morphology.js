@@ -176,6 +176,10 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 		if (particleType === "dative" || particleType === "dative_person" || particleType === "dative_animate") {
 			return (options.spoken === true || options.formality === "spoken") ? "너한테" : "너에게";
 		}
+	} else if (nounKo === "누구") {
+		if (particleType === "subject" || particleType === "nominative" || particleType === "sub") {
+			return "누가";
+		}
 	}
 
 	const lastChar = nounKo.trim().slice(-1);

@@ -698,6 +698,12 @@ function initSemanticSets(dm = dataModule) {
 
 	const morph = (pattern) => resolvePureMorphology(pattern, stateExports);
 
+	const actionVerbKoreanSet = new Set(
+		allUnits
+			.filter(u => u && u[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB)
+			.map(u => u[DATA_SCHEMA.Korean])
+	);
+
 	const descriptiveUnits = allUnits.filter(u => u && u[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB);
 	for (const du of descriptiveUnits) {
 		const dKo = du[DATA_SCHEMA.Korean];
@@ -713,6 +719,12 @@ function initSemanticSets(dm = dataModule) {
 		DESCRIPTIVE_SURFACE_MAP.set(morph(dStem + "습니다/ㅂ니다"), du);
 		DESCRIPTIVE_SURFACE_MAP.set(morph(dStem + "았/었어요"), du);
 		DESCRIPTIVE_SURFACE_MAP.set(morph(dStem + "았/었습니다"), du);
+
+		// Homonym safety: If the verb also exists as an Action Verb (e.g. 싸다 "to pack", 낫다 "to recover"),
+		// do not treat imperative, propositive, inability, or volitional forms as forbidden DV violations.
+		if (actionVerbKoreanSet.has(dKo)) {
+			continue;
+		}
 
 		FORBIDDEN_DV_IMPERATIVE_FORMS.set(morph(dStem + "으/십시오"), dKo);
 		FORBIDDEN_DV_IMPERATIVE_FORMS.set(morph(dStem + "으/세요"), dKo);

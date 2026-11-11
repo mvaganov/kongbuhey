@@ -528,8 +528,12 @@ sampleDescriptiveVerbs.forEach(dv => {
 		if (phrase && phrase.noun) {
 			const nKo = phrase.noun[KoreanWord];
 			const hasB = hasBatchim(nKo.slice(-1));
-			const expectedParticle = hasB ? "이" : "가";
-			assert(phrase.text.startsWith(nKo + expectedParticle), `Subject particle concord: '${nKo}' + '${expectedParticle}' in "${phrase.text}"`);
+			let expectedPrefix = nKo + (hasB ? "이" : "가");
+			if (nKo === "저" || nKo === "제") expectedPrefix = "제가";
+			else if (nKo === "나" || nKo === "내") expectedPrefix = "내가";
+			else if (nKo === "너" || nKo === "네") expectedPrefix = "네가";
+			else if (nKo === "누구") expectedPrefix = "누가";
+			assert(phrase.text.startsWith(expectedPrefix), `Subject particle concord: '${expectedPrefix}' in "${phrase.text}"`);
 		}
 	}
 });
@@ -577,8 +581,12 @@ allDescriptiveVerbs.forEach(dv => {
 	if (phrase && phrase.noun) {
 		const nKo = phrase.noun[KoreanWord];
 		const hasB = hasBatchim(nKo.slice(-1));
-		const expectedParticle = hasB ? "이" : "가";
-		assert(phrase.text.startsWith(nKo + expectedParticle), `${dv[KoreanWord]}: subject particle batchim concord '${nKo}${expectedParticle}'`);
+		let expectedPrefix = nKo + (hasB ? "이" : "가");
+		if (nKo === "저" || nKo === "제") expectedPrefix = "제가";
+		else if (nKo === "나" || nKo === "내") expectedPrefix = "내가";
+		else if (nKo === "너" || nKo === "네") expectedPrefix = "네가";
+		else if (nKo === "누구") expectedPrefix = "누가";
+		assert(phrase.text.startsWith(expectedPrefix), `${dv[KoreanWord]}: subject particle batchim concord '${expectedPrefix}'`);
 	}
 });
 

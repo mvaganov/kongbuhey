@@ -100,7 +100,9 @@ function validateSentenceAST(ast, realized) {
 		const segs = ej.segments || [];
 		if (segs.length > 0) {
 			const segJoined = segs.map(s => s.textKo || s.text || "").join("");
-			if (segJoined !== ej.surfaceKo) {
+			const cleanEjSurface = (ej.surfaceKo || "").replace(/[,.?!]+$/, "");
+			const cleanSegJoined = segJoined.replace(/[,.?!]+$/, "");
+			if (cleanSegJoined !== cleanEjSurface) {
 				errors.push({
 					code: "SEGMENT_RECONSTRUCTION_MISMATCH",
 					message: `Eojeol [${idx}] segments "${segJoined}" !== surface "${ej.surfaceKo}"`
@@ -151,18 +153,26 @@ function validateSentenceAST(ast, realized) {
 			const objUnit = objCon.nounUnit || objCon.unit;
 			const objKo = objUnit ? objUnit[DATA_SCHEMA.Korean] : "";
 
-			if (predType === "descriptive") {
+			// Check if the clause has an embedded adnominal modifier verb that governs this direct object
+			const hasGoverningAdnominalVerb = constituents.some(c =>
+				(c.role === "adnominal_modifier" || c.category === "adnominal_modifier" || (c.inflection && c.inflection.stemForm === "adnominal")) &&
+				c.unit && (c.unit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || hasTag(c.unit, "transitive", K.TRANSITIVE_GENERAL))
+			);
+
+			if (predType === "descriptive" && !hasGoverningAdnominalVerb) {
 				errors.push({
 					code: "VALENCY_TRANSITIVITY_MISMATCH",
 					message: `Descriptive verb '${verbKo}' cannot take accusative direct object '${objKo}' in: "${ko}"`
 				});
-			} else if (verbKo) {
+			} else if (verbKo && !hasGoverningAdnominalVerb) {
 				const isCognateAccusative =
-					(verbKo === "자다" && objKo === "잠") ||
+					((verbKo === "자다" || verbKo === "주무시다") && objKo === "잠") ||
 					(verbKo === "꾸다" && objKo === "꿈") ||
-					(verbKo === "추다" && objKo === "춤");
+					(verbKo === "추다" && objKo === "춤") ||
+					((verbKo === "가다" || verbKo === "오다" || verbKo === "다니다") && ["여행", "등산", "소풍", "유학", "출장", "산책", "쇼핑", "낚시"].includes(objKo));
 				const hasTransitiveTag = verbUnit && (
 					hasTag(verbUnit, "transitive", K.TRANSITIVE_GENERAL) ||
+					verbKo === "보이다" ||
 					Array.from(verbUnit[DATA_SCHEMA.SemanticTags] || []).some(t => typeof t === "string" && t.startsWith("transitive"))
 				);
 				const isIntrans = verbUnit && !hasTransitiveTag && hasTag(
@@ -237,7 +247,14 @@ function validateSentenceAST(ast, realized) {
 			const advUnit = advCon.unit || advCon.nounUnit;
 			const advKo = advUnit ? advUnit[DATA_SCHEMA.Korean] : "";
 			const isDegreeAdv = hasTag(advUnit, "degree_pure");
-			const isScalableVerb = hasTag(verbUnit, "scalable", "scalable_duration", "scalable_emotion", "scalable_quantity");
+			const hasGoverningAdnominalDV = constituents.some(c =>
+				(c.role === "adnominal_modifier" || c.category === "adnominal_modifier" || (c.inflection && c.inflection.stemForm === "adnominal")) &&
+				c.unit && (c.unit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB || hasTag(c.unit, K.GRADABLE))
+			);
+			const isScalableVerb = hasTag(verbUnit, "scalable", "scalable_duration", "scalable_emotion", "scalable_quantity") ||
+				(verbKo === "되다" && advKo === "얼마나") ||
+				verbKo.endsWith("나빠하다") || verbKo.endsWith("좋아하다") || verbKo.endsWith("싫어하다") || verbKo.endsWith("슬퍼하다") || verbKo.endsWith("기뻐하다") || verbKo.endsWith("부러워하다") ||
+				hasGoverningAdnominalDV;
 			if (isDegreeAdv && !isScalableVerb) {
 				errors.push({
 					code: "DEGREE_ADVERB_ACTION_VERB_MISMATCH",
@@ -254,7 +271,7 @@ function validateSentenceAST(ast, realized) {
 			if (isWhQuestionAdverb) {
 				const isRootDeclarative = (ast.speechAct === "declarative" || !ast.speechAct) && clauses.length === 1;
 				const endsWithPeriod = /[.]$/.test(ko.trim());
-				const isEmbeddedIndirect = /(?:몰라|모르|알아|알다|알려|는지|은지)/.test(ko);
+				const isEmbeddedIndirect = /(?:몰라|모르|알아|알다|알려|는지|은지|을지|ㄹ지|으면|면)/.test(ko);
 				if ((isRootDeclarative || endsWithPeriod) && !isEmbeddedIndirect) {
 					errors.push({
 						code: "QUESTION_WORD_DECLARATIVE_MISMATCH",

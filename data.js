@@ -991,7 +991,7 @@ const KR_EN_languageUnits = [
 	[698, "횡단보도", "crosswalk", N, [PLACE, "transitFacility"], "", "", SUOBI17, 3, "", "", {"domain":"place","polarity":0,"en":{"lit":"crosswalk","nat":"crosswalk","count":"c"}}, ""],
 	[699, "건너다", "to cross", AV, [TRANSITIVE_GENERAL, "intransitive_place"], "", REGULAR, SUOBI17, 3, "", "", {"domain":"action","req":"place","prod":"crossed","polarity":0,"en":{"lit":"cross","base":"cross","past":"crossed"}}, ""],
 	[700, "보이다", "to be seen", AV, [INTRANSITIVE_GENERAL, "perception"], "", REGULAR, SUOBI17, 3, "", "", {"domain":"perception","polarity":0,"en":{"lit":"be-seen","base":"be seen","past":"was seen","part":"been seen","s":"is seen","ing":"being seen"}}, ""],
-	[701, "약", "medicine", N, [OBJECT, "medical"], "", "", SUOBI17, 2, "", "", {"domain":"object","polarity":0,"en":{"lit":"medicine","nat":"medicine","count":"c"}}, ""],
+	[701, "약", "medicine", N, [OBJECT, "medical", "medicine"], "", "", SUOBI17, 2, "", "", {"domain":"object","polarity":0,"en":{"lit":"medicine","nat":"medicine","count":"c"}}, ""],
 	[702, "육교", "pedestrian overpass", N, [PLACE, "transitFacility"], "", "", SUOBI17, 3, "", "", {"domain":"place","polarity":0,"en":{"lit":"pedestrian-overpass","nat":"pedestrian overpass","count":"c"}}, ""],
 	[703, "지하도", "underpass", N, [PLACE, "transitFacility"], "", "", SUOBI17, 3, "", "", {"domain":"place","polarity":0,"en":{"lit":"underpass","nat":"underpass","count":"c"}}, ""],
 	[704, "출구", "exit", N, [PLACE, "transitFacility"], "", "", SUOBI17, 3, "", "", {"domain":"place","polarity":0,"en":{"lit":"exit","nat":"exit","count":"c"}}, ""],

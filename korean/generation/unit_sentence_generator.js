@@ -2077,8 +2077,18 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 	const pol = getTemporalPolarity(unit);
 	if (pol) tense = pol;
 
-	const avs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => !state.FORBIDDEN_NEGATIVE_ROOTS.has(v[DATA_SCHEMA.Korean]));
-	const dvs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId).filter(v => !state.FORBIDDEN_NEGATIVE_ROOTS.has(v[DATA_SCHEMA.Korean]));
+	const avs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => {
+		const k = v[DATA_SCHEMA.Korean] || "";
+		if (state.FORBIDDEN_NEGATIVE_ROOTS.has(k)) return false;
+		if ((isNPI || isShortAn || isShortMot) && (k.endsWith("있다") || k.endsWith("알다"))) return false;
+		return true;
+	});
+	const dvs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId).filter(v => {
+		const k = v[DATA_SCHEMA.Korean] || "";
+		if (state.FORBIDDEN_NEGATIVE_ROOTS.has(k)) return false;
+		if ((isNPI || isShortAn || isShortMot) && (k.endsWith("있다") || k.endsWith("알다"))) return false;
+		return true;
+	});
 
 	let chosenVerb = null;
 	if (isShortMot) {

@@ -222,6 +222,16 @@ function recognizeCompoundParticle(word, vocabByKo = null, options = {}) {
 	return null;
 }
 
+// Stems permitted to take the contracted topic particle -ㄴ (from -는, ID 36).
+// Restricting this prevents false positives on numbers (오->온, 사->산) and
+// adnominal modifier verb stems (온 from 오다, 산 from 사다, 찬 from 차다, 판 from 파다/판).
+const VALID_CONTRACTED_TOPIC_STEMS = new Set([
+	"나", "너", "저", "우리", "저희", "그대",
+	"이거", "그거", "저거", "여기", "거기", "저기", "어디",
+	"어제", "때", "오빠", "엄마", "아빠", "친구", "누나", "언니",
+	"뭐", "누구"
+]);
+
 /**
  * Decomposes contracted enclitics (topic particle -ㄴ or object particle -ㄹ)
  * on vowel-final nominal stems into base lexical unit + particle.
@@ -242,12 +252,11 @@ function matchContractedParticle(word, index, DATA_SCHEMA) {
 	if (final === 4) { // nieun coda
 		const uncontractedLast = String.fromCharCode(lastCode - 4);
 		const stem = word.slice(0, -1) + uncontractedLast;
-		if (vocabByKo.has(stem)) {
+		if (VALID_CONTRACTED_TOPIC_STEMS.has(stem) && vocabByKo.has(stem)) {
 			const cands = vocabByKo.get(stem).filter(u =>
 				u[DATA_SCHEMA.PartofSpeech] === K.NOUN ||
 				u[DATA_SCHEMA.PartofSpeech] === K.PRONOUN ||
-				u[DATA_SCHEMA.PartofSpeech] === 'Bound Noun' ||
-				u[DATA_SCHEMA.PartofSpeech] === K.NUMBER
+				u[DATA_SCHEMA.PartofSpeech] === 'Bound Noun'
 			);
 			if (cands.length > 0) {
 				const nUnit = cands[0];
