@@ -155,46 +155,46 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 	if (!nounKo) return "";
 	// Pronoun clitic allomorphy (저/제, 나/내, 너/네)
 	if (nounKo === "저" || nounKo === "제") {
-		if (particleType === "subject" || particleType === "nominative" || particleType === "sub") {
+		if (particleType === K.SUBJECT || particleType === "nominative" || particleType === "sub") {
 			return "제가";
 		}
-		if (particleType === "topic") {
+		if (particleType === K.TOPIC) {
 			return "저는";
 		}
 		if (particleType === K.OBJECT || particleType === "accusative" || particleType === "obj") {
 			return "저를";
 		}
-		if (particleType === "dative" || particleType === "dative_person" || particleType === "dative_animate") {
+		if (particleType === K.DATIVE || particleType === K.DATIVE_PERSON || particleType === "dative_animate") {
 			return (options.spoken === true || options.formality === "spoken") ? "저한테" : "저에게";
 		}
 	} else if (nounKo === "나" || nounKo === "내") {
-		if (particleType === "subject" || particleType === "nominative" || particleType === "sub") {
+		if (particleType === K.SUBJECT || particleType === "nominative" || particleType === "sub") {
 			return "내가";
 		}
-		if (particleType === "topic") {
+		if (particleType === K.TOPIC) {
 			return "나는";
 		}
 		if (particleType === K.OBJECT || particleType === "accusative" || particleType === "obj") {
 			return "나를";
 		}
-		if (particleType === "dative" || particleType === "dative_person" || particleType === "dative_animate") {
+		if (particleType === K.DATIVE || particleType === K.DATIVE_PERSON || particleType === "dative_animate") {
 			return (options.spoken === true || options.formality === "spoken") ? "나한테" : "나에게";
 		}
 	} else if (nounKo === "너" || nounKo === "네") {
-		if (particleType === "subject" || particleType === "nominative" || particleType === "sub") {
+		if (particleType === K.SUBJECT || particleType === "nominative" || particleType === "sub") {
 			return "네가";
 		}
-		if (particleType === "topic") {
+		if (particleType === K.TOPIC) {
 			return "너는";
 		}
 		if (particleType === K.OBJECT || particleType === "accusative" || particleType === "obj") {
 			return "너를";
 		}
-		if (particleType === "dative" || particleType === "dative_person" || particleType === "dative_animate") {
+		if (particleType === K.DATIVE || particleType === K.DATIVE_PERSON || particleType === "dative_animate") {
 			return (options.spoken === true || options.formality === "spoken") ? "너한테" : "너에게";
 		}
 	} else if (nounKo === "누구") {
-		if (particleType === "subject" || particleType === "nominative" || particleType === "sub") {
+		if (particleType === K.SUBJECT || particleType === "nominative" || particleType === "sub") {
 			return "누가";
 		}
 	}
@@ -211,7 +211,7 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 		case "obj":
 			return nounKo + (hasB ? "을" : "를");
 
-		case "subject":
+		case K.SUBJECT:
 		case "nominative":
 		case "sub":
 			if (options.honorific === true || (options.allowHonorificSubject && isElderNoun(nounUnit, nounKo))) {
@@ -223,7 +223,7 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 		case "honorific_subject":
 			return nounKo + "께서";
 
-		case "topic":
+		case K.TOPIC:
 			if (options.honorific === true) {
 				return nounKo + "께서는";
 			}
@@ -233,7 +233,7 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 		case "honorific_topic":
 			return nounKo + "께서는";
 
-		case "dative": {
+		case K.DATIVE: {
 			const isHumble = (verbUnit && hasTag(verbUnit, "humbleVerb", "dative_humble")) || state.HUMBLE_DATIVE_VERBS.has(verbKo);
 			if (options.dativeType === K.HONORIFIC || options.honorific === true || isElderNoun(nounUnit, nounKo) || isHumble) {
 				return nounKo + "께";
@@ -256,23 +256,23 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 		case "dative_spoken":
 			return nounKo + "한테";
 
-		case "dative_person":
+		case K.DATIVE_PERSON:
 		case "dative_animate":
 			return (options.spoken === true || options.formality === "spoken") ? nounKo + "한테" : nounKo + "에게";
 
-		case "location":
+		case K.LOCATION:
 		case "locative": {
 			if (options.locativeType === "dynamic" || options.locativeType === "origin") return nounKo + "에서";
 			if (options.locativeType === "static" || options.locativeType === "goal" || options.locativeType === "destination") return nounKo + "에";
 
 			if (verbUnit || verbKo) {
-				const isOrigin = (verbUnit && hasTag(verbUnit, "origin", "departure", "locative_origin")) || state.ORIGIN_VERBS.has(verbKo);
+				const isOrigin = (verbUnit && hasTag(verbUnit, "origin", "departure", K.LOCATIVE_ORIGIN)) || state.ORIGIN_VERBS.has(verbKo);
 				if (isOrigin) return nounKo + "에서";
 
-				const isAllative = (verbUnit && hasTag(verbUnit, "allative", "destination", "goal", "locative_goal")) || state.ALLATIVE_GOAL_VERBS.has(verbKo);
+				const isAllative = (verbUnit && hasTag(verbUnit, "allative", "destination", "goal", K.LOCATIVE_GOAL)) || state.ALLATIVE_GOAL_VERBS.has(verbKo);
 				if (isAllative) return nounKo + "에";
 
-				const isStatic = (verbUnit && hasTag(verbUnit, "static", "existence", "residence", "locative_static")) || state.STATIC_EXISTENCE_VERBS.has(verbKo);
+				const isStatic = (verbUnit && hasTag(verbUnit, "static", "existence", "residence", K.LOCATIVE_STATIC)) || state.STATIC_EXISTENCE_VERBS.has(verbKo);
 				if (isStatic) return nounKo + "에";
 
 				const pos = verbUnit ? verbUnit[DATA_SCHEMA.PartofSpeech] : "";
@@ -303,7 +303,7 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 
 		case "instrumental":
 		case "instrument":
-		case "direction":
+		case K.DIRECTION:
 		case "direction_ro":
 		case "-(으)로":
 		case "로":
@@ -312,7 +312,7 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 		case "comitative":
 		case "and_with":
 			if (options.spoken === true || options.formality === "spoken") return nounKo + "하고";
-			if (options.formality === "informal") return nounKo + (hasB ? "이랑" : "랑");
+			if (options.formality === K.INFORMAL) return nounKo + (hasB ? "이랑" : "랑");
 			return nounKo + (hasB ? "과" : "와");
 
 		case "source_person":
@@ -396,11 +396,11 @@ function canTakeMood(verbOrKo, mood) {
 	const isInvoluntary = (verbUnit && hasTag(verbUnit, "involuntary", "passive", K.WEATHER) && ko !== "우산을 쓰다")
 		|| ["끝나다", "시작되다", "고장 나다", "죽다", "생기다", "열리다", "닫히다"].some(k => ko.includes(k));
 
-	if (normalizedMood === "imperative" || normalizedMood === "prohibition" || normalizedMood === "propositive" || normalizedMood === "suggestion") {
+	if (normalizedMood === K.IMPERATIVE || normalizedMood === K.PROHIBITION || normalizedMood === K.PROPOSITIVE || normalizedMood === "suggestion") {
 		return isAction && !isDescriptive && !isInvoluntary;
 	}
 
-	if (normalizedMood === "inability" || normalizedMood === "short_inability" || normalizedMood === "long_inability") {
+	if (normalizedMood === K.INABILITY || normalizedMood === "short_inability" || normalizedMood === "long_inability") {
 		return isAction && !isDescriptive;
 	}
 
@@ -425,16 +425,16 @@ function getAffirmativeCounterpart(verbOrKo) {
 	return state.AFFIRMATIVE_COUNTERPARTS.get(ko) || null;
 }
 
-function conjugatePredicate(verbOrKo, formality = "polite", tense = "present") {
+function conjugatePredicate(verbOrKo, formality = "polite", tense = K.PRESENT) {
 	const verbUnit = getVerbUnit(verbOrKo);
 	const ko = typeof verbOrKo === 'string' ? verbOrKo : (verbUnit ? verbUnit[DATA_SCHEMA.Korean] : "");
 	if (!ko) return "";
 
 	if (ko === "뵙다" || ko === "뵈다") {
-		if (tense === "past") {
+		if (tense === K.PAST) {
 			return (formality === "formal" || formality === "formal_polite") ? "뵀습니다" : "뵀어요";
 		}
-		if (tense === "future") {
+		if (tense === K.FUTURE) {
 			return (formality === "formal" || formality === "formal_polite") ? "뵙겠습니다" : "뵐 거예요";
 		}
 		if (formality === "formal" || formality === "formal_polite") {
@@ -444,17 +444,17 @@ function conjugatePredicate(verbOrKo, formality = "polite", tense = "present") {
 	}
 
 	// Nominal Copula Predicates (통화중이다, 오랜만이다, 유행이다, 이다...)
-	if (ko.endsWith("이다") && (verbUnit ? verbUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB : true) && !["보이다", "끓이다", "모이다", "줄이다", "속이다", "붙이다", "움직이다"].includes(ko)) {
+	if (ko.endsWith("이다") && (verbUnit ? verbUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB : Boolean(getNounUnit(ko.slice(0, -2)) && ko.slice(0, -2) !== "속"))) {
 		const baseNoun = ko.slice(0, -2); // e.g. "통화중", "오랜만", "유행"
 		if (baseNoun) {
 			const hasB = hasBatchim(baseNoun.slice(-1));
-			if (tense === "past") {
+			if (tense === K.PAST) {
 				if (formality === "formal" || formality === "formal_polite") {
 					return `${baseNoun}${hasB ? "이었습니다" : "였습니다"}`;
 				}
 				return `${baseNoun}${hasB ? "이었어요" : "였어요"}`;
 			}
-			if (tense === "future") {
+			if (tense === K.FUTURE) {
 				if (formality === "formal" || formality === "formal_polite") {
 					return `${baseNoun}일 것입니다`;
 				}
@@ -471,7 +471,7 @@ function conjugatePredicate(verbOrKo, formality = "polite", tense = "present") {
 	const stem = getConjugatedStem(ko, conj);
 	const isAction = verbUnit ? verbUnit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB : isActionVerb(ko);
 
-	if (tense === "past") {
+	if (tense === K.PAST) {
 		switch (formality) {
 			case "formal":
 			case "formal_polite":
@@ -483,7 +483,7 @@ function conjugatePredicate(verbOrKo, formality = "polite", tense = "present") {
 			default:
 				return applyMorphology(stem + "았/었어요");
 		}
-	} else if (tense === "future") {
+	} else if (tense === K.FUTURE) {
 		switch (formality) {
 			case "formal":
 			case "formal_polite":
@@ -518,8 +518,8 @@ function buildNegatedPredicate(verbOrKo, options = {}) {
 	if (!ko) return "";
 
 	const formality = options.formality || "polite";
-	const tense = options.tense || "present";
-	const isInability = !!options.inability || options.type === "inability";
+	const tense = options.tense || K.PRESENT;
+	const isInability = !!options.inability || options.type === K.INABILITY;
 	const isLong = options.type === "long";
 
 	const suppletive = getNegationSuppletion(ko);
@@ -528,7 +528,7 @@ function buildNegatedPredicate(verbOrKo, options = {}) {
 	}
 
 	if (isInability) {
-		if (!canTakeMood(verbOrKo, "inability")) {
+		if (!canTakeMood(verbOrKo, K.INABILITY)) {
 			throw new Error(`Descriptive verb '${ko}' cannot take inability negation (못 / -지 못하다).`);
 		}
 		const conj = verbUnit ? verbUnit[DATA_SCHEMA.Conjugation] : "";
@@ -575,44 +575,44 @@ function buildMoodPredicate(verbOrKo, mood, formality = "polite", options = {}) 
 	const rawStem = getStem(ko);
 
 	switch (normalizedMood) {
-		case "imperative": {
+		case K.IMPERATIVE: {
 			switch (formality) {
 				case "formal":
 				case "formal_polite":
-				case "formal_high":
+				case K.FORMAL_HIGH:
 					return applyMorphology(stem + "으/십시오");
 				case "plain":
-				case "informal":
+				case K.INFORMAL:
 					return applyMorphology(stem + "아/어라");
 				case "polite":
 				default:
 					return applyMorphology(stem + "으/세요");
 			}
 		}
-		case "prohibition": {
+		case K.PROHIBITION: {
 			switch (formality) {
 				case "formal":
 				case "formal_polite":
-				case "formal_high":
+				case K.FORMAL_HIGH:
 					return rawStem + "지 마십시오";
 				case "plain":
-				case "informal":
+				case K.INFORMAL:
 					return options.plainEnding === "마라" ? (rawStem + "지 마라") : (rawStem + "지 마");
 				case "polite":
 				default:
 					return rawStem + "지 마세요";
 			}
 		}
-		case "propositive": {
+		case K.PROPOSITIVE: {
 			switch (formality) {
 				case "formal":
 				case "formal_polite":
-				case "formal_high":
+				case K.FORMAL_HIGH:
 					return applyMorphology(stem + "으/ㅂ시다");
 				case "suggestion":
 					return applyMorphology(stem + "으/ㄹ까요?");
 				case "plain":
-				case "informal":
+				case K.INFORMAL:
 				default:
 					return rawStem + "자";
 			}
@@ -624,7 +624,7 @@ function buildMoodPredicate(verbOrKo, mood, formality = "polite", options = {}) 
 				switch (formality) {
 					case "formal":
 					case "formal_polite":
-					case "formal_high":
+					case K.FORMAL_HIGH:
 						return rawStem + "고 싶어합니다";
 					case "plain":
 						return rawStem + "고 싶어한다";
@@ -636,7 +636,7 @@ function buildMoodPredicate(verbOrKo, mood, formality = "polite", options = {}) 
 				switch (formality) {
 					case "formal":
 					case "formal_polite":
-					case "formal_high":
+					case K.FORMAL_HIGH:
 						return rawStem + "고 싶습니다";
 					case "plain":
 						return rawStem + "고 싶다";
@@ -647,7 +647,7 @@ function buildMoodPredicate(verbOrKo, mood, formality = "polite", options = {}) 
 			}
 		}
 		default:
-			return conjugatePredicate(ko, formality, options.tense || "present");
+			return conjugatePredicate(ko, formality, options.tense || K.PRESENT);
 	}
 }
 
@@ -725,11 +725,11 @@ function isElderNoun(nounUnit, nounKo = "") {
 
 	if (nounUnit) {
 		if (hasTag(nounUnit, "honorific_noun")) return false;
-		if (hasTag(nounUnit, "elder_noun", "honorific_person", "elder", "kinship_elder")) return true;
-		if (hasTag(nounUnit, K.CONCEPT, K.COMMUNICATION, K.FOOD, K.PLACE, "attribute", K.TIME) && !hasTag(nounUnit, K.PERSON, K.FAMILY, "profession", "subject_animate")) return false;
-		if (hasTag(nounUnit, K.HONORIFIC) && hasTag(nounUnit, K.PERSON, K.FAMILY, "profession", "subject_animate")) return true;
+		if (hasTag(nounUnit, K.ELDER_NOUN, "honorific_person", "elder", "kinship_elder")) return true;
+		if (hasTag(nounUnit, K.CONCEPT, K.COMMUNICATION, K.FOOD, K.PLACE, "attribute", K.TIME) && !hasTag(nounUnit, K.PERSON, K.FAMILY, K.PROFESSION, "subject_animate")) return false;
+		if (hasTag(nounUnit, K.HONORIFIC) && hasTag(nounUnit, K.PERSON, K.FAMILY, K.PROFESSION, "subject_animate")) return true;
 		const sv = parseSemanticVector(nounUnit);
-		if (sv && sv.honorific === true && hasTag(nounUnit, K.PERSON, K.FAMILY, "profession", "subject_animate")) return true;
+		if (sv && sv.honorific === true && hasTag(nounUnit, K.PERSON, K.FAMILY, K.PROFESSION, "subject_animate")) return true;
 		if (state.ELDER_NOUN_TITLES.has(name) || (name && name.endsWith('님') && hasTag(nounUnit, K.PERSON))) return true;
 	}
 	if (nounKo) {
@@ -740,8 +740,8 @@ function isElderNoun(nounUnit, nounKo = "") {
 
 function isInanimateInstitution(nounUnit, nounKo = "") {
 	if (nounUnit) {
-		if (hasTag(nounUnit, "inanimate_institution")) return true;
-		if (hasTag(nounUnit, K.PERSON, "animal", K.FAMILY, "profession", "subject_animate")) return false;
+		if (hasTag(nounUnit, K.INANIMATE_INSTITUTION)) return true;
+		if (hasTag(nounUnit, K.PERSON, "animal", K.FAMILY, K.PROFESSION, "subject_animate")) return false;
 		if (hasTag(nounUnit, "institution", K.FACILITY, "organization", "workplace", K.PLACE, "place_indoor", "place_outdoor")) return true;
 	}
 	if (nounKo && state.INANIMATE_INSTITUTION_NAMES.has(nounKo)) return true;
@@ -765,19 +765,19 @@ function getTemporalPolarity(wordOrUnit) {
 	const unit = typeof wordOrUnit === 'object' && Array.isArray(wordOrUnit) ? wordOrUnit : (getNounUnit(ko) || getVerbUnit(ko));
 	const id = unit ? unit[DATA_SCHEMA.Id] : (typeof wordOrUnit === 'number' ? wordOrUnit : null);
 
-	if (ko && state.PAST_TIME_WORDS.has(ko)) return "past";
-	if (id !== null && state.PAST_GRAMMAR_IDS.has(id)) return "past";
+	if (ko && state.PAST_TIME_WORDS.has(ko)) return K.PAST;
+	if (id !== null && state.PAST_GRAMMAR_IDS.has(id)) return K.PAST;
 
-	if (ko && state.FUTURE_TIME_WORDS.has(ko)) return "future";
-	if (id !== null && state.FUTURE_GRAMMAR_IDS.has(id)) return "future";
+	if (ko && state.FUTURE_TIME_WORDS.has(ko)) return K.FUTURE;
+	if (id !== null && state.FUTURE_GRAMMAR_IDS.has(id)) return K.FUTURE;
 
-	if (ko && state.PRESENT_TIME_WORDS.has(ko)) return "present";
-	if (id !== null && state.PRESENT_GRAMMAR_IDS.has(id)) return "present";
+	if (ko && state.PRESENT_TIME_WORDS.has(ko)) return K.PRESENT;
+	if (id !== null && state.PRESENT_GRAMMAR_IDS.has(id)) return K.PRESENT;
 
 	if (unit) {
-		if (hasTag(unit, "temporal_past", "past")) return "past";
-		if (hasTag(unit, "temporal_future", "future")) return "future";
-		if (hasTag(unit, "temporal_present", "present")) return "present";
+		if (hasTag(unit, "temporal_past", K.PAST)) return K.PAST;
+		if (hasTag(unit, "temporal_future", K.FUTURE)) return K.FUTURE;
+		if (hasTag(unit, "temporal_present", K.PRESENT)) return K.PRESENT;
 		const sv = parseSemanticVector(unit);
 		if (sv && sv.tense) return sv.tense;
 	}
@@ -787,24 +787,20 @@ function getTemporalPolarity(wordOrUnit) {
 function filterWordsByTense(words, tense) {
 	if (!words || words.length === 0 || !tense) return words || [];
 	let filtered = words;
-	if (tense === "past") {
+	if (tense === K.PAST) {
 		filtered = words.filter(w => {
-			const wKo = w[DATA_SCHEMA.Korean] || "";
-			if (["금방", "이제", "곧", "이따가"].includes(wKo)) return false;
 			const pol = getTemporalPolarity(w);
-			return pol !== "future";
+			return pol !== K.FUTURE;
 		});
-	} else if (tense === "future") {
+	} else if (tense === K.FUTURE) {
 		filtered = words.filter(w => {
-			const wKo = w[DATA_SCHEMA.Korean] || "";
-			if (["늘", "요즘"].includes(wKo)) return false;
 			const pol = getTemporalPolarity(w);
-			return pol !== "past";
+			return pol !== K.PAST;
 		});
-	} else if (tense === "present") {
+	} else if (tense === K.PRESENT) {
 		filtered = words.filter(w => {
 			const pol = getTemporalPolarity(w);
-			return pol !== "past" && pol !== "future";
+			return pol !== K.PAST && pol !== K.FUTURE;
 		});
 	}
 	return filtered.length > 0 ? filtered : words;
@@ -813,26 +809,26 @@ function filterWordsByTense(words, tense) {
 function filterGrammarByTense(grammars, tense) {
 	if (!grammars || grammars.length === 0 || !tense) return grammars || [];
 	let filtered = grammars;
-	if (tense === "past") {
+	if (tense === K.PAST) {
 		filtered = grammars.filter(g => {
 			const id = g[DATA_SCHEMA.Id];
 			if (state.FUTURE_GRAMMAR_IDS.has(id)) return false;
 			const sv = parseSemanticVector(g);
-			return sv.tense !== "future";
+			return sv.tense !== K.FUTURE;
 		});
-	} else if (tense === "future") {
+	} else if (tense === K.FUTURE) {
 		filtered = grammars.filter(g => {
 			const id = g[DATA_SCHEMA.Id];
 			if (state.PAST_GRAMMAR_IDS.has(id)) return false;
 			const sv = parseSemanticVector(g);
-			return sv.tense !== "past";
+			return sv.tense !== K.PAST;
 		});
-	} else if (tense === "present") {
+	} else if (tense === K.PRESENT) {
 		filtered = grammars.filter(g => {
 			const id = g[DATA_SCHEMA.Id];
 			if (state.PAST_GRAMMAR_IDS.has(id) || state.FUTURE_GRAMMAR_IDS.has(id)) return false;
 			const sv = parseSemanticVector(g);
-			return sv.tense !== "past" && sv.tense !== "future";
+			return sv.tense !== K.PAST && sv.tense !== K.FUTURE;
 		});
 	}
 	return filtered.length > 0 ? filtered : grammars;
@@ -845,8 +841,8 @@ function filterGrammarByTense(grammars, tense) {
 function getVerbParticleType(verbUnit) {
 	const sv = parseSemanticVector(verbUnit);
 	if (sv && typeof sv.particle === 'string' && sv.particle) return sv.particle;
-	if (hasTag(verbUnit, "dative_person")) return "dative";
-	if (hasTag(verbUnit, "intransitive_motion", "intransitive_place")) return "location";
+	if (hasTag(verbUnit, K.DATIVE_PERSON)) return K.DATIVE;
+	if (hasTag(verbUnit, K.INTRANSITIVE_MOTION, K.INTRANSITIVE_PLACE)) return K.LOCATION;
 	const spec = ACTION_VERB_SPECS.find(s => hasTag(verbUnit, s.tag));
 	if (spec && spec.particle) return spec.particle;
 	return K.OBJECT;
@@ -870,14 +866,12 @@ function getNounCandidatesForVerb(verbUnit) {
 	const sv = parseSemanticVector(verbUnit);
 	const getFilteredWords = typeof window !== 'undefined' ? window.getFilteredWords : require('./numbers.js').getFilteredWords;
 
-	if (sv && typeof sv.collocation_filter === 'string') {
+	if (sv && sv.collocation_filter) {
 		const filterFn = getCompiledCollocationFilter(verbUnit, parseAndValidateCollocationFilter);
 		if (filterFn) {
 			const allNouns = getFilteredWords(K.NOUN);
 			const matched = allNouns.filter(n => {
 				try {
-					const curV = typeof dvUnit !== 'undefined' ? dvUnit : verbUnit;
-					if (hasTag(curV, "descriptive_emotion") && ["스트레스", "여유", "나이"].includes(n[DATA_SCHEMA.Korean])) return false;
 					return filterFn(n, hasTag);
 				} catch (e) { return false; }
 			});
@@ -885,13 +879,14 @@ function getNounCandidatesForVerb(verbUnit) {
 		}
 	}
 
+	const verbAllowsTeeth = Boolean((sv && sv.allows_teeth) || hasTag(verbUnit, "teeth"));
+
 	if (sv && sv.req && sv.req !== 'any') {
 		let reqNouns = getFilteredWords(K.NOUN, sv.req).filter(n => !hasTag(n, K.MEASUREWORD));
-		const vKo = verbUnit[DATA_SCHEMA.Korean] || "";
-		if (!["닦다", "뽑다", "치료하다", "갈다"].includes(vKo) && !hasTag(verbUnit, "teeth")) {
+		if (!verbAllowsTeeth) {
 			reqNouns = reqNouns.filter(n => n[DATA_SCHEMA.Korean] !== "이" && n[DATA_SCHEMA.Id] !== 361);
 		}
-		if (sv.req === K.FOOD || sv.req === "drink" || hasTag(verbUnit, "cooking")) {
+		if (sv.req === K.FOOD || sv.req === K.DRINK || hasTag(verbUnit, "cooking")) {
 			reqNouns = reqNouns.filter(n => !hasTag(n, K.PLACE, K.FACILITY, "restaurant", "store", "bakery", "honorific_noun"));
 		}
 		if (reqNouns.length > 0) return cacheAndReturn(reqNouns);
@@ -908,8 +903,7 @@ function getNounCandidatesForVerb(verbUnit) {
 				words = getFilteredWords(K.NOUN, spec.fallbackTag || undefined).filter(n => !hasTag(n, K.MEASUREWORD));
 			}
 			if (words.length > 0) {
-				const vKo = verbUnit[DATA_SCHEMA.Korean] || "";
-				if (!["닦다", "뽑다", "치료하다"].includes(vKo) && !hasTag(verbUnit, "teeth")) {
+				if (!verbAllowsTeeth) {
 					words = words.filter(n => n[DATA_SCHEMA.Korean] !== "이");
 				}
 				if (words.length > 0) return cacheAndReturn(words);
@@ -932,9 +926,8 @@ function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
 	const cacheAndReturn = (res) => {
 		const cleaned = Array.isArray(res)
 			? res.filter(n =>
-				!hasTag(n, "questionWord", "interrogative", "possessive")
+				!hasTag(n, K.QUESTION_WORD, K.INTERROGATIVE, "possessive")
 				&& !(parseSemanticVector(n) && parseSemanticVector(n).en && parseSemanticVector(n).en.possOnly)
-				&& !["누구", "누가", "무엇", "뭐", "언제", "어디"].includes(n[DATA_SCHEMA.Korean])
 			)
 			: res;
 		if (idx && typeof unitId === 'number') idx.dvCandidateCache.set(unitId, cleaned);
@@ -944,14 +937,12 @@ function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
 	const sv = parseSemanticVector(dvUnit);
 	const getFilteredWords = typeof window !== 'undefined' ? window.getFilteredWords : require('./numbers.js').getFilteredWords;
 
-	if (sv && typeof sv.collocation_filter === 'string') {
+	if (sv && sv.collocation_filter) {
 		const filterFn = getCompiledCollocationFilter(dvUnit, parseAndValidateCollocationFilter);
 		if (filterFn) {
 			const allNouns = getFilteredWords(K.NOUN);
 			const matched = allNouns.filter(n => {
 				try {
-					const curV = typeof dvUnit !== 'undefined' ? dvUnit : verbUnit;
-					if (hasTag(curV, "descriptive_emotion") && ["스트레스", "여유", "나이"].includes(n[DATA_SCHEMA.Korean])) return false;
 					return filterFn(n, hasTag);
 				} catch (e) { return false; }
 			});
@@ -961,14 +952,14 @@ function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
 
 	const dvKorean = dvUnit[DATA_SCHEMA.Korean] || "";
 	const restrictAnimatePerson = dvKorean !== "필요하다";
+	const dvAllowsTeeth = Boolean((sv && sv.allows_teeth) || hasTag(dvUnit, "teeth"));
 
 	if (sv && sv.req && sv.req !== 'any') {
 		let reqNouns = getFilteredWords(K.NOUN, sv.req).filter(n => !hasTag(n, K.MEASUREWORD));
 		if (restrictAnimatePerson && (sv.req === K.PERSON || hasTag(dvUnit, K.DESCRIPTIVE_PERSON))) {
 			reqNouns = filterAnimatePersonSubjects(reqNouns);
 		}
-		const dvKo = dvUnit[DATA_SCHEMA.Korean] || "";
-		if (!["아프다", "시리다", "좋다", "튼튼하다"].includes(dvKo) && !hasTag(dvUnit, "teeth")) {
+		if (!dvAllowsTeeth) {
 			reqNouns = reqNouns.filter(n => n[DATA_SCHEMA.Korean] !== "이" && n[DATA_SCHEMA.Id] !== 361);
 		}
 		if (reqNouns.length > 0) return cacheAndReturn(reqNouns);
@@ -988,8 +979,7 @@ function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
 				words = getFilteredWords(K.NOUN, spec.fallbackTag || undefined).filter(n => !hasTag(n, K.MEASUREWORD));
 			}
 			if (words.length > 0) {
-				const dvKo = dvUnit[DATA_SCHEMA.Korean] || "";
-				if (!["아프다", "시리다", "좋다", "튼튼하다"].includes(dvKo) && !hasTag(dvUnit, "teeth")) {
+				if (!dvAllowsTeeth) {
 					words = words.filter(n => n[DATA_SCHEMA.Korean] !== "이");
 				}
 				if (words.length > 0) return cacheAndReturn(words);
@@ -1047,7 +1037,7 @@ function buildActionVerbPhrase(word, stem, chosenNoun = null, options = {}) {
 		}
 	}
 
-	const isPureIntransitive = (hasTag(activeWord, K.INTRANSITIVE_GENERAL) || hasTag(activeWord, "intransitive_motion") || hasTag(activeWord, "intransitive_place"))
+	const isPureIntransitive = (hasTag(activeWord, K.INTRANSITIVE_GENERAL) || hasTag(activeWord, K.INTRANSITIVE_MOTION) || hasTag(activeWord, K.INTRANSITIVE_PLACE))
 		&& !ACTION_VERB_SPECS.some(s => s.particle === K.OBJECT && hasTag(activeWord, s.tag))
 		&& !parseSemanticVector(activeWord).collocation_filter;
 
@@ -1055,11 +1045,11 @@ function buildActionVerbPhrase(word, stem, chosenNoun = null, options = {}) {
 	const getWords = dataModule.getWords || (typeof window !== 'undefined' ? window.getWords : () => []);
 
 	if (isPureIntransitive) {
-		if (hasTag(activeWord, "intransitive_motion") || hasTag(activeWord, "intransitive_place")) {
+		if (hasTag(activeWord, K.INTRANSITIVE_MOTION) || hasTag(activeWord, K.INTRANSITIVE_PLACE)) {
 			const placeNoun = chosenNoun || getRandom(getFilteredWords(K.NOUN, K.PLACE)) || getRandom(getWords(K.NOUN, K.PLACE));
 			if (placeNoun) {
 				markUnitUsed(placeNoun);
-				return { text: `${attachParticle(placeNoun, "location", activeWord, options)} ${activeStem}`, noun: placeNoun, verb: activeWord };
+				return { text: `${attachParticle(placeNoun, K.LOCATION, activeWord, options)} ${activeStem}`, noun: placeNoun, verb: activeWord };
 			}
 		}
 		return { text: activeStem, noun: null, verb: activeWord };
@@ -1083,7 +1073,7 @@ function buildActionVerbPhrase(word, stem, chosenNoun = null, options = {}) {
 
 	const particleType = getVerbParticleType(activeWord);
 	const particleOptions = { ...options };
-	if (isRecipientElder && (particleType === "dative" || particleType === "dative_person")) {
+	if (isRecipientElder && (particleType === K.DATIVE || particleType === K.DATIVE_PERSON)) {
 		particleOptions.dativeType = K.HONORIFIC;
 	}
 
@@ -1121,7 +1111,7 @@ function buildDescriptiveVerbPhrase(word, stem, chosenNoun = null, options = {})
 	if (isHonorificMode && isElder) {
 		particleOptions.allowHonorificSubject = true;
 	}
-	return { text: `${attachParticle(noun, "subject", activeWord, particleOptions)} ${activeStem}`, noun, verb: activeWord };
+	return { text: `${attachParticle(noun, K.SUBJECT, activeWord, particleOptions)} ${activeStem}`, noun, verb: activeWord };
 }
 
 function getHonorificPredicate(verbOrKo, formality = "polite", options = {}) {
@@ -1138,17 +1128,17 @@ function getHonorificPredicate(verbOrKo, formality = "polite", options = {}) {
 				return applyMorphology(stem + "으/십니다");
 			case "formal_question":
 				return applyMorphology(stem + "으/십니까?");
-			case "past":
+			case K.PAST:
 			case "past_polite":
 				return applyMorphology(stem + "으/셨어요");
 			case "past_formal":
 				return applyMorphology(stem + "으/셨습니다");
-			case "imperative":
+			case K.IMPERATIVE:
 			case "imperative_polite":
 				return applyMorphology(stem + "으/세요");
 			case "imperative_formal":
 				return applyMorphology(stem + "으/십시오");
-			case "informal":
+			case K.INFORMAL:
 			case "banmal":
 				return applyMorphology(stem + "으/셔");
 			case "stem":
@@ -1173,17 +1163,17 @@ function getHonorificPredicate(verbOrKo, formality = "polite", options = {}) {
 				return base + "십니다";
 			case "formal_question":
 				return base + "십니까?";
-			case "past":
+			case K.PAST:
 			case "past_polite":
 				return base + "셨어요";
 			case "past_formal":
 				return base + "셨습니다";
-			case "imperative":
+			case K.IMPERATIVE:
 			case "imperative_polite":
 				return base + "세요";
 			case "imperative_formal":
 				return stem + "십시오";
-			case "informal":
+			case K.INFORMAL:
 			case "banmal":
 				return base + "셔";
 			case "stem":
@@ -1204,17 +1194,17 @@ function getHonorificPredicate(verbOrKo, formality = "polite", options = {}) {
 			return applyMorphology(stem + "으/십니다");
 		case "formal_question":
 			return applyMorphology(stem + "으/십니까?");
-		case "past":
+		case K.PAST:
 		case "past_polite":
 			return applyMorphology(stem + "으/셨어요");
 		case "past_formal":
 			return applyMorphology(stem + "으/셨습니다");
-		case "imperative":
+		case K.IMPERATIVE:
 		case "imperative_polite":
 			return applyMorphology(stem + "으/세요");
 		case "imperative_formal":
 			return applyMorphology(stem + "으/십시오");
-		case "informal":
+		case K.INFORMAL:
 		case "banmal":
 			return applyMorphology(stem + "으/셔");
 		case "stem":
@@ -1241,12 +1231,12 @@ function getHumblePredicate(verbOrKo, formality = "polite", options = {}) {
 				return "여쭙니다";
 			case "formal_question":
 				return "여쭙니까?";
-			case "past":
+			case K.PAST:
 			case "past_polite":
 				return "여쭸어요";
 			case "past_formal":
 				return "여쭸습니다";
-			case "informal":
+			case K.INFORMAL:
 			case "banmal":
 				return "여쭤";
 			case "stem":
@@ -1265,12 +1255,12 @@ function getHumblePredicate(verbOrKo, formality = "polite", options = {}) {
 				return "뵙습니다";
 			case "formal_question":
 				return "뵙습니까?";
-			case "past":
+			case K.PAST:
 			case "past_polite":
 				return "뵀어요";
 			case "past_formal":
 				return "뵀습니다";
-			case "informal":
+			case K.INFORMAL:
 			case "banmal":
 				return "봬";
 			case "stem":
@@ -1291,12 +1281,12 @@ function getHumblePredicate(verbOrKo, formality = "polite", options = {}) {
 			return applyMorphology(stem + "습니다/ㅂ니다");
 		case "formal_question":
 			return applyMorphology(stem + "습니까/ㅂ니까?");
-		case "past":
+		case K.PAST:
 		case "past_polite":
 			return applyMorphology(stem + "았/었어요");
 		case "past_formal":
 			return applyMorphology(stem + "았/었습니다");
-		case "informal":
+		case K.INFORMAL:
 		case "banmal":
 			return applyMorphology(stem + "아/어");
 		case "stem":
@@ -1369,7 +1359,7 @@ function applyHonorificConcord(input, options = {}) {
 		for (const [plain, hon] of state.HONORIFIC_NOUN_SUPPLETIONS.entries()) {
 			const nounRegex = new RegExp(`(^|[^가-힣])(${plain})([을를이가은는의도]?)([^가-힣]|$)`, 'g');
 			str = str.replace(nounRegex, (m, pre, base, part, post) => {
-				const attached = part ? attachParticle(hon, part === '을' || part === '를' ? K.OBJECT : part === '이' || part === '가' ? 'subject' : part === '은' || part === '는' ? 'topic' : part === '의' ? 'genitive' : 'additive') : hon;
+				const attached = part ? attachParticle(hon, part === '을' || part === '를' ? K.OBJECT : part === '이' || part === '가' ? K.SUBJECT : part === '은' || part === '는' ? K.TOPIC : part === '의' ? 'genitive' : 'additive') : hon;
 				return pre + attached + post;
 			});
 		}
@@ -1589,10 +1579,10 @@ function validateTemporalConcord(input, context = {}) {
 		errors.push(`Future temporal word(s) [${foundFuture.join(', ')}] clash with past predicate in: "${text}"`);
 	}
 
-	if (context.temporal_polarity === "past" && hasFuturePredicate) {
+	if (context.temporal_polarity === K.PAST && hasFuturePredicate) {
 		errors.push(`Context requires past tense, but found future predicate in: "${text}"`);
 	}
-	if (context.temporal_polarity === "future" && hasPastPredicate) {
+	if (context.temporal_polarity === K.FUTURE && hasPastPredicate) {
 		errors.push(`Context requires future tense, but found past predicate in: "${text}"`);
 	}
 

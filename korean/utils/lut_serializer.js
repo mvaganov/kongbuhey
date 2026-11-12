@@ -201,20 +201,20 @@ function reconstructFromLanguageUnitTree(tree, phraseBuilders = {}) {
 			const classifier = classifierUnit ? classifierUnit[DATA_SCHEMA.Korean] : (typeof child[2] === 'string' ? child[2] : '개');
 			let particle = null;
 			if (tag === K.OBJECT || tag === "AV" || /을|를/.test(token)) particle = K.OBJECT;
-			else if (tag === "subject" || tag === "DV" || /이|가/.test(token)) particle = "subject";
-			else if (tag === "topic" || /은|는/.test(token)) particle = "topic";
+			else if (tag === K.SUBJECT || tag === "DV" || /이|가/.test(token)) particle = K.SUBJECT;
+			else if (tag === K.TOPIC || /은|는/.test(token)) particle = K.TOPIC;
 			replacement = buildCounting(noun, count, { classifier, particle });
 		} else if ((tokenType === "Spatial_Phrase" || tokenType === "Relational_Loc") && Array.isArray(child) && buildSpatial) {
 			const ground = (typeof child[0] === 'number' && units) ? units[child[0]] : child[0];
 			const posUnit = (typeof child[1] === 'number' && units) ? units[child[1]] : null;
 			const posKo = posUnit ? posUnit[DATA_SCHEMA.Korean] : (typeof child[1] === 'string' ? child[1] : '위');
-			let particleType = "location";
+			let particleType = K.LOCATION;
 			if (tag === "static" || /에$/.test(token)) particleType = "location_static";
 			else if (tag === "dynamic" || /에서$/.test(token)) particleType = "location_dynamic";
-			else if (tag === "direction" || /로$/.test(token)) particleType = "direction";
+			else if (tag === K.DIRECTION || /로$/.test(token)) particleType = K.DIRECTION;
 			replacement = buildSpatial(ground, posKo, { particle: particleType });
 		} else if (tokenType === "Deictic_NP" && Array.isArray(child) && buildDeictic) {
-			const proximity = tag === "medial" ? "medial" : tag === "distal" ? "distal" : tag === "interrogative" ? "interrogative" : "proximal";
+			const proximity = tag === K.MEDIAL ? K.MEDIAL : tag === K.DISTAL ? K.DISTAL : tag === K.INTERROGATIVE ? K.INTERROGATIVE : K.PROXIMAL;
 			const noun = (typeof child[1] === 'number' && units) ? units[child[1]] : child[1];
 			replacement = buildDeictic(proximity, "noun", { noun });
 		} else if (tokenType === "properNoun" && Array.isArray(child) && child.length === 2) {

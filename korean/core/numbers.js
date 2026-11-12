@@ -109,7 +109,7 @@ function getNumberTokenOptions(baseTag, min, max, isAttributive) {
 
 	if (max - min + 1 <= 10) {
 		for (let i = min; i <= max; i++) {
-			const text = (baseTag === "sinoNumber") ? getSinoNumber(i) : getKoreanNumber(i, isAttributive);
+			const text = (baseTag === K.SINO_NUMBER) ? getSinoNumber(i) : getKoreanNumber(i, isAttributive);
 			const matchingUnit = words.find(w => w[KoreanWord] === text);
 			options.push(new TokenOption(text, matchingUnit ? [matchingUnit] : []));
 		}
@@ -132,7 +132,7 @@ function getNumberTokenOptions(baseTag, min, max, isAttributive) {
 
 	samples.forEach(n => {
 		if (n >= min && n <= max) {
-			const text = (baseTag === "sinoNumber") ? getSinoNumber(n) : getKoreanNumber(n, isAttributive);
+			const text = (baseTag === K.SINO_NUMBER) ? getSinoNumber(n) : getKoreanNumber(n, isAttributive);
 			const matchingUnit = words.find(w => w[KoreanWord] === text);
 			options.push(new TokenOption(text, matchingUnit ? [matchingUnit] : []));
 		}

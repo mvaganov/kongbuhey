@@ -126,11 +126,11 @@ assert(DEICTIC_DIRECTIONS instanceof Map, "DEICTIC_DIRECTIONS is a Map");
 
 // Determiners
 assert(DEICTIC_DETERMINERS.has("이"), "DEICTIC_DETERMINERS has proximal '이'");
-assert(DEICTIC_DETERMINERS.get("이").proximity === "proximal", "'이' is marked proximal");
+assert(DEICTIC_DETERMINERS.get("이").proximity === K.PROXIMAL, "'이' is marked proximal");
 assert(DEICTIC_DETERMINERS.has("그"), "DEICTIC_DETERMINERS has medial '그'");
-assert(DEICTIC_DETERMINERS.get("그").proximity === "medial", "'그' is marked medial");
+assert(DEICTIC_DETERMINERS.get("그").proximity === K.MEDIAL, "'그' is marked medial");
 assert(DEICTIC_DETERMINERS.has("저"), "DEICTIC_DETERMINERS has distal '저'");
-assert(DEICTIC_DETERMINERS.get("저").proximity === "distal", "'저' is marked distal");
+assert(DEICTIC_DETERMINERS.get("저").proximity === K.DISTAL, "'저' is marked distal");
 assert(DEICTIC_DETERMINERS.has("어느"), "DEICTIC_DETERMINERS has interrogative '어느'");
 
 // Pronouns (things)
@@ -155,11 +155,11 @@ assert(DEICTIC_DIRECTIONS.has("저쪽"), "DEICTIC_DIRECTIONS has distal '저쪽'
 console.log("\n[3/10] Determiner + Noun Syntax & Illegal Particle Prevention");
 
 // Determiners modify nominals
-assert(buildDeicticPhrase("proximal", "noun", { noun: "책" }) === "이 책", "Proximal NP: '이 책'");
-assert(buildDeicticPhrase("medial", "noun", { noun: "사람" }) === "그 사람", "Medial NP: '그 사람'");
-assert(buildDeicticPhrase("distal", "noun", { noun: "건물" }) === "저 건물", "Distal NP: '저 건물'");
-assert(buildDeicticPhrase("proximal", "noun", { noun: "가방", particle: K.OBJECT }) === "이 가방을", "NP with object particle: '이 가방을'");
-assert(buildDeicticPhrase("medial", "noun", { noun: "학생", particle: "subject" }) === "그 학생이", "NP with subject particle: '그 학생이'");
+assert(buildDeicticPhrase(K.PROXIMAL, "noun", { noun: "책" }) === "이 책", "Proximal NP: '이 책'");
+assert(buildDeicticPhrase(K.MEDIAL, "noun", { noun: "사람" }) === "그 사람", "Medial NP: '그 사람'");
+assert(buildDeicticPhrase(K.DISTAL, "noun", { noun: "건물" }) === "저 건물", "Distal NP: '저 건물'");
+assert(buildDeicticPhrase(K.PROXIMAL, "noun", { noun: "가방", particle: K.OBJECT }) === "이 가방을", "NP with object particle: '이 가방을'");
+assert(buildDeicticPhrase(K.MEDIAL, "noun", { noun: "학생", particle: K.SUBJECT }) === "그 학생이", "NP with subject particle: '그 학생이'");
 
 // Bare determiner particle prohibition (*이가, *이를, *그을, *어느를)
 const bareDet1 = validateSpatialConcord("이가 샀어요");
@@ -202,7 +202,7 @@ assert(buildSpatialPhrase("나무", "아래", { modifyingNoun: "벤치" }) === "
 // Standalone spatial noun calls
 assert(buildSpatialPhrase("위") === "위에", "Standalone: '위에'");
 assert(buildSpatialPhrase("앞") === "앞에", "Standalone: '앞에'");
-assert(buildSpatialPhrase("오른쪽", { particle: "direction" }) === "오른쪽으로", "Standalone directional: '오른쪽으로'");
+assert(buildSpatialPhrase("오른쪽", { particle: K.DIRECTION }) === "오른쪽으로", "Standalone directional: '오른쪽으로'");
 
 // -----------------------------------------------------------------------------
 // [5/10] Locative Particle Concord with Static vs Dynamic Verbs
@@ -236,21 +236,21 @@ assert(buildSpatialPhrase("가게", "앞", { verb: "기다리다" }) === "가게
 console.log("\n[6/10] Directional Motion Particle Concord (-(으)로)");
 
 // Vowel or Rieul coda -> 로
-assert(buildSpatialPhrase(null, "위", { particle: "direction" }) === "위로", "Vowel coda: '위로'");
-assert(buildSpatialPhrase(null, "뒤", { particle: "direction" }) === "뒤로", "Vowel coda: '뒤로'");
-assert(buildSpatialPhrase(null, "아래", { particle: "direction" }) === "아래로", "Vowel coda: '아래로'");
-assert(buildSpatialPhrase(null, "사이", { particle: "direction" }) === "사이로", "Vowel coda: '사이로'");
+assert(buildSpatialPhrase(null, "위", { particle: K.DIRECTION }) === "위로", "Vowel coda: '위로'");
+assert(buildSpatialPhrase(null, "뒤", { particle: K.DIRECTION }) === "뒤로", "Vowel coda: '뒤로'");
+assert(buildSpatialPhrase(null, "아래", { particle: K.DIRECTION }) === "아래로", "Vowel coda: '아래로'");
+assert(buildSpatialPhrase(null, "사이", { particle: K.DIRECTION }) === "사이로", "Vowel coda: '사이로'");
 
 // Non-Rieul batchim -> 으로
-assert(buildSpatialPhrase(null, "앞", { particle: "direction" }) === "앞으로", "Batchim ㅍ: '앞으로'");
-assert(buildSpatialPhrase(null, "밑", { particle: "direction" }) === "밑으로", "Batchim ㅌ: '밑으로'");
-assert(buildSpatialPhrase(null, "옆", { particle: "direction" }) === "옆으로", "Batchim ㅍ: '옆으로'");
-assert(buildSpatialPhrase(null, "안", { particle: "direction" }) === "안으로", "Batchim ㄴ: '안으로'");
-assert(buildSpatialPhrase(null, "밖", { particle: "direction" }) === "밖으로", "Batchim ㄲ: '밖으로'");
-assert(buildSpatialPhrase(null, "속", { particle: "direction" }) === "속으로", "Batchim ㄱ: '속으로'");
-assert(buildSpatialPhrase(null, "오른쪽", { particle: "direction" }) === "오른쪽으로", "Batchim ㄱ: '오른쪽으로'");
-assert(buildSpatialPhrase(null, "왼쪽", { particle: "direction" }) === "왼쪽으로", "Batchim ㄱ: '왼쪽으로'");
-assert(buildSpatialPhrase(null, "맞은편", { particle: "direction" }) === "맞은편으로", "Batchim ㄴ: '맞은편으로'");
+assert(buildSpatialPhrase(null, "앞", { particle: K.DIRECTION }) === "앞으로", "Batchim ㅍ: '앞으로'");
+assert(buildSpatialPhrase(null, "밑", { particle: K.DIRECTION }) === "밑으로", "Batchim ㅌ: '밑으로'");
+assert(buildSpatialPhrase(null, "옆", { particle: K.DIRECTION }) === "옆으로", "Batchim ㅍ: '옆으로'");
+assert(buildSpatialPhrase(null, "안", { particle: K.DIRECTION }) === "안으로", "Batchim ㄴ: '안으로'");
+assert(buildSpatialPhrase(null, "밖", { particle: K.DIRECTION }) === "밖으로", "Batchim ㄲ: '밖으로'");
+assert(buildSpatialPhrase(null, "속", { particle: K.DIRECTION }) === "속으로", "Batchim ㄱ: '속으로'");
+assert(buildSpatialPhrase(null, "오른쪽", { particle: K.DIRECTION }) === "오른쪽으로", "Batchim ㄱ: '오른쪽으로'");
+assert(buildSpatialPhrase(null, "왼쪽", { particle: K.DIRECTION }) === "왼쪽으로", "Batchim ㄱ: '왼쪽으로'");
+assert(buildSpatialPhrase(null, "맞은편", { particle: K.DIRECTION }) === "맞은편으로", "Batchim ㄴ: '맞은편으로'");
 
 // -----------------------------------------------------------------------------
 // [7/10] Case-Contracted Demonstratives (이게, 그건, 저걸)
@@ -258,19 +258,19 @@ assert(buildSpatialPhrase(null, "맞은편", { particle: "direction" }) === "맞
 console.log("\n[7/10] Case-Contracted Demonstratives (이게, 그건, 저걸)");
 
 // Subject contractions (-이/가)
-assert(buildDeicticPhrase("proximal", "thing", { particle: "subject" }) === "이게", "이것 + 이 -> 이게");
-assert(buildDeicticPhrase("medial", "thing", { particle: "subject" }) === "그게", "그것 + 이 -> 그게");
-assert(buildDeicticPhrase("distal", "thing", { particle: "subject" }) === "저게", "저것 + 이 -> 저게");
+assert(buildDeicticPhrase(K.PROXIMAL, "thing", { particle: K.SUBJECT }) === "이게", "이것 + 이 -> 이게");
+assert(buildDeicticPhrase(K.MEDIAL, "thing", { particle: K.SUBJECT }) === "그게", "그것 + 이 -> 그게");
+assert(buildDeicticPhrase(K.DISTAL, "thing", { particle: K.SUBJECT }) === "저게", "저것 + 이 -> 저게");
 
 // Topic contractions (-은/는)
-assert(buildDeicticPhrase("proximal", "thing", { particle: "topic" }) === "이건", "이것 + 은 -> 이건");
-assert(buildDeicticPhrase("medial", "thing", { particle: "topic" }) === "그건", "그것 + 은 -> 그건");
-assert(buildDeicticPhrase("distal", "thing", { particle: "topic" }) === "저건", "저것 + 은 -> 저건");
+assert(buildDeicticPhrase(K.PROXIMAL, "thing", { particle: K.TOPIC }) === "이건", "이것 + 은 -> 이건");
+assert(buildDeicticPhrase(K.MEDIAL, "thing", { particle: K.TOPIC }) === "그건", "그것 + 은 -> 그건");
+assert(buildDeicticPhrase(K.DISTAL, "thing", { particle: K.TOPIC }) === "저건", "저것 + 은 -> 저건");
 
 // Object contractions (-을/를)
-assert(buildDeicticPhrase("proximal", "thing", { particle: K.OBJECT }) === "이걸", "이것 + 을 -> 이걸");
-assert(buildDeicticPhrase("medial", "thing", { particle: K.OBJECT }) === "그걸", "그것 + 을 -> 그걸");
-assert(buildDeicticPhrase("distal", "thing", { particle: K.OBJECT }) === "저걸", "저것 + 을 -> 저걸");
+assert(buildDeicticPhrase(K.PROXIMAL, "thing", { particle: K.OBJECT }) === "이걸", "이것 + 을 -> 이걸");
+assert(buildDeicticPhrase(K.MEDIAL, "thing", { particle: K.OBJECT }) === "그걸", "그것 + 을 -> 그걸");
+assert(buildDeicticPhrase(K.DISTAL, "thing", { particle: K.OBJECT }) === "저걸", "저것 + 을 -> 저걸");
 
 // Morphology engine automatic sandhi verification
 assert(applyMorphology("이것이 좋아요") === "이게 좋아요", "applyMorphology resolves 이것이 -> 이게");
@@ -371,7 +371,7 @@ for (const pos of expectedCanonicalPositions) {
 
 // Validate directional morphology across all positions
 for (const pos of expectedCanonicalPositions) {
-	const dirPhrase = buildSpatialPhrase(null, pos, { particle: "direction" });
+	const dirPhrase = buildSpatialPhrase(null, pos, { particle: K.DIRECTION });
 	const lastChar = pos.slice(-1);
 	const expectsRo = !hasBatchim(lastChar) || hasRieulBatchim(lastChar);
 	if (expectsRo) {

@@ -116,6 +116,8 @@ function invalidateLexiconIndex() {
 	cachedUnitsLength = -1;
 }
 
+const { evaluateDeclarativeCollocationFilter } = (typeof require !== 'undefined') ? require('../utils/filter_evaluator.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * Returns (and caches) a compiled collocation_filter function for a verb/adjective unit.
  */
@@ -127,7 +129,17 @@ function getCompiledCollocationFilter(unit, parseAndValidateFn) {
 		return idx.compiledCollocationFilters.get(id);
 	}
 	const sd = parseSemanticData(unit);
-	if (!sd || typeof sd.collocation_filter !== 'string') {
+	if (!sd || !sd.collocation_filter) {
+		idx.compiledCollocationFilters.set(id, null);
+		return null;
+	}
+	if (typeof sd.collocation_filter === 'object' && !Array.isArray(sd.collocation_filter)) {
+		const spec = sd.collocation_filter;
+		const fn = (noun, hasTag) => evaluateDeclarativeCollocationFilter(spec, noun, hasTag);
+		idx.compiledCollocationFilters.set(id, fn);
+		return fn;
+	}
+	if (typeof sd.collocation_filter !== 'string') {
 		idx.compiledCollocationFilters.set(id, null);
 		return null;
 	}

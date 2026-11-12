@@ -441,7 +441,7 @@ function applyCustomVerbMorph(conjStem, suffix) {
 
 // constants-disable-start
 function isLockedSlot(slot) {
-	return Boolean(slot && slot.inflection && (slot.inflection.stemForm === "fixed_grammar" || slot.inflection.stemForm === "exact"));
+	return Boolean(slot && slot.inflection && (slot.inflection.stemForm === K.FIXED_GRAMMAR || slot.inflection.stemForm === "exact"));
 }
 
 function sanitizeParticleMorph(rawMorph) {
@@ -573,7 +573,7 @@ function deduceVerbInflection(unit, cleanSurface, grammarList) {
 	const pastStem = toPastStem(aoStem);
 
 	if (pastStem && surf.startsWith(pastStem)) {
-		return { prefix, stemForm: "past", suffix: surf.slice(pastStem.length) };
+		return { prefix, stemForm: K.PAST, suffix: surf.slice(pastStem.length) };
 	}
 
 	if (aoStem && aoStem !== rawStem && surf.startsWith(aoStem)) {
@@ -655,7 +655,7 @@ function realizeVerbInflection(unit, inflection, isOriginalUnit = false, origina
 	const { prefix = "", stemForm = "raw", suffix = "" } = inflection || {};
 	if (stemForm === "exact") return suffix || ko;
 	let body = "";
-	if (stemForm === "past") {
+	if (stemForm === K.PAST) {
 		if (suffix === "어요" || suffix === "아요") {
 			body = pastStem + "어요";
 		} else {
@@ -763,7 +763,7 @@ function buildSlotFromToken(token, slotIndex) {
 			if (token.lexical.components.length > 1) {
 				compoundPrefixKo = token.lexical.components.slice(0, -1).map(c => c.text).join('');
 			}
-		} else if (token.category === "numeric_phrase" && token.lexical.counter) {
+		} else if (token.category === K.NUMERIC_PHRASE && token.lexical.counter) {
 			lexUnit = token.lexical.counter.unit || null;
 			numberPrefix = token.lexical.number ? String(token.lexical.number.value || "") : "";
 		} else {
@@ -790,7 +790,7 @@ function buildSlotFromToken(token, slotIndex) {
 			tags: gTags.length > 0 ? gTags : [K.GRAMMAR],
 			grammar: grammarItems,
 			morphTemplate: "",
-			inflection: { prefix: "", stemForm: "fixed_grammar", suffix: cleanSurface }
+			inflection: { prefix: "", stemForm: K.FIXED_GRAMMAR, suffix: cleanSurface }
 		};
 	}
 
@@ -804,27 +804,27 @@ function buildSlotFromToken(token, slotIndex) {
 	const tags = (rawTags instanceof Set ? Array.from(rawTags) : (Array.isArray(rawTags) ? [...rawTags] : [])).filter(Boolean);
 
 	let morphTemplate = "";
-	let inflection = { prefix: "", stemForm: "nominal", suffix: "" };
+	let inflection = { prefix: "", stemForm: K.NOMINAL, suffix: "" };
 
 	if (pos === K.ACTION_VERB || pos === K.DESCRIPTIVE_VERB) {
 		inflection = deduceVerbInflection(lexUnit, cleanSurface, grammarItems);
 		morphTemplate = (inflection.prefix ? inflection.prefix : "") + (inflection.suffix || "");
-	} else if (token.category && token.category.startsWith("noun_copula")) {
+	} else if (token.category && token.category.startsWith(K.NOUN_COPULA)) {
 		morphTemplate = deduceCopulaMorph(cleanSurface, origKo);
-		inflection = { prefix: "", stemForm: "copula", suffix: morphTemplate };
-	} else if (token.category === "numeric_phrase") {
+		inflection = { prefix: "", stemForm: K.COPULA, suffix: morphTemplate };
+	} else if (token.category === K.NUMERIC_PHRASE) {
 		morphTemplate = normalizeNominalParticleMorph(grammarItems);
-		inflection = { prefix: numberPrefix, stemForm: "numeric", suffix: morphTemplate };
+		inflection = { prefix: numberPrefix, stemForm: K.NUMERIC, suffix: morphTemplate };
 	} else {
 		morphTemplate = normalizeNominalParticleMorph(grammarItems);
-		inflection = { prefix: compoundPrefixKo, stemForm: "nominal", suffix: morphTemplate };
+		inflection = { prefix: compoundPrefixKo, stemForm: K.NOMINAL, suffix: morphTemplate };
 	}
 
 	return {
 		index: slotIndex,
 		originalSurface: cleanSurface,
 		trailingPunct: trailingPunct === "," ? "," : "",
-		category: token.category || "exact_lexical",
+		category: token.category || K.EXACT_LEXICAL,
 		pos,
 		originalUnitId: origId,
 		originalKo: origKo,
@@ -978,7 +978,7 @@ function buildSlotMatchContext(slot, units) {
 	const slotMorph = sanitizeParticleMorph(slot.morphTemplate || (slot.inflection && slot.inflection.suffix) || "");
 	const slotHasParticle = Boolean((slot.grammar && slot.grammar.length > 0) || slotMorph);
 	const slotGramTexts = (slot.grammar || []).map(g => sanitizeParticleMorph(g.text || ""));
-	const origHasCountry = origUnit && _hasTag(origUnit, "country");
+	const origHasCountry = origUnit && _hasTag(origUnit, K.COUNTRY);
 	return {
 		requiredPos: slot.pos,
 		requiredTags,
@@ -1004,10 +1004,10 @@ function isUnitEligibleForSlot(u, slot, ctx, options = {}) {
 		}
 	}
 
-	if (!ctx.requiredTags.includes("position") && _hasTag(u, "position")) {
+	if (!ctx.requiredTags.includes(K.POSITION) && _hasTag(u, K.POSITION)) {
 		return false;
 	}
-	if (!ctx.requiredTags.includes(K.MEASUREWORD) && !ctx.requiredTags.includes("counter") && _hasTag(u, K.MEASUREWORD, "counter")) {
+	if (!ctx.requiredTags.includes(K.MEASUREWORD) && !ctx.requiredTags.includes(K.COUNTER) && _hasTag(u, K.MEASUREWORD, K.COUNTER)) {
 		return false;
 	}
 
@@ -1016,8 +1016,8 @@ function isUnitEligibleForSlot(u, slot, ctx, options = {}) {
 		const uSd = parseSemanticData(u);
 
 		if (_hasTag(u, "colloquial") && uSd.polarity === -1) return false;
-		if (uKo.startsWith("-") || (_hasTag(u, "bound_noun") && uKo.includes("-"))) return false;
-		const isNumericSlot = slot.category === "numeric" || slot.category === "numeric_phrase" || Boolean(slot.inflection && slot.inflection.stemForm === "numeric");
+		if (uKo.startsWith("-") || (_hasTag(u, K.BOUND_NOUN) && uKo.includes("-"))) return false;
+		const isNumericSlot = slot.category === K.NUMERIC || slot.category === K.NUMERIC_PHRASE || Boolean(slot.inflection && slot.inflection.stemForm === K.NUMERIC);
 		if (uId === 1369) return false; // Bound noun 말 ('end') cannot substitute freely for time/generic slots
 		if ((uId === 1180 || uId === 1631) && !isOrigUnit) return false; // Post-nominal relational nouns 후/전 cannot replace bare time words (e.g. 이때 -> *후)
 		if (!isNumericSlot && uKo === "개월") return false;
@@ -1025,9 +1025,10 @@ function isUnitEligibleForSlot(u, slot, ctx, options = {}) {
 		if ((slot.category === "noun_plural" || (slot.grammar || []).some(g => g.unitId === 550)) && u[DATA_SCHEMA.PartofSpeech] !== K.NOUN) return false;
 		if (u[DATA_SCHEMA.PartofSpeech] === K.NUMBER && ctx.origUnit && ctx.origUnit[DATA_SCHEMA.PartofSpeech] === K.NUMBER) {
 			if ((uKo === "영" || uKo === "공") && (ctx.origUnit[DATA_SCHEMA.Korean] || "") !== "영" && (ctx.origUnit[DATA_SCHEMA.Korean] || "") !== "공") return false;
-			if (!_hasTag(ctx.origUnit, "sinoNumber")) {
-				if (_hasTag(u, "sinoNumber")) return false;
-				if (!ctx.slotHasParticle && ["하나", "둘", "셋", "넷", "열하나", "열둘", "열셋", "열넷", "스물"].includes(uKo)) return false;
+			if (!_hasTag(ctx.origUnit, K.SINO_NUMBER)) {
+				if (_hasTag(u, K.SINO_NUMBER)) return false;
+				const CARDINAL_WITH_ATTRIBUTIVE_FORM = new Set(["하나", "둘", "셋", "넷", "열하나", "열둘", "열셋", "열넷", "스물"]);
+				if (!ctx.slotHasParticle && CARDINAL_WITH_ATTRIBUTIVE_FORM.has(uKo)) return false;
 			}
 		}
 		if (ctx.origUnit && _hasTag(ctx.origUnit, K.FOOD) && _hasTag(u, K.PLACE, K.FACILITY, "institution")) return false;
@@ -1042,7 +1043,7 @@ function isUnitEligibleForSlot(u, slot, ctx, options = {}) {
 		if (isNumericSlot && ctx.origUnit) {
 			const origCounterKo = ctx.origUnit[DATA_SCHEMA.Korean] || "";
 			if (origCounterKo === "시" && uKo !== "시") return false;
-			if (["시간", "달", "개월", "주", "년", "분", "일"].includes(origCounterKo) && uKo === "시") return false;
+			if (origCounterKo !== "시" && uKo === "시") return false;
 		}
 
 		const hasPresAdn645 = Array.isArray(slot.grammar) && slot.grammar.some(g => g.id === 645 || g.text === "-는" || g.text === "는");
@@ -1074,7 +1075,7 @@ function isUnitEligibleForSlot(u, slot, ctx, options = {}) {
 		}
 
 		// Adnominal slots whose original verb has strict selectional filters cannot accept unconstrained generic '하다' or incompatible domain verbs
-		if ((slot.category === "adnominal_modifier" || (slot.inflection && slot.inflection.stemForm === "adnominal")) && ctx.origUnit) {
+		if ((slot.category === K.ADNOMINAL_MODIFIER || (slot.inflection && slot.inflection.stemForm === "adnominal")) && ctx.origUnit) {
 			const origSd = parseSemanticData(ctx.origUnit);
 			const origRestricted = Boolean(origSd && (origSd.collocation_filter || (origSd.req && origSd.req !== K.OBJECT && origSd.req !== "any")));
 			if (origRestricted && uKo === "하다") return false;
@@ -1083,7 +1084,8 @@ function isUnitEligibleForSlot(u, slot, ctx, options = {}) {
 
 	if (ctx.requiredPos === K.POS_ADVERB) {
 		const isNpi = _hasTag(u, "npi") || (state.ALL_NPI_WORDS && state.ALL_NPI_WORDS.has(u[DATA_SCHEMA.Korean]));
-		const isImperativeSlot = (slot.grammar || []).some(g => [416, 1644, 1182, 1736].includes(g.unitId));
+		const IMPERATIVE_SLOT_GRAMMAR_IDS = new Set([416, 1644, 1182, 1736]);
+		const isImperativeSlot = (slot.grammar || []).some(g => IMPERATIVE_SLOT_GRAMMAR_IDS.has(g.unitId));
 		if (isImperativeSlot && (isNpi || u[DATA_SCHEMA.Korean] === "못" || u[DATA_SCHEMA.Korean] === "안")) {
 			return false;
 		}
@@ -1295,7 +1297,7 @@ function realizeSlot(slot, chosenUnit, realizeOptions = {}) {
 	const activeUnit = chosenUnit || (typeof slot.originalUnitId === 'number' ? units[slot.originalUnitId] : null);
 	const isOrig = Boolean(activeUnit && activeUnit[DATA_SCHEMA.Id] === slot.originalUnitId);
 
-	const inf = slot.inflection || { prefix: "", stemForm: "nominal", suffix: slot.morphTemplate || "" };
+	const inf = slot.inflection || { prefix: "", stemForm: K.NOMINAL, suffix: slot.morphTemplate || "" };
 	let surfaceKo = "";
 
 	if (isLockedSlot(slot)) {
@@ -1304,11 +1306,11 @@ function realizeSlot(slot, chosenUnit, realizeOptions = {}) {
 		const ko = activeUnit[DATA_SCHEMA.Korean];
 		if (slot.pos === K.ACTION_VERB || slot.pos === K.DESCRIPTIVE_VERB) {
 			surfaceKo = realizeVerbInflection(activeUnit, inf, isOrig, slot.originalSurface);
-		} else if (inf.stemForm === "copula") {
+		} else if (inf.stemForm === K.COPULA) {
 			surfaceKo = isOrig && slot.originalSurface
 				? slot.originalSurface
 				: realizeCopulaMorph(ko, sanitizeParticleMorph(inf.suffix || slot.morphTemplate));
-		} else if (inf.stemForm === "numeric") {
+		} else if (inf.stemForm === K.NUMERIC) {
 			if (isOrig && slot.originalSurface) {
 				surfaceKo = slot.originalSurface;
 			} else {
@@ -1385,7 +1387,7 @@ function realizeSlot(slot, chosenUnit, realizeOptions = {}) {
 			if (surfaceKo.includes("후")) litStem = "after";
 			else if (surfaceKo.includes("전")) litStem = "before";
 		}
-		if (inf.stemForm !== "numeric" && !/^\d/.test(activeUnit[DATA_SCHEMA.Korean] || "")) {
+		if (inf.stemForm !== K.NUMERIC && !/^\d/.test(activeUnit[DATA_SCHEMA.Korean] || "")) {
 			const numUnitMatch = surfaceKo.match(/^(\d[\d,.-]*)\s*(분|시간|일|개월|달|주|년)(?=\s|[가-힣]|$)/);
 			const UNIT_EN_MAP = { "분": "minute", "시간": "hour", "일": "day", "개월": "month", "달": "month", "주": "week", "년": "year" };
 			const numManMatch = surfaceKo.match(/^(\d[\d,.]*)\s*만(?:\s*(?:원|$))?/);
@@ -1429,9 +1431,9 @@ function realizeSlot(slot, chosenUnit, realizeOptions = {}) {
 	}
 	const COMPOUND_PREFIX_EN = { "그": "that", "이": "this", "저": "that", "새": "new", "첫": "first", "한": "one", "가을": "autumn", "여름": "summer", "봄": "spring", "겨울": "winter", "광화문": "Gwanghwamun", "강남": "Gangnam", "신촌": "Sinchon", "서울": "Seoul" };
 	const prefixLit = inf.prefix
-		? ((inf.stemForm === "numeric" && activeUnit && activeUnit[DATA_SCHEMA.PartofSpeech] === K.NUMBER)
+		? ((inf.stemForm === K.NUMERIC && activeUnit && activeUnit[DATA_SCHEMA.PartofSpeech] === K.NUMBER)
 			? ""
-			: (inf.stemForm === "numeric" ? inf.prefix : (COMPOUND_PREFIX_EN[inf.prefix] || "")))
+			: (inf.stemForm === K.NUMERIC ? inf.prefix : (COMPOUND_PREFIX_EN[inf.prefix] || "")))
 		: "";
 	const surfaceEnLit = `${prefixLit && !litStem.startsWith(prefixLit + "-") ? prefixLit + "-" : ""}${litStem}${gLitSuffix}`;
 	const natPhrase = activeUnit ? getUnitNaturalPhrase(activeUnit) : "";
@@ -1439,10 +1441,10 @@ function realizeSlot(slot, chosenUnit, realizeOptions = {}) {
 	if (words.length <= 1) {
 		const w = words[0] || surfaceKo;
 		let segs;
-		if (inf.stemForm === "fixed_grammar") {
+		if (inf.stemForm === K.FIXED_GRAMMAR) {
 			segs = [makeSegment(w, activeUnit || primaryGrammarUnit, K.GRAMMAR, K.GRAMMAR)];
 		} else if (slot.pos === K.ACTION_VERB || slot.pos === K.DESCRIPTIVE_VERB) {
-			segs = splitSingleVerbWordSegments(w, activeUnit, primaryGrammarUnit, "predicate");
+			segs = splitSingleVerbWordSegments(w, activeUnit, primaryGrammarUnit, K.PREDICATE);
 		} else {
 			segs = splitNounAndParticleSegments(w, activeUnit, primaryGrammarUnit, "constituent");
 		}
@@ -1459,7 +1461,7 @@ function realizeSlot(slot, chosenUnit, realizeOptions = {}) {
 		eojeols.push({
 			surfaceKo: surfaceWithComma,
 			surfaceEnLit,
-			role: (slot.pos === K.ACTION_VERB || slot.pos === K.DESCRIPTIVE_VERB) ? "predicate" : "constituent",
+			role: (slot.pos === K.ACTION_VERB || slot.pos === K.DESCRIPTIVE_VERB) ? K.PREDICATE : "constituent",
 			headUnitId: activeUnit ? activeUnit[DATA_SCHEMA.Id] : null,
 			particleUnitId: (slot.pos !== K.ACTION_VERB && slot.pos !== K.DESCRIPTIVE_VERB && primaryGrammarUnit) ? primaryGrammarUnit[DATA_SCHEMA.Id] : null,
 			endingUnitId: ((slot.pos === K.ACTION_VERB || slot.pos === K.DESCRIPTIVE_VERB) && primaryGrammarUnit) ? primaryGrammarUnit[DATA_SCHEMA.Id] : null,
@@ -1475,7 +1477,7 @@ function realizeSlot(slot, chosenUnit, realizeOptions = {}) {
 			let segs;
 			if (slot.pos === K.ACTION_VERB || slot.pos === K.DESCRIPTIVE_VERB) {
 				if (isFirst) {
-					segs = splitSingleVerbWordSegments(words[wIdx], activeUnit, grammarUnits[0] || primaryGrammarUnit, "predicate");
+					segs = splitSingleVerbWordSegments(words[wIdx], activeUnit, grammarUnits[0] || primaryGrammarUnit, K.PREDICATE);
 					if (segs.length > 0) segs[0].textEn = litStem;
 				} else {
 					const auxG = primaryGrammarUnit || activeUnit;
@@ -1497,7 +1499,7 @@ function realizeSlot(slot, chosenUnit, realizeOptions = {}) {
 			eojeols.push({
 				surfaceKo: w,
 				surfaceEnLit: isFirst ? surfaceEnLit : "",
-				role: (slot.pos === K.ACTION_VERB || slot.pos === K.DESCRIPTIVE_VERB) ? "predicate" : "constituent",
+				role: (slot.pos === K.ACTION_VERB || slot.pos === K.DESCRIPTIVE_VERB) ? K.PREDICATE : "constituent",
 				headUnitId: activeUnit ? activeUnit[DATA_SCHEMA.Id] : null,
 				particleUnitId: (!isFirst && primaryGrammarUnit) ? primaryGrammarUnit[DATA_SCHEMA.Id] : null,
 				endingUnitId: (isLast && primaryGrammarUnit) ? primaryGrammarUnit[DATA_SCHEMA.Id] : null,
@@ -1573,31 +1575,31 @@ function recomposeASTFromVerifiedSentence(template, slotChoices, realizedResult)
 
 	const punctuation = template.punctuation || (realizedResult && realizedResult.ko && realizedResult.ko.slice(-1)) || ".";
 	const isQuestion = punctuation === "?";
-	const speechAct = isQuestion ? "interrogative" : "declarative";
+	const speechAct = isQuestion ? K.INTERROGATIVE : K.DECLARATIVE;
 
 	const lastSlot = slotChoices[slotChoices.length - 1];
 	let overallPoliteness = K.POLITE;
-	let overallTense = "present";
-	let overallPolarity = "affirmative";
+	let overallTense = K.PRESENT;
+	let overallPolarity = K.AFFIRMATIVE;
 
 	if (lastSlot) {
 		const surf = lastSlot.surfaceKo || "";
 		if (surf.includes("습니다") || surf.includes("ㅂ니다") || surf.includes("십니까") || surf.includes("십시오")) {
-			overallPoliteness = "formal_high";
+			overallPoliteness = K.FORMAL_HIGH;
 		} else if (surf.endsWith("다") && !surf.endsWith("마다") && !surf.endsWith("보다")) {
 			overallPoliteness = K.PLAIN;
 		}
 		if (/(?:았|었|였)(?:다|습니다|어요|네요)/.test(surf)) {
-			overallTense = "past";
+			overallTense = K.PAST;
 		} else if (/(?:ㄹ|을)\s*거/.test(surf) || /(?:겠)(?:다|습니다|어요)/.test(surf)) {
-			overallTense = "future";
+			overallTense = K.FUTURE;
 		}
 	}
 
 	for (const sc of slotChoices) {
 		const surf = sc.surfaceKo || "";
 		if (surf === "안" || surf === "못" || surf.includes("지 않") || surf.includes("지 못하")) {
-			overallPolarity = "negative";
+			overallPolarity = K.NEGATIVE;
 			break;
 		}
 	}
@@ -1624,15 +1626,15 @@ function recomposeASTFromVerifiedSentence(template, slotChoices, realizedResult)
 				return gPos === "Adverbial Suffix" || gText === "-게" || gText === "게";
 			});
 
-		const isAdnominal = !isAdverbial && (category === "adnominal_modifier" ||
-			(templateSlot.inflection && templateSlot.inflection.stemForm === "adnominal" && category !== "auxiliary_construction") ||
+		const isAdnominal = !isAdverbial && (category === K.ADNOMINAL_MODIFIER ||
+			(templateSlot.inflection && templateSlot.inflection.stemForm === "adnominal" && category !== K.AUXILIARY_CONSTRUCTION) ||
 			grammarList.some(g => {
 				const gPos = Array.isArray(g) ? g[2] : g.pos;
 				return gPos === "Adnominal Ending";
 			}));
 
 		const isVerb = (pos === K.ACTION_VERB || pos === K.DESCRIPTIVE_VERB) && !isAdnominal && !isAdverbial;
-		const isCopula = category.includes("copula") ||
+		const isCopula = category.includes(K.COPULA) ||
 			grammarList.some(g => {
 				const gId = Array.isArray(g) ? g[0] : g.unitId;
 				const gPos = Array.isArray(g) ? g[2] : g.pos;
@@ -1642,13 +1644,13 @@ function recomposeASTFromVerifiedSentence(template, slotChoices, realizedResult)
 
 		if (isVerb) {
 			currentPredicate = {
-				role: "predicate",
-				predType: pos === K.DESCRIPTIVE_VERB ? "descriptive" : K.ACTION,
+				role: K.PREDICATE,
+				predType: pos === K.DESCRIPTIVE_VERB ? K.DESCRIPTIVE : K.ACTION,
 				verbUnit: unit,
 				endingUnit: grammarList.length > 0 ? grammarList[grammarList.length - 1].unit : null,
 				isVariedSlot: sc.isVariedSlot,
 				surfaceKo: surf,
-				tense: /(?:았|었|였)/.test(surf) ? "past" : overallTense,
+				tense: /(?:았|었|였)/.test(surf) ? K.PAST : overallTense,
 				polarity: overallPolarity,
 				speechAct,
 				politeness: overallPoliteness,
@@ -1663,8 +1665,8 @@ function recomposeASTFromVerifiedSentence(template, slotChoices, realizedResult)
 			currentPredicate = null;
 		} else if (isCopula) {
 			currentPredicate = {
-				role: "predicate",
-				predType: "copula",
+				role: K.PREDICATE,
+				predType: K.COPULA,
 				nounUnit: unit,
 				copulaUnit: grammarList.length > 0 ? grammarList[0].unit : null,
 				isVariedSlot: sc.isVariedSlot,
@@ -1684,8 +1686,8 @@ function recomposeASTFromVerifiedSentence(template, slotChoices, realizedResult)
 			currentPredicate = null;
 		} else if (isAdnominal) {
 			currentConstituents.push({
-				role: "adnominal_modifier",
-				category: "adnominal_modifier",
+				role: K.ADNOMINAL_MODIFIER,
+				category: K.ADNOMINAL_MODIFIER,
 				unit,
 				isVariedSlot: sc.isVariedSlot,
 				surfaceKo: surf,
@@ -1706,9 +1708,9 @@ function recomposeASTFromVerifiedSentence(template, slotChoices, realizedResult)
 			let primaryGrammar = grammarList.length > 0 ? grammarList[0].unit : null;
 
 			const mTemp = templateSlot.morphTemplate || "";
-			const isTopicParticle = mTemp.includes("은/는") || category.includes("topic") ||
+			const isTopicParticle = mTemp.includes("은/는") || category.includes(K.TOPIC) ||
 				grammarList.some(g => g.unitId === 36 || (g.pos === "Particle" && (g.text === "은" || g.text === "는")));
-			const isSubjectParticle = mTemp.includes("이/가") || category.includes("subject") ||
+			const isSubjectParticle = mTemp.includes("이/가") || category.includes(K.SUBJECT) ||
 				grammarList.some(g => g.unitId === 96 || (g.pos === "Particle" && (g.text === "이" || g.text === "가")));
 			const isObjectParticle = mTemp.includes("을/를") || category.includes(K.OBJECT) ||
 				grammarList.some(g => g.unitId === 173 || (g.pos === "Particle" && (g.text === "을" || g.text === "를")));
@@ -1718,11 +1720,11 @@ function recomposeASTFromVerifiedSentence(template, slotChoices, realizedResult)
 			const isRecip = grammarList.some(g => g.pos === "Particle" && (g.text === "에게" || g.text === "한테" || g.text === "께"));
 
 			if (isTopicParticle) {
-				role = "topic";
-				particleType = "topic";
+				role = K.TOPIC;
+				particleType = K.TOPIC;
 			} else if (isSubjectParticle) {
-				role = "subject";
-				particleType = "subject";
+				role = K.SUBJECT;
+				particleType = K.SUBJECT;
 			} else if (isObjectParticle) {
 				role = K.OBJECT;
 				particleType = K.OBJECT;
@@ -1733,11 +1735,11 @@ function recomposeASTFromVerifiedSentence(template, slotChoices, realizedResult)
 				role = "location_static";
 				particleType = "location_static";
 			} else if (isDir) {
-				role = "direction";
-				particleType = "direction";
+				role = K.DIRECTION;
+				particleType = K.DIRECTION;
 			} else if (isRecip) {
-				role = "recipient";
-				particleType = "recipient";
+				role = K.RECIPIENT;
+				particleType = K.RECIPIENT;
 			} else if (pos === K.ADVERB || pos === K.POS_ADVERB) {
 				role = K.ADVERB;
 				particleType = K.ADVERB;
@@ -1765,7 +1767,7 @@ function recomposeASTFromVerifiedSentence(template, slotChoices, realizedResult)
 	if (currentConstituents.length > 0 || currentPredicate) {
 		clauses.push({
 			constituents: currentConstituents,
-			predicate: currentPredicate || { role: "predicate", predType: "unspecified", surfaceKo: "" }
+			predicate: currentPredicate || { role: K.PREDICATE, predType: "unspecified", surfaceKo: "" }
 		});
 	}
 
@@ -1874,7 +1876,7 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 			const verbKo = verbUnit ? (verbUnit[DATA_SCHEMA.Korean] || "") : "";
 
 			// A. Multiple topic markers in single clause
-			const topicCount = constituents.filter(c => c.particleType === "topic" || c.role === "topic").length;
+			const topicCount = constituents.filter(c => c.particleType === K.TOPIC || c.role === K.TOPIC).length;
 			if (topicCount > 1 && ast.clauses.length === 1) {
 				errors.push({
 					code: "REDUNDANT_TOPIC_MARKERS",
@@ -1889,7 +1891,7 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 					const u = c.nounUnit || c.unit;
 					const s = c.surfaceKo || "";
 					if (!u) return false;
-					if (_hasTag(u, K.PERSON, K.TIME, K.PLACE, "pronoun_1st", "pronoun_2nd", "pronoun_3rd", "temporal", "bound_noun")) return false;
+					if (_hasTag(u, K.PERSON, K.TIME, K.PLACE, "pronoun_1st", "pronoun_2nd", "pronoun_3rd", "temporal", K.BOUND_NOUN)) return false;
 					return /(?:은|는|만|도|이라도|라도|까지|부터)$/.test(s);
 				});
 				if (focusObj) objCandidates.push(focusObj);
@@ -1898,7 +1900,7 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 				const objIndex = constituents.indexOf(objCon);
 				const governingAdnominal = constituents.find((c, idx) =>
 					idx > objIndex &&
-					(c.role === "adnominal_modifier" || c.category === "adnominal_modifier" || (c.inflection && c.inflection.stemForm === "adnominal")) &&
+					(c.role === K.ADNOMINAL_MODIFIER || c.category === K.ADNOMINAL_MODIFIER || (c.inflection && c.inflection.stemForm === "adnominal")) &&
 					c.unit && (c.unit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || _hasTag(c.unit, "transitive", K.TRANSITIVE_GENERAL))
 				);
 				const effectiveActionVerb = governingAdnominal
@@ -1910,9 +1912,9 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 					if (objUnit && (objCon.isVariedSlot || (!governingAdnominal && pred.isVariedSlot) || (governingAdnominal && governingAdnominal.isVariedSlot))) {
 						const vKo = targetVerb ? (targetVerb[DATA_SCHEMA.Korean] || "") : "";
 						const targetSemData = parseSemanticData(targetVerb);
-						const isIntransTarget = _hasTag(targetVerb, K.INTRANSITIVE, K.INTRANSITIVE_GENERAL, "intransitive_motion", "intransitive_place", "intransitive_state", "intransitive_food", "intransitive_person") ||
+						const isIntransTarget = _hasTag(targetVerb, K.INTRANSITIVE, K.INTRANSITIVE_GENERAL, K.INTRANSITIVE_MOTION, K.INTRANSITIVE_PLACE, "intransitive_state", "intransitive_food", "intransitive_person") ||
 							(targetSemData && targetSemData.type === K.INTRANSITIVE);
-						const isPersonDativeOnly = _hasTag(targetVerb, "dative_humble", "dative_person") ||
+						const isPersonDativeOnly = _hasTag(targetVerb, "dative_humble", K.DATIVE_PERSON) ||
 							(targetSemData && targetSemData.req === K.PERSON && !_hasTag(objUnit, K.PERSON, K.FAMILY));
 						if (isIntransTarget || isPersonDativeOnly) {
 							errors.push({
@@ -1922,7 +1924,8 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 							continue;
 						}
 						const isButeoSlot = /(?:부터)$/.test(objCon.surfaceKo || "");
-						const isButeoIncompatibleVerb = _hasTag(targetVerb, "locative_static", "involuntary") || ["놓다", "두다", "담다", "넣다", "잃어버리다", "잊어버리다", "모르다", "알다", "만지다"].includes(vKo);
+						const BUTEO_INCOMPATIBLE_VERBS = new Set(["놓다", "두다", "담다", "넣다", "잃어버리다", "잊어버리다", "모르다", "알다", "만지다"]);
+						const isButeoIncompatibleVerb = _hasTag(targetVerb, K.LOCATIVE_STATIC, "involuntary", "placement_transitive") || BUTEO_INCOMPATIBLE_VERBS.has(vKo);
 						if (isButeoSlot && isButeoIncompatibleVerb) {
 							errors.push({
 								code: "VERB_OBJECT_COLLOCATION_MISMATCH",
@@ -1945,9 +1948,10 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 							if (Array.isArray(validCands) && validCands.length > 0 && !validCands.some(n => n[DATA_SCHEMA.Id] === objUnit[DATA_SCHEMA.Id])) {
 								const objKo = objUnit[DATA_SCHEMA.Korean] || "";
 								const hasGoverningAdnominal = constituents.some(c =>
-									(c.role === "adnominal_modifier" || c.category === "adnominal_modifier" || (c.inflection && c.inflection.stemForm === "adnominal"))
+									(c.role === K.ADNOMINAL_MODIFIER || c.category === K.ADNOMINAL_MODIFIER || (c.inflection && c.inflection.stemForm === "adnominal"))
 								);
-								if (objKo === "것" && hasGoverningAdnominal && !["마시다", "입다", "신다", "끼다", "벗다", "부르다", "타다", "피우다", "끓이다", "치다", "연주하다"].includes(vKo)) {
+								const NON_GENERIC_GEOT_VERBS = new Set(["마시다", "입다", "신다", "끼다", "벗다", "부르다", "타다", "피우다", "끓이다", "치다", "연주하다"]);
+								if (objKo === "것" && hasGoverningAdnominal && !NON_GENERIC_GEOT_VERBS.has(vKo)) {
 									// Valid adnominally modified object pronoun (e.g. 다른 걸 먹읍시다)
 								} else {
 									errors.push({
@@ -1963,14 +1967,14 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 
 			// B2. Elliptical Strict-Collocation Verb Check (e.g., prior clause "돈을 ... *씻을 수 있습니다", or objectless *앞에서 사귑시다)
 			if (verbUnit && pred.predType === K.ACTION && pred.isVariedSlot && objCandidates.length === 0) {
-				if (_hasTag(verbUnit, "transitive_person") && !constituents.some(c => c.role === "companion" || c.role === "recipient")) {
+				if (_hasTag(verbUnit, "transitive_person") && !constituents.some(c => c.role === "companion" || c.role === K.RECIPIENT)) {
 					errors.push({
 						code: "MISSING_TRANSITIVE_PERSON_OBJECT",
 						message: `Verb '${verbKo}' requires an animate object or companion in: "${realized.ko}"`
 					});
 				} else if (typeof getNounCandidatesForVerb === 'function') {
 					const targetSemData = parseSemanticData(verbUnit);
-					if (targetSemData && typeof targetSemData.collocation_filter === 'string') {
+					if (targetSemData && targetSemData.collocation_filter) {
 						const priorClauseObjects = [];
 						for (const cl of ast.clauses) {
 							if (cl === clause) continue;
@@ -2018,11 +2022,12 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 			}
 
 			// C-Weather. Weather noun cannot pair with motion verb '가다' (*비가 가다)
-			const weatherSubjCon = constituents.find(c => c.role === "subject" || c.role === "topic");
+			const weatherSubjCon = constituents.find(c => c.role === K.SUBJECT || c.role === K.TOPIC);
 			if (weatherSubjCon && verbUnit && (weatherSubjCon.isVariedSlot || pred.isVariedSlot) && verbKo === "가다") {
 				const subjUnitW = weatherSubjCon.nounUnit || weatherSubjCon.unit;
 				const subjKoW = subjUnitW ? (subjUnitW[DATA_SCHEMA.Korean] || "") : "";
-				if (subjUnitW && (_hasTag(subjUnitW, K.WEATHER, "meteorological_metric") || ["비", "눈", "바람", "태풍"].includes(subjKoW))) {
+				const WEATHER_PHENOMENON_NOUNS = new Set(["비", "눈", "바람", "태풍"]);
+				if (subjUnitW && (_hasTag(subjUnitW, K.WEATHER, "meteorological_metric") || WEATHER_PHENOMENON_NOUNS.has(subjKoW))) {
 					errors.push({
 						code: "WEATHER_VERB_MISMATCH",
 						message: `Weather noun '${subjKoW}' cannot pair with motion verb '가다' in: "${realized.ko}"`
@@ -2031,9 +2036,9 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 			}
 
 			// C. Descriptive Verb Subject Collocation Check
-			const subjCons = constituents.filter(c => c.role === "subject" || c.role === "topic");
+			const subjCons = constituents.filter(c => c.role === K.SUBJECT || c.role === K.TOPIC);
 			const subjCon = subjCons.length > 0 ? subjCons[subjCons.length - 1] : null;
-			if (subjCon && verbUnit && (pred.predType === "descriptive" || verbUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB) && typeof getSubjectCandidatesForDescriptiveVerb === 'function') {
+			if (subjCon && verbUnit && (pred.predType === K.DESCRIPTIVE || verbUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB) && typeof getSubjectCandidatesForDescriptiveVerb === 'function') {
 				const subjUnit = subjCon.nounUnit || subjCon.unit;
 				if (subjUnit && (subjCon.isVariedSlot || pred.isVariedSlot)) {
 					const vKo = verbUnit[DATA_SCHEMA.Korean] || "";
@@ -2044,8 +2049,7 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 						"건강하다", "똑똑하다", "친절하다", "피곤하다", "배고프다", "심심하다"
 					]);
 					const isHumanSubj = _hasTag(subjUnit, K.PERSON, K.FAMILY, "pronoun_1st", "pronoun_2nd", "pronoun_3rd");
-					const isWeatherOrTaste = _hasTag(verbUnit, K.WEATHER, "taste", "descriptive_weather", "descriptive_taste") ||
-						["맵다", "달다", "짜다", "시다", "싱겁다", "따뜻하다", "춥다", "덥다", "쌀쌀하다", "시원하다"].includes(vKo);
+					const isWeatherOrTaste = _hasTag(verbUnit, K.WEATHER, "taste", "descriptive_weather", "descriptive_taste", "sensory_weather_taste");
 
 					if (isHumanSubj && isWeatherOrTaste) {
 						const subjKo = subjUnit[DATA_SCHEMA.Korean] || "";
@@ -2070,17 +2074,17 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 			for (let i = 0; i < constituents.length; i++) {
 				const cCurrent = constituents[i];
 				const cNext = i + 1 < constituents.length ? constituents[i + 1] : null;
-				if (cCurrent && (cCurrent.role === "adnominal_modifier" || cCurrent.category === "adnominal_modifier") && cCurrent.unit) {
+				if (cCurrent && (cCurrent.role === K.ADNOMINAL_MODIFIER || cCurrent.category === K.ADNOMINAL_MODIFIER) && cCurrent.unit) {
 					const modVerb = cCurrent.unit;
 					const modKo = modVerb[DATA_SCHEMA.Korean] || "";
 					const modPos = modVerb[DATA_SCHEMA.PartofSpeech];
 					const headNoun = cNext
 						? (cNext.nounUnit || cNext.unit)
-						: ((pred.predType === "copula" && (pred.copulaNounUnit || pred.nounUnit)) ? (pred.copulaNounUnit || pred.nounUnit) : null);
+						: ((pred.predType === K.COPULA && (pred.copulaNounUnit || pred.nounUnit)) ? (pred.copulaNounUnit || pred.nounUnit) : null);
 					const headKo = headNoun ? (headNoun[DATA_SCHEMA.Korean] || "") : "";
 					if (!headNoun) continue;
 
-					if (_hasTag(headNoun, "position") && _hasTag(modVerb, "transitive", K.TRANSITIVE_GENERAL)) {
+					if (_hasTag(headNoun, K.POSITION) && _hasTag(modVerb, "transitive", K.TRANSITIVE_GENERAL)) {
 						errors.push({
 							code: "INVALID_ADNOMINAL_POSITION_MODIFICATION",
 							message: `Transitive verb '${modKo}' cannot adnominally modify relational position noun '${headKo}' in: "${realized.ko}"`
@@ -2096,8 +2100,8 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 							});
 							continue;
 						}
-						const isGenericRelHead = _hasTag(headNoun, "bound_noun", K.TIME) ||
-							["것", "거", "때", "날", "시간", "수", "줄", "일", "방법", "곳", "점", "프로그램", "약속", "생활"].includes(headKo);
+						const GENERIC_REL_HEADS = new Set(["것", "거", "때", "날", "시간", "수", "줄", "일", "방법", "곳", "점", "프로그램", "약속", "생활"]);
+						const isGenericRelHead = _hasTag(headNoun, K.BOUND_NOUN, K.TIME) || GENERIC_REL_HEADS.has(headKo);
 						if (!isGenericRelHead) {
 							if (modPos === K.DESCRIPTIVE_VERB && typeof getSubjectCandidatesForDescriptiveVerb === 'function') {
 								const modSd = parseSemanticData(modVerb);
@@ -2112,7 +2116,7 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 								}
 							} else if (modPos === K.ACTION_VERB && typeof getNounCandidatesForVerb === 'function') {
 								const hasLocalOvertObj = constituents.slice(0, i).some(c => c.role === K.OBJECT || c.particleType === K.OBJECT);
-								const isConcretePlaceHead = _hasTag(headNoun, K.PLACE, K.FACILITY) || ["식당", "집", "방", "학교", "교실", "가게", "병원"].includes(headKo);
+								const isConcretePlaceHead = _hasTag(headNoun, K.PLACE, K.FACILITY);
 								if (!hasLocalOvertObj && !isConcretePlaceHead) {
 									const modSd = parseSemanticData(modVerb);
 									const modTags = modVerb[DATA_SCHEMA.SemanticTags];
@@ -2126,7 +2130,7 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 												message: `Action modifier '${modKo}' does not collocate with head noun '${headKo}' in: "${realized.ko}"`
 											});
 										}
-									} else if (_hasTag(headNoun, "drink", K.FOOD, K.CLOTHING, K.WEARABLE) && !isConcretePlaceHead) {
+									} else if (_hasTag(headNoun, K.DRINK, K.FOOD, K.CLOTHING, K.WEARABLE) && !isConcretePlaceHead) {
 										// Unconstrained generic verbs (하다, 정리하다, 만지다, 운전하다) cannot substitute into drink/food/clothing modifiers
 										errors.push({
 											code: "ADNOMINAL_ACTION_COLLOCATION_MISMATCH",
@@ -2156,7 +2160,7 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 				const locStatCon = constituents.find(c => c.particleType === "location_static");
 				if (locStatCon) {
 					const locUnit = locStatCon.nounUnit || locStatCon.unit;
-					const spatRes = validateSpatialConcord(verbUnit, locUnit, "location");
+					const spatRes = validateSpatialConcord(verbUnit, locUnit, K.LOCATION);
 					if (spatRes && !spatRes.valid) {
 						errors.push({
 							code: "SPATIAL_CONCORD_MISMATCH",
@@ -2181,7 +2185,7 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 				}
 			}
 			const pastDetCon = constituents.find(c => (c.unit && c.unit[DATA_SCHEMA.Korean] === "지난") || (c.determinerUnit && c.determinerUnit[DATA_SCHEMA.Korean] === "지난"));
-			if (pastDetCon && (pred.speechAct === "propositive" || pred.speechAct === "imperative" || (pred.tense || ast.tense) === "future")) {
+			if (pastDetCon && (pred.speechAct === K.PROPOSITIVE || pred.speechAct === K.IMPERATIVE || (pred.tense || ast.tense) === K.FUTURE)) {
 				errors.push({
 					code: "TEMPORAL_CONCORD_MISMATCH",
 					message: `Past modifier '지난' clashes with future/hortative clause in: "${realized.ko}"`
@@ -2191,14 +2195,14 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 			// F. Adverb Concord Check
 			if (verbUnit) {
 				const advCons = constituents.filter(c => c.role === K.ADVERB);
-				const isNegClause = (pred.polarity || ast.polarity) === "negative";
+				const isNegClause = (pred.polarity || ast.polarity) === K.NEGATIVE;
 				const clauseTense = pred.tense || ast.tense;
 				for (const advCon of advCons) {
 					const advUnit = advCon.unit || advCon.nounUnit;
 					if (!advUnit) continue;
 					const advKo = advUnit[DATA_SCHEMA.Korean] || "";
 					const advSd = parseSemanticData(advUnit);
-					if (advCon.isVariedSlot && clauseTense && clauseTense !== "past" && (advSd.tense === "past" || ["방금", "아까"].includes(advKo))) {
+					if (advCon.isVariedSlot && clauseTense && clauseTense !== K.PAST && (advSd.tense === K.PAST || _hasTag(advUnit, "temporal_past", K.PAST))) {
 						errors.push({
 							code: "ADVERB_CONCORD_MISMATCH",
 							message: `Past-time adverb '${advKo}' requires past-tense clause (got '${clauseTense}') in: "${realized.ko}"`
@@ -2223,12 +2227,13 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 			}
 
 			// G. Honorific Predicate Concord Check
-			const isLexicalHonVerb = Boolean(verbUnit && (["편찮으시다", "계시다", "안 계시다", "주무시다", "드시다", "잡수시다", "말씀하시다", "말씀하다", "돌아가시다"].includes(verbKo) || _hasTag(verbUnit, "honorificVerb")));
-			const subjConHon = constituents.find(c => c.role === "subject" || c.role === "topic");
+			const LEXICAL_HONORIFIC_PREDICATES = new Set(["편찮으시다", "계시다", "안 계시다", "주무시다", "드시다", "잡수시다", "말씀하시다", "말씀하다", "돌아가시다"]);
+			const isLexicalHonVerb = Boolean(verbUnit && (LEXICAL_HONORIFIC_PREDICATES.has(verbKo) || _hasTag(verbUnit, "honorificVerb")));
+			const subjConHon = constituents.find(c => c.role === K.SUBJECT || c.role === K.TOPIC);
 			const subjUnitHon = subjConHon ? (subjConHon.nounUnit || subjConHon.unit) : null;
 			const isElderSubj = subjUnitHon ? (
 				(morphologyModule && typeof morphologyModule.isElderNoun === 'function' && morphologyModule.isElderNoun(subjUnitHon))
-				|| _hasTag(subjUnitHon, "elder_noun", K.HONORIFIC)
+				|| _hasTag(subjUnitHon, K.ELDER_NOUN, K.HONORIFIC)
 			) : false;
 			if (verbUnit) {
 				const hasHonInfixPred = pred.isVariedSlot && (isLexicalHonVerb || _hasTag(verbUnit, K.HONORIFIC));
@@ -2248,7 +2253,7 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 			}
 			if (isElderSubj && subjConHon && subjConHon.isVariedSlot && !isLexicalHonVerb) {
 				const predSurf = pred.surfaceKo || "";
-				const nextAdn = constituents.find((c, cIdx) => c && c.role === "adnominal_modifier" && constituents.indexOf(subjConHon) < cIdx);
+				const nextAdn = constituents.find((c, cIdx) => c && c.role === K.ADNOMINAL_MODIFIER && constituents.indexOf(subjConHon) < cIdx);
 				const nextAdnSurf = nextAdn ? (nextAdn.surfaceKo || "") : "";
 				const hasHonInfix = /시|세|셨|실|신/.test(predSurf) || (nextAdn && /시|세|셨|실|신/.test(nextAdnSurf));
 				if (!hasHonInfix) {
@@ -2260,11 +2265,11 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 			}
 
 			// H. Copula 물건이다 semantic compatibility check (rejects 돈/신문/잡지/음악/사람/장소/추상/증명서/티켓)
-			const copulaNounCheckH = pred.predType === "copula" ? (pred.copulaNounUnit || pred.nounUnit) : null;
+			const copulaNounCheckH = pred.predType === K.COPULA ? (pred.copulaNounUnit || pred.nounUnit) : null;
 			if (copulaNounCheckH && copulaNounCheckH[DATA_SCHEMA.Korean] === "물건") {
-				const subjConObj = constituents.find(c => c.role === "subject" || c.role === "topic");
+				const subjConObj = constituents.find(c => c.role === K.SUBJECT || c.role === K.TOPIC);
 				const subjObjUnit = subjConObj ? (subjConObj.nounUnit || subjConObj.unit) : null;
-				if (subjObjUnit && (_hasTag(subjObjUnit, "currency_resource", "reading", "visual_media", "audio", "document", "credential", "ticket", K.PERSON, K.PLACE, K.TIME, K.ABSTRACT, K.CONCEPT, K.ACADEMIC) || ["학생증", "신분증", "여권", "명함"].includes(subjObjUnit[DATA_SCHEMA.Korean]))) {
+				if (subjObjUnit && (_hasTag(subjObjUnit, "currency_resource", "reading", "visual_media", "audio", "document", "credential", "ticket", K.PERSON, K.PLACE, K.TIME, K.ABSTRACT, K.CONCEPT, K.ACADEMIC) || subjObjUnit[DATA_SCHEMA.Korean] === "명함")) {
 					errors.push({
 						code: "COPULA_SEMANTIC_MISMATCH",
 						message: `Noun '${subjObjUnit[DATA_SCHEMA.Korean]}' is not a physical household/utility item ('물건') in: "${realized.ko}"`
@@ -2280,12 +2285,12 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 	const seenGarmentIds = new Map();
 	for (const clause of ast.clauses) {
 		const cPred = clause.predicate;
-		const isSwapPred = Boolean(cPred && cPred.verbUnit && ["갈아입다", "갈아신다", "갈아타다", "바꾸다"].includes(cPred.verbUnit[DATA_SCHEMA.Korean]));
+		const isSwapPred = Boolean(cPred && cPred.verbUnit && _hasTag(cPred.verbUnit, "swap_verb"));
 		for (const c of (clause.constituents || [])) {
 			const cUnit = c.nounUnit || c.unit;
 			if (!cUnit) continue;
 			const cid = cUnit[DATA_SCHEMA.Id];
-			if (_hasTag(cUnit, "country") && _hasTag(cUnit, K.PROPER_NOUN)) {
+			if (_hasTag(cUnit, K.COUNTRY) && _hasTag(cUnit, K.PROPER_NOUN)) {
 				const prev = seenCountryIds.get(cid);
 				if (prev) {
 					if (prev.isVariedSlot || c.isVariedSlot) {
@@ -2309,7 +2314,7 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 					seenTimeTopicIds.set(cid, c);
 				}
 			}
-			if (_hasTag(cUnit, K.CLOTHING, K.VEHICLE || "vehicle")) {
+			if (_hasTag(cUnit, K.CLOTHING, K.VEHICLE || K.VEHICLE)) {
 				const prevG = seenGarmentIds.get(cid);
 				if (prevG && isSwapPred && (prevG.isVariedSlot || c.isVariedSlot)) {
 					errors.push({
@@ -2359,7 +2364,7 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 			const chosenSd = parseSemanticData(sc.chosenUnit);
 			const origPol = origSd ? origSd.polarity : null;
 			const chosenPol = chosenSd ? chosenSd.polarity : null;
-			if ((chosenPol === -1 || chosenPol === "negative") && origPol !== -1 && origPol !== "negative") {
+			if ((chosenPol === -1 || chosenPol === K.NEGATIVE) && origPol !== -1 && origPol !== K.NEGATIVE) {
 				const hasPositiveFrame = (sc.grammar || []).some(g => POSITIVE_CAPABILITY_GRAMMAR.has(g.unitId))
 					|| (sc.slotIndex === 0 && origKo === "좋다");
 				if (hasPositiveFrame) {
@@ -2815,12 +2820,12 @@ function computeTemplateDifficulty(tpl) {
 	const mandatoryElements = [];
 
 	(tpl.slots || []).forEach((slot, sIdx) => {
-		if (slot.inflection && slot.inflection.stemForm === "fixed_grammar") {
+		if (slot.inflection && slot.inflection.stemForm === K.FIXED_GRAMMAR) {
 			const u = typeof slot.originalUnitId === 'number' ? units[slot.originalUnitId] : null;
 			if (u) {
 				const sc = u[DATA_SCHEMA.PriorityScore] || 1;
 				mandatoryScores.push(sc);
-				mandatoryElements.push({ type: 'fixed_grammar', slotIndex: sIdx, unitId: u[DATA_SCHEMA.Id], ko: u[DATA_SCHEMA.Korean], score: sc });
+				mandatoryElements.push({ type: K.FIXED_GRAMMAR, slotIndex: sIdx, unitId: u[DATA_SCHEMA.Id], ko: u[DATA_SCHEMA.Korean], score: sc });
 			}
 		} else {
 			const cands = getSlotCandidates(slot);
@@ -3070,7 +3075,7 @@ function resetVerifiedSlotTags(id, slotIndex) {
 		const origUnit = units[slot.originalUnitId];
 		const raw = origUnit[DATA_SCHEMA.SemanticTags];
 		originalTags = (raw instanceof Set ? Array.from(raw) : (Array.isArray(raw) ? [...raw] : [])).filter(Boolean);
-	} else if (slot.inflection && slot.inflection.stemForm === 'fixed_grammar') {
+	} else if (slot.inflection && slot.inflection.stemForm === K.FIXED_GRAMMAR) {
 		originalTags = [K.GRAMMAR];
 	}
 
@@ -3261,7 +3266,7 @@ function findMatchingTemplatesForUnit(unitOrId) {
 			const slot = tpl.slots[sIdx];
 			if (slot.pos !== targetPos) continue;
 			if (isLockedSlot(slot)) {
-				if (slot.originalUnitId === targetId && slot.inflection && (slot.inflection.stemForm === "exact" || slot.inflection.stemForm === "fixed_grammar")) {
+				if (slot.originalUnitId === targetId && slot.inflection && (slot.inflection.stemForm === "exact" || slot.inflection.stemForm === K.FIXED_GRAMMAR)) {
 					exactMatches.push({ template: tpl, slotIndex: sIdx, matchType: "lexical_exact_locked" });
 				}
 				continue;

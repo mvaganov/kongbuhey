@@ -23,7 +23,7 @@ const ACTION_VERB_SPECS = Object.freeze([
 
 	// Consumption
 	{ tag: "transitive_food", nounTag: K.FOOD, particle: K.OBJECT, preferDomain: true },
-	{ tag: "transitive_drink", nounTag: "drink", particle: K.OBJECT, preferDomain: true },
+	{ tag: "transitive_drink", nounTag: K.DRINK, particle: K.OBJECT, preferDomain: true },
 
 	// Media, Arts & Communication
 	{ tag: "transitive_reading", nounTag: "reading", particle: K.OBJECT },
@@ -37,47 +37,47 @@ const ACTION_VERB_SPECS = Object.freeze([
 	// Activities & Sports
 	{ tag: "transitive_activity", nounTag: K.ACTIVITY, particle: K.OBJECT },
 	{ tag: "transitive_instrument", nounTag: "instrument", particle: K.OBJECT },
-	{ tag: "transitive_sports", nounTag: "racketSports", particle: K.OBJECT, fallbackTag: "sports" },
+	{ tag: "transitive_sports", nounTag: "racketSports", particle: K.OBJECT, fallbackTag: K.SPORTS },
 
 	// Vehicles & Transportation
-	{ tag: "transitive_vehicle", nounTag: "vehicle", particle: K.OBJECT },
+	{ tag: "transitive_vehicle", nounTag: K.VEHICLE, particle: K.OBJECT },
 	{ tag: "transitive_transportation", nounTag: K.TRANSPORTATION, particle: K.OBJECT },
 
 	// Hygiene & Chores
 	{ tag: "transitive_teeth", nounTag: "teeth", particle: K.OBJECT, fallbackTag: "bodyPart" },
 	{ tag: "transitive_bodyPart", nounTag: "bodyPart", particle: K.OBJECT },
-	{ tag: "transitive_room", nounTag: "room", particle: K.OBJECT },
+	{ tag: "transitive_room", nounTag: K.ROOM, particle: K.OBJECT },
 
 	// Social & General
 	{ tag: "transitive_person", nounTag: K.PERSON, particle: K.OBJECT },
 	{ tag: "transitive_social", nounTag: K.PERSON, particle: K.OBJECT },
-	{ tag: "dative_person", nounTag: K.PERSON, particle: "dative" },
-	{ tag: "dative_humble", nounTag: "elder_noun", particle: "dative", fallbackTag: K.PERSON },
+	{ tag: K.DATIVE_PERSON, nounTag: K.PERSON, particle: K.DATIVE },
+	{ tag: "dative_humble", nounTag: K.ELDER_NOUN, particle: K.DATIVE, fallbackTag: K.PERSON },
 	{ tag: "transitive_place", nounTag: K.PLACE, particle: K.OBJECT, preferDomain: true },
 	{ tag: "transitive_object", nounTag: K.OBJECT, particle: K.OBJECT },
 	{ tag: K.TRANSITIVE_GENERAL, nounTag: K.OBJECT, particle: K.OBJECT, fallbackTag: null },
 
 	// Intransitive Motion & Location
-	{ tag: "intransitive_motion", nounTag: K.PLACE, particle: "location", preferDomain: true },
-	{ tag: "intransitive_place", nounTag: K.PLACE, particle: "location", preferDomain: true },
-	{ tag: "intransitive_person", nounTag: K.PERSON, particle: "subject" },
-	{ tag: "intransitive_social", nounTag: K.PERSON, particle: "subject" },
+	{ tag: K.INTRANSITIVE_MOTION, nounTag: K.PLACE, particle: K.LOCATION, preferDomain: true },
+	{ tag: K.INTRANSITIVE_PLACE, nounTag: K.PLACE, particle: K.LOCATION, preferDomain: true },
+	{ tag: "intransitive_person", nounTag: K.PERSON, particle: K.SUBJECT },
+	{ tag: "intransitive_social", nounTag: K.PERSON, particle: K.SUBJECT },
 	{ tag: "intransitive_food", nounTag: null, particle: null },
 	{ tag: K.INTRANSITIVE_GENERAL, nounTag: null, particle: null }
 ]);
 
 const DESCRIPTIVE_VERB_SPECS = Object.freeze([
 	// Taste / Flavor (food, drinks)
-	{ tag: "descriptive_taste", nounTag: K.FOOD, fallbackTag: "drink", preferDomain: true },
+	{ tag: "descriptive_taste", nounTag: K.FOOD, fallbackTag: K.DRINK, preferDomain: true },
 
 	// Weather / Atmosphere / Climate
 	{ tag: "descriptive_weather", nounTag: K.WEATHER },
 
 	// Tactile & Liquid Temperature (water, drinks, food)
-	{ tag: "descriptive_tactile_temperature", nounTag: "drink", fallbackTag: K.FOOD },
+	{ tag: "descriptive_tactile_temperature", nounTag: K.DRINK, fallbackTag: K.FOOD },
 
 	// Physical Dimensions: Spatial (rooms, houses, streets, roads)
-	{ tag: "descriptive_dimension_spatial", nounTag: "room", fallbackTag: K.PLACE },
+	{ tag: "descriptive_dimension_spatial", nounTag: K.ROOM, fallbackTag: K.PLACE },
 
 	// Physical Dimensions: Linear Length (clothing, time, distance, lines)
 	{ tag: "descriptive_dimension_length", nounTag: K.CLOTHING, fallbackTag: K.TIME },
@@ -92,16 +92,16 @@ const DESCRIPTIVE_VERB_SPECS = Object.freeze([
 	{ tag: "descriptive_dimension_thickness", nounTag: K.CLOTHING, fallbackTag: "book" },
 
 	// Physical Dimensions: General Scale / Size (rooms, buildings, objects)
-	{ tag: "descriptive_dimension_scale", nounTag: "room", fallbackTag: K.OBJECT },
+	{ tag: "descriptive_dimension_scale", nounTag: K.ROOM, fallbackTag: K.OBJECT },
 
 	// Price & Cost (clothing, commodities, food)
 	{ tag: "descriptive_price", nounTag: K.CLOTHING, fallbackTag: "commodity" },
 
 	// Cleanliness & Hygiene (rooms, places, facilities)
-	{ tag: "descriptive_cleanliness", nounTag: "room", fallbackTag: K.PLACE },
+	{ tag: "descriptive_cleanliness", nounTag: K.ROOM, fallbackTag: K.PLACE },
 
 	// Acoustics & Noise (rooms, places, neighborhoods)
-	{ tag: "descriptive_acoustic", nounTag: "room", fallbackTag: K.PLACE },
+	{ tag: "descriptive_acoustic", nounTag: K.ROOM, fallbackTag: K.PLACE },
 
 	// Psychological & Emotional State (strictly people/sentient beings)
 	{ tag: "descriptive_emotion", nounTag: K.PERSON, fallbackTag: K.PERSON },
@@ -114,7 +114,7 @@ const DESCRIPTIVE_VERB_SPECS = Object.freeze([
 	{ tag: "descriptive_difficulty", nounTag: "education", fallbackTag: K.ABSTRACT },
 
 	// Speed & Velocity (vehicles, people)
-	{ tag: "descriptive_speed", nounTag: "vehicle", fallbackTag: K.PERSON },
+	{ tag: "descriptive_speed", nounTag: K.VEHICLE, fallbackTag: K.PERSON },
 
 	// Color & Visual Appearance (clothing, nature, objects)
 	{ tag: "descriptive_color", nounTag: K.CLOTHING, fallbackTag: K.NATURE },

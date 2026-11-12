@@ -112,7 +112,7 @@ function withEnglishArticle(nounStr, unit = null, definite = true) {
 	if (UNCOUNTABLE_EN_NOUNS.has(lower) || PROPER_OR_BARE_PLACES.has(lower)) {
 		return trimmed;
 	}
-	if (unit && (hasTag(unit, "language", "country", "nationality", "properName", "proper_name", K.TIME, "temporal") || unit[DATA_SCHEMA.PartofSpeech] === K.PRONOUN)) {
+	if (unit && (hasTag(unit, "language", K.COUNTRY, "nationality", "properName", "proper_name", K.TIME, "temporal") || unit[DATA_SCHEMA.PartofSpeech] === K.PRONOUN)) {
 		return trimmed;
 	}
 	if (/^[A-Z]/.test(trimmed)) {
@@ -201,7 +201,7 @@ function realizeNaturalConstituent(con, clauseContext = {}) {
 		const nounEn = getUnitNaturalPhrase(primaryUnit);
 		const detLower = detEn.toLowerCase();
 		const isDefiniteOrPossessive = ["my", "our", "your", "his", "her", "their", "whose", "every", "all", "each", "this", "that", "these", "those", "which", "what"].includes(detLower) ||
-			hasTag(determinerUnit, "possessive", "demonstrative", "deictic") ||
+			hasTag(determinerUnit, "possessive", K.DEMONSTRATIVE, "deictic") ||
 			["이", "그", "저", "어느", "무슨", "어떤", "모든", "각", "제", "내"].includes(determinerUnit[DATA_SCHEMA.Korean]);
 
 		if (isDefiniteOrPossessive) {
@@ -213,30 +213,30 @@ function realizeNaturalConstituent(con, clauseContext = {}) {
 	}
 
 	// 5. Pronouns in object/recipient role
-	if (primaryUnit[DATA_SCHEMA.PartofSpeech] === K.PRONOUN && (role === K.OBJECT || role === "recipient" || role === "companion")) {
-		if (ko === "나" || ko === "저") return role === "recipient" ? "to me" : "me";
-		if (ko === "우리" || ko === "저희") return role === "recipient" ? "to us" : "us";
-		if (ko === "너" || ko === "당신") return role === "recipient" ? "to you" : "you";
-		if (ko === "그") return role === "recipient" ? "to him" : "him";
-		if (ko === "그녀") return role === "recipient" ? "to her" : "her";
+	if (primaryUnit[DATA_SCHEMA.PartofSpeech] === K.PRONOUN && (role === K.OBJECT || role === K.RECIPIENT || role === "companion")) {
+		if (ko === "나" || ko === "저") return role === K.RECIPIENT ? "to me" : "me";
+		if (ko === "우리" || ko === "저희") return role === K.RECIPIENT ? "to us" : "us";
+		if (ko === "너" || ko === "당신") return role === K.RECIPIENT ? "to you" : "you";
+		if (ko === "그") return role === K.RECIPIENT ? "to him" : "him";
+		if (ko === "그녀") return role === K.RECIPIENT ? "to her" : "her";
 	}
 
 	const basePhrase = getUnitNaturalPhrase(primaryUnit);
 
 	// 6. Prepositional roles (location, time, recipient, companion, instrumental)
-	if (role === "location" || particleType === "location" || particleType === "location_static" || particleType === "location_dynamic" || particleType === "direction") {
+	if (role === K.LOCATION || particleType === K.LOCATION || particleType === "location_static" || particleType === "location_dynamic" || particleType === K.DIRECTION) {
 		if (["here", "there", "over there", "where", "home", "abroad", "downtown"].includes(basePhrase.toLowerCase())) {
 			const verbUnit = clauseContext.verbUnit;
-			const isMotion = verbUnit && hasTag(verbUnit, "intransitive_motion", "locative_goal");
+			const isMotion = verbUnit && hasTag(verbUnit, K.INTRANSITIVE_MOTION, K.LOCATIVE_GOAL);
 			if (basePhrase.toLowerCase() === "home" && !isMotion) return "at home";
 			return basePhrase;
 		}
 		const verbUnit = clauseContext.verbUnit;
-		const isMotion = verbUnit && hasTag(verbUnit, "intransitive_motion", "locative_goal");
-		const isOrigin = verbUnit && hasTag(verbUnit, "locative_origin");
+		const isMotion = verbUnit && hasTag(verbUnit, K.INTRANSITIVE_MOTION, K.LOCATIVE_GOAL);
+		const isOrigin = verbUnit && hasTag(verbUnit, K.LOCATIVE_ORIGIN);
 		const np = withEnglishArticle(basePhrase, primaryUnit, true);
 		if (isOrigin) return `from ${np}`;
-		if (isMotion || particleType === "direction") return `to ${np}`;
+		if (isMotion || particleType === K.DIRECTION) return `to ${np}`;
 		return `at ${np}`;
 	}
 
@@ -251,7 +251,7 @@ function realizeNaturalConstituent(con, clauseContext = {}) {
 		return `in ${basePhrase}`;
 	}
 
-	if (role === "recipient" || particleType === "dative" || particleType === "dative_person") {
+	if (role === K.RECIPIENT || particleType === K.DATIVE || particleType === K.DATIVE_PERSON) {
 		return `to ${withEnglishArticle(basePhrase, primaryUnit, true)}`;
 	}
 
@@ -261,7 +261,7 @@ function realizeNaturalConstituent(con, clauseContext = {}) {
 
 	if (particleUnit) {
 		const pKo = particleUnit[DATA_SCHEMA.Korean] || "";
-		if (pKo.includes("에다가") && role !== "location") return `along with ${withEnglishArticle(basePhrase, primaryUnit, false)}`;
+		if (pKo.includes("에다가") && role !== K.LOCATION) return `along with ${withEnglishArticle(basePhrase, primaryUnit, false)}`;
 		if (pKo.includes("보다")) return `than ${withEnglishArticle(basePhrase, primaryUnit, true)}`;
 		if (pKo === "부터") return `from ${basePhrase}`;
 		if (pKo === "까지") return `until ${basePhrase}`;
@@ -271,7 +271,7 @@ function realizeNaturalConstituent(con, clauseContext = {}) {
 	}
 
 	if (primaryUnit[DATA_SCHEMA.PartofSpeech] === K.NOUN) {
-		const definite = role === "topic" || role === "subject";
+		const definite = role === K.TOPIC || role === K.SUBJECT;
 		return withEnglishArticle(basePhrase, primaryUnit, definite);
 	}
 
@@ -304,7 +304,7 @@ function inflectSingleVerbHead(word, form) {
 		}
 		return word + "ing";
 	}
-	if (form === "past") {
+	if (form === K.PAST) {
 		if (word.endsWith("e")) return word + "d";
 		if (/[^aeiou]y$/i.test(word)) return word.slice(0, -1) + "ied";
 		return word + "ed";
@@ -334,8 +334,8 @@ function getVerbEnForms(verbUnit) {
 	const en = (sd && sd.en) || {};
 	const fallback = getUnitNaturalPhrase(verbUnit) || "do";
 	const base = (en.base || fallback).replace(/^to\s+/i, "").trim();
-	const past = inflectPhrasalOrSimpleVerb(base, en.past, "past");
-	const part = inflectPhrasalOrSimpleVerb(base, en.part || past, "past");
+	const past = inflectPhrasalOrSimpleVerb(base, en.past, K.PAST);
+	const part = inflectPhrasalOrSimpleVerb(base, en.part || past, K.PAST);
 	const s = inflectPhrasalOrSimpleVerb(base, en.s, "s");
 	const ing = inflectPhrasalOrSimpleVerb(base, en.ing, "ing");
 	const adj = en.adj || base.replace(/^be\s+/i, "").trim();
@@ -371,17 +371,17 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 		if (role === K.DISCOURSE) {
 			const d = getUnitNaturalPhrase(con.unit || con.nounUnit);
 			if (d) discourseParts.push(d);
-		} else if (role === "topic" && !topicCon) {
+		} else if (role === K.TOPIC && !topicCon) {
 			topicCon = con;
-		} else if (role === "subject" && !subjectCon) {
+		} else if (role === K.SUBJECT && !subjectCon) {
 			subjectCon = con;
 		} else if (role === K.OBJECT || role === "noun_phrase") {
 			const o = realizeNaturalConstituent(con, clauseContext);
 			if (o) objectParts.push(o);
-		} else if (role === "recipient") {
+		} else if (role === K.RECIPIENT) {
 			const r = realizeNaturalConstituent(con, clauseContext);
 			if (r) recipientParts.push(r);
-		} else if (role === "location") {
+		} else if (role === K.LOCATION) {
 			const l = realizeNaturalConstituent(con, clauseContext);
 			if (l) locationParts.push(l);
 		} else if (role === K.TIME) {
@@ -393,9 +393,9 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 		}
 	}
 
-	const speechAct = (!isSubordinate && ast.speechAct) || (pred && pred.speechAct) || "declarative";
-	const tense = (pred && pred.tense) || ast.tense || "present";
-	const polarity = (pred && pred.polarity) || ast.polarity || "affirmative";
+	const speechAct = (!isSubordinate && ast.speechAct) || (pred && pred.speechAct) || K.DECLARATIVE;
+	const tense = (pred && pred.tense) || ast.tense || K.PRESENT;
+	const polarity = (pred && pred.polarity) || ast.polarity || K.AFFIRMATIVE;
 	const modality = (pred && pred.modality) || ast.modality || null;
 	const grammarUnit = (pred && (pred.grammarUnit || pred.endingUnit || pred.connectiveUnit)) || ast.grammarUnit || null;
 	const gKo = grammarUnit ? (grammarUnit[DATA_SCHEMA.Korean] || "") : "";
@@ -420,9 +420,9 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 	} else if (topicCon) {
 		subjStr = realizeNaturalConstituent(topicCon, clauseContext);
 	} else {
-		if (speechAct === "imperative" || speechAct === "propositive") {
+		if (speechAct === K.IMPERATIVE || speechAct === K.PROPOSITIVE) {
 			subjStr = "";
-		} else if (speechAct === "interrogative" || gKo.includes("나요") || gKo.includes("은가요") || gKo.includes("습니까") || gKo.includes("래요")) {
+		} else if (speechAct === K.INTERROGATIVE || gKo.includes("나요") || gKo.includes("은가요") || gKo.includes("습니까") || gKo.includes("래요")) {
 			subjStr = "you";
 		} else if (clauseContext.honorific) {
 			subjStr = "they";
@@ -478,14 +478,14 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 	}
 
 	// 1. Copula Predicate
-	if (pred.predType === "copula" && pred.copulaNounUnit) {
+	if (pred.predType === K.COPULA && pred.copulaNounUnit) {
 		const copNP = withEnglishArticle(getUnitNaturalPhrase(pred.copulaNounUnit), pred.copulaNounUnit, false);
-		const beV = tense === "past" ? agr.bePast : agr.bePres;
-		if (speechAct === "interrogative" && !isSubordinate) {
+		const beV = tense === K.PAST ? agr.bePast : agr.bePres;
+		if (speechAct === K.INTERROGATIVE && !isSubordinate) {
 			questionAux = beV;
-			vpStr = `${polarity === "negative" ? "not " : ""}${copNP}`;
+			vpStr = `${polarity === K.NEGATIVE ? "not " : ""}${copNP}`;
 		} else {
-			vpStr = `${beV}${polarity === "negative" ? " not" : ""} ${copNP}`;
+			vpStr = `${beV}${polarity === K.NEGATIVE ? " not" : ""} ${copNP}`;
 		}
 	} else if (verbUnit) {
 		const vKo = verbUnit[DATA_SCHEMA.Korean] || "";
@@ -496,50 +496,50 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 
 		// Special case: 있다 / 없다
 		if (!isAction && (vKo === "있다" || vKo === "없다")) {
-			const isNegExist = vKo === "없다" || polarity === "negative";
+			const isNegExist = vKo === "없다" || polarity === K.NEGATIVE;
 			if (objectParts.length > 0) {
 				// Possession ("The student has a book")
-				const haveV = tense === "past"
+				const haveV = tense === K.PAST
 					? (isNegExist ? "did not have" : "had")
 					: (isNegExist ? (agr.singular && agr.person === 3 ? "does not have" : "do not have") : (agr.singular && agr.person === 3 ? "has" : "have"));
 				vpStr = `${ advPre }${ haveV }`;
 			} else {
-				const beV = tense === "past" ? agr.bePast : agr.bePres;
-				vpStr = `${ beV }${ isNegExist ? " not" : "" } ${ advPre }${ locationParts.length > 0 ? "" : "present" }`.trim();
+				const beV = tense === K.PAST ? agr.bePast : agr.bePres;
+				vpStr = `${ beV }${ isNegExist ? " not" : "" } ${ advPre }${ locationParts.length > 0 ? "" : K.PRESENT }`.trim();
 			}
 		} else if (!isAction) {
 			// Descriptive Verb (Adjective predicate)
-			const beV = tense === "past" ? agr.bePast : (tense === "future" ? "will be" : agr.bePres);
+			const beV = tense === K.PAST ? agr.bePast : (tense === K.FUTURE ? "will be" : agr.bePres);
 			if (gKo.includes("어지다")) {
-				const getV = tense === "past" ? "became" : (agr.singular && agr.person === 3 ? "becomes" : "become");
+				const getV = tense === K.PAST ? "became" : (agr.singular && agr.person === 3 ? "becomes" : "become");
 				vpStr = `${getV} ${advPre}${forms.adj}`;
-			} else if (speechAct === "interrogative" && !isSubordinate) {
+			} else if (speechAct === K.INTERROGATIVE && !isSubordinate) {
 				const isHowMuch = advPre.startsWith("how much ") || advPre.startsWith("how-much ");
 				if (isHowMuch) {
 					whFront = `how ${forms.adj}`;
-					if (tense === "future") {
+					if (tense === K.FUTURE) {
 						questionAux = "will";
-						vpStr = polarity === "negative" ? "not be" : "be";
+						vpStr = polarity === K.NEGATIVE ? "not be" : "be";
 					} else {
 						questionAux = beV;
-						vpStr = polarity === "negative" ? "not" : "";
+						vpStr = polarity === K.NEGATIVE ? "not" : "";
 					}
 				} else {
-					if (tense === "future") {
+					if (tense === K.FUTURE) {
 						questionAux = "will";
-						vpStr = `${polarity === "negative" ? "not " : ""}be ${advPre}${forms.adj}`;
+						vpStr = `${polarity === K.NEGATIVE ? "not " : ""}be ${advPre}${forms.adj}`;
 					} else {
 						questionAux = beV;
-						vpStr = `${polarity === "negative" ? "not " : ""}${advPre}${forms.adj}`;
+						vpStr = `${polarity === K.NEGATIVE ? "not " : ""}${advPre}${forms.adj}`;
 					}
 				}
 			} else {
-				const negStr = polarity === "negative" ? " not" : "";
+				const negStr = polarity === K.NEGATIVE ? " not" : "";
 				vpStr = `${beV}${negStr} ${advPre}${forms.adj}`;
 			}
 		} else {
 			// Action Verb
-			if (speechAct === "interrogative" && !isSubordinate) {
+			if (speechAct === K.INTERROGATIVE && !isSubordinate) {
 				const isHowMuch = advPre.startsWith("how much ") || advPre.startsWith("how-much ");
 				const isWhy = advPre.startsWith("why ");
 				const isHow = advPre.startsWith("how ") && !isHowMuch;
@@ -558,12 +558,12 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 			if (conjPrefix === "in order to ") {
 				subjStr = "";
 				vpStr = `${advPre}${forms.base}`;
-			} else if (speechAct === "imperative") {
+			} else if (speechAct === K.IMPERATIVE) {
 				subjStr = "";
-				vpStr = polarity === "negative"
+				vpStr = polarity === K.NEGATIVE
 					? `please do not ${advPre}${forms.base}`
 					: `please ${advPre}${forms.base}`;
-			} else if (speechAct === "propositive" || gKo.includes("까요")) {
+			} else if (speechAct === K.PROPOSITIVE || gKo.includes("까요")) {
 				if (gKo.includes("까요")) {
 					subjStr = "we";
 					questionAux = "shall";
@@ -573,24 +573,24 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 					vpStr = `let's ${advPre}${forms.base}`;
 				}
 			} else if (gKo.includes("는 중이다") || gKo.includes("고 있다") || modality === "progressive") {
-				vpStr = `${tense === "past" ? agr.bePast : agr.bePres} ${advPre}${forms.ing}`;
+				vpStr = `${tense === K.PAST ? agr.bePast : agr.bePres} ${advPre}${forms.ing}`;
 			} else if (gKo.includes("고 싶다") || modality === "desire") {
-				const wantV = tense === "past" ? "wanted" : (agr.singular && agr.person === 3 ? "wants" : "want");
+				const wantV = tense === K.PAST ? "wanted" : (agr.singular && agr.person === 3 ? "wants" : "want");
 				vpStr = `${advPre}${wantV} to ${forms.base}`;
 			} else if (gKo.includes("고 싶어하다")) {
 				vpStr = `${advPre}${agr.singular && agr.person === 3 ? "wants" : "want"} to ${forms.base}`;
 			} else if (gKo.includes("수 있다") || modality === "ability") {
 				vpStr = `can ${advPre}${forms.base}`;
-			} else if (gKo.includes("수 없다") || modality === "inability" || pred.negationType === "short_mot" || pred.negationType === "long_ji_mothada") {
-				vpStr = `${tense === "past" ? "could not" : "cannot"} ${advPre}${forms.base}`;
+			} else if (gKo.includes("수 없다") || modality === K.INABILITY || pred.negationType === "short_mot" || pred.negationType === "long_ji_mothada") {
+				vpStr = `${tense === K.PAST ? "could not" : "cannot"} ${advPre}${forms.base}`;
 			} else if (gKo.includes("야 하다") || gKo.includes("야겠다") || modality === "obligation") {
 				vpStr = `must ${advPre}${forms.base}`;
 			} else if (gKo.includes("도 되다") || modality === "permission") {
 				vpStr = `may ${advPre}${forms.base}`;
-			} else if (gKo.includes("면 안 되다") || modality === "prohibition") {
+			} else if (gKo.includes("면 안 되다") || modality === K.PROHIBITION) {
 				vpStr = `must not ${advPre}${forms.base}`;
 			} else if (gKo.includes("어 보다") || modality === "try_attempt") {
-				const tryV = tense === "past" || gKo.includes("experience") ? "tried" : (agr.singular && agr.person === 3 ? "tries" : "try");
+				const tryV = tense === K.PAST || gKo.includes("experience") ? "tried" : (agr.singular && agr.person === 3 ? "tries" : "try");
 				vpStr = `${advPre}${tryV} ${forms.ing}`;
 			} else if (gKo.includes("적이 있다") || modality === "experience") {
 				const haveV = agr.singular && agr.person === 3 ? "has" : "have";
@@ -604,30 +604,30 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 				vpStr = `${planV} to ${advPre}${forms.base}`;
 			} else if (gKo.includes("었으면 좋겠다") || gKo.includes("면 좋겠다")) {
 				vpStr = `hope to ${advPre}${forms.base}`;
-			} else if (polarity === "negative") {
-				if (speechAct === "interrogative" && !isSubordinate) {
-					questionAux = tense === "past" ? "did" : (agr.singular && agr.person === 3 ? "does" : "do");
+			} else if (polarity === K.NEGATIVE) {
+				if (speechAct === K.INTERROGATIVE && !isSubordinate) {
+					questionAux = tense === K.PAST ? "did" : (agr.singular && agr.person === 3 ? "does" : "do");
 					vpStr = `not ${advPre}${forms.base}`;
 				} else {
-					const doAux = tense === "past" ? "did not" : (agr.singular && agr.person === 3 ? "does not" : "do not");
+					const doAux = tense === K.PAST ? "did not" : (agr.singular && agr.person === 3 ? "does not" : "do not");
 					vpStr = `${doAux} ${advPre}${forms.base}`;
 				}
-			} else if (tense === "past") {
-				if (speechAct === "interrogative" && !isSubordinate) {
+			} else if (tense === K.PAST) {
+				if (speechAct === K.INTERROGATIVE && !isSubordinate) {
 					questionAux = "did";
 					vpStr = `${advPre}${forms.base}`;
 				} else {
 					vpStr = `${advPre}${forms.past}`;
 				}
-			} else if (tense === "future" || gKo.includes("거예요") || gKo.includes("ㄹ게요") || gKo.includes("겠다")) {
-				if (speechAct === "interrogative" && !isSubordinate) {
+			} else if (tense === K.FUTURE || gKo.includes("거예요") || gKo.includes("ㄹ게요") || gKo.includes("겠다")) {
+				if (speechAct === K.INTERROGATIVE && !isSubordinate) {
 					questionAux = "will";
 					vpStr = `${advPre}${forms.base}`;
 				} else {
 					vpStr = `will ${advPre}${forms.base}`;
 				}
 			} else {
-				if (speechAct === "interrogative" && !isSubordinate) {
+				if (speechAct === K.INTERROGATIVE && !isSubordinate) {
 					questionAux = agr.singular && agr.person === 3 ? "does" : "do";
 					vpStr = `${advPre}${forms.base}`;
 				} else {
@@ -696,8 +696,8 @@ function realizeNaturalEnglish(ast) {
 	// Capitalize first letter
 	fullText = fullText.charAt(0).toUpperCase() + fullText.slice(1);
 
-	const speechAct = ast.speechAct || "declarative";
-	const punct = speechAct === "interrogative" ? "?" : (speechAct === "exclamatory" ? "!" : ".");
+	const speechAct = ast.speechAct || K.DECLARATIVE;
+	const punct = speechAct === K.INTERROGATIVE ? "?" : (speechAct === "exclamatory" ? "!" : ".");
 	if (!/[.?!]$/.test(fullText)) {
 		fullText += punct;
 	}

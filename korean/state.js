@@ -105,6 +105,7 @@ let PLAIN_COUNTERPARTS = new Map();
 let HONORIFIC_WORDS = new Set();
 let HUMBLE_WORDS = new Set();
 let FORBIDDEN_PLAIN_WORDS_FOR_ELDERS = new Set();
+let FIRST_SECOND_PERSON_FORMS = new Set();
 
 // Temporal Concord
 let PAST_TIME_WORDS = new Set();
@@ -153,6 +154,8 @@ let DISCOURSE_ADVERBS = new Map();
 let NEGATIVE_POLARITY_ADVERBS = new Map();
 let ALL_NPI_WORDS = new Set();
 let AFFIRMATIVE_DEGREE_ADVERBS = new Map();
+let ADVERB_CONCORD_SPECS = new Map();
+let INCHOATIVE_VERBS = new Set();
 
 // Clausal Connective Concord (Feature 11)
 let CLAUSAL_CONNECTIVES = new Map();
@@ -222,7 +225,7 @@ function initNumberSystem(dm = dataModule) {
 			NUM_ZERO = ko;
 		}
 
-		if (hasTag(unit, "sinoNumber")) {
+		if (hasTag(unit, K.SINO_NUMBER)) {
 			if (val >= 1 && val <= 9) {
 				SINO_DIGITS[val] = ko;
 			} else if (val === 10) {
@@ -351,6 +354,10 @@ function initSemanticSets(dm = dataModule) {
 	HONORIFIC_WORDS.clear();
 	HUMBLE_WORDS.clear();
 	FORBIDDEN_PLAIN_WORDS_FOR_ELDERS.clear();
+	FIRST_SECOND_PERSON_FORMS.clear();
+	for (const p of ["나", "내", "저", "제", "우리", "저희", "너", "네", "당신", "자네", "너희", "여러분"]) {
+		FIRST_SECOND_PERSON_FORMS.add(p);
+	}
 	PAST_TIME_WORDS.clear();
 	FUTURE_TIME_WORDS.clear();
 	PRESENT_TIME_WORDS.clear();
@@ -389,6 +396,8 @@ function initSemanticSets(dm = dataModule) {
 	NEGATIVE_POLARITY_ADVERBS.clear();
 	ALL_NPI_WORDS.clear();
 	AFFIRMATIVE_DEGREE_ADVERBS.clear();
+	ADVERB_CONCORD_SPECS.clear();
+	INCHOATIVE_VERBS.clear();
 	CLAUSAL_CONNECTIVES.clear();
 	CAUSAL_CONNECTIVES.clear();
 	CONTRAST_CONNECTIVES.clear();
@@ -406,20 +415,24 @@ function initSemanticSets(dm = dataModule) {
 		const ko = unit[DATA_SCHEMA.Korean];
 		if (!ko) continue;
 		const pos = unit[DATA_SCHEMA.PartofSpeech] || "";
+		const sv = parseSemanticVector(unit);
 
-		if (hasTag(unit, "elder_noun")) {
+		if (pos === K.PRONOUN && (hasTag(unit, "pronoun_1st", "1st_person", "pronoun_2nd", "2nd_person") || (sv && sv.en && (sv.en.person === 1 || sv.en.person === 2)))) {
+			FIRST_SECOND_PERSON_FORMS.add(ko);
+		}
+		if (hasTag(unit, K.ELDER_NOUN)) {
 			ELDER_NOUN_TITLES.add(ko);
 		}
-		if (hasTag(unit, "inanimate_institution")) {
+		if (hasTag(unit, K.INANIMATE_INSTITUTION)) {
 			INANIMATE_INSTITUTION_NAMES.add(ko);
 		}
-		if (hasTag(unit, "locative_origin")) {
+		if (hasTag(unit, K.LOCATIVE_ORIGIN)) {
 			ORIGIN_VERBS.add(ko);
 		}
-		if (hasTag(unit, "locative_goal")) {
+		if (hasTag(unit, K.LOCATIVE_GOAL)) {
 			ALLATIVE_GOAL_VERBS.add(ko);
 		}
-		if (hasTag(unit, "locative_static") && (pos === K.ACTION_VERB || pos === K.DESCRIPTIVE_VERB)) {
+		if (hasTag(unit, K.LOCATIVE_STATIC) && (pos === K.ACTION_VERB || pos === K.DESCRIPTIVE_VERB)) {
 			STATIC_EXISTENCE_VERBS.add(ko);
 		}
 		if (hasTag(unit, "dative_humble")) {
@@ -429,7 +442,6 @@ function initSemanticSets(dm = dataModule) {
 			TITLE_SUFFIX_SSI = ko;
 		}
 
-		const sv = parseSemanticVector(unit);
 		if (sv) {
 			if (sv.honorific_suppletion) {
 				if (pos === K.ACTION_VERB || pos === K.DESCRIPTIVE_VERB) {
@@ -492,7 +504,7 @@ function initSemanticSets(dm = dataModule) {
 			}
 		}
 
-		if (hasTag(unit, K.HONORIFIC, "honorificVerb", "honorific_noun", "honorific_person", "elder_noun")) {
+		if (hasTag(unit, K.HONORIFIC, "honorificVerb", "honorific_noun", "honorific_person", K.ELDER_NOUN)) {
 			HONORIFIC_WORDS.add(ko);
 		}
 		if (hasTag(unit, "humble", "humbleVerb", "dative_humble")) {
@@ -500,9 +512,9 @@ function initSemanticSets(dm = dataModule) {
 		}
 
 		const unitId = unit[DATA_SCHEMA.Id];
-		const isPast = hasTag(unit, "temporal_past", "past") || (sv && sv.tense === "past");
-		const isFuture = hasTag(unit, "temporal_future", "future") || (sv && sv.tense === "future");
-		const isPresent = hasTag(unit, "temporal_present", "present") || (sv && sv.tense === "present");
+		const isPast = hasTag(unit, "temporal_past", K.PAST) || (sv && sv.tense === K.PAST);
+		const isFuture = hasTag(unit, "temporal_future", K.FUTURE) || (sv && sv.tense === K.FUTURE);
+		const isPresent = hasTag(unit, "temporal_present", K.PRESENT) || (sv && sv.tense === K.PRESENT);
 		const isNoParticle = hasTag(unit, "no_time_particle") || (sv && sv.no_time_particle === true);
 
 		if (isPast) {
@@ -521,7 +533,7 @@ function initSemanticSets(dm = dataModule) {
 			BARE_TIME_WORDS_NO_PARTICLE.add(ko);
 		}
 
-		if (pos === K.NOUN && (hasTag(unit, K.MEASUREWORD, "counter") || (sv && sv.counter === true))) {
+		if (pos === K.NOUN && (hasTag(unit, K.MEASUREWORD, K.COUNTER) || (sv && sv.counter === true))) {
 			CLASSIFIER_UNITS.set(ko, unit);
 			if (hasTag(unit, "koreanMeasureWord") || (sv && sv.numType === "pure")) {
 				KOREAN_CLASSIFIERS.add(ko);
@@ -537,52 +549,55 @@ function initSemanticSets(dm = dataModule) {
 					unitId: unit[DATA_SCHEMA.Id],
 					unit: unit,
 					tags: Array.isArray(cs.tags) ? cs.tags : (cs.tags ? [cs.tags] : []),
+					poolTags: Array.isArray(cs.poolTags) ? cs.poolTags : null,
 					fallbackTag: cs.fallbackTag || null,
 					priority: typeof cs.priority === 'number' ? cs.priority : 50,
 					honorificPerson: !!cs.honorificPerson,
 					plainPerson: !!cs.plainPerson,
 					generalObject: !!cs.generalObject,
-					incompatibleTags: Array.isArray(cs.incompatibleTags) ? cs.incompatibleTags : []
+					incompatibleTags: Array.isArray(cs.incompatibleTags) ? cs.incompatibleTags : [],
+					allow: Array.isArray(cs.allow) ? new Set(cs.allow) : null,
+					deny: Array.isArray(cs.deny) ? new Set(cs.deny) : null
 				});
 			}
 		}
 
-		if (pos === K.NOUN && (hasTag(unit, "position") || (sv && sv.domain === "position"))) {
+		if (pos === K.NOUN && (hasTag(unit, K.POSITION) || (sv && sv.domain === K.POSITION))) {
 			SPATIAL_POSITIONS.set(ko, {
 				unit,
 				ko,
 				en: unit[DATA_SCHEMA.English],
-				domain: sv?.domain || "position",
+				domain: sv?.domain || K.POSITION,
 				direction: sv?.direction || null
 			});
 		}
 
-		if (hasTag(unit, "deictic", "demonstrative") || (sv && (sv.proximity || sv.deictic_type))) {
-			const prox = sv?.proximity || (hasTag(unit, "proximal") ? "proximal" : hasTag(unit, "medial") ? "medial" : hasTag(unit, "distal") ? "distal" : hasTag(unit, "interrogative") ? "interrogative" : "proximal");
-			const deicticType = sv?.deictic_type || (pos === K.DETERMINER ? "determiner" : pos === K.PRONOUN && hasTag(unit, K.PLACE, "location") ? K.PLACE : pos === K.PRONOUN ? "thing" : hasTag(unit, "direction") ? "direction" : null);
+		if (hasTag(unit, "deictic", K.DEMONSTRATIVE) || (sv && (sv.proximity || sv.deictic_type))) {
+			const prox = sv?.proximity || (hasTag(unit, K.PROXIMAL) ? K.PROXIMAL : hasTag(unit, K.MEDIAL) ? K.MEDIAL : hasTag(unit, K.DISTAL) ? K.DISTAL : hasTag(unit, K.INTERROGATIVE) ? K.INTERROGATIVE : K.PROXIMAL);
+			const deicticType = sv?.deictic_type || (pos === K.DETERMINER ? "determiner" : pos === K.PRONOUN && hasTag(unit, K.PLACE, K.LOCATION) ? K.PLACE : pos === K.PRONOUN ? "thing" : hasTag(unit, K.DIRECTION) ? K.DIRECTION : null);
 
 			if (pos === K.DETERMINER || deicticType === "determiner") {
 				DEICTIC_DETERMINERS.set(ko, { unit, ko, proximity: prox, type: "determiner" });
-			} else if (deicticType === "thing" || (pos === K.PRONOUN && !hasTag(unit, K.PLACE, "location") && (hasTag(unit, "thing", K.OBJECT) || sv?.domain === K.OBJECT))) {
+			} else if (deicticType === "thing" || (pos === K.PRONOUN && !hasTag(unit, K.PLACE, K.LOCATION) && (hasTag(unit, "thing", K.OBJECT) || sv?.domain === K.OBJECT))) {
 				DEICTIC_PRONOUNS.set(ko, { unit, ko, proximity: prox, type: "thing", formality: unit[DATA_SCHEMA.FormalityLevel] });
-			} else if (deicticType === K.PLACE || (hasTag(unit, K.PLACE, "location") && (pos === K.PRONOUN || pos === K.NOUN))) {
+			} else if (deicticType === K.PLACE || (hasTag(unit, K.PLACE, K.LOCATION) && (pos === K.PRONOUN || pos === K.NOUN))) {
 				DEICTIC_LOCATIVES.set(ko, { unit, ko, proximity: prox, type: K.PLACE });
-			} else if (deicticType === "direction" || hasTag(unit, "direction")) {
-				DEICTIC_DIRECTIONS.set(ko, { unit, ko, proximity: prox, type: "direction" });
+			} else if (deicticType === K.DIRECTION || hasTag(unit, K.DIRECTION)) {
+				DEICTIC_DIRECTIONS.set(ko, { unit, ko, proximity: prox, type: K.DIRECTION });
 			}
 		}
 
 		if (pos === K.POS_GRAMMAR) {
-			if (sv?.mood === "imperative" || hasTag(unit, "imperative", "prohibition")) {
+			if (sv?.mood === K.IMPERATIVE || hasTag(unit, K.IMPERATIVE, K.PROHIBITION)) {
 				IMPERATIVE_GRAMMAR_IDS.add(unitId);
 			}
-			if (sv?.mood === "propositive" || hasTag(unit, "propositive", "suggestion")) {
+			if (sv?.mood === K.PROPOSITIVE || hasTag(unit, K.PROPOSITIVE, "suggestion")) {
 				PROPOSITIVE_GRAMMAR_IDS.add(unitId);
 			}
-			if (sv?.negation_type === "inability" || hasTag(unit, "inability")) {
+			if (sv?.negation_type === K.INABILITY || hasTag(unit, K.INABILITY)) {
 				INABILITY_NEGATION_IDS.add(unitId);
 			}
-			if (sv?.negation_type === "long_general" || (hasTag(unit, "negative") && !hasTag(unit, "inability"))) {
+			if (sv?.negation_type === "long_general" || (hasTag(unit, K.NEGATIVE) && !hasTag(unit, K.INABILITY))) {
 				GENERAL_NEGATION_IDS.add(unitId);
 			}
 			if (sv?.mood === "volitional" || hasTag(unit, "volitional", "desire")) {
@@ -591,11 +606,11 @@ function initSemanticSets(dm = dataModule) {
 		}
 
 		if (pos === K.POS_ADVERB) {
-			if (sv?.negation_type === "short_inability" || hasTag(unit, "inability")) {
+			if (sv?.negation_type === "short_inability" || hasTag(unit, K.INABILITY)) {
 				SHORT_INABILITY_WORDS.add(ko);
 				SHORT_NEGATION_WORDS.add(ko);
 			}
-			if (sv?.negation_type === "short_general" || (hasTag(unit, "negative") && !hasTag(unit, "inability"))) {
+			if (sv?.negation_type === "short_general" || (hasTag(unit, K.NEGATIVE) && !hasTag(unit, K.INABILITY))) {
 				SHORT_GENERAL_WORDS.add(ko);
 				SHORT_NEGATION_WORDS.add(ko);
 			}
@@ -612,14 +627,25 @@ function initSemanticSets(dm = dataModule) {
 		}
 
 		if (pos === K.POS_ADVERB || pos === "Conjunction") {
+			if (sv && sv.adverb_concord) {
+				const ac = sv.adverb_concord;
+				ADVERB_CONCORD_SPECS.set(ko, {
+					...ac,
+					allowVerbsSet: Array.isArray(ac.allowVerbs) ? new Set(ac.allowVerbs) : null,
+					denyVerbsSet: Array.isArray(ac.denyVerbs) ? new Set(ac.denyVerbs) : null,
+					allowAffirmativeVerbsSet: Array.isArray(ac.allowAffirmativeVerbs) ? new Set(ac.allowAffirmativeVerbs) : null,
+					denyAffirmativeVerbsSet: Array.isArray(ac.denyAffirmativeVerbs) ? new Set(ac.denyAffirmativeVerbs) : null,
+					dvAllowAffirmativeSet: Array.isArray(ac.dvAllowAffirmative) ? new Set(ac.dvAllowAffirmative) : null
+				});
+			}
 			const isDiscourse = sv?.adverb_type === K.DISCOURSE || pos === "Conjunction" || hasTag(unit, "adverb_discourse", K.DISCOURSE, "conjunction");
 			const isNPI = sv?.npi || sv?.polarity_requirement === -1 || hasTag(unit, "negative_polarity", "npi");
 			let isDegree = sv?.adverb_type === K.DEGREE;
-			let isManner = sv?.adverb_type === "manner";
+			let isManner = sv?.adverb_type === K.MANNER;
 
 			if (!isDegree && !isManner && !isDiscourse) {
 				if (hasTag(unit, "adverb_degree", K.DEGREE)) isDegree = true;
-				else if (hasTag(unit, "adverb_manner", "manner")) isManner = true;
+				else if (hasTag(unit, K.ADVERB_MANNER, K.MANNER)) isManner = true;
 			}
 
 			if (isDiscourse) {
@@ -644,9 +670,12 @@ function initSemanticSets(dm = dataModule) {
 			MOTION_VERBS.add(ko);
 			MOTION_VERB_STEMS.add(getStem(ko));
 		}
+		if ((pos === K.ACTION_VERB || pos === K.DESCRIPTIVE_VERB) && hasTag(unit, "inchoative")) {
+			INCHOATIVE_VERBS.add(ko);
+		}
 
-		if (pos === "Connective" || pos === K.POS_GRAMMAR || hasTag(unit, "connective", "conjunction", "clausal_connective", "reason", "cause", "purpose", "condition", "contrast", "simultaneous")) {
-			const isConnective = hasTag(unit, "connective", "conjunction", "clausal_connective") ||
+		if (pos === "Connective" || pos === K.POS_GRAMMAR || hasTag(unit, K.CONNECTIVE, "conjunction", K.CLAUSAL_CONNECTIVE, "reason", "cause", "purpose", "condition", "contrast", "simultaneous")) {
+			const isConnective = hasTag(unit, K.CONNECTIVE, "conjunction", K.CLAUSAL_CONNECTIVE) ||
 				pos === "Connective" ||
 				(pos === K.POS_GRAMMAR && (hasTag(unit, "reason", "cause", "purpose", "condition", "contrast", "simultaneous") || sv?.clause1_tense_allowed !== undefined || sv?.clause2_moods_allowed !== undefined));
 
@@ -656,7 +685,7 @@ function initSemanticSets(dm = dataModule) {
 					ko,
 					id: unit[DATA_SCHEMA.Id],
 					clause1_tense_allowed: sv?.clause1_tense_allowed !== undefined ? sv.clause1_tense_allowed : true,
-					clause2_moods_allowed: sv?.clause2_moods_allowed || ["declarative", "interrogative", "imperative", "propositive", "suggestive"],
+					clause2_moods_allowed: sv?.clause2_moods_allowed || [K.DECLARATIVE, K.INTERROGATIVE, K.IMPERATIVE, K.PROPOSITIVE, "suggestive"],
 					clause1_pos: sv?.clause1_pos || [K.ACTION_VERB, K.DESCRIPTIVE_VERB],
 					same_subject: sv?.same_subject || false,
 					outcome_polarity: sv?.outcome_polarity !== undefined ? sv.outcome_polarity : 0,
@@ -892,6 +921,7 @@ const stateExports = {
 	HONORIFIC_WORDS,
 	HUMBLE_WORDS,
 	FORBIDDEN_PLAIN_WORDS_FOR_ELDERS,
+	FIRST_SECOND_PERSON_FORMS,
 	PAST_TIME_WORDS,
 	FUTURE_TIME_WORDS,
 	PRESENT_TIME_WORDS,
@@ -930,6 +960,8 @@ const stateExports = {
 	NEGATIVE_POLARITY_ADVERBS,
 	ALL_NPI_WORDS,
 	AFFIRMATIVE_DEGREE_ADVERBS,
+	ADVERB_CONCORD_SPECS,
+	INCHOATIVE_VERBS,
 	CLAUSAL_CONNECTIVES,
 	CAUSAL_CONNECTIVES,
 	CONTRAST_CONNECTIVES,

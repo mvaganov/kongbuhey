@@ -91,19 +91,19 @@ function getGrammarRegistry() {
 	const findG = (predicate) => grammars.find(g => g && predicate(g)) || null;
 
 	const particles = {
-		topic: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "topic") && !hasTag(g, K.HONORIFIC)),
-		topic_honorific: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "topic") && hasTag(g, K.HONORIFIC)),
-		subject: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "subject") && !hasTag(g, K.HONORIFIC)),
-		subject_honorific: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "subject") && hasTag(g, K.HONORIFIC) && !hasTag(g, "topic")),
+		topic: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, K.TOPIC) && !hasTag(g, K.HONORIFIC)),
+		topic_honorific: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, K.TOPIC) && hasTag(g, K.HONORIFIC)),
+		subject: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, K.SUBJECT) && !hasTag(g, K.HONORIFIC)),
+		subject_honorific: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, K.SUBJECT) && hasTag(g, K.HONORIFIC) && !hasTag(g, K.TOPIC)),
 		object: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, K.OBJECT)),
-		location_static: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "location")),
+		location_static: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, K.LOCATION)),
 		location_dynamic: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "location_action")),
-		direction: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "direction")),
+		direction: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, K.DIRECTION)),
 		direction_ro: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "directional")),
 		instrumental: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "instrumental")),
 		time: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, K.TIME) && !hasTag(g, "starting_point") && !hasTag(g, "duration")),
-		dative: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "dative") && !hasTag(g, K.HONORIFIC)),
-		dative_honorific: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "dative") && hasTag(g, K.HONORIFIC)),
+		dative: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, K.DATIVE) && !hasTag(g, K.HONORIFIC)),
+		dative_honorific: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, K.DATIVE) && hasTag(g, K.HONORIFIC)),
 		comitative: findG(g => hasTag(g, K.PARTICLE) && (hasTag(g, "comitative") || g[DATA_SCHEMA.Korean].includes("와 / 과") || g[DATA_SCHEMA.Korean].includes("(이)랑"))),
 		possessive: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "possessive")),
 		also: findG(g => hasTag(g, K.PARTICLE) && hasTag(g, "also")),
@@ -115,36 +115,36 @@ function getGrammarRegistry() {
 	};
 
 	const endings = {
-		polite_present: findG(g => hasTag(g, "verbal_ending") && hasTag(g, "present") && !hasTag(g, K.HONORIFIC) && g[DATA_SCHEMA.Korean].includes("아요")),
-		formal_present: findG(g => hasTag(g, "verbal_ending") && hasTag(g, "present") && g[DATA_SCHEMA.Korean].includes("습니다")),
-		polite_past: findG(g => hasTag(g, "past") && g[DATA_SCHEMA.Korean].includes("았/었어요")),
-		formal_past: findG(g => hasTag(g, "past") && g[DATA_SCHEMA.Korean].includes("았/었습니다")),
-		polite_future: findG(g => hasTag(g, "future") && g[DATA_SCHEMA.Korean].includes("거예요")),
-		polite_imperative: findG(g => hasTag(g, "imperative") && g[DATA_SCHEMA.Korean].includes("세요") && !hasTag(g, "prohibition")),
-		formal_imperative: findG(g => hasTag(g, "imperative") && g[DATA_SCHEMA.Korean].includes("십시오") && !hasTag(g, "prohibition")),
-		plain_imperative: findG(g => hasTag(g, "imperative") && hasTag(g, "plain_style")),
-		polite_prohibitive: findG(g => hasTag(g, "prohibition") && g[DATA_SCHEMA.Korean].includes("마세요")),
-		formal_prohibitive: findG(g => hasTag(g, "prohibition") && g[DATA_SCHEMA.Korean].includes("마십시오")),
-		plain_prohibitive: findG(g => hasTag(g, "prohibition") && hasTag(g, "informal")),
-		plain_propositive: findG(g => hasTag(g, "propositive") && g[DATA_SCHEMA.Korean].includes("자")),
-		formal_propositive: findG(g => hasTag(g, "propositive") && g[DATA_SCHEMA.Korean].includes("ㅂ시다")),
+		polite_present: findG(g => hasTag(g, "verbal_ending") && hasTag(g, K.PRESENT) && !hasTag(g, K.HONORIFIC) && g[DATA_SCHEMA.Korean].includes("아요")),
+		formal_present: findG(g => hasTag(g, "verbal_ending") && hasTag(g, K.PRESENT) && g[DATA_SCHEMA.Korean].includes("습니다")),
+		polite_past: findG(g => hasTag(g, K.PAST) && g[DATA_SCHEMA.Korean].includes("았/었어요")),
+		formal_past: findG(g => hasTag(g, K.PAST) && g[DATA_SCHEMA.Korean].includes("았/었습니다")),
+		polite_future: findG(g => hasTag(g, K.FUTURE) && g[DATA_SCHEMA.Korean].includes("거예요")),
+		polite_imperative: findG(g => hasTag(g, K.IMPERATIVE) && g[DATA_SCHEMA.Korean].includes("세요") && !hasTag(g, K.PROHIBITION)),
+		formal_imperative: findG(g => hasTag(g, K.IMPERATIVE) && g[DATA_SCHEMA.Korean].includes("십시오") && !hasTag(g, K.PROHIBITION)),
+		plain_imperative: findG(g => hasTag(g, K.IMPERATIVE) && hasTag(g, "plain_style")),
+		polite_prohibitive: findG(g => hasTag(g, K.PROHIBITION) && g[DATA_SCHEMA.Korean].includes("마세요")),
+		formal_prohibitive: findG(g => hasTag(g, K.PROHIBITION) && g[DATA_SCHEMA.Korean].includes("마십시오")),
+		plain_prohibitive: findG(g => hasTag(g, K.PROHIBITION) && hasTag(g, K.INFORMAL)),
+		plain_propositive: findG(g => hasTag(g, K.PROPOSITIVE) && g[DATA_SCHEMA.Korean].includes("자")),
+		formal_propositive: findG(g => hasTag(g, K.PROPOSITIVE) && g[DATA_SCHEMA.Korean].includes("ㅂ시다")),
 		polite_suggestion: findG(g => hasTag(g, "suggestion") && g[DATA_SCHEMA.Korean].includes("까요")),
 		plain_declarative: findG(g => hasTag(g, "plain_style") && g[DATA_SCHEMA.Korean].includes("ㄴ다")),
-		intimate_declarative: findG(g => hasTag(g, "informal") && g[DATA_SCHEMA.Korean].includes("-아/어")),
-		formal_interrogative: findG(g => hasTag(g, "interrogative") && g[DATA_SCHEMA.Korean].includes("습니까")),
-		polite_interrogative_na: findG(g => hasTag(g, "interrogative") && g[DATA_SCHEMA.Korean].includes("나요")),
+		intimate_declarative: findG(g => hasTag(g, K.INFORMAL) && g[DATA_SCHEMA.Korean].includes("-아/어")),
+		formal_interrogative: findG(g => hasTag(g, K.INTERROGATIVE) && g[DATA_SCHEMA.Korean].includes("습니까")),
+		polite_interrogative_na: findG(g => hasTag(g, K.INTERROGATIVE) && g[DATA_SCHEMA.Korean].includes("나요")),
 		honorific_infix: findG(g => hasTag(g, K.HONORIFIC) && g[DATA_SCHEMA.Korean].includes("시"))
 	};
 
 	const modals = {
 		desire: findG(g => hasTag(g, "desire") && g[DATA_SCHEMA.Korean].includes("고 싶다")),
 		ability: findG(g => hasTag(g, "ability") && g[DATA_SCHEMA.Korean].includes("수 있다")),
-		inability: findG(g => hasTag(g, "inability") && g[DATA_SCHEMA.Korean].includes("수 없다")),
-		inability_mot: findG(g => hasTag(g, "inability") && g[DATA_SCHEMA.Korean].includes("못")),
+		inability: findG(g => hasTag(g, K.INABILITY) && g[DATA_SCHEMA.Korean].includes("수 없다")),
+		inability_mot: findG(g => hasTag(g, K.INABILITY) && g[DATA_SCHEMA.Korean].includes("못")),
 		long_negation: findG(g => hasTag(g, "long_negation") && g[DATA_SCHEMA.Korean].includes("지 않다")),
 		obligation: findG(g => hasTag(g, "obligation") && g[DATA_SCHEMA.Korean].includes("야 하다")),
 		permission: findG(g => hasTag(g, "permission") && g[DATA_SCHEMA.Korean].includes("도 되다")),
-		prohibition: findG(g => hasTag(g, "prohibition") && g[DATA_SCHEMA.Korean].includes("면 안 되다")),
+		prohibition: findG(g => hasTag(g, K.PROHIBITION) && g[DATA_SCHEMA.Korean].includes("면 안 되다")),
 		progressive: findG(g => hasTag(g, "progressive") && g[DATA_SCHEMA.Korean].includes("고 있다")),
 		try_attempt: findG(g => hasTag(g, "attempt") && g[DATA_SCHEMA.Korean].includes("보다")),
 		experience: findG(g => hasTag(g, "experience") && g[DATA_SCHEMA.Korean].includes("적이 있다")),
@@ -159,17 +159,17 @@ function getGrammarRegistry() {
 	};
 
 	const connectives = {
-		causal_aseo: findG(g => hasTag(g, "clausal_connective") && g[DATA_SCHEMA.Korean].includes("아/어서")),
-		causal_nikka: findG(g => hasTag(g, "clausal_connective") && g[DATA_SCHEMA.Korean].includes("니까")),
-		causal_ttaemune: findG(g => hasTag(g, "clausal_connective") && g[DATA_SCHEMA.Korean].includes("기 때문에")),
-		conjunction_go: findG(g => hasTag(g, "clausal_connective") && g[DATA_SCHEMA.Korean] === "~고"),
-		contrast_jiman: findG(g => hasTag(g, "clausal_connective") && g[DATA_SCHEMA.Korean].includes("지만")),
-		condition_myeon: findG(g => hasTag(g, "clausal_connective") && g[DATA_SCHEMA.Korean].includes("면") && !g[DATA_SCHEMA.Korean].includes("면서")),
-		background_neunde: findG(g => hasTag(g, "clausal_connective") && g[DATA_SCHEMA.Korean].includes("는데")),
-		simultaneous_myeonseo: findG(g => hasTag(g, "clausal_connective") && g[DATA_SCHEMA.Korean].includes("면서")),
-		purpose_ryeogo: findG(g => hasTag(g, "clausal_connective") && g[DATA_SCHEMA.Korean].includes("려고")),
-		purpose_reo: findG(g => hasTag(g, "clausal_connective") && g[DATA_SCHEMA.Korean].includes("러 가다")),
-		immediate_jamaja: findG(g => hasTag(g, "clausal_connective") && g[DATA_SCHEMA.Korean].includes("자마자"))
+		causal_aseo: findG(g => hasTag(g, K.CLAUSAL_CONNECTIVE) && g[DATA_SCHEMA.Korean].includes("아/어서")),
+		causal_nikka: findG(g => hasTag(g, K.CLAUSAL_CONNECTIVE) && g[DATA_SCHEMA.Korean].includes("니까")),
+		causal_ttaemune: findG(g => hasTag(g, K.CLAUSAL_CONNECTIVE) && g[DATA_SCHEMA.Korean].includes("기 때문에")),
+		conjunction_go: findG(g => hasTag(g, K.CLAUSAL_CONNECTIVE) && g[DATA_SCHEMA.Korean] === "~고"),
+		contrast_jiman: findG(g => hasTag(g, K.CLAUSAL_CONNECTIVE) && g[DATA_SCHEMA.Korean].includes("지만")),
+		condition_myeon: findG(g => hasTag(g, K.CLAUSAL_CONNECTIVE) && g[DATA_SCHEMA.Korean].includes("면") && !g[DATA_SCHEMA.Korean].includes("면서")),
+		background_neunde: findG(g => hasTag(g, K.CLAUSAL_CONNECTIVE) && g[DATA_SCHEMA.Korean].includes("는데")),
+		simultaneous_myeonseo: findG(g => hasTag(g, K.CLAUSAL_CONNECTIVE) && g[DATA_SCHEMA.Korean].includes("면서")),
+		purpose_ryeogo: findG(g => hasTag(g, K.CLAUSAL_CONNECTIVE) && g[DATA_SCHEMA.Korean].includes("려고")),
+		purpose_reo: findG(g => hasTag(g, K.CLAUSAL_CONNECTIVE) && g[DATA_SCHEMA.Korean].includes("러 가다")),
+		immediate_jamaja: findG(g => hasTag(g, K.CLAUSAL_CONNECTIVE) && g[DATA_SCHEMA.Korean].includes("자마자"))
 	};
 
 	cachedGrammarRegistry = { particles, endings, modals, copulas, connectives };
@@ -186,22 +186,22 @@ function resolveParticleUnit(particleType, nounUnit = null, options = {}) {
 	const isElder = options.honorific === true || (nounUnit && isElderNoun(nounUnit));
 
 	switch (particleType) {
-		case "topic":
+		case K.TOPIC:
 			return (isElder && options.useHonorificTopic && reg.topic_honorific) ? reg.topic_honorific : reg.topic;
-		case "subject":
+		case K.SUBJECT:
 		case "nominative":
 			return (isElder && reg.subject_honorific) ? reg.subject_honorific : reg.subject;
 		case K.OBJECT:
 		case "accusative":
 		case "obj":
 			return reg.object;
-		case "location":
+		case K.LOCATION:
 		case "location_static":
 			return reg.location_static;
 		case "location_origin":
 		case "location_dynamic":
 			return reg.location_dynamic;
-		case "direction":
+		case K.DIRECTION:
 			return reg.direction;
 		case "direction_ro":
 			return reg.direction_ro || reg.direction;
@@ -211,8 +211,8 @@ function resolveParticleUnit(particleType, nounUnit = null, options = {}) {
 		case K.TIME:
 		case "temporal":
 			return reg.time || reg.location_static;
-		case "dative":
-		case "dative_person":
+		case K.DATIVE:
+		case K.DATIVE_PERSON:
 			return (isElder || options.dativeType === K.HONORIFIC) ? (reg.dative_honorific || reg.dative) : reg.dative;
 		case "comitative":
 		case "companion":
@@ -247,17 +247,17 @@ function resolveEndingUnit(predSpec) {
 	const reg = getGrammarRegistry();
 	const {
 		predType = K.ACTION,
-		tense = "present",
+		tense = K.PRESENT,
 		politeness = "polite",
-		speechAct = "declarative",
-		polarity = "affirmative",
+		speechAct = K.DECLARATIVE,
+		polarity = K.AFFIRMATIVE,
 		negationType = null,
 		modality = null
 	} = predSpec;
 
-	if (predType === "copula") {
-		if (polarity === "negative") return reg.copulas.negative || reg.copulas.polite;
-		if (politeness === "formal_high") return reg.copulas.formal || reg.copulas.polite;
+	if (predType === K.COPULA) {
+		if (polarity === K.NEGATIVE) return reg.copulas.negative || reg.copulas.polite;
+		if (politeness === K.FORMAL_HIGH) return reg.copulas.formal || reg.copulas.polite;
 		if (politeness === "plain" || politeness === "intimate") return reg.copulas.plain || reg.copulas.polite;
 		return reg.copulas.polite;
 	}
@@ -266,36 +266,36 @@ function resolveEndingUnit(predSpec) {
 		return reg.modals[modality];
 	}
 
-	if (polarity === "negative") {
+	if (polarity === K.NEGATIVE) {
 		if (negationType === "long_ji_anta") return reg.modals.long_negation;
 		if (negationType === "inability_su_eopda") return reg.modals.inability;
 		if (negationType === "long_ji_mothada" || negationType === "short_mot") return reg.modals.inability_mot;
 	}
 
-	if (speechAct === "imperative") {
-		if (polarity === "negative") {
-			return politeness === "formal_high" ? reg.endings.formal_prohibitive : reg.endings.polite_prohibitive;
+	if (speechAct === K.IMPERATIVE) {
+		if (polarity === K.NEGATIVE) {
+			return politeness === K.FORMAL_HIGH ? reg.endings.formal_prohibitive : reg.endings.polite_prohibitive;
 		}
-		if (politeness === "formal_high") return reg.endings.formal_imperative;
+		if (politeness === K.FORMAL_HIGH) return reg.endings.formal_imperative;
 		if (politeness === "plain") return reg.endings.plain_imperative;
 		return reg.endings.polite_imperative;
 	}
 
-	if (speechAct === "propositive") {
-		if (politeness === "formal_high") return reg.endings.formal_propositive;
+	if (speechAct === K.PROPOSITIVE) {
+		if (politeness === K.FORMAL_HIGH) return reg.endings.formal_propositive;
 		if (politeness === "polite") return reg.endings.polite_suggestion || reg.endings.formal_propositive;
 		return reg.endings.plain_propositive;
 	}
 
-	if (tense === "past") {
-		return politeness === "formal_high" ? reg.endings.formal_past : reg.endings.polite_past;
+	if (tense === K.PAST) {
+		return politeness === K.FORMAL_HIGH ? reg.endings.formal_past : reg.endings.polite_past;
 	}
-	if (tense === "future") {
+	if (tense === K.FUTURE) {
 		return reg.endings.polite_future;
 	}
 
-	if (politeness === "formal_high") {
-		return speechAct === "interrogative" ? (reg.endings.formal_interrogative || reg.endings.formal_present) : reg.endings.formal_present;
+	if (politeness === K.FORMAL_HIGH) {
+		return speechAct === K.INTERROGATIVE ? (reg.endings.formal_interrogative || reg.endings.formal_present) : reg.endings.formal_present;
 	}
 	if (politeness === "plain") {
 		return reg.endings.plain_declarative;
@@ -374,7 +374,7 @@ function splitNounAndParticleSegments(surfaceKo, nounUnit, particleUnit, role) {
  * Splits a single conjugated predicate word (e.g. "공부했어요", "먹습니다", "추워요", "학생이에요")
  * into [stemSegment, endingSegment] at the exact Hangul syllable boundary.
  */
-function splitSingleVerbWordSegments(wordKo, headUnit, endingUnit, role = "predicate") {
+function splitSingleVerbWordSegments(wordKo, headUnit, endingUnit, role = K.PREDICATE) {
 	if (!endingUnit || !headUnit) {
 		return [makeSegment(wordKo, headUnit || endingUnit, headUnit ? "lexical" : K.GRAMMAR, role)];
 	}
@@ -486,7 +486,7 @@ function buildConstituentEojeols(constituent, surfaceKo) {
 			const lastSegs = splitNounAndParticleSegments(lastWord, counterUnit, particleUnit, role);
 			eojeols.push({
 				surfaceKo: lastWord,
-				role: "counter",
+				role: K.COUNTER,
 				headUnitId: counterUnit[DATA_SCHEMA.Id],
 				particleUnitId: particleUnit ? particleUnit[DATA_SCHEMA.Id] : null,
 				unitIds: lastSegs.map(s => s.unitId).filter(id => id !== null),
@@ -594,7 +594,7 @@ function buildPredicateEojeols(predNode, surfaceKo) {
 	const words = surfaceKo.trim().split(/\s+/).filter(Boolean);
 	if (words.length === 0) return [];
 
-	const headUnit = predNode.predType === "copula"
+	const headUnit = predNode.predType === K.COPULA
 		? (predNode.copulaNounUnit || predNode.verbUnit || null)
 		: (predNode.verbUnit || predNode.copulaNounUnit || null);
 	const endingUnit = predNode.endingUnit || predNode.connectiveUnit || predNode.grammarUnit || null;
@@ -602,10 +602,10 @@ function buildPredicateEojeols(predNode, surfaceKo) {
 
 	// Single-word predicate (e.g., "공부했어요", "예뻐요", "학생이에요", "공부해서")
 	if (words.length === 1) {
-		const segs = splitSingleVerbWordSegments(words[0], headUnit, endingUnit, "predicate");
+		const segs = splitSingleVerbWordSegments(words[0], headUnit, endingUnit, K.PREDICATE);
 		return [{
 			surfaceKo: words[0],
-			role: "predicate",
+			role: K.PREDICATE,
 			headUnitId: headUnit ? headUnit[DATA_SCHEMA.Id] : null,
 			particleUnitId: null,
 			grammarUnitId: endingUnit ? endingUnit[DATA_SCHEMA.Id] : null,
@@ -642,10 +642,10 @@ function buildPredicateEojeols(predNode, surfaceKo) {
 					segments: [makeSegment(w, headUnit, "lexical", K.OBJECT)]
 				});
 			} else if (i === negIdx + 1) {
-				const verbSegs = splitSingleVerbWordSegments(w, headUnit, endingUnit, "predicate");
+				const verbSegs = splitSingleVerbWordSegments(w, headUnit, endingUnit, K.PREDICATE);
 				eojeols.push({
 					surfaceKo: w,
-					role: "predicate",
+					role: K.PREDICATE,
 					headUnitId: headUnit ? headUnit[DATA_SCHEMA.Id] : null,
 					particleUnitId: null,
 					grammarUnitId: endingUnit ? endingUnit[DATA_SCHEMA.Id] : null,
@@ -670,10 +670,10 @@ function buildPredicateEojeols(predNode, surfaceKo) {
 
 	// Case B: Auxiliary / Periphrastic construction (e.g. "공부하고 싶어요", "먹을 거예요", "먹지 않아요", "갈 수 있어요")
 	// First word contains the main verb stem + linker, subsequent word(s) belong to the grammar/ending unit.
-	const firstWordSegs = splitSingleVerbWordSegments(words[0], headUnit, endingUnit, "predicate");
+	const firstWordSegs = splitSingleVerbWordSegments(words[0], headUnit, endingUnit, K.PREDICATE);
 	const eojeols = [{
 		surfaceKo: words[0],
-		role: "predicate",
+		role: K.PREDICATE,
 		headUnitId: headUnit ? headUnit[DATA_SCHEMA.Id] : null,
 		particleUnitId: null,
 		grammarUnitId: endingUnit ? endingUnit[DATA_SCHEMA.Id] : null,
@@ -744,7 +744,7 @@ function realizeConstituentKo(constituent, clauseContext = {}) {
 		const baseWithParticle = particleType
 			? attachParticle(primaryUnit, particleType, clauseContext.verbUnit, {
 				...clauseContext,
-				topic: particleType === "topic"
+				topic: particleType === K.TOPIC
 			})
 			: primaryUnit[DATA_SCHEMA.Korean];
 		if (constituent.modifierSurfaceKo) {
@@ -796,7 +796,7 @@ function realizePredicateKo(predNode, clauseContext = {}) {
 	}
 
 	// Apply negative verb suppletion (e.g. 있다 -> 없다, 알다 -> 모르다, 약속이 있다 -> 약속이 없다)
-	if (activeVerbUnit && predNode.polarity === "negative") {
+	if (activeVerbUnit && predNode.polarity === K.NEGATIVE) {
 		const vKo = activeVerbUnit[DATA_SCHEMA.Korean];
 		let suppKo = (state && state.NEGATION_SUPPLETIONS && state.NEGATION_SUPPLETIONS.get(vKo)) || null;
 		if (!suppKo) {
@@ -809,7 +809,7 @@ function realizePredicateKo(predNode, clauseContext = {}) {
 			if (suppUnit) {
 				activeVerbUnit = suppUnit;
 				predNode.verbUnit = suppUnit;
-				predNode.polarity = "affirmative"; // Suppletive lexical verb already inherently carries negation
+				predNode.polarity = K.AFFIRMATIVE; // Suppletive lexical verb already inherently carries negation
 			}
 		}
 	}
@@ -823,14 +823,14 @@ function realizePredicateKo(predNode, clauseContext = {}) {
 	} else if (predNode.connectiveSuffix && activeVerbUnit) {
 		const stem = getConjugatedStem(activeVerbUnit[DATA_SCHEMA.Korean], activeVerbUnit[DATA_SCHEMA.Conjugation]);
 		surfaceKo = resolvePureMorphology(stem + predNode.connectiveSuffix, state);
-	} else if (predNode.predType === "copula" && predNode.copulaNounUnit) {
+	} else if (predNode.predType === K.COPULA && predNode.copulaNounUnit) {
 		const nounKo = predNode.copulaNounUnit[DATA_SCHEMA.Korean];
 		const hasB = hasBatchim(nounKo.slice(-1));
-		if (predNode.polarity === "negative") {
-			surfaceKo = `${nounKo}${hasB ? "이" : "가"} ${predNode.politeness === "formal_high" ? "아닙니다" : "아니에요"}`;
-		} else if (predNode.tense === "past") {
+		if (predNode.polarity === K.NEGATIVE) {
+			surfaceKo = `${nounKo}${hasB ? "이" : "가"} ${predNode.politeness === K.FORMAL_HIGH ? "아닙니다" : "아니에요"}`;
+		} else if (predNode.tense === K.PAST) {
 			surfaceKo = `${nounKo}${hasB ? "이었어요" : "였어요"}`;
-		} else if (predNode.politeness === "formal_high") {
+		} else if (predNode.politeness === K.FORMAL_HIGH) {
 			surfaceKo = `${nounKo}입니다`;
 		} else if (predNode.politeness === "plain" || predNode.politeness === "intimate") {
 			surfaceKo = `${nounKo}${hasB ? "이야" : "야"}`;
@@ -839,10 +839,10 @@ function realizePredicateKo(predNode, clauseContext = {}) {
 		}
 	} else if (activeVerbUnit) {
 		const politeness = predNode.politeness || "polite";
-		const tense = predNode.tense || "present";
-		const polarity = predNode.polarity || "affirmative";
+		const tense = predNode.tense || K.PRESENT;
+		const polarity = predNode.polarity || K.AFFIRMATIVE;
 		const modality = predNode.modality || null;
-		const speechAct = predNode.speechAct || "declarative";
+		const speechAct = predNode.speechAct || K.DECLARATIVE;
 		const stem = getConjugatedStem(activeVerbUnit[DATA_SCHEMA.Korean], activeVerbUnit[DATA_SCHEMA.Conjugation]);
 
 		if (modality === "desire") {
@@ -851,42 +851,42 @@ function realizePredicateKo(predNode, clauseContext = {}) {
 				person: clauseContext.person || (clauseContext.isThirdPerson ? 3 : 1)
 			});
 		} else if (modality === "ability") {
-			const end = politeness === "formal_high" ? "수 있습니다" : politeness === "plain" ? "수 있다" : "수 있어요";
+			const end = politeness === K.FORMAL_HIGH ? "수 있습니다" : politeness === "plain" ? "수 있다" : "수 있어요";
 			surfaceKo = resolvePureMorphology(`${stem}으/ㄹ ${end}`, state);
-		} else if (modality === "inability" || predNode.negationType === "inability_su_eopda") {
-			const end = politeness === "formal_high" ? "수 없습니다" : politeness === "plain" ? "수 없다" : "수 없어요";
+		} else if (modality === K.INABILITY || predNode.negationType === "inability_su_eopda") {
+			const end = politeness === K.FORMAL_HIGH ? "수 없습니다" : politeness === "plain" ? "수 없다" : "수 없어요";
 			surfaceKo = resolvePureMorphology(`${stem}으/ㄹ ${end}`, state);
 		} else if (modality === "obligation") {
-			const end = politeness === "formal_high" ? "야 합니다" : politeness === "plain" ? "야 한다" : "야 해요";
+			const end = politeness === K.FORMAL_HIGH ? "야 합니다" : politeness === "plain" ? "야 한다" : "야 해요";
 			surfaceKo = resolvePureMorphology(`${stem}아/어${end}`, state);
 		} else if (modality === "permission") {
-			const end = politeness === "formal_high" ? "도 됩니다" : politeness === "plain" ? "도 된다" : "도 돼요";
+			const end = politeness === K.FORMAL_HIGH ? "도 됩니다" : politeness === "plain" ? "도 된다" : "도 돼요";
 			surfaceKo = resolvePureMorphology(`${stem}아/어${end}`, state);
-		} else if (modality === "prohibition") {
-			const end = politeness === "formal_high" ? "면 안 됩니다" : politeness === "plain" ? "면 안 된다" : "면 안 돼요";
+		} else if (modality === K.PROHIBITION) {
+			const end = politeness === K.FORMAL_HIGH ? "면 안 됩니다" : politeness === "plain" ? "면 안 된다" : "면 안 돼요";
 			surfaceKo = resolvePureMorphology(`${stem}으/${end}`, state);
 		} else if (modality === "progressive") {
 			const rawStem = getStem(activeVerbUnit[DATA_SCHEMA.Korean]);
-			const end = politeness === "formal_high" ? "고 있습니다" : politeness === "plain" ? "고 있다" : "고 있어요";
+			const end = politeness === K.FORMAL_HIGH ? "고 있습니다" : politeness === "plain" ? "고 있다" : "고 있어요";
 			surfaceKo = `${rawStem}${end}`;
 		} else if (modality === "try_attempt") {
-			const end = tense === "past" ? "봤어요" : (politeness === "formal_high" ? "봅니다" : "봐요");
+			const end = tense === K.PAST ? "봤어요" : (politeness === K.FORMAL_HIGH ? "봅니다" : "봐요");
 			surfaceKo = resolvePureMorphology(`${stem}아/어 ${end}`, state);
 		} else if (modality === "experience") {
-			const end = politeness === "formal_high" ? "적이 있습니다" : "적이 있어요";
+			const end = politeness === K.FORMAL_HIGH ? "적이 있습니다" : "적이 있어요";
 			surfaceKo = resolvePureMorphology(`${stem}으/ㄴ ${end}`, state);
 		} else if (modality === "promise") {
 			surfaceKo = resolvePureMorphology(`${stem}으/ㄹ게요`, state);
-		} else if (speechAct === "imperative") {
+		} else if (speechAct === K.IMPERATIVE) {
 			surfaceKo = buildMoodPredicate(
 				activeVerbUnit,
-				polarity === "negative" ? "prohibition" : "imperative",
+				polarity === K.NEGATIVE ? K.PROHIBITION : K.IMPERATIVE,
 				politeness,
 				{ tense }
 			);
-		} else if (speechAct === "propositive") {
-			surfaceKo = buildMoodPredicate(activeVerbUnit, "propositive", politeness, { tense });
-		} else if (polarity === "negative" && !state.FORBIDDEN_NEGATIVE_ROOTS.has(activeVerbUnit[DATA_SCHEMA.Korean]) && !["없다", "아니다", "모르다"].includes(activeVerbUnit[DATA_SCHEMA.Korean])) {
+		} else if (speechAct === K.PROPOSITIVE) {
+			surfaceKo = buildMoodPredicate(activeVerbUnit, K.PROPOSITIVE, politeness, { tense });
+		} else if (polarity === K.NEGATIVE && !state.FORBIDDEN_NEGATIVE_ROOTS.has(activeVerbUnit[DATA_SCHEMA.Korean]) && !state.AFFIRMATIVE_COUNTERPARTS.has(activeVerbUnit[DATA_SCHEMA.Korean])) {
 			const isLong = predNode.negationType === "long_ji_anta" || predNode.negationType === "long_ji_mothada";
 			const isInability = predNode.negationType === "long_ji_mothada" || predNode.negationType === "short_mot";
 			surfaceKo = buildNegatedPredicate(activeVerbUnit, {
@@ -898,14 +898,14 @@ function realizePredicateKo(predNode, clauseContext = {}) {
 		} else {
 			const isLexicalHon = state.HONORIFIC_WORDS.has(activeVerbUnit[DATA_SCHEMA.Korean]) && activeVerbUnit[DATA_SCHEMA.Korean].includes("시");
 			if (isElderSubj && !isLexicalHon && !state.HUMBLE_WORDS.has(activeVerbUnit[DATA_SCHEMA.Korean])) {
-				if (tense === "future") {
+				if (tense === K.FUTURE) {
 					const honStem = resolvePureMorphology(`${stem}으/시`, state);
-					const futEnd = politeness === "formal_high" ? "겁니다" : politeness === "plain" ? "거야" : "거예요";
+					const futEnd = politeness === K.FORMAL_HIGH ? "겁니다" : politeness === "plain" ? "거야" : "거예요";
 					surfaceKo = resolvePureMorphology(`${honStem}으/ㄹ ${futEnd}`, state);
 				} else {
-					const honEnding = tense === "past"
-						? (politeness === "formal_high" ? "으/셨습니다" : "으/셨어요")
-						: (politeness === "formal_high" ? "으/십니다" : "으/세요");
+					const honEnding = tense === K.PAST
+						? (politeness === K.FORMAL_HIGH ? "으/셨습니다" : "으/셨어요")
+						: (politeness === K.FORMAL_HIGH ? "으/십니다" : "으/세요");
 					surfaceKo = resolvePureMorphology(stem + honEnding, state);
 				}
 			} else {
@@ -915,7 +915,7 @@ function realizePredicateKo(predNode, clauseContext = {}) {
 	}
 
 	if (/[?]$/.test(surfaceKo)) {
-		predNode.speechAct = "interrogative";
+		predNode.speechAct = K.INTERROGATIVE;
 	}
 	const cleanPredKo = surfaceKo.replace(/[.?!~]+$/, '');
 	predNode.surfaceKo = cleanPredKo;
@@ -957,24 +957,24 @@ function realizeKoreanFromAST(ast) {
 
 		for (const con of constituents) {
 			const u = con.nounUnit || con.unit;
-			if ((con.role === "subject" || con.role === "topic") && u) {
+			if ((con.role === K.SUBJECT || con.role === K.TOPIC) && u) {
 				const word = u[DATA_SCHEMA.Korean] || "";
-				if (!subjKo || con.role === "topic") {
+				if (!subjKo || con.role === K.TOPIC) {
 					subjKo = word;
 				}
-				if (["나", "내", "저", "제", "우리", "저희", "너", "네", "당신", "자네", "너희", "여러분"].includes(word)) {
+				if (state.FIRST_SECOND_PERSON_FORMS && state.FIRST_SECOND_PERSON_FORMS.has(word)) {
 					hasFirstSecondSubj = true;
 				}
 				if (isElderNoun(u)) {
 					isElderSubj = true;
 				}
 			}
-			if (con.role === "recipient" && u && isElderNoun(u)) {
+			if (con.role === K.RECIPIENT && u && isElderNoun(u)) {
 				isElderRecip = true;
 			}
 		}
 
-		const isFirstOrSecond = hasFirstSecondSubj || ["나", "내", "저", "제", "우리", "저희", "너", "네", "당신", "자네", "너희", "여러분"].includes(subjKo);
+		const isFirstOrSecond = hasFirstSecondSubj || Boolean(state.FIRST_SECOND_PERSON_FORMS && state.FIRST_SECOND_PERSON_FORMS.has(subjKo));
 		const isThirdPerson = !subjKo || !isFirstOrSecond;
 
 		// If subject is elder and object is a plain noun with an honorific counterpart (e.g. 밥 -> 진지), upgrade it
@@ -1023,8 +1023,8 @@ function realizeKoreanFromAST(ast) {
 	let resolvedKo = applyMorphology(rawJoined).trim();
 
 	// Add terminal punctuation if not already present
-	const speechAct = ast.speechAct || "declarative";
-	const punct = speechAct === "interrogative" ? "?" : (speechAct === "exclamatory" ? "!" : ".");
+	const speechAct = ast.speechAct || K.DECLARATIVE;
+	const punct = speechAct === K.INTERROGATIVE ? "?" : (speechAct === "exclamatory" ? "!" : ".");
 	const koWithPunct = /[.?~]$/.test(resolvedKo) ? resolvedKo : (resolvedKo ? resolvedKo + punct : "");
 
 	// Realize Dual English Translations (Literal SOV + Natural SVO) and annotate eojeols/segments

@@ -377,7 +377,7 @@ function matchPlainCopula(word, index, DATA_SCHEMA, hasBatchimFn) {
 		const copulaUnit = unitById.get(56);
 		return {
 			surface: word,
-			category: "noun_copula",
+			category: K.NOUN_COPULA,
 			lexical: {
 				text: copulaStem,
 				pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : K.NOUN,

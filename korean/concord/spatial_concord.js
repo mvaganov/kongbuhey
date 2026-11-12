@@ -43,7 +43,7 @@ function getDeicticDemonstratives(options = {}) {
 	if (!filterType || filterType === "determiner") mapsToSearch.push(state.DEICTIC_DETERMINERS);
 	if (!filterType || filterType === "thing" || filterType === "pronoun") mapsToSearch.push(state.DEICTIC_PRONOUNS);
 	if (!filterType || filterType === K.PLACE || filterType === "locative") mapsToSearch.push(state.DEICTIC_LOCATIVES);
-	if (!filterType || filterType === "direction") mapsToSearch.push(state.DEICTIC_DIRECTIONS);
+	if (!filterType || filterType === K.DIRECTION) mapsToSearch.push(state.DEICTIC_DIRECTIONS);
 
 	for (const m of mapsToSearch) {
 		for (const [ko, entry] of m.entries()) {
@@ -60,7 +60,7 @@ function isStaticExistenceVerb(verbOrKo) {
 	if (state.STATIC_EXISTENCE_VERBS.has(ko)) return true;
 	const unit = getVerbUnit(verbOrKo);
 	if (unit) {
-		if (hasTag(unit, "static", "existence", "residence", "locative_static")) return true;
+		if (hasTag(unit, "static", "existence", "residence", K.LOCATIVE_STATIC)) return true;
 		const sv = parseSemanticVector(unit);
 		if (sv && sv.locative === "static") return true;
 	}
@@ -109,7 +109,7 @@ function buildSpatialPhrase(referenceNounOrPosition, positionOrOptions = null, m
 	let particle = options.particle;
 	if (!particle) {
 		if (options.verb) {
-			particle = "location";
+			particle = K.LOCATION;
 		} else {
 			particle = "location_static";
 		}
@@ -123,10 +123,10 @@ function buildSpatialPhrase(referenceNounOrPosition, positionOrOptions = null, m
 	return refPart ? `${refPart} ${attachedPos}` : attachedPos;
 }
 
-function buildDeicticPhrase(proximity = "proximal", targetType = "noun", options = {}) {
+function buildDeicticPhrase(proximity = K.PROXIMAL, targetType = "noun", options = {}) {
 	if (targetType === "noun" || options.noun) {
 		const determinerEntry = Array.from(state.DEICTIC_DETERMINERS.values()).find(d => d.proximity === proximity);
-		const detKo = determinerEntry ? determinerEntry.ko : (proximity === "medial" ? "그" : proximity === "distal" ? "저" : "이");
+		const detKo = determinerEntry ? determinerEntry.ko : (proximity === K.MEDIAL ? "그" : proximity === K.DISTAL ? "저" : "이");
 		const nounKo = typeof options.noun === 'string' ? options.noun : (options.noun ? options.noun[DATA_SCHEMA.Korean] : (typeof targetType === 'string' && targetType !== "noun" ? targetType : "책"));
 		if (options.particle) {
 			return `${detKo} ` + attachParticle(nounKo, options.particle, options.verb, options);
@@ -138,7 +138,7 @@ function buildDeicticPhrase(proximity = "proximal", targetType = "noun", options
 		const candidates = Array.from(state.DEICTIC_PRONOUNS.values()).filter(p => p.proximity === proximity);
 		const colloquial = options.colloquial === true;
 		const entry = candidates.find(c => colloquial ? (c.formality === "informal_low" || c.ko.endsWith("거")) : !c.ko.endsWith("거")) || candidates[0];
-		const baseKo = entry ? entry.ko : (proximity === "medial" ? "그것" : proximity === "distal" ? "저것" : "이것");
+		const baseKo = entry ? entry.ko : (proximity === K.MEDIAL ? "그것" : proximity === K.DISTAL ? "저것" : "이것");
 		if (options.particle) {
 			return applyMorphology(attachParticle(baseKo, options.particle, options.verb, options));
 		}
@@ -149,17 +149,17 @@ function buildDeicticPhrase(proximity = "proximal", targetType = "noun", options
 		const formal = options.formal === true;
 		const candidates = Array.from(state.DEICTIC_LOCATIVES.values()).filter(l => l.proximity === proximity);
 		const entry = candidates.find(c => formal ? c.ko.endsWith("곳") : !c.ko.endsWith("곳")) || candidates[0];
-		const baseKo = entry ? entry.ko : (proximity === "medial" ? "거기" : proximity === "distal" ? "저기" : "여기");
+		const baseKo = entry ? entry.ko : (proximity === K.MEDIAL ? "거기" : proximity === K.DISTAL ? "저기" : "여기");
 		if (options.particle) {
 			return attachParticle(baseKo, options.particle, options.verb, options);
 		}
 		return baseKo;
 	}
 
-	if (targetType === "direction") {
+	if (targetType === K.DIRECTION) {
 		const candidates = Array.from(state.DEICTIC_DIRECTIONS.values()).filter(d => d.proximity === proximity);
 		const entry = candidates[0];
-		const baseKo = entry ? entry.ko : (proximity === "medial" ? "그쪽" : proximity === "distal" ? "저쪽" : "이쪽");
+		const baseKo = entry ? entry.ko : (proximity === K.MEDIAL ? "그쪽" : proximity === K.DISTAL ? "저쪽" : "이쪽");
 		if (options.particle) {
 			return attachParticle(baseKo, options.particle, options.verb, options);
 		}

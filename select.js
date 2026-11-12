@@ -62,6 +62,14 @@ KEY LLM WORKFLOW PATTERNS:
   Insert batch:  node select.js INSERT FROMFILE new_units.json --source class2012 --dry-run
   Inspect tag:   node select.js "SELECT Id, Korean WHERE SemanticTags CONTAINS 'food' LIMIT 10"
   Query JSON:    node select.js "SELECT Id, Korean, sd.domain, sd.polarity WHERE sd.domain = 'age'"
+
+LEGACY WORKFLOW PATTERNS
+  Find next ID:  node select.js "SELECT Id ORDER BY Id DESC LIMIT 1"
+  Count rows:    node select.js "COUNT WHERE Source = 'class2012'"
+  Query to TSV:  node select.js "SELECT Id, Korean, English WHERE Source = 'SUOBI01'"
+  Export subset: node select.js "SELECT Id, Korean, SemanticData WHERE Id < 50" > output.txt
+  Update back:   node select.js UPDATE Korean, SemanticData FROMFILE output.txt
+  Insert batch:  node select.js INSERT FROMFILE new_units.json --source class2012 --dry-run
 `);
 }
 
@@ -414,9 +422,9 @@ function detectUndifferentiatedHomonym(unit, schemaCols = SCHEMA_COLUMNS) {
 	// 1. Cross-Domain Conflations in Tags
 	const hasWeather = tags.includes(K.WEATHER) || (sv && sv.domain === K.WEATHER);
 	const hasWearable = tags.includes(K.WEARABLE) || tags.includes(K.CLOTHING) || tags.includes('footwear') || tags.includes('handwear') || (sv && sv.domain === K.CLOTHING);
-	const hasFood = tags.includes(K.FOOD) || tags.includes('drink') || tags.includes('cooking') || (sv && sv.domain === K.FOOD);
-	const hasTransport = tags.includes(K.TRANSPORTATION) || tags.includes('vehicle') || (sv && sv.domain === K.TRANSPORTATION);
-	const hasSports = tags.includes('sports') || selTags.includes('transitive_sports');
+	const hasFood = tags.includes(K.FOOD) || tags.includes(K.DRINK) || tags.includes('cooking') || (sv && sv.domain === K.FOOD);
+	const hasTransport = tags.includes(K.TRANSPORTATION) || tags.includes(K.VEHICLE) || (sv && sv.domain === K.TRANSPORTATION);
+	const hasSports = tags.includes(K.SPORTS) || selTags.includes('transitive_sports');
 	const hasInstrument = tags.includes('instrument') || tags.includes('music') || selTags.includes('transitive_instrument');
 	const hasPostal = tags.includes('postal') || (sv && sv.domain === 'postal');
 	const hasTheater = tags.includes('theater') || tags.includes('acting');
@@ -454,13 +462,13 @@ function detectUndifferentiatedHomonym(unit, schemaCols = SCHEMA_COLUMNS) {
 	// 3. Mutually exclusive specific selection tags
 	const specificTrans = selTags.filter(t =>
 		t.includes('neckwear') || t.includes('handwear') || t.includes('footwear') ||
-		t.includes('headwear') || t.includes('watch') || t.includes('sports') ||
+		t.includes('headwear') || t.includes('watch') || t.includes(K.SPORTS) ||
 		t.includes('instrument')
 	);
 	if (specificTrans.length > 1) {
 		const hasTwoIncompatible = (
 			(specificTrans.includes('transitive_sports') && specificTrans.includes('transitive_instrument')) ||
-			(specificTrans.some(t => t.includes('wear') || t.includes('watch')) && specificTrans.some(t => t.includes('sports') || t.includes('instrument')))
+			(specificTrans.some(t => t.includes('wear') || t.includes('watch')) && specificTrans.some(t => t.includes(K.SPORTS) || t.includes('instrument')))
 		);
 		if (hasTwoIncompatible) {
 			issues.push(`Multiple mutually incompatible specific selection tags: ${specificTrans.join(' vs ')}`);

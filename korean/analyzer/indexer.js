@@ -185,10 +185,10 @@ function getIndex(languageUnits) {
 				vocabByKo.get(stem).push(u);
 
 				// Dynamically classify motion vs stative verb stems from semantic tags
-				if (tags.has('locative_goal') || tags.has('locative_origin') || tags.has('intransitive_motion') || tags.has('movement')) {
+				if (tags.has(K.LOCATIVE_GOAL) || tags.has(K.LOCATIVE_ORIGIN) || tags.has(K.INTRANSITIVE_MOTION) || tags.has('movement')) {
 					motionVerbStems.add(stem);
 				}
-				if (pos === K.DESCRIPTIVE_VERB || tags.has('stative') || tags.has('existence') || tags.has('locative_static')) {
+				if (pos === K.DESCRIPTIVE_VERB || tags.has('stative') || tags.has('existence') || tags.has(K.LOCATIVE_STATIC)) {
 					stativeVerbStems.add(stem);
 				}
 

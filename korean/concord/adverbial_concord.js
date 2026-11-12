@@ -23,7 +23,7 @@ if (typeof require !== 'undefined') {
 }
 
 const state = (typeof require !== 'undefined' ? require('../state.js') : window);
-const { DATA_SCHEMA } = (typeof require !== 'undefined' ? require('../core/primitives.js') : window);
+const { DATA_SCHEMA, hasTag } = (typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 const { ERROR_CODES } = (typeof require !== 'undefined' ? require('../constants/error_codes.js') : window);
 const { isDescriptiveVerb, isActionVerb } = (typeof require !== 'undefined' ? require('../core/morphology.js') : window);
 
@@ -85,69 +85,29 @@ function canAdverbPrecede(adverbOrKo, verbOrKo, options = {}) {
 		if (!isNeg) return false;
 	}
 
-	if (advKo === "거의" && (isPureDV || isDescriptiveVerb(verbOrKo)) && !options.isNegative && !["없다", "모르다", "비슷하다", "같다"].includes(vKo)) {
-		return false;
-	}
-	if ((advKo === "특히" || advKo === "특별히") && ["춥다", "덥다", "따뜻하다", "시원하다", "쌀쌀하다", "흐리다", "맑다", "있다", "없다", "시끄럽다", "조용하다", "복잡하다", "고맙다", "감사하다", "미안하다", "죄송하다", "서명하다", "출발하다", "도착하다", "피곤하다", "아프다", "바쁘다", "한가하다", "졸리다"].includes(vKo)) {
-		return false;
-	}
-	if ((advKo === "좀" || advKo === "조금" || advKo === "꽤" || advKo === "점점" || advKo === "특별히" || advKo === "특히") && ["감사하다", "고맙다", "미안하다", "죄송하다"].includes(vKo)) {
-		return false;
-	}
-	if (advKo === "꽤" && (options.isNegative || options.negated || isNegativePredicate(vKo))) {
-		return false;
-	}
-	if (["모두", "다"].includes(advKo)) {
-		if (options.pluralSubject === false) return false;
-		if (["고맙다", "감사하다", "미안하다", "죄송하다", "반갑다", "아름답다", "예쁘다", "복잡하다", "시끄럽다", "조용하다", "나쁘다", "적다", "맑다", "흐리다", "덥다", "춥다"].includes(vKo)) {
-			return false;
+	const advSpec = state.ADVERB_CONCORD_SPECS && state.ADVERB_CONCORD_SPECS.get(advKo);
+	if (advSpec) {
+		const isNeg = Boolean(options.isNegative || options.negated || isNegativePredicate(vKo));
+		if (advSpec.forbidNegative && isNeg) return false;
+		if (advSpec.requirePluralSubject && options.pluralSubject === false) return false;
+		if (advSpec.requirePastTense && options.tense && options.tense !== K.PAST) return false;
+		if (advSpec.forbidPastTense && options.tense === K.PAST) return false;
+		if (advSpec.denyVerbsSet && advSpec.denyVerbsSet.has(vKo)) return false;
+		if (advSpec.allowVerbsSet && !advSpec.allowVerbsSet.has(vKo)) return false;
+		if (advSpec.dvAllowAffirmativeSet && (isPureDV || isDV) && !isNeg && !advSpec.dvAllowAffirmativeSet.has(vKo)) return false;
+		if (advSpec.allowAffirmativeVerbsSet && !isNeg && !advSpec.allowAffirmativeVerbsSet.has(vKo)) return false;
+		if (advSpec.denyAffirmativeVerbsSet && !isNeg && advSpec.denyAffirmativeVerbsSet.has(vKo)) return false;
+		if (advSpec.requireInchoative) {
+			const isInchoativeVerb = Boolean(
+				options.inchoative ||
+				vKo.endsWith("아지다") ||
+				vKo.endsWith("어지다") ||
+				vKo.endsWith("해지다") ||
+				(state.INCHOATIVE_VERBS && state.INCHOATIVE_VERBS.has(vKo)) ||
+				(Array.isArray(verbOrKo) && hasTag(verbOrKo, "inchoative"))
+			);
+			if (!isInchoativeVerb) return false;
 		}
-	}
-	if (advKo === "제일" && ["고맙다", "감사하다", "미안하다", "죄송하다", "반갑다", "아름답다", "예쁘다", "피곤하다", "졸리다", "배고프다", "목마르다"].includes(vKo)) {
-		return false;
-	}
-	if (advKo === "조금" && ["아름답다", "고맙다", "감사하다", "반갑다"].includes(vKo)) {
-		return false;
-	}
-	if (advKo === "멀리" && !["가다", "오다", "다니다", "가깝다", "멀다", "살다", "이사하다", "여행하다", "보이다", "보다", "들리다", "던지다", "떠나다", "출발하다", "뛰다", "걷다", "운전하다"].includes(vKo)) {
-		return false;
-	}
-	if (["매달", "매년", "매주"].includes(advKo) && !["가다", "오다", "다니다", "하다", "공부하다", "일하다", "운동하다", "여행하다", "청소하다", "만나다", "전화하다", "보내다", "내다", "받다", "읽다", "쓰다", "사다", "먹다", "모으다", "쉬다"].includes(vKo)) {
-		return false;
-	}
-	if (advKo === "아직" && !options.isNegative && !isNegativePredicate(vKo) && !["있다", "남다", "어리다", "모르다", "멀다", "부족하다", "많다", "적다", "크다", "작다", "남아있다", "살다", "일하다"].includes(vKo)) {
-		return false;
-	}
-	if (advKo === "완전" && ["외롭다", "불안하다", "슬프다", "기쁘다", "부끄럽다", "어렵다", "오래되다", "감사하다", "고맙다", "미안하다", "죄송하다", "유명하다", "중요하다", "편리하다", "불편하다", "빠르다", "느리다", "늦다", "크다", "작다", "높다", "낮다", "비싸다", "싸다", "많다", "적다", "같다", "비슷하다", "행복하다", "즐겁다", "만족하다", "우울하다", "반갑다", "복잡하다", "아름답다", "조용하다", "시끄럽다", "따뜻하다", "춥다", "덥다", "시원하다", "아프다", "피곤하다", "바쁘다", "한가하다", "친절하다"].includes(vKo)) {
-		return false;
-	}
-	if (advKo === "새로" && !["만들다", "시작하다", "사다", "구매하다", "주문하다", "배우다", "이사하다", "열다", "쓰다", "짓다", "정하다", "결정하다", "바꾸다", "고치다", "준비하다", "구하다", "나오다", "생기다", "들어가다", "입학하다", "출발하다", "가다", "오다"].includes(vKo)) {
-		return false;
-	}
-	if (advKo === "자세히" && !["보다", "읽다", "듣다", "설명하다", "말하다", "알아보다", "조사하다", "알려주다", "적다", "쓰다", "살펴보다", "이야기하다", "묻다", "물어보다"].includes(vKo)) {
-		return false;
-	}
-	if (advKo === "천천히" && ["받다", "주다", "얻다", "찾다", "만나다", "사다", "팔다", "켜다", "끄다", "열다", "닫다", "찍다", "시작하다", "끝나다", "도착하다", "출발하다", "떠나다", "죽다", "태어나다", "잃어버리다", "잊어버리다"].includes(vKo)) {
-		return false;
-	}
-	if (advKo === "푹" && !["자다", "쉬다", "주무시다", "삶다", "끓이다", "익히다", "잠들다"].includes(vKo)) {
-		return false;
-	}
-	if (advKo === "금방" && (options.tense === "past" || ["일하다", "아르바이트하다", "운전하다", "노래하다", "공부하다", "수영하다", "여행하다", "생활하다", "기다리다"].includes(vKo))) {
-		return false;
-	}
-	if (advKo === "오래" && !options.isNegative && !isNegativePredicate(vKo) && ["마시다", "먹다", "식사하다", "사다", "팔다", "주다", "받다", "넣다", "꺼내다", "버리다", "켜다", "끄다", "열다", "닫다", "찍다", "부치다", "출발하다", "도착하다", "일어나다", "타다", "내리다", "입다", "벗다", "신다", "씻다", "자르다", "서명하다"].includes(vKo)) {
-		return false;
-	}
-	if (advKo === "가끔" && ["그만두다", "결혼하다", "졸업하다", "입학하다", "태어나다", "죽다", "끝나다", "시작되다", "가보다", "전화가 오다"].includes(vKo)) {
-		return false;
-	}
-	if ((advKo === "방금" || advKo === "아까") && options.tense && options.tense !== "past") {
-		return false;
-	}
-	const isInchoativeVerb = options.inchoative || vKo.endsWith("아지다") || vKo.endsWith("어지다") || vKo.endsWith("해지다") || ["늘다", "줄다", "나아지다", "좋아지다", "나빠지다", "변하다", "커지다", "작아지다", "올라가다", "내려가다", "익숙해지다", "어려워지다", "쉬워지다", "자라다"].includes(vKo);
-	if (advKo === "점점" && !isInchoativeVerb) {
-		return false;
 	}
 
 	return true;

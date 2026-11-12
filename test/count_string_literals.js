@@ -914,8 +914,8 @@ function lintFile(filePath, registry, options = {}) {
 	const isDataFile = path.basename(fullPath).endsWith('data.js');
 
 	for (const token of tokens) {
-		// Skip JS typeof comparisons (e.g. typeof x === "object") and exempt tokens
-		if (token.isTypeofComparison || token.isExempt) continue;
+		// Skip JS typeof comparisons (e.g. typeof x === "object"), template literals, and exempt tokens
+		if (token.isTypeofComparison || token.isExempt || token.isTemplateChunk || token.quote === '`') continue;
 
 		// In data.js, exempt string literals inside SemanticData object payloads (braceDepth >= 1)
 		if (isDataFile && token.braceDepth >= 1) continue;

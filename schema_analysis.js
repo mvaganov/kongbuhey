@@ -396,7 +396,7 @@ function generateVerbSuffixSnippet(morph) {
 		PURPOSE: { text: "-(으)러", pos: "Verb Ending", id: 485, gloss: "in order to (ID 485)" },
 	};
 
-	let stemType = "stem_da";
+	let stemType = K.STEM_DA;
 	let suffix = "";
 	let baseVerbField = null;
 	const grammar = [];
@@ -411,12 +411,12 @@ function generateVerbSuffixSnippet(morph) {
 			if (surface.endsWith("습니다")) { suffix = surface.includes("랐") ? "랐습니다" : "렀습니다"; grammar.push(G.FORMAL_DEC); }
 			else if (surface.endsWith("어요")) { suffix = surface.includes("랐") ? "랐어요" : "렀어요"; grammar.push(G.POLITE_INF); }
 			else if (surface.endsWith("다")) { suffix = surface.includes("랐") ? "랐다" : "렀다"; grammar.push(G.FORMAL_DEC); }
-			else { suffix = surface; stemType = "fixed_base"; baseVerbField = baseVerb; }
+			else { suffix = surface; stemType = K.FIXED_BASE; baseVerbField = baseVerb; }
 		} else {
 			stemType = "stem_reu_present";
 			if (surface.endsWith("요")) { suffix = surface.includes("라") ? "라요" : "러요"; grammar.push(G.POLITE_INF); }
 			else if (surface.endsWith("서")) { suffix = surface.includes("라") ? "라서" : "려서"; grammar.push(G.CAUSE_SEQ); }
-			else { suffix = surface; stemType = "fixed_base"; baseVerbField = baseVerb; }
+			else { suffix = surface; stemType = K.FIXED_BASE; baseVerbField = baseVerb; }
 		}
 	} else if (isHada && (surface.includes("하") || surface.includes("해") || surface.includes("했"))) {
 		stemType = K.HADA;
@@ -448,12 +448,12 @@ function generateVerbSuffixSnippet(morph) {
 		const stem = baseVerb.replace(/다$/, '');
 		if (surface === stem) {
 			suffix = surface;
-			stemType = "fixed_base";
+			stemType = K.FIXED_BASE;
 			baseVerbField = baseVerb;
 			grammar.push({ text: "-아/어", pos: "Verb Ending", id: 459, gloss: "informal (ID 459)" });
 		} else if (surface.startsWith(stem)) {
 			suffix = surface.slice(stem.length);
-			stemType = "stem_da";
+			stemType = K.STEM_DA;
 
 			if (surface.includes("셨")) {
 				grammar.push(G.HONORIFIC);
@@ -480,7 +480,7 @@ function generateVerbSuffixSnippet(morph) {
 			else if (suffix.endsWith("지요") || suffix.endsWith("죠")) grammar.push(G.CONFIRMATION);
 		} else {
 			suffix = surface;
-			stemType = "fixed_base";
+			stemType = K.FIXED_BASE;
 			baseVerbField = baseVerb;
 
 			if (surface.includes("셨")) {
@@ -705,8 +705,8 @@ function scaffoldUnit(korean, source = "studytext", context = {}, summary = null
 		vector = { domain: context.isDescriptive ? "state" : K.ACTION };
 	} else if (context.isCounter || ["개월", "년", "월", "일", "시", "분", "명", "마리", "개", "번", "권", "장"].includes(word)) {
 		pos = K.NOUN;
-		tags = ["counter", context.isTime ? K.TIME : "measurement"];
-		vector = { domain: context.isTime ? K.TIME : "measurement", type: "counter" };
+		tags = [K.COUNTER, context.isTime ? K.TIME : "measurement"];
+		vector = { domain: context.isTime ? K.TIME : "measurement", type: K.COUNTER };
 		syntaxFrame = "{Number}\\s*_";
 	} else if (context.isTimeNoun || ["전", "후", "때", "날", "아침", "오후", "저녁", "밤", "새벽"].includes(word)) {
 		pos = K.NOUN;
@@ -890,6 +890,12 @@ function auditSemanticTaxonomy(dataPath = DEFAULT_DATA_PATH, options = {}) {
 				const matches = sd.collocation_filter.matchAll(/hasTag\(\s*[a-zA-Z0-9_]+\s*,\s*['"]([^'"]+)['"]\s*\)/g);
 				for (const m of matches) {
 					activeFilterTags.add(m[1]);
+				}
+			} else if (sd && sd.collocation_filter && typeof sd.collocation_filter === 'object') {
+				for (const key of ['anyTag', 'allTags', 'notTags']) {
+					if (Array.isArray(sd.collocation_filter[key])) {
+						sd.collocation_filter[key].forEach(t => activeFilterTags.add(t));
+					}
 				}
 			}
 		}

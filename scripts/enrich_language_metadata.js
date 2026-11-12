@@ -523,9 +523,9 @@ function buildNominalOrModifierEnglishMeta(unit, pos, rawEn) {
 	}
 
 	let count = 'c';
-	if (hasTag(unit, K.PROPER_NOUN, 'name', 'country', 'city')) {
+	if (hasTag(unit, K.PROPER_NOUN, 'name', K.COUNTRY, 'city')) {
 		count = 'p';
-	} else if (hasTag(unit, K.TIME, K.WEATHER, 'language', 'academic_subject', 'drink', 'liquid')) {
+	} else if (hasTag(unit, K.TIME, K.WEATHER, 'language', 'academic_subject', K.DRINK, 'liquid')) {
 		count = 'u';
 	} else if (hasTag(unit, K.FAMILY, 'kinship', 'kinship_elder')) {
 		count = 'k';

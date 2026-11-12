@@ -95,7 +95,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 		const copulaUnit = unitById.get(56);
 		return {
 			surface: word,
-			category: "noun_copula",
+			category: K.NOUN_COPULA,
 			lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : K.NOUN, unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")" },
 			grammar: [{ text: "입니다", pos: "Verb Ending", unit: copulaUnit, gloss: copulaUnit ? copulaUnit[DATA_SCHEMA.English] : "is/are (copula ID 56)" }]
 		};
@@ -112,7 +112,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			const copulaUnit = unitById.get(37);
 			return {
 				surface: word,
-				category: "noun_copula",
+				category: K.NOUN_COPULA,
 				lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : K.NOUN, unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")" },
 				grammar: [{ text: ending, pos: "Verb Ending", unit: copulaUnit, gloss: copulaUnit ? copulaUnit[DATA_SCHEMA.English] : "is/are (copula ID 37)" }]
 			};
@@ -130,7 +130,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 			const copulaUnit = unitById.get(1833);
 			return {
 				surface: word,
-				category: "noun_copula",
+				category: K.NOUN_COPULA,
 				lexical: { text: stem, pos: nUnit ? nUnit[DATA_SCHEMA.PartofSpeech] : K.NOUN, unit: nUnit, missing: !nUnit, gloss: nUnit ? nUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")" },
 				grammar: [{ text: ending, pos: "Verb Ending", unit: copulaUnit, gloss: copulaUnit ? copulaUnit[DATA_SCHEMA.English] : "is/are (plain copula ID 1833)" }]
 			};
@@ -292,7 +292,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 
 			return {
 				surface: word,
-				category: "exact_lexical",
+				category: K.EXACT_LEXICAL,
 				lexical: { text: chosen[DATA_SCHEMA.Korean], pos: chosen[DATA_SCHEMA.PartofSpeech], unit: chosen, gloss: chosen[DATA_SCHEMA.English] },
 				grammar: [],
 				disambiguation: disambigRes && nonVerbs.length > 1 ? {
@@ -350,7 +350,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 
 		return {
 			surface: word,
-			category: "numeric_phrase",
+			category: K.NUMERIC_PHRASE,
 			lexical: {
 				text: `${numVal}${counterText}`,
 				pos: "Number+Counter",
@@ -359,7 +359,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 					text: counterText,
 					unit: counterUnit,
 					missing: !counterUnit,
-					gloss: counterUnit ? counterUnit[DATA_SCHEMA.English] : "counter"
+					gloss: counterUnit ? counterUnit[DATA_SCHEMA.English] : K.COUNTER
 				}
 			},
 			grammar: gList
@@ -529,7 +529,7 @@ function analyzeSingleToken(rawWord, prevWord = "", nextWord = "", sentenceConte
 
 			return {
 				surface: word,
-				category: "noun_particle",
+				category: K.NOUN_PARTICLE,
 				lexical: { text: stem, pos: stemUnit ? stemUnit[DATA_SCHEMA.PartofSpeech] : K.NOUN, unit: stemUnit, missing: !stemUnit, gloss: stemUnit ? stemUnit[DATA_SCHEMA.English] : "candidate noun (" + stem + ")" },
 				grammar: grammarList,
 				disambiguation: finalDisambig

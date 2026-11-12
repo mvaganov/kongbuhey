@@ -11,8 +11,8 @@ const { K } = (typeof require !== 'undefined') ? require('../../constants.js') :
 const GRAMMAR_TAGS = Object.freeze({
 	// Clausal Connective Concord (Feature 11)
 	MOTION_CONCORD: "motion_concord",
-	CONNECTIVE: "connective",
-	CLAUSAL_CONNECTIVE: "clausal_connective",
+	CONNECTIVE: K.CONNECTIVE,
+	CLAUSAL_CONNECTIVE: K.CLAUSAL_CONNECTIVE,
 	CAUSE: "cause",
 	REASON: "reason",
 	CAUSAL: "causal",
@@ -26,35 +26,35 @@ const GRAMMAR_TAGS = Object.freeze({
 	DISCOURSE: K.DISCOURSE,
 	ADVERB_DEGREE: "adverb_degree",
 	DEGREE: K.DEGREE,
-	ADVERB_MANNER: "adverb_manner",
-	MANNER: "manner",
+	ADVERB_MANNER: K.ADVERB_MANNER,
+	MANNER: K.MANNER,
 	NEGATIVE_POLARITY: "negative_polarity",
 	NPI: "npi",
 
 	// Mood & Speech Acts (Feature 8)
-	IMPERATIVE: "imperative",
-	PROHIBITION: "prohibition",
-	PROPOSITIVE: "propositive",
+	IMPERATIVE: K.IMPERATIVE,
+	PROHIBITION: K.PROHIBITION,
+	PROPOSITIVE: K.PROPOSITIVE,
 	SUGGESTION: "suggestion",
-	INABILITY: "inability",
-	NEGATIVE: "negative",
+	INABILITY: K.INABILITY,
+	NEGATIVE: K.NEGATIVE,
 	VOLITIONAL: "volitional",
 	DESIRE: "desire",
 
 	// Spatial & Deictic (Feature 7)
-	POSITION: "position",
+	POSITION: K.POSITION,
 	DEICTIC: "deictic",
-	DEMONSTRATIVE: "demonstrative",
-	PROXIMAL: "proximal",
-	MEDIAL: "medial",
-	DISTAL: "distal",
-	DIRECTION: "direction",
-	LOCATION: "location",
+	DEMONSTRATIVE: K.DEMONSTRATIVE,
+	PROXIMAL: K.PROXIMAL,
+	MEDIAL: K.MEDIAL,
+	DISTAL: K.DISTAL,
+	DIRECTION: K.DIRECTION,
+	LOCATION: K.LOCATION,
 	PLACE: K.PLACE,
 
 	// Classifiers / Counters (Feature 6)
 	MEASURE_WORD: K.MEASUREWORD,
-	COUNTER: "counter",
+	COUNTER: K.COUNTER,
 	KOREAN_MEASURE_WORD: "koreanMeasureWord",
 	SINO_MEASURE_WORD: "sinoMeasureWord",
 
@@ -65,8 +65,8 @@ const GRAMMAR_TAGS = Object.freeze({
 	NO_TIME_PARTICLE: "no_time_particle",
 
 	// Honorific & Social Hierarchy
-	ELDER_NOUN: "elder_noun",
-	INANIMATE_INSTITUTION: "inanimate_institution",
+	ELDER_NOUN: K.ELDER_NOUN,
+	INANIMATE_INSTITUTION: K.INANIMATE_INSTITUTION,
 	HONORIFIC: K.HONORIFIC,
 	HUMBLE: "humble",
 	HONORIFIC_VERB: "honorificVerb",
@@ -75,9 +75,18 @@ const GRAMMAR_TAGS = Object.freeze({
 	DATIVE_HUMBLE: "dative_humble",
 
 	// Locative Sub-roles
-	LOCATIVE_ORIGIN: "locative_origin",
-	LOCATIVE_GOAL: "locative_goal",
-	LOCATIVE_STATIC: "locative_static"
+	LOCATIVE_ORIGIN: K.LOCATIVE_ORIGIN,
+	LOCATIVE_GOAL: K.LOCATIVE_GOAL,
+	LOCATIVE_STATIC: K.LOCATIVE_STATIC,
+
+	// Lexical Aspect & Concordance Classes
+	INCHOATIVE: "inchoative",
+	RESULTATIVE_PAST: "resultative_past",
+	PLACEMENT_TRANSITIVE: "placement_transitive",
+	INTERPERSONAL_ATTITUDE: "interpersonal_attitude",
+	SWAP_VERB: "swap_verb",
+	DEICTIC_COME: "deictic_come",
+	SENSORY_WEATHER_TASTE: "sensory_weather_taste"
 });
 
 /**
@@ -89,7 +98,7 @@ const GRAMMAR_TAGS = Object.freeze({
  */
 const CURRICULUM_TAXONOMY_TAGS = Object.freeze([
 	// Food & Dining
-	K.FOOD, "drink", "beverage", "cooking", "dish", "meal", "snack", "dessert", "fruit",
+	K.FOOD, K.DRINK, "beverage", "cooking", "dish", "meal", "snack", "dessert", "fruit",
 	"vegetable", "meat", "seafood", "fish", "grain", "soup", "sideDish", "condiment",
 	"flavor", "taste", "restaurant", "cafe", "bakery", "ingredient", "alcohol",
 
@@ -98,7 +107,7 @@ const CURRICULUM_TAXONOMY_TAGS = Object.freeze([
 	"jewelry", "bag", "fabric", "style", "fashion",
 
 	// Living, Home & Furniture
-	"home", "house", "furniture", "room", "kitchen", "bathroom", "bedroom", "appliance",
+	"home", "house", "furniture", K.ROOM, "kitchen", "bathroom", "bedroom", "appliance",
 	"tool", "bedding", "cleaning", "housework", "household", "living", "housing",
 
 	// Body, Health & Hygiene
@@ -107,7 +116,7 @@ const CURRICULUM_TAXONOMY_TAGS = Object.freeze([
 
 	// People, Family & Relationships
 	K.PERSON, "people", K.FAMILY, "kinship", "relationship", "friend", "parent", "child",
-	"sibling", "spouse", "occupation", "profession", "job", "worker", "role", "title",
+	"sibling", "spouse", "occupation", K.PROFESSION, "job", "worker", "role", "title",
 	"adult", "elder",
 
 	// Nature, Animals & Environment
@@ -119,22 +128,22 @@ const CURRICULUM_TAXONOMY_TAGS = Object.freeze([
 	"morning", "afternoon", "evening", "night", "dawn", "holiday", "duration",
 
 	// Travel, Spatial & Transportation
-	K.TRAVEL, "trip", "transport", K.TRANSPORTATION, "vehicle", "car", "bus", "train",
+	K.TRAVEL, "trip", "transport", K.TRANSPORTATION, K.VEHICLE, "car", "bus", "train",
 	"subway", "bicycle", "airplane", "ship", "station", "airport", "road", "street",
-	"traffic", "route", "direction", "distance",
+	"traffic", "route", K.DIRECTION, "distance",
 
 	// Education, Academic & Language
 	"education", K.ACADEMIC, "school", "university", "college", "student", "teacher",
-	"classroom", "study", "learning", "exam", "grade", "major", "subject", "language",
+	"classroom", "study", "learning", "exam", "grade", "major", K.SUBJECT, "language",
 	"linguistics", "reading", "writing", "book", "stationery",
 
 	// Culture, Arts & Entertainment
 	"culture", "art", "music", "song", "media", "film", "movie", "drama", "broadcast",
-	"literature", "entertainment", "recreation", "leisure", "hobby", "sports", "sport",
+	"literature", "entertainment", "recreation", "leisure", "hobby", K.SPORTS, "sport",
 	"game", "exercise", "tradition", "festival",
 
 	// Economy, Commerce & Shopping
-	"economy", K.COMMERCE, "finance", "money", "currency", "bank", "price", "cost",
+	"economy", K.COMMERCE, K.FINANCE, "money", "currency", "bank", "price", "cost",
 	"shopping", "market", "store", "product", "goods", "commodity", "business",
 
 	// Technology, Science & Devices
@@ -150,7 +159,7 @@ const CURRICULUM_TAXONOMY_TAGS = Object.freeze([
 	"cognition", "thought", "belief", "sensation", "sensory",
 
 	// Abstract & General Concepts
-	K.CONCEPT, K.ABSTRACT, K.GENERAL, K.ACTIVITY, "event", "schedule", "state", "status",
+	K.CONCEPT, K.ABSTRACT, K.GENERAL, K.ACTIVITY, K.EVENT, "schedule", "state", "status",
 	"situation", "condition", "attribute", "property", "measurement", "quantity", K.DEGREE
 ]);
 

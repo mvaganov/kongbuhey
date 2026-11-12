@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+var { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/dynamic_semantic_sets_test.js
  *
@@ -57,7 +60,7 @@ check("ELDER_NOUN_TITLES is populated dynamically from 'elder_noun' tag", () => 
 	for (const title of korean.ELDER_NOUN_TITLES) {
 		const unit = KR_EN_languageUnits.find(u => u[DATA_SCHEMA.Korean] === title);
 		assert.ok(unit, `Unit for ${title} must exist in data.js`);
-		assert.ok(hasTag(unit, 'elder_noun'), `${title} must have 'elder_noun' tag`);
+		assert.ok(hasTag(unit, K.ELDER_NOUN), `${title} must have 'elder_noun' tag`);
 	}
 });
 
@@ -74,7 +77,7 @@ check("INANIMATE_INSTITUTION_NAMES is populated dynamically from 'inanimate_inst
 	for (const name of korean.INANIMATE_INSTITUTION_NAMES) {
 		const unit = KR_EN_languageUnits.find(u => u[DATA_SCHEMA.Korean] === name);
 		assert.ok(unit, `Unit for ${name} must exist in data.js`);
-		assert.ok(hasTag(unit, 'inanimate_institution'), `${name} must have 'inanimate_institution' tag`);
+		assert.ok(hasTag(unit, K.INANIMATE_INSTITUTION), `${name} must have 'inanimate_institution' tag`);
 	}
 });
 

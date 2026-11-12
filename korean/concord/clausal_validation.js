@@ -56,32 +56,32 @@ function isClausalConnective(wordOrUnit) {
 const MOOD_SUFFIX_ENTRIES = [
 	{ suffix: "까요", mood: "suggestive", requiresRieul: true },
 	{ suffix: "래요", mood: "suggestive", requiresRieul: true },
-	{ suffix: "마십시오", mood: "imperative" },
-	{ suffix: "하십시오", mood: "imperative" },
-	{ suffix: "마세요", mood: "imperative" },
-	{ suffix: "마라", mood: "imperative" },
-	{ suffix: "십시오", mood: "imperative" },
-	{ suffix: "세요", mood: "imperative" },
-	{ suffix: "아라", mood: "imperative" },
-	{ suffix: "어라", mood: "imperative" },
-	{ suffix: "여라", mood: "imperative" },
-	{ suffix: "해라", mood: "imperative" },
-	{ suffix: "가라", mood: "imperative" },
-	{ suffix: "와라", mood: "imperative" },
-	{ suffix: "봐라", mood: "imperative" },
-	{ suffix: "자라", mood: "imperative" },
-	{ suffix: "읍시다", mood: "propositive" },
-	{ suffix: "시다", mood: "propositive", requiresBieup: true },
-	{ suffix: "자", mood: "propositive", excludeWords: ["남자", "여자", "모자", "의자", "탁자", "상자"] },
-	{ suffix: "는가", mood: "interrogative" },
-	{ suffix: "나요", mood: "interrogative" },
-	{ suffix: "가요", mood: "interrogative" },
-	{ suffix: "니", mood: "interrogative" },
-	{ suffix: "냐", mood: "interrogative" }
+	{ suffix: "마십시오", mood: K.IMPERATIVE },
+	{ suffix: "하십시오", mood: K.IMPERATIVE },
+	{ suffix: "마세요", mood: K.IMPERATIVE },
+	{ suffix: "마라", mood: K.IMPERATIVE },
+	{ suffix: "십시오", mood: K.IMPERATIVE },
+	{ suffix: "세요", mood: K.IMPERATIVE },
+	{ suffix: "아라", mood: K.IMPERATIVE },
+	{ suffix: "어라", mood: K.IMPERATIVE },
+	{ suffix: "여라", mood: K.IMPERATIVE },
+	{ suffix: "해라", mood: K.IMPERATIVE },
+	{ suffix: "가라", mood: K.IMPERATIVE },
+	{ suffix: "와라", mood: K.IMPERATIVE },
+	{ suffix: "봐라", mood: K.IMPERATIVE },
+	{ suffix: "자라", mood: K.IMPERATIVE },
+	{ suffix: "읍시다", mood: K.PROPOSITIVE },
+	{ suffix: "시다", mood: K.PROPOSITIVE, requiresBieup: true },
+	{ suffix: "자", mood: K.PROPOSITIVE, excludeWords: ["남자", "여자", "모자", "의자", "탁자", "상자"] },
+	{ suffix: "는가", mood: K.INTERROGATIVE },
+	{ suffix: "나요", mood: K.INTERROGATIVE },
+	{ suffix: "가요", mood: K.INTERROGATIVE },
+	{ suffix: "니", mood: K.INTERROGATIVE },
+	{ suffix: "냐", mood: K.INTERROGATIVE }
 ];
 
 function detectClauseMood(clause) {
-	if (!clause || typeof clause !== 'string') return "declarative";
+	if (!clause || typeof clause !== 'string') return K.DECLARATIVE;
 	const clean = clause.trim().replace(/[.!?,;~]+$/, "").trim();
 	const hasQuestionMark = clause.includes("?");
 
@@ -90,7 +90,7 @@ function detectClauseMood(clause) {
 			if (entry.excludeWords && entry.excludeWords.some(w => clean.endsWith(w))) {
 				continue;
 			}
-			if (entry.mood === "imperative" && (entry.suffix === "세요" || entry.suffix === "십시오")) {
+			if (entry.mood === K.IMPERATIVE && (entry.suffix === "세요" || entry.suffix === "십시오")) {
 				if (clean.includes("께서") || clean.includes("마음에 드")) {
 					continue;
 				}
@@ -122,14 +122,14 @@ function detectClauseMood(clause) {
 	}
 
 	if (hasQuestionMark) {
-		return "interrogative";
+		return K.INTERROGATIVE;
 	}
 
-	return "declarative";
+	return K.DECLARATIVE;
 }
 
 function detectClauseTense(clause) {
-	if (!clause || typeof clause !== 'string') return "present";
+	if (!clause || typeof clause !== 'string') return K.PRESENT;
 	const clean = clause.trim();
 
 	for (let i = 0; i < clean.length; i++) {
@@ -141,15 +141,15 @@ function detectClauseTense(clause) {
 				const nextCh = clean[i + 1];
 				if (nextCh) {
 					const nextD = decomposeHangul(nextCh);
-					if (nextD && nextD.final === 20) return "past";
+					if (nextD && nextD.final === 20) return K.PAST;
 				}
 				continue;
 			}
-			return "past";
+			return K.PAST;
 		}
 	}
 
-	return "present";
+	return K.PRESENT;
 }
 
 function isMotionPredicate(word) {
@@ -231,20 +231,20 @@ function canConnectiveJoin(clause1, connectiveTextOrId, clause2, options = {}) {
 	// 1. Clause 1 Tense Restriction
 	if (specs.clause1_tense_allowed === false) {
 		const t1 = detectClauseTense(c1Str);
-		if (t1 === "past") {
+		if (t1 === K.PAST) {
 			errors.push(`Connective '${connName}' does not permit past tense (-았/었/였-) in Clause 1: "${c1Str}"`);
 			errorCodes.push(ERROR_CODES.CLAUSE1_PAST_TENSE);
 		}
 	}
 
 	// 2. Clause 2 Mood Restriction
-	const allowedMoods = new Set(specs.clause2_moods_allowed || ["declarative", "interrogative", "imperative", "propositive", "suggestive"]);
+	const allowedMoods = new Set(specs.clause2_moods_allowed || [K.DECLARATIVE, K.INTERROGATIVE, K.IMPERATIVE, K.PROPOSITIVE, "suggestive"]);
 	const c2Mood = detectClauseMood(c2Str);
 	if (!allowedMoods.has(c2Mood)) {
-		if (c2Mood === "imperative") {
+		if (c2Mood === K.IMPERATIVE) {
 			errors.push(`Connective '${connName}' cannot be followed by an imperative clause: "${c2Str}"`);
 			errorCodes.push(ERROR_CODES.CLAUSE2_IMPERATIVE_MOOD);
-		} else if (c2Mood === "propositive") {
+		} else if (c2Mood === K.PROPOSITIVE) {
 			errors.push(`Connective '${connName}' cannot be followed by a propositive clause: "${c2Str}"`);
 			errorCodes.push(ERROR_CODES.CLAUSE2_PROPOSITIVE_MOOD);
 		} else if (c2Mood === "suggestive") {

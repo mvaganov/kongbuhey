@@ -69,11 +69,13 @@ const pronunciationSpecs = require('./korean/specs/pronunciation_rules.js');
 const filterEvaluator = require('./korean/utils/filter_evaluator.js');
 const lutSerializer = require('./korean/utils/lut_serializer.js');
 
-// 4. Concord Engines (Features 6 - 11)
+// 4. Concord Engines (Features 6 - 11 & Argument Concord)
 const classifierConcord = require('./korean/concord/classifier_concord.js');
 const spatialConcord = require('./korean/concord/spatial_concord.js');
 const moodConcord = require('./korean/concord/mood_concord.js');
 const adverbialConcord = require('./korean/concord/adverbial_concord.js');
+const argumentConcord = require('./korean/concord/argument_concord.js');
+const concordIndex = require('./korean/concord/index.js');
 const clausalValidation = require('./korean/concord/clausal_validation.js');
 const clausalGenerator = require('./korean/concord/clausal_generator.js');
 

@@ -183,25 +183,25 @@ check("index compiles and registers SyntaxFrame /*js:matcher*/ rules", () => {
 check("analyzeSentence parses auxiliary and bound noun patterns via SyntaxFrame matchers", () => {
 	// -(으)ㄹ 수 있다 (ID 522)
 	const s1 = analyzer.analyzeSentence("한국어를 배울 수 있습니다.");
-	const aux1 = s1.tokens.find(t => t.category === "auxiliary_construction");
+	const aux1 = s1.tokens.find(t => t.category === K.AUXILIARY_CONSTRUCTION);
 	assert.ok(aux1, "Must recognize auxiliary construction for -(으)ㄹ 수 있다");
 	assert.ok(aux1.surface.includes("배울 수 있습니다"));
 
 	// -(으)ㄴ 후에 (ID 710)
 	const s2 = analyzer.analyzeSentence("밥을 먹은 후에 운동을 합니다.");
-	const aux2 = s2.tokens.find(t => t.category === "auxiliary_construction");
+	const aux2 = s2.tokens.find(t => t.category === K.AUXILIARY_CONSTRUCTION);
 	assert.ok(aux2, "Must recognize auxiliary construction for -(으)ㄴ 후에");
 	assert.ok(aux2.surface.includes("먹은 후에"));
 
 	// -고 싶다 (ID 417)
 	const s3 = analyzer.analyzeSentence("한국에 가고 싶어요.");
-	const aux3 = s3.tokens.find(t => t.category === "auxiliary_construction");
+	const aux3 = s3.tokens.find(t => t.category === K.AUXILIARY_CONSTRUCTION);
 	assert.ok(aux3, "Must recognize auxiliary construction for -고 싶다");
 	assert.ok(aux3.surface.includes("가고 싶어요"));
 
 	// -지 않다 (ID 274)
 	const s4 = analyzer.analyzeSentence("맵지 않아요.");
-	const aux4 = s4.tokens.find(t => t.category === "auxiliary_construction");
+	const aux4 = s4.tokens.find(t => t.category === K.AUXILIARY_CONSTRUCTION);
 	assert.ok(aux4, "Must recognize auxiliary construction for -지 않다");
 	assert.ok(aux4.surface.includes("맵지 않아요"));
 });

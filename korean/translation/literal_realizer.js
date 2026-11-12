@@ -97,27 +97,27 @@ function getParticleLiteralTag(particleType, particleUnit = null, clauseContext 
 	if (!particleType && !particleUnit) return "";
 
 	const verbUnit = clauseContext.verbUnit || null;
-	const isMotionVerb = verbUnit && hasTag(verbUnit, "intransitive_motion", "locative_goal", "movement");
-	const isOriginVerb = verbUnit && hasTag(verbUnit, "locative_origin");
+	const isMotionVerb = verbUnit && hasTag(verbUnit, K.INTRANSITIVE_MOTION, K.LOCATIVE_GOAL, "movement");
+	const isOriginVerb = verbUnit && hasTag(verbUnit, K.LOCATIVE_ORIGIN);
 
 	switch (particleType) {
-		case "topic":
+		case K.TOPIC:
 			return "-[topic]";
 		case "topic_honorific":
 			return "-[topic:hon]";
-		case "subject":
+		case K.SUBJECT:
 		case "nominative":
 			return clauseContext.honorific ? "-[subj:hon]" : "-[subj]";
 		case K.OBJECT:
 		case "accusative":
 		case "obj":
 			return "-[obj]";
-		case "location":
+		case K.LOCATION:
 		case "location_static":
 			return isMotionVerb ? "-to" : "-at";
 		case "location_dynamic":
 			return isOriginVerb ? "-from" : "-at/in";
-		case "direction":
+		case K.DIRECTION:
 		case "direction_ro":
 			return "-to/toward";
 		case "instrumental":
@@ -126,8 +126,8 @@ function getParticleLiteralTag(particleType, particleUnit = null, clauseContext 
 		case K.TIME:
 		case "temporal":
 			return particleUnit ? "-at/on" : "";
-		case "dative":
-		case "dative_person":
+		case K.DATIVE:
+		case K.DATIVE_PERSON:
 			return clauseContext.recipientHonorific ? "-to[hon]" : "-to";
 		case "comitative":
 		case "companion":
@@ -199,21 +199,21 @@ function getGrammarEndingLiteralSuffix(predNode) {
 	const grammarUnit = predNode.grammarUnit || predNode.endingUnit || predNode.connectiveUnit || null;
 	const {
 		predType = K.ACTION,
-		tense = "present",
+		tense = K.PRESENT,
 		politeness = "polite",
-		speechAct = "declarative",
-		polarity = "affirmative",
+		speechAct = K.DECLARATIVE,
+		polarity = K.AFFIRMATIVE,
 		negationType = null,
 		modality = null,
 		connectiveSuffix = null
 	} = predNode;
 
-	if (predType === "copula") {
-		const isNegCopula = polarity === "negative"
+	if (predType === K.COPULA) {
+		const isNegCopula = polarity === K.NEGATIVE
 			|| (predNode.explicitSurfaceKo && predNode.explicitSurfaceKo.includes("아니"))
 			|| (grammarUnit && (grammarUnit[DATA_SCHEMA.Korean] || "").includes("아니"));
-		if (isNegCopula) return tense === "past" ? "-was/were-not" : "-not-be";
-		if (tense === "past") return "-was/were";
+		if (isNegCopula) return tense === K.PAST ? "-was/were-not" : "-not-be";
+		if (tense === K.PAST) return "-was/were";
 		return "-be";
 	}
 
@@ -258,7 +258,7 @@ function getGrammarEndingLiteralSuffix(predNode) {
 		if (gKo === "~고") return "-and";
 		if (gKo.includes("었다가")) return "-did-and-then";
 		if (gKo.includes("ㄹ게요")) return "-will[promise]";
-		if (gKo.includes("ㄹ까요")) return (predType === "descriptive" || predType === "copula") ? "-do-you-think?" : "-shall-we?";
+		if (gKo.includes("ㄹ까요")) return (predType === K.DESCRIPTIVE || predType === K.COPULA) ? "-do-you-think?" : "-shall-we?";
 		if (gKo.includes("ㄹ래요")) return "-would-you-like?";
 		if (gKo.includes("거예요")) return ["-future", "thing-be(will)"];
 		if (gKo.includes("겠다")) return "-will/must-be";
@@ -273,30 +273,30 @@ function getGrammarEndingLiteralSuffix(predNode) {
 
 	if (modality === "desire") return ["-to", "want"];
 	if (modality === "ability") return ["-can", "possible"];
-	if (modality === "inability") return ["-can", "not-possible"];
+	if (modality === K.INABILITY) return ["-can", "not-possible"];
 	if (modality === "obligation") return "-must";
 	if (modality === "permission") return ["-even-if", "okay"];
-	if (modality === "prohibition") return ["-if", "not-okay"];
+	if (modality === K.PROHIBITION) return ["-if", "not-okay"];
 	if (modality === "progressive") return ["-ing", "be"];
 	if (modality === "try_attempt") return ["", "try"];
 	if (modality === "experience") return ["-past", "experience-have"];
 	if (modality === "promise") return "-will[promise]";
 
-	if (speechAct === "imperative") {
-		return polarity === "negative" ? ["-not", "please-don't"] : "-please[imp]";
+	if (speechAct === K.IMPERATIVE) {
+		return polarity === K.NEGATIVE ? ["-not", "please-don't"] : "-please[imp]";
 	}
-	if (speechAct === "propositive") {
+	if (speechAct === K.PROPOSITIVE) {
 		return "-let's";
 	}
 
-	if (polarity === "negative") {
-		if (negationType === "long_ji_anta") return [tense === "past" ? "-not" : "-not", tense === "past" ? "did-not" : "do-not"];
-		if (negationType === "long_ji_mothada") return ["-cannot", tense === "past" ? "could-not" : "cannot"];
+	if (polarity === K.NEGATIVE) {
+		if (negationType === "long_ji_anta") return [tense === K.PAST ? "-not" : "-not", tense === K.PAST ? "did-not" : "do-not"];
+		if (negationType === "long_ji_mothada") return ["-cannot", tense === K.PAST ? "could-not" : "cannot"];
 	}
 
-	if (tense === "past") return "-past";
-	if (tense === "future") return ["-future", "will"];
-	if (politeness === "formal_high") return "-[formal]";
+	if (tense === K.PAST) return "-past";
+	if (tense === K.FUTURE) return ["-future", "will"];
+	if (politeness === K.FORMAL_HIGH) return "-[formal]";
 	return "";
 }
 
@@ -448,7 +448,7 @@ function annotateConstituentLiteral(constituent, clauseContext = {}) {
 function annotatePredicateLiteral(predNode) {
 	if (!predNode || !Array.isArray(predNode.eojeols) || predNode.eojeols.length === 0) return [];
 
-	const headUnit = predNode.predType === "copula"
+	const headUnit = predNode.predType === K.COPULA
 		? (predNode.copulaNounUnit || predNode.verbUnit || null)
 		: (predNode.verbUnit || predNode.copulaNounUnit || null);
 	const stemLit = headUnit ? getUnitLiteralStem(headUnit) : "";
@@ -478,7 +478,7 @@ function annotatePredicateLiteral(predNode) {
 		eojeols[0].segments[0].textEn = negWord;
 		eojeols[0].surfaceEnLit = negWord;
 
-		const tenseSuffix = predNode.tense === "past" ? "-past" : (predNode.tense === "future" ? "-future" : "");
+		const tenseSuffix = predNode.tense === K.PAST ? "-past" : (predNode.tense === K.FUTURE ? "-future" : "");
 		if (eojeols[1].segments.length >= 2) {
 			eojeols[1].segments[0].textEn = stemLit;
 			eojeols[1].segments[1].textEn = tenseSuffix;
@@ -509,7 +509,7 @@ function annotatePredicateLiteral(predNode) {
 		const auxEj = eojeols[i];
 		const textEn = i === eojeols.length - 1
 			? auxGloss
-			: ((predNode.predType === "copula" || i < headWords) ? "" : "be");
+			: ((predNode.predType === K.COPULA || i < headWords) ? "" : "be");
 		if (auxEj.segments.length >= 1) {
 			auxEj.segments[0].textEn = textEn;
 		}
@@ -556,8 +556,8 @@ function realizeLiteralEnglish(ast) {
 	// Capitalize first letter while preserving bracket tags
 	joined = joined.charAt(0).toUpperCase() + joined.slice(1);
 
-	const speechAct = ast.speechAct || "declarative";
-	const punct = speechAct === "interrogative" ? "?" : (speechAct === "exclamatory" ? "!" : ".");
+	const speechAct = ast.speechAct || K.DECLARATIVE;
+	const punct = speechAct === K.INTERROGATIVE ? "?" : (speechAct === "exclamatory" ? "!" : ".");
 	if (!/[.?!]$/.test(joined)) {
 		joined += punct;
 	}

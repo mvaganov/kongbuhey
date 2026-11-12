@@ -149,26 +149,26 @@ const sampleActionVerbs = ["가다", "먹다", "공부하다", "앉다", "만들
 const sampleDescriptiveVerbs = ["예쁘다", "바쁘다", "크다", "작다", "친절하다", "비싸다", "좋다", "춥다", "덥다", "어렵다"];
 
 for (const av of sampleActionVerbs) {
-	assert(canTakeMood(av, "imperative") === true, `Action Verb '${av}' can take imperative mood`);
-	const politeImp = buildMoodPredicate(av, "imperative", "polite");
-	const formalImp = buildMoodPredicate(av, "imperative", "formal");
-	const plainImp = buildMoodPredicate(av, "imperative", "plain");
+	assert(canTakeMood(av, K.IMPERATIVE) === true, `Action Verb '${av}' can take imperative mood`);
+	const politeImp = buildMoodPredicate(av, K.IMPERATIVE, "polite");
+	const formalImp = buildMoodPredicate(av, K.IMPERATIVE, "formal");
+	const plainImp = buildMoodPredicate(av, K.IMPERATIVE, "plain");
 	assert(politeImp.endsWith("세요"), `'${av}' polite imperative ends with '세요': '${politeImp}'`);
 	assert(formalImp.endsWith("십시오"), `'${av}' formal imperative ends with '십시오': '${formalImp}'`);
 	assert(plainImp.endsWith("라") || plainImp.endsWith("해"), `'${av}' plain imperative ends with '라' or '해': '${plainImp}'`);
 }
 
 // Check rieul batchim dropping in imperative
-assert(buildMoodPredicate("만들다", "imperative", "polite") === "만드세요", "만들다 polite imp -> 만드세요");
-assert(buildMoodPredicate("만들다", "imperative", "formal") === "만드십시오", "만들다 formal imp -> 만드십시오");
-assert(buildMoodPredicate("살다", "imperative", "polite") === "사세요", "살다 polite imp -> 사세요");
-assert(buildMoodPredicate("살다", "imperative", "formal") === "사십시오", "살다 formal imp -> 사십시오");
+assert(buildMoodPredicate("만들다", K.IMPERATIVE, "polite") === "만드세요", "만들다 polite imp -> 만드세요");
+assert(buildMoodPredicate("만들다", K.IMPERATIVE, "formal") === "만드십시오", "만들다 formal imp -> 만드십시오");
+assert(buildMoodPredicate("살다", K.IMPERATIVE, "polite") === "사세요", "살다 polite imp -> 사세요");
+assert(buildMoodPredicate("살다", K.IMPERATIVE, "formal") === "사십시오", "살다 formal imp -> 사십시오");
 
 for (const dv of sampleDescriptiveVerbs) {
-	assert(canTakeMood(dv, "imperative") === false, `Descriptive Verb '${dv}' CANNOT take imperative mood`);
+	assert(canTakeMood(dv, K.IMPERATIVE) === false, `Descriptive Verb '${dv}' CANNOT take imperative mood`);
 	let threw = false;
 	try {
-		buildMoodPredicate(dv, "imperative", "polite");
+		buildMoodPredicate(dv, K.IMPERATIVE, "polite");
 	} catch (e) {
 		threw = true;
 	}
@@ -181,27 +181,27 @@ for (const dv of sampleDescriptiveVerbs) {
 console.log("\n[3/10] Propositive Mood Action Verb Restriction");
 
 for (const av of sampleActionVerbs) {
-	assert(canTakeMood(av, "propositive") === true, `Action Verb '${av}' can take propositive mood`);
-	const formalProp = buildMoodPredicate(av, "propositive", "formal");
-	const plainProp = buildMoodPredicate(av, "propositive", "plain");
-	const sugProp = buildMoodPredicate(av, "propositive", "suggestion");
+	assert(canTakeMood(av, K.PROPOSITIVE) === true, `Action Verb '${av}' can take propositive mood`);
+	const formalProp = buildMoodPredicate(av, K.PROPOSITIVE, "formal");
+	const plainProp = buildMoodPredicate(av, K.PROPOSITIVE, "plain");
+	const sugProp = buildMoodPredicate(av, K.PROPOSITIVE, "suggestion");
 	assert(formalProp.endsWith("시다"), `'${av}' formal propositive ends with '(으)ㅂ시다': '${formalProp}'`);
 	assert(plainProp.endsWith("자"), `'${av}' plain propositive ends with '자': '${plainProp}'`);
 	assert(sugProp.endsWith("까요?"), `'${av}' suggestion propositive ends with '까요?': '${sugProp}'`);
 }
 
 // Check batchim allomorphs for formal propositive
-assert(buildMoodPredicate("가다", "propositive", "formal") === "갑시다", "가다 formal prop -> 갑시다");
-assert(buildMoodPredicate("먹다", "propositive", "formal") === "먹읍시다", "먹다 formal prop -> 먹읍시다");
-assert(buildMoodPredicate("앉다", "propositive", "formal") === "앉읍시다", "앉다 formal prop -> 앉읍시다");
-assert(buildMoodPredicate("만들다", "propositive", "formal") === "만듭시다", "만들다 formal prop -> 만듭시다");
-assert(buildMoodPredicate("살다", "propositive", "formal") === "삽시다", "살다 formal prop -> 삽시다");
+assert(buildMoodPredicate("가다", K.PROPOSITIVE, "formal") === "갑시다", "가다 formal prop -> 갑시다");
+assert(buildMoodPredicate("먹다", K.PROPOSITIVE, "formal") === "먹읍시다", "먹다 formal prop -> 먹읍시다");
+assert(buildMoodPredicate("앉다", K.PROPOSITIVE, "formal") === "앉읍시다", "앉다 formal prop -> 앉읍시다");
+assert(buildMoodPredicate("만들다", K.PROPOSITIVE, "formal") === "만듭시다", "만들다 formal prop -> 만듭시다");
+assert(buildMoodPredicate("살다", K.PROPOSITIVE, "formal") === "삽시다", "살다 formal prop -> 삽시다");
 
 for (const dv of sampleDescriptiveVerbs) {
-	assert(canTakeMood(dv, "propositive") === false, `Descriptive Verb '${dv}' CANNOT take propositive mood`);
+	assert(canTakeMood(dv, K.PROPOSITIVE) === false, `Descriptive Verb '${dv}' CANNOT take propositive mood`);
 	let threw = false;
 	try {
-		buildMoodPredicate(dv, "propositive", "formal");
+		buildMoodPredicate(dv, K.PROPOSITIVE, "formal");
 	} catch (e) {
 		threw = true;
 	}
@@ -214,20 +214,20 @@ for (const dv of sampleDescriptiveVerbs) {
 console.log("\n[4/10] Prohibitive Negative Imperative Restriction");
 
 for (const av of sampleActionVerbs) {
-	assert(canTakeMood(av, "prohibition") === true, `Action Verb '${av}' can take prohibition`);
-	const politeProhib = buildMoodPredicate(av, "prohibition", "polite");
-	const formalProhib = buildMoodPredicate(av, "prohibition", "formal");
-	const plainProhib = buildMoodPredicate(av, "prohibition", "plain");
+	assert(canTakeMood(av, K.PROHIBITION) === true, `Action Verb '${av}' can take prohibition`);
+	const politeProhib = buildMoodPredicate(av, K.PROHIBITION, "polite");
+	const formalProhib = buildMoodPredicate(av, K.PROHIBITION, "formal");
+	const plainProhib = buildMoodPredicate(av, K.PROHIBITION, "plain");
 	assert(politeProhib.endsWith("지 마세요"), `'${av}' polite prohibition ends with '지 마세요': '${politeProhib}'`);
 	assert(formalProhib.endsWith("지 마십시오"), `'${av}' formal prohibition ends with '지 마십시오': '${formalProhib}'`);
 	assert(plainProhib.endsWith("지 마"), `'${av}' plain prohibition ends with '지 마': '${plainProhib}'`);
 }
 
 for (const dv of sampleDescriptiveVerbs) {
-	assert(canTakeMood(dv, "prohibition") === false, `Descriptive Verb '${dv}' CANNOT take prohibition`);
+	assert(canTakeMood(dv, K.PROHIBITION) === false, `Descriptive Verb '${dv}' CANNOT take prohibition`);
 	let threw = false;
 	try {
-		buildMoodPredicate(dv, "prohibition", "polite");
+		buildMoodPredicate(dv, K.PROHIBITION, "polite");
 	} catch (e) {
 		threw = true;
 	}
@@ -258,7 +258,7 @@ assert(buildNegatedPredicate("공부하다", { inability: true, type: "short" })
 
 // Short inability negation '못' CANNOT be used with Descriptive Verbs
 for (const dv of sampleDescriptiveVerbs) {
-	assert(canTakeMood(dv, "inability") === false, `Descriptive Verb '${dv}' CANNOT take inability mood`);
+	assert(canTakeMood(dv, K.INABILITY) === false, `Descriptive Verb '${dv}' CANNOT take inability mood`);
 	let threw = false;
 	try {
 		buildNegatedPredicate(dv, { inability: true, type: "short" });
@@ -319,7 +319,7 @@ assert(canTakeMood("알다", "negation") === false, "canTakeMood('알다', 'nega
 
 assert(buildNegatedPredicate("알다", { formality: "polite" }) === "몰라요", "buildNegatedPredicate('알다', polite) -> 몰라요");
 assert(buildNegatedPredicate("알다", { formality: "formal" }) === "모릅니다", "buildNegatedPredicate('알다', formal) -> 모릅니다");
-assert(buildNegatedPredicate("알다", { tense: "past" }) === "몰랐어요", "buildNegatedPredicate('알다', past) -> 몰랐어요");
+assert(buildNegatedPredicate("알다", { tense: K.PAST }) === "몰랐어요", "buildNegatedPredicate('알다', past) -> 몰랐어요");
 
 // '있다' suppletion
 assert(getNegationSuppletion("있다") === "없다", "getNegationSuppletion('있다') -> '없다'");
@@ -328,7 +328,7 @@ assert(canTakeMood("있다", "negation") === false, "canTakeMood('있다', 'nega
 
 assert(buildNegatedPredicate("있다", { formality: "polite" }) === "없어요", "buildNegatedPredicate('있다', polite) -> 없어요");
 assert(buildNegatedPredicate("있다", { formality: "formal" }) === "없습니다", "buildNegatedPredicate('있다', formal) -> 없습니다");
-assert(buildNegatedPredicate("있다", { tense: "past" }) === "없었어요", "buildNegatedPredicate('있다', past) -> 없었어요");
+assert(buildNegatedPredicate("있다", { tense: K.PAST }) === "없었어요", "buildNegatedPredicate('있다', past) -> 없었어요");
 
 // Flag direct negation errors for '알다' and '있다'
 const forbiddenAldaForms = ["안 알아요", "안 압니다", "안 알았습니다", "못 알아요", "알지 않아요", "알지 못해요"];
@@ -433,14 +433,14 @@ for (const avUnit of allActionVerbs) {
 		|| ["끝나다", "시작되다", "고장 나다", "죽다", "생기다", "열리다", "닫히다"].some(k => ko.includes(k));
 
 	if (isInv) {
-		assert(canTakeMood(avUnit, "imperative") === false, `Involuntary Action Verb '${ko}' forbidden from imperative`);
-		assert(canTakeMood(avUnit, "propositive") === false, `Involuntary Action Verb '${ko}' forbidden from propositive`);
-		assert(canTakeMood(avUnit, "inability") === true, `Involuntary Action Verb '${ko}' permitted for inability`);
+		assert(canTakeMood(avUnit, K.IMPERATIVE) === false, `Involuntary Action Verb '${ko}' forbidden from imperative`);
+		assert(canTakeMood(avUnit, K.PROPOSITIVE) === false, `Involuntary Action Verb '${ko}' forbidden from propositive`);
+		assert(canTakeMood(avUnit, K.INABILITY) === true, `Involuntary Action Verb '${ko}' permitted for inability`);
 		assert(canTakeMood(avUnit, "volitional") === false, `Involuntary Action Verb '${ko}' forbidden from volitional`);
 	} else {
-		assert(canTakeMood(avUnit, "imperative") === true, `Voluntary Action Verb '${ko}' permitted for imperative`);
-		assert(canTakeMood(avUnit, "propositive") === true, `Voluntary Action Verb '${ko}' permitted for propositive`);
-		assert(canTakeMood(avUnit, "inability") === true, `Voluntary Action Verb '${ko}' permitted for inability`);
+		assert(canTakeMood(avUnit, K.IMPERATIVE) === true, `Voluntary Action Verb '${ko}' permitted for imperative`);
+		assert(canTakeMood(avUnit, K.PROPOSITIVE) === true, `Voluntary Action Verb '${ko}' permitted for propositive`);
+		assert(canTakeMood(avUnit, K.INABILITY) === true, `Voluntary Action Verb '${ko}' permitted for inability`);
 		assert(canTakeMood(avUnit, "volitional") === true, `Voluntary Action Verb '${ko}' permitted for volitional`);
 	}
 }
@@ -448,9 +448,9 @@ for (const avUnit of allActionVerbs) {
 // 2. All Descriptive Verbs must be forbidden from imperative, propositive, inability, and volitional moods
 for (const dvUnit of allDescriptiveVerbs) {
 	const ko = dvUnit[DATA_SCHEMA.Korean];
-	assert(canTakeMood(dvUnit, "imperative") === false, `Descriptive Verb '${ko}' forbidden from imperative`);
-	assert(canTakeMood(dvUnit, "propositive") === false, `Descriptive Verb '${ko}' forbidden from propositive`);
-	assert(canTakeMood(dvUnit, "inability") === false, `Descriptive Verb '${ko}' forbidden from inability`);
+	assert(canTakeMood(dvUnit, K.IMPERATIVE) === false, `Descriptive Verb '${ko}' forbidden from imperative`);
+	assert(canTakeMood(dvUnit, K.PROPOSITIVE) === false, `Descriptive Verb '${ko}' forbidden from propositive`);
+	assert(canTakeMood(dvUnit, K.INABILITY) === false, `Descriptive Verb '${ko}' forbidden from inability`);
 	assert(canTakeMood(dvUnit, "volitional") === false, `Descriptive Verb '${ko}' forbidden from volitional`);
 
 	// General negation is permitted unless it requires suppletion ('있다')

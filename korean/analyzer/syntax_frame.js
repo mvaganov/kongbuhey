@@ -15,13 +15,13 @@ const { DATA_SCHEMA, decomposeHangul, getStem } =
 	(typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 
 const SEMANTIC_ONTOLOGY = Object.freeze({
-	place: new Set([K.PLACE, "country", "place_indoor", "place_outdoor", "location", "institution", "world"]),
-	time: new Set([K.TIME, "duration", "frequency", "point_in_time", "counter", "past", "present", "future"]),
-	tool: new Set(["tool", "vehicle", "language", "material", "device", K.TRANSPORTATION, "instrument"]),
-	role: new Set(["role", "profession", K.PERSON, K.FAMILY, K.SOCIAL]),
+	place: new Set([K.PLACE, K.COUNTRY, "place_indoor", "place_outdoor", K.LOCATION, "institution", "world"]),
+	time: new Set([K.TIME, "duration", "frequency", "point_in_time", K.COUNTER, K.PAST, K.PRESENT, K.FUTURE]),
+	tool: new Set(["tool", K.VEHICLE, "language", "material", "device", K.TRANSPORTATION, "instrument"]),
+	role: new Set(["role", K.PROFESSION, K.PERSON, K.FAMILY, K.SOCIAL]),
 	abstract: new Set([K.ABSTRACT, K.CONCEPT, "culture", "cognition", K.EMOTION]),
-	movement: new Set(["movement", "motion", K.TRAVEL, "intransitive_motion", "entry"]),
-	stative: new Set(["stative", "existence", "property", "state", "descriptive"]),
+	movement: new Set(["movement", "motion", K.TRAVEL, K.INTRANSITIVE_MOTION, "entry"]),
+	stative: new Set(["stative", "existence", "property", "state", K.DESCRIPTIVE]),
 	cognition: new Set(["cognition", "mental", K.EMOTION, K.COMMUNICATION])
 });
 
@@ -187,7 +187,7 @@ function evaluateSyntaxFrame(unit, context = {}, index = null) {
 			}
 		}
 		if (frame.includes("{Counter}")) {
-			const followedByCounter = nextUnit && (nextUnit[DATA_SCHEMA.PartofSpeech] === K.NOUN && getUnitSemanticTags(nextUnit, index).has('counter'));
+			const followedByCounter = nextUnit && (nextUnit[DATA_SCHEMA.PartofSpeech] === K.NOUN && getUnitSemanticTags(nextUnit, index).has(K.COUNTER));
 			if (followedByCounter) {
 				return {
 					matches: true,

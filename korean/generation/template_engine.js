@@ -67,8 +67,8 @@ function getTokenOptions(token, depth = 0) {
 		options = [new TokenOption(getRandomProperName() + ssiSuffix, seeGrammar ? [seeGrammar] : [])];
 	} else if (token.type === "N" || token.type === K.NOUN || token.type === "N_Phrase") {
 		let nouns = getFilteredWords(K.NOUN, token.tag);
-		if (token.tag !== K.MEASUREWORD && token.tag !== "counter") {
-			nouns = nouns.filter(w => !hasTag(w, K.MEASUREWORD, "counter") && w[KoreanWord] !== "%");
+		if (token.tag !== K.MEASUREWORD && token.tag !== K.COUNTER) {
+			nouns = nouns.filter(w => !hasTag(w, K.MEASUREWORD, K.COUNTER) && w[KoreanWord] !== "%");
 		}
 		options = nouns.map(w => new TokenOption(w[KoreanWord], [w]));
 	} else if (token.type === "AVst") {
@@ -95,9 +95,9 @@ function getTokenOptions(token, depth = 0) {
 			words = words.filter(w => !state.ALL_NPI_WORDS.has(w[KoreanWord]));
 		}
 		options = words.map(w => new TokenOption(w[KoreanWord], [w]));
-	} else if (token.type === "Adv_Manner" || (token.type === "Adv" && token.tag === "manner")) {
+	} else if (token.type === "Adv_Manner" || (token.type === "Adv" && token.tag === K.MANNER)) {
 		let words = Array.from(state.MANNER_ADVERBS.values()).map(info => info.unit);
-		if (token.tag && token.tag !== "manner") {
+		if (token.tag && token.tag !== K.MANNER) {
 			words = words.filter(w => hasTag(w, token.tag));
 		}
 		if (token.target_pos === K.DESCRIPTIVE_VERB || token.isDV) {
@@ -132,7 +132,7 @@ function getTokenOptions(token, depth = 0) {
 		if (depth > 0) {
 			options = [new TokenOption("갑니다"), new TokenOption("좋아요")];
 		} else {
-			const grammars = getFilteredWords(K.POS_GRAMMAR).filter(g => hasTag(g, "declarative", "suggestion"));
+			const grammars = getFilteredWords(K.POS_GRAMMAR).filter(g => hasTag(g, K.DECLARATIVE, "suggestion"));
 			if (grammars.length > 0) {
 				grammars.forEach(g => {
 					g[Conjugation].forEach(formula => {
@@ -148,14 +148,14 @@ function getTokenOptions(token, depth = 0) {
 	} else if (token.type === "VP_AVst") {
 		getFilteredWords(K.ACTION_VERB, token.tag).forEach(av => {
 			const stem = getConjugatedStem(av[KoreanWord], av[Conjugation]);
-			const isPureIntransitive = (hasTag(av, K.INTRANSITIVE_GENERAL) || hasTag(av, "intransitive_motion") || hasTag(av, "intransitive_place"))
+			const isPureIntransitive = (hasTag(av, K.INTRANSITIVE_GENERAL) || hasTag(av, K.INTRANSITIVE_MOTION) || hasTag(av, K.INTRANSITIVE_PLACE))
 				&& !ACTION_VERB_SPECS.some(s => s.particle === K.OBJECT && hasTag(av, s.tag))
 				&& !parseSemanticVector(av).collocation_filter;
 
 			if (isPureIntransitive) {
-				if (hasTag(av, "intransitive_motion") || hasTag(av, "intransitive_place")) {
+				if (hasTag(av, K.INTRANSITIVE_MOTION) || hasTag(av, K.INTRANSITIVE_PLACE)) {
 					getFilteredWords(K.NOUN, K.PLACE).forEach(n => {
-						options.push(new TokenOption(`${attachParticle(n, "location", av)} ${stem}`, [av, n]));
+						options.push(new TokenOption(`${attachParticle(n, K.LOCATION, av)} ${stem}`, [av, n]));
 					});
 				} else {
 					options.push(new TokenOption(stem, [av]));
@@ -175,7 +175,7 @@ function getTokenOptions(token, depth = 0) {
 			const stem = getConjugatedStem(dv[KoreanWord], dv[Conjugation]);
 			const candidates = getSubjectCandidatesForDescriptiveVerb(dv);
 			candidates.forEach(n => {
-				const phrase = `${attachParticle(n, "subject", dv)} ${stem}`;
+				const phrase = `${attachParticle(n, K.SUBJECT, dv)} ${stem}`;
 				options.push(new TokenOption(phrase, [dv, n]));
 			});
 		});

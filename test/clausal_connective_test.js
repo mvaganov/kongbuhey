@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+// Universal Constants
+var { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/clausal_connective_test.js - Feature 11: Clausal Connectives & Causal Harmony
  *
@@ -107,20 +110,20 @@ for (const mv of essentialMotion) {
 console.log("\n[Module 2] Illocutionary Mood Detection Engine (detectClauseMood)");
 
 const moodCases = [
-	{ text: "우산을 쓰세요", mood: "imperative" },
-	{ text: "조용히 하십시오", mood: "imperative" },
-	{ text: "가지 마세요", mood: "imperative" },
-	{ text: "빨리 가라", mood: "imperative" },
-	{ text: "공원에 갑시다", mood: "propositive" },
-	{ text: "밥을 먹읍시다", mood: "propositive" },
-	{ text: "내일 같이 가자", mood: "propositive" },
+	{ text: "우산을 쓰세요", mood: K.IMPERATIVE },
+	{ text: "조용히 하십시오", mood: K.IMPERATIVE },
+	{ text: "가지 마세요", mood: K.IMPERATIVE },
+	{ text: "빨리 가라", mood: K.IMPERATIVE },
+	{ text: "공원에 갑시다", mood: K.PROPOSITIVE },
+	{ text: "밥을 먹읍시다", mood: K.PROPOSITIVE },
+	{ text: "내일 같이 가자", mood: K.PROPOSITIVE },
 	{ text: "커피를 마실까요?", mood: "suggestive" },
 	{ text: "영화를 볼래요?", mood: "suggestive" },
-	{ text: "어디에 가요?", mood: "interrogative" },
-	{ text: "밥을 먹었습니까?", mood: "interrogative" },
-	{ text: "집에 갔어요", mood: "declarative" },
-	{ text: "도서관에서 공부합니다", mood: "declarative" },
-	{ text: "날씨가 좋습니다", mood: "declarative" }
+	{ text: "어디에 가요?", mood: K.INTERROGATIVE },
+	{ text: "밥을 먹었습니까?", mood: K.INTERROGATIVE },
+	{ text: "집에 갔어요", mood: K.DECLARATIVE },
+	{ text: "도서관에서 공부합니다", mood: K.DECLARATIVE },
+	{ text: "날씨가 좋습니다", mood: K.DECLARATIVE }
 ];
 
 for (const mc of moodCases) {
@@ -134,20 +137,20 @@ for (const mc of moodCases) {
 console.log("\n[Module 3] Clausal Tense Detection Engine (detectClauseTense)");
 
 const tenseCases = [
-	{ text: "비가 왔어", tense: "past" },
-	{ text: "피곤했어서", tense: "past" },
-	{ text: "먹었으러", tense: "past" },
-	{ text: "늦었으므로", tense: "past" },
-	{ text: "날씨가 좋았어서", tense: "past" },
-	{ text: "비가 와서", tense: "present" },
-	{ text: "피곤해서", tense: "present" },
-	{ text: "먹으러", tense: "present" },
-	{ text: "공부하느라고", tense: "present" },
-	{ text: "돈이 있어서", tense: "present" }, // Root 있- without past
-	{ text: "돈이 있었어서", tense: "past" },  // Past 있었-
-	{ text: "시간이 없어서", tense: "present" },
-	{ text: "시간이 없었어서", tense: "past" },
-	{ text: "내일 갈게요", tense: "present" }   // Modal 겠-
+	{ text: "비가 왔어", tense: K.PAST },
+	{ text: "피곤했어서", tense: K.PAST },
+	{ text: "먹었으러", tense: K.PAST },
+	{ text: "늦었으므로", tense: K.PAST },
+	{ text: "날씨가 좋았어서", tense: K.PAST },
+	{ text: "비가 와서", tense: K.PRESENT },
+	{ text: "피곤해서", tense: K.PRESENT },
+	{ text: "먹으러", tense: K.PRESENT },
+	{ text: "공부하느라고", tense: K.PRESENT },
+	{ text: "돈이 있어서", tense: K.PRESENT }, // Root 있- without past
+	{ text: "돈이 있었어서", tense: K.PAST },  // Past 있었-
+	{ text: "시간이 없어서", tense: K.PRESENT },
+	{ text: "시간이 없었어서", tense: K.PAST },
+	{ text: "내일 갈게요", tense: K.PRESENT }   // Modal 겠-
 ];
 
 for (const tc of tenseCases) {

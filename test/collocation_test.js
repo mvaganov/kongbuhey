@@ -138,11 +138,11 @@ const eatCandidates = getNounCandidatesForVerb(eatVerb);
 assert(eatCandidates.length > 0, "먹다 has matching noun candidates", `Found ${eatCandidates.length}`);
 assert(eatCandidates.every(n => hasTag(n, K.FOOD) || hasTag(n, "medicine")), "All 먹다 candidates are food or medicine");
 assert(eatCandidates.every(n => !hasTag(n, K.CLOTHING)), "먹다 never takes clothing (*옷을 먹다)");
-assert(eatCandidates.every(n => !hasTag(n, "vehicle")), "먹다 never takes vehicle (*버스를 먹다)");
+assert(eatCandidates.every(n => !hasTag(n, K.VEHICLE)), "먹다 never takes vehicle (*버스를 먹다)");
 
 const drinkCandidates = getNounCandidatesForVerb(drinkVerb);
 assert(drinkCandidates.length > 0, "마시다 has matching noun candidates", `Found ${drinkCandidates.length}`);
-assert(drinkCandidates.every(n => hasTag(n, "drink")), "All 마시다 candidates have 'drink' tag");
+assert(drinkCandidates.every(n => hasTag(n, K.DRINK)), "All 마시다 candidates have 'drink' tag");
 assert(drinkCandidates.every(n => !hasTag(n, "medicine")), "마시다 never takes medicine (in Korean medicine is strictly 먹다)");
 assert(drinkCandidates.every(n => n[KoreanWord] !== "사과"), "마시다 never takes solid food like 사과 (*사과를 마시다)");
 
@@ -189,12 +189,12 @@ assert(writeCandidates.every(n => hasTag(n, "writing")), "All 쓰다 (write) can
 // 운전하다 (vehicles)
 const driveCandidates = getNounCandidatesForVerb(driveVerb);
 assert(driveCandidates.length > 0, "운전하다 has matching noun candidates", `Found ${driveCandidates.length}`);
-assert(driveCandidates.every(n => hasTag(n, "vehicle")), "All 운전하다 candidates have 'vehicle' tag");
+assert(driveCandidates.every(n => hasTag(n, K.VEHICLE)), "All 운전하다 candidates have 'vehicle' tag");
 
 // 타다 (vehicle / transportation)
 const rideCandidates = getNounCandidatesForVerb(rideVerb);
 assert(rideCandidates.length > 0, "타다 has matching noun candidates", `Found ${rideCandidates.length}`);
-assert(rideCandidates.every(n => hasTag(n, "vehicle")), "All 타다 candidates have 'vehicle' tag (지하철, 택시, 버스, 기차, 배, 비행기, 자전거, 차)");
+assert(rideCandidates.every(n => hasTag(n, K.VEHICLE)), "All 타다 candidates have 'vehicle' tag (지하철, 택시, 버스, 기차, 배, 비행기, 자전거, 차)");
 assert(rideCandidates.every(n => n[KoreanWord] !== "택배" && n[KoreanWord] !== "교통카드"), "타다 never takes non-vehicle items like 택배 or 교통카드");
 
 // 치다 (sports: 396) vs 치다 (musical instruments: 1486)
@@ -228,7 +228,7 @@ assert(washCandidates.every(n => hasTag(n, "bodyPart")), "씻다 strictly takes 
 
 const cleanCandidates = getNounCandidatesForVerb(cleanRoom);
 assert(cleanCandidates.length > 0, "청소하다 has matching noun candidates", `Found ${cleanCandidates.length}`);
-assert(cleanCandidates.every(n => hasTag(n, "room")), "청소하다 strictly takes rooms (방, 집, 사무실, 화장실)");
+assert(cleanCandidates.every(n => hasTag(n, K.ROOM)), "청소하다 strictly takes rooms (방, 집, 사무실, 화장실)");
 
 // -----------------------------------------------------------------------------
 // [Suite 5] Phrase Generation & Morphological Particle Validation
@@ -346,12 +346,12 @@ assert(spicyCands.every(n => !hasTag(n, K.PERSON)), "맵다 never pairs with per
 
 const deliciousCands = getSubjectCandidatesForDescriptiveVerb(deliciousVerb);
 assert(deliciousCands.length > 0, "맛있다 has matching subject candidates", `Found ${deliciousCands.length}`);
-assert(deliciousCands.every(n => hasTag(n, K.FOOD) || hasTag(n, "drink")), "맛있다 candidates are food or drink");
+assert(deliciousCands.every(n => hasTag(n, K.FOOD) || hasTag(n, K.DRINK)), "맛있다 candidates are food or drink");
 assert(deliciousCands.every(n => !hasTag(n, K.FACILITY)), "맛있다 excludes dining facilities/places (*식당이 맛있다)");
 
 const sweetCands = getSubjectCandidatesForDescriptiveVerb(sweetVerb);
 assert(sweetCands.length > 0, "달다 has matching subject candidates", `Found ${sweetCands.length}`);
-assert(sweetCands.every(n => hasTag(n, K.FOOD) || hasTag(n, "drink")), "달다 candidates are food or drink");
+assert(sweetCands.every(n => hasTag(n, K.FOOD) || hasTag(n, K.DRINK)), "달다 candidates are food or drink");
 
 // -----------------------------------------------------------------------------
 // [Suite 8] Weather vs. Tactile Temperature Selection
@@ -412,7 +412,7 @@ assert(narrowCands.every(n => !hasTag(n, K.PERSON)), "좁다 never pairs with pe
 const longCands = getSubjectCandidatesForDescriptiveVerb(longVerb);
 assert(longCands.length > 0, "길다 has matching subject candidates", `Found ${longCands.length}`);
 assert(longCands.some(n => ["치마", "바지", "줄", "시간", "거리"].includes(n[KoreanWord])), "길다 includes linear items (치마, 바지, 줄, 시간)");
-assert(longCands.every(n => !hasTag(n, "room")), "길다 never pairs with rooms (*방이 길다)");
+assert(longCands.every(n => !hasTag(n, K.ROOM)), "길다 never pairs with rooms (*방이 길다)");
 assert(longCands.every(n => !hasTag(n, K.FOOD)), "길다 never pairs with food (*김치가 길다)");
 
 // 높다 / 낮다 (height/elevation)
@@ -435,7 +435,7 @@ assert(thickCands.some(n => ["책", "옷", "치마", "바지"].includes(n[Korean
 // 크다 / 작다 (scale)
 const bigCands = getSubjectCandidatesForDescriptiveVerb(bigVerb);
 assert(bigCands.length > 0, "크다 has matching subject candidates", `Found ${bigCands.length}`);
-assert(bigCands.some(n => hasTag(n, "room") || hasTag(n, K.CLOTHING) || hasTag(n, K.OBJECT)), "크다 pairs with rooms, clothing, or objects");
+assert(bigCands.some(n => hasTag(n, K.ROOM) || hasTag(n, K.CLOTHING) || hasTag(n, K.OBJECT)), "크다 pairs with rooms, clothing, or objects");
 
 // -----------------------------------------------------------------------------
 // [Suite 10] Price, Cleanliness & Acoustic Predicates
@@ -456,7 +456,7 @@ assert(expCands.every(n => !hasTag(n, K.PERSON)), "비싸다 strictly disallows 
 
 const cleanCands = getSubjectCandidatesForDescriptiveVerb(cleanVerb);
 assert(cleanCands.length > 0, "깨끗하다 has matching subject candidates", `Found ${cleanCands.length}`);
-assert(cleanCands.some(n => hasTag(n, "room") || hasTag(n, K.PLACE)), "깨끗하다 pairs with rooms and places");
+assert(cleanCands.some(n => hasTag(n, K.ROOM) || hasTag(n, K.PLACE)), "깨끗하다 pairs with rooms and places");
 
 const noisyCands = getSubjectCandidatesForDescriptiveVerb(noisyVerb);
 assert(noisyCands.length > 0, "시끄럽다 has matching subject candidates", `Found ${noisyCands.length}`);
@@ -505,7 +505,7 @@ assert(easyCands.every(n => !hasTag(n, K.FOOD)), "쉽다 never pairs with food (
 // Speed
 const fastCands = getSubjectCandidatesForDescriptiveVerb(fastVerb);
 assert(fastCands.length > 0, "빠르다 has matching subject candidates", `Found ${fastCands.length}`);
-assert(fastCands.some(n => hasTag(n, "vehicle")), "빠르다 pairs with transit vehicles (지하철, 기차, 비행기, 차)");
+assert(fastCands.some(n => hasTag(n, K.VEHICLE)), "빠르다 pairs with transit vehicles (지하철, 기차, 비행기, 차)");
 assert(fastCands.every(n => !hasTag(n, K.FOOD)), "빠르다 never pairs with food (*초밥이 빠르다)");
 
 // -----------------------------------------------------------------------------

@@ -37,14 +37,14 @@ const {
 
 // Numeral classifier category rules
 const CLASSIFIER_DOMAIN_RULES = {
-	"명": { allowedTags: [K.PERSON, "human", K.FAMILY, "profession", "job", "honorific_person", "kinship_plain"], name: "people" },
-	"분": { allowedTags: [K.PERSON, "human", K.FAMILY, "profession", "elder", "elder_noun", "honorific_person"], name: "honored people" },
+	"명": { allowedTags: [K.PERSON, "human", K.FAMILY, K.PROFESSION, "job", "honorific_person", "kinship_plain"], name: "people" },
+	"분": { allowedTags: [K.PERSON, "human", K.FAMILY, K.PROFESSION, "elder", K.ELDER_NOUN, "honorific_person"], name: "honored people" },
 	"마리": { allowedTags: ["animal", "pet", "fish", "bird", "insect"], name: "animals" },
 	"권": { allowedTags: ["book", "publication", "paper", "document"], name: "books/publications" },
-	"잔": { allowedTags: ["drink", "beverage", "liquid"], name: "beverages" },
-	"병": { allowedTags: ["drink", "beverage", "liquid", "bottle"], name: "bottles" },
+	"잔": { allowedTags: [K.DRINK, "beverage", "liquid"], name: "beverages" },
+	"병": { allowedTags: [K.DRINK, "beverage", "liquid", "bottle"], name: "bottles" },
 	"송이": { allowedTags: ["flower", "plant", "fruit"], name: "flowers/bunches" },
-	"대": { allowedTags: ["vehicle", "electronics", "machine", "appliance", "car"], name: "vehicles/machines" },
+	"대": { allowedTags: [K.VEHICLE, "electronics", "machine", "appliance", "car"], name: "vehicles/machines" },
 	"벌": { allowedTags: [K.CLOTHING, "clothes"], name: "clothing items" },
 	"켤레": { allowedTags: ["footwear", "shoes", "socks", "gloves"], name: "footwear pairs" },
 	"쪽": { allowedTags: ["book", "paper", "document", "publication"], name: "pages/paper items" }
@@ -133,7 +133,7 @@ function validateSentenceAST(ast, realized) {
 		const pred = clause.predicate || {};
 		const verbUnit = pred.verbUnit || null;
 		const verbKo = verbUnit ? (verbUnit[DATA_SCHEMA.Korean] || "") : "";
-		const predType = pred.predType || (verbUnit && verbUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB ? "descriptive" : K.ACTION);
+		const predType = pred.predType || (verbUnit && verbUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB ? K.DESCRIPTIVE : K.ACTION);
 
 		// Find constituents by role
 		let subjCon = null;
@@ -142,7 +142,7 @@ function validateSentenceAST(ast, realized) {
 		let advCon = null;
 
 		for (const con of constituents) {
-			if (con.role === "subject" || con.role === "topic") subjCon = con;
+			if (con.role === K.SUBJECT || con.role === K.TOPIC) subjCon = con;
 			if (con.role === K.OBJECT || con.particleType === K.OBJECT || con.particleType === "accusative") objCon = con;
 			if (con.numeralUnit || con.classifierUnit) numCon = con;
 			if (con.role === K.ADVERB || con.particleType === K.ADVERB) advCon = con;
@@ -155,21 +155,22 @@ function validateSentenceAST(ast, realized) {
 
 			// Check if the clause has an embedded adnominal modifier verb that governs this direct object
 			const hasGoverningAdnominalVerb = constituents.some(c =>
-				(c.role === "adnominal_modifier" || c.category === "adnominal_modifier" || (c.inflection && c.inflection.stemForm === "adnominal")) &&
+				(c.role === K.ADNOMINAL_MODIFIER || c.category === K.ADNOMINAL_MODIFIER || (c.inflection && c.inflection.stemForm === "adnominal")) &&
 				c.unit && (c.unit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || hasTag(c.unit, "transitive", K.TRANSITIVE_GENERAL))
 			);
 
-			if (predType === "descriptive" && !hasGoverningAdnominalVerb) {
+			if (predType === K.DESCRIPTIVE && !hasGoverningAdnominalVerb) {
 				errors.push({
 					code: "VALENCY_TRANSITIVITY_MISMATCH",
 					message: `Descriptive verb '${verbKo}' cannot take accusative direct object '${objKo}' in: "${ko}"`
 				});
 			} else if (verbKo && !hasGoverningAdnominalVerb) {
+				const COGNATE_MOTION_ACTIVITIES = new Set(["여행", "등산", "소풍", "유학", "출장", "산책", "쇼핑", "낚시"]);
 				const isCognateAccusative =
 					((verbKo === "자다" || verbKo === "주무시다") && objKo === "잠") ||
 					(verbKo === "꾸다" && objKo === "꿈") ||
 					(verbKo === "추다" && objKo === "춤") ||
-					((verbKo === "가다" || verbKo === "오다" || verbKo === "다니다") && ["여행", "등산", "소풍", "유학", "출장", "산책", "쇼핑", "낚시"].includes(objKo));
+					((verbKo === "가다" || verbKo === "오다" || verbKo === "다니다") && COGNATE_MOTION_ACTIVITIES.has(objKo));
 				const hasTransitiveTag = verbUnit && (
 					hasTag(verbUnit, "transitive", K.TRANSITIVE_GENERAL) ||
 					verbKo === "보이다" ||
@@ -179,8 +180,8 @@ function validateSentenceAST(ast, realized) {
 					verbUnit,
 					K.INTRANSITIVE,
 					K.INTRANSITIVE_GENERAL,
-					"intransitive_motion",
-					"intransitive_place",
+					K.INTRANSITIVE_MOTION,
+					K.INTRANSITIVE_PLACE,
 					"intransitive_person",
 					"intransitive_state",
 					"passive",
@@ -213,9 +214,10 @@ function validateSentenceAST(ast, realized) {
 				const subjKo = subjUnit[DATA_SCHEMA.Korean] || "";
 				const isStrictHumanVerb = hasTag(verbUnit, "volitional_human");
 				const isAnimate = hasTag(subjUnit, K.PERSON, K.FAMILY, "pronoun_1st", "pronoun_2nd", "pronoun_3rd", "animal");
+				const INANIMATE_AGENT_NOUNS = new Set(["신분증", "경제학", "의자", "공항버스", "수업", "회의", "가구"]);
 				const isInanimate = !isAnimate && (
 					hasTag(subjUnit, "inanimate", K.ABSTRACT, K.ACADEMIC, K.CONCEPT, K.FACILITY)
-					|| ["신분증", "경제학", "의자", "공항버스", "수업", "회의", "가구"].includes(subjKo)
+					|| INANIMATE_AGENT_NOUNS.has(subjKo)
 				);
 
 				if (isStrictHumanVerb && isInanimate) {
@@ -228,13 +230,12 @@ function validateSentenceAST(ast, realized) {
 		}
 
 		// D. DESCRIPTIVE_VERB_HUMAN_SUBJECT_MISMATCH
-		if (subjCon && verbUnit && predType === "descriptive") {
+		if (subjCon && verbUnit && predType === K.DESCRIPTIVE) {
 			const subjUnit = subjCon.nounUnit || subjCon.unit;
 			if (subjUnit) {
 				const subjKo = subjUnit[DATA_SCHEMA.Korean] || "";
 				const isPerson = hasTag(subjUnit, K.PERSON, K.FAMILY, "pronoun_1st", "pronoun_2nd", "pronoun_3rd");
-				const isWeatherOrTaste = hasTag(verbUnit, K.WEATHER, "taste", "descriptive_weather", "descriptive_taste") ||
-					["맵다", "달다", "짜다", "시다", "쓰다", "싱겁다", "따뜻하다", "덥다", "춥다", "쌀쌀하다", "시원하다"].includes(verbKo);
+				const isWeatherOrTaste = hasTag(verbUnit, K.WEATHER, "taste", "descriptive_weather", "descriptive_taste", "sensory_weather_taste");
 				if (isPerson && isWeatherOrTaste) {
 					errors.push({
 						code: "DESCRIPTIVE_VERB_SUBJECT_COLLOCATION_MISMATCH",
@@ -268,7 +269,7 @@ function validateSentenceAST(ast, realized) {
 			const advKo = advUnit ? advUnit[DATA_SCHEMA.Korean] : "";
 			const isDegreeAdv = hasTag(advUnit, "degree_pure");
 			const hasGoverningAdnominalDV = constituents.some(c =>
-				(c.role === "adnominal_modifier" || c.category === "adnominal_modifier" || (c.inflection && c.inflection.stemForm === "adnominal")) &&
+				(c.role === K.ADNOMINAL_MODIFIER || c.category === K.ADNOMINAL_MODIFIER || (c.inflection && c.inflection.stemForm === "adnominal")) &&
 				c.unit && (c.unit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB || hasTag(c.unit, K.GRADABLE))
 			);
 			const isScalableVerb = hasTag(verbUnit, "scalable", "scalable_duration", "scalable_emotion", "scalable_quantity") ||
@@ -287,9 +288,9 @@ function validateSentenceAST(ast, realized) {
 		if (advCon) {
 			const advUnit = advCon.unit || advCon.nounUnit;
 			const advKo = advUnit ? advUnit[DATA_SCHEMA.Korean] : "";
-			const isWhQuestionAdverb = hasTag(advUnit, "questionWord", "interrogative") && !hasTag(advUnit, "manner", "adverb_manner");
+			const isWhQuestionAdverb = hasTag(advUnit, K.QUESTION_WORD, K.INTERROGATIVE) && !hasTag(advUnit, K.MANNER, K.ADVERB_MANNER);
 			if (isWhQuestionAdverb) {
-				const isRootDeclarative = (ast.speechAct === "declarative" || !ast.speechAct) && clauses.length === 1;
+				const isRootDeclarative = (ast.speechAct === K.DECLARATIVE || !ast.speechAct) && clauses.length === 1;
 				const endsWithPeriod = /[.]$/.test(ko.trim());
 				const isEmbeddedIndirect = /(?:몰라|모르|알아|알다|알려|는지|은지|을지|ㄹ지|으면|면)/.test(ko);
 				if ((isRootDeclarative || endsWithPeriod) && !isEmbeddedIndirect) {

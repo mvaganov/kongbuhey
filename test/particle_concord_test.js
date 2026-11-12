@@ -91,25 +91,25 @@ const liveVerb = findUnit("살다");
 const sitVerb = findUnit("앉다");
 
 // Destination / Goal verbs with places
-assert(attachParticle(schoolUnit, "location", goVerb) === "학교에", "학교 + 가다 -> 학교에");
-assert(attachParticle(homeUnit, "location", comeVerb) === "집에", "집 + 오다 -> 집에");
-assert(attachParticle(companyUnit, "location", attendVerb) === "회사에", "회사 + 다니다 -> 회사에");
-assert(attachParticle(roomUnit, "location", enterVerb) === "방에", "방 + 들어가다 -> 방에");
-assert(attachParticle(mountainUnit, "location", climbVerb) === "산에", "산 + 오르다 -> 산에");
+assert(attachParticle(schoolUnit, K.LOCATION, goVerb) === "학교에", "학교 + 가다 -> 학교에");
+assert(attachParticle(homeUnit, K.LOCATION, comeVerb) === "집에", "집 + 오다 -> 집에");
+assert(attachParticle(companyUnit, K.LOCATION, attendVerb) === "회사에", "회사 + 다니다 -> 회사에");
+assert(attachParticle(roomUnit, K.LOCATION, enterVerb) === "방에", "방 + 들어가다 -> 방에");
+assert(attachParticle(mountainUnit, K.LOCATION, climbVerb) === "산에", "산 + 오르다 -> 산에");
 
 // Static existence / Residence verbs with places
-assert(attachParticle(homeUnit, "location", existVerb) === "집에", "집 + 있다 -> 집에");
-assert(attachParticle(homeUnit, "location", liveVerb) === "집에", "집 + 살다 -> 집에");
-assert(attachParticle("의자", "location", sitVerb) === "의자에", "의자 + 앉다 -> 의자에");
+assert(attachParticle(homeUnit, K.LOCATION, existVerb) === "집에", "집 + 있다 -> 집에");
+assert(attachParticle(homeUnit, K.LOCATION, liveVerb) === "집에", "집 + 살다 -> 집에");
+assert(attachParticle("의자", K.LOCATION, sitVerb) === "의자에", "의자 + 앉다 -> 의자에");
 
 // Explicit goal/destination type override
-assert(attachParticle("한국", "location", null, { locativeType: "goal" }) === "한국에", "Explicit goal type -> 한국에");
+assert(attachParticle("한국", K.LOCATION, null, { locativeType: "goal" }) === "한국에", "Explicit goal type -> 한국에");
 assert(attachParticle("도서관", "location_goal") === "도서관에", "location_goal -> 도서관에");
 assert(attachParticle("방", "location_static") === "방에", "location_static -> 방에");
 
 // Negative assertions
-assert(attachParticle(schoolUnit, "location", goVerb) !== "학교에서", "학교 + 가다 NEVER produces *학교에서");
-assert(attachParticle(homeUnit, "location", existVerb) !== "집에서", "집 + 있다 NEVER produces *집에서");
+assert(attachParticle(schoolUnit, K.LOCATION, goVerb) !== "학교에서", "학교 + 가다 NEVER produces *학교에서");
+assert(attachParticle(homeUnit, K.LOCATION, existVerb) !== "집에서", "집 + 있다 NEVER produces *집에서");
 
 // -----------------------------------------------------------------------------
 // [Suite 2] Locative Duality: Origin & Departure (-에서)
@@ -125,20 +125,20 @@ const leaveCountryVerb = findUnit("출국하다", K.ACTION_VERB);
 const exitVerb = findUnit("나가다", K.ACTION_VERB);
 const bornVerb = findUnit("태어나다", K.ACTION_VERB);
 
-assert(attachParticle(stationUnit, "location", departVerb) === "역에서", "역 + 출발하다 -> 역에서");
-assert(attachParticle("서울역", "location", departVerb) === "서울역에서", "서울역 + 출발하다 -> 서울역에서");
-assert(attachParticle(busUnit, "location", alightVerb) === "버스에서", "버스 + 내리다 -> 버스에서");
-assert(attachParticle(airportUnit, "location", leaveCountryVerb) === "공항에서", "공항 + 출국하다 -> 공항에서");
-assert(attachParticle(roomUnit, "location", exitVerb) === "방에서", "방 + 나가다 -> 방에서");
-assert(attachParticle("한국", "location", bornVerb) === "한국에서", "한국 + 태어나다 -> 한국에서");
+assert(attachParticle(stationUnit, K.LOCATION, departVerb) === "역에서", "역 + 출발하다 -> 역에서");
+assert(attachParticle("서울역", K.LOCATION, departVerb) === "서울역에서", "서울역 + 출발하다 -> 서울역에서");
+assert(attachParticle(busUnit, K.LOCATION, alightVerb) === "버스에서", "버스 + 내리다 -> 버스에서");
+assert(attachParticle(airportUnit, K.LOCATION, leaveCountryVerb) === "공항에서", "공항 + 출국하다 -> 공항에서");
+assert(attachParticle(roomUnit, K.LOCATION, exitVerb) === "방에서", "방 + 나가다 -> 방에서");
+assert(attachParticle("한국", K.LOCATION, bornVerb) === "한국에서", "한국 + 태어나다 -> 한국에서");
 
 // Explicit origin type override
-assert(attachParticle("서울", "location", null, { locativeType: "origin" }) === "서울에서", "Explicit origin type -> 서울에서");
+assert(attachParticle("서울", K.LOCATION, null, { locativeType: "origin" }) === "서울에서", "Explicit origin type -> 서울에서");
 assert(attachParticle("고향", "location_origin") === "고향에서", "location_origin -> 고향에서");
 
 // Negative assertions
-assert(attachParticle("서울역", "location", departVerb) !== "서울역에", "서울역 + 출발하다 NEVER produces *서울역에");
-assert(attachParticle(busUnit, "location", alightVerb) !== "버스에", "버스 + 내리다 NEVER produces *버스에");
+assert(attachParticle("서울역", K.LOCATION, departVerb) !== "서울역에", "서울역 + 출발하다 NEVER produces *서울역에");
+assert(attachParticle(busUnit, K.LOCATION, alightVerb) !== "버스에", "버스 + 내리다 NEVER produces *버스에");
 
 // -----------------------------------------------------------------------------
 // [Suite 3] Locative Duality: Dynamic Activity Site (-에서)
@@ -161,24 +161,24 @@ const buyVerb = findUnit("사다", K.ACTION_VERB);
 const restVerb = findUnit("쉬다", K.ACTION_VERB);
 const workVerb = findUnit("일하다", K.ACTION_VERB);
 
-assert(attachParticle(restaurantUnit, "location", eatVerb) === "식당에서", "식당 + 먹다 -> 식당에서");
-assert(attachParticle(libraryUnit, "location", studyVerb) === "도서관에서", "도서관 + 공부하다 -> 도서관에서");
-assert(attachParticle(companyUnit, "location", workVerb) === "회사에서", "회사 + 일하다 -> 회사에서");
-assert(attachParticle(cafeUnit, "location", meetVerb) === "카페에서", "카페 + 만나다 -> 카페에서");
-assert(attachParticle(parkUnit, "location", jogVerb) === "공원에서", "공원 + 조깅하다 -> 공원에서");
-assert(attachParticle(hotelUnit, "location", lodgeVerb) === "호텔에서", "호텔 + 숙박하다 -> 호텔에서");
-assert(attachParticle(marketUnit, "location", buyVerb) === "시장에서", "시장 + 사다 -> 시장에서");
-assert(attachParticle(homeUnit, "location", restVerb) === "집에서", "집 + 쉬다 -> 집에서");
+assert(attachParticle(restaurantUnit, K.LOCATION, eatVerb) === "식당에서", "식당 + 먹다 -> 식당에서");
+assert(attachParticle(libraryUnit, K.LOCATION, studyVerb) === "도서관에서", "도서관 + 공부하다 -> 도서관에서");
+assert(attachParticle(companyUnit, K.LOCATION, workVerb) === "회사에서", "회사 + 일하다 -> 회사에서");
+assert(attachParticle(cafeUnit, K.LOCATION, meetVerb) === "카페에서", "카페 + 만나다 -> 카페에서");
+assert(attachParticle(parkUnit, K.LOCATION, jogVerb) === "공원에서", "공원 + 조깅하다 -> 공원에서");
+assert(attachParticle(hotelUnit, K.LOCATION, lodgeVerb) === "호텔에서", "호텔 + 숙박하다 -> 호텔에서");
+assert(attachParticle(marketUnit, K.LOCATION, buyVerb) === "시장에서", "시장 + 사다 -> 시장에서");
+assert(attachParticle(homeUnit, K.LOCATION, restVerb) === "집에서", "집 + 쉬다 -> 집에서");
 
 // Explicit dynamic type override
-assert(attachParticle("피시방", "location", null, { locativeType: "dynamic" }) === "피시방에서", "Explicit dynamic type -> 피시방에서");
+assert(attachParticle("피시방", K.LOCATION, null, { locativeType: "dynamic" }) === "피시방에서", "Explicit dynamic type -> 피시방에서");
 assert(attachParticle("노래방", "location_dynamic") === "노래방에서", "location_dynamic -> 노래방에서");
 
 // Negative assertions: Dynamic activity site never takes -에
-assert(attachParticle(restaurantUnit, "location", eatVerb) !== "식당에", "식당 + 먹다 NEVER produces *식당에");
-assert(attachParticle(libraryUnit, "location", studyVerb) !== "도서관에", "도서관 + 공부하다 NEVER produces *도서관에");
-assert(attachParticle(parkUnit, "location", jogVerb) !== "공원에", "공원 + 조깅하다 NEVER produces *공원에");
-assert(attachParticle(hotelUnit, "location", lodgeVerb) !== "호텔에", "호텔 + 숙박하다 NEVER produces *호텔에");
+assert(attachParticle(restaurantUnit, K.LOCATION, eatVerb) !== "식당에", "식당 + 먹다 NEVER produces *식당에");
+assert(attachParticle(libraryUnit, K.LOCATION, studyVerb) !== "도서관에", "도서관 + 공부하다 NEVER produces *도서관에");
+assert(attachParticle(parkUnit, K.LOCATION, jogVerb) !== "공원에", "공원 + 조깅하다 NEVER produces *공원에");
+assert(attachParticle(hotelUnit, K.LOCATION, lodgeVerb) !== "호텔에", "호텔 + 숙박하다 NEVER produces *호텔에");
 
 // -----------------------------------------------------------------------------
 // [Suite 4] Dative Animacy & Respect: Respected Elders (-께)
@@ -201,24 +201,24 @@ const generalCall = findUnit("전화하다", K.ACTION_VERB);
 const generalAsk = findUnit("묻다", K.ACTION_VERB);
 
 // Respected elder nouns taking dative
-assert(attachParticle(teacherUnit, "dative", giveHumble) === "선생님께", "선생님 + 드리다 -> 선생님께");
-assert(attachParticle(parentsUnit, "dative", tellHumble) === "부모님께", "부모님 + 말씀드리다 -> 부모님께");
-assert(attachParticle("교수님", "dative", askHumble) === "교수님께", "교수님 + 여쭙다 -> 교수님께");
-assert(attachParticle(grandmaUnit, "dative", giveHumble) === "할머니께", "할머니 + 드리다 -> 할머니께");
-assert(attachParticle(fatherUnit, "dative", callHumble) === "아버지께", "아버지 + 전화드리다 -> 아버지께");
-assert(attachParticle(motherUnit, "dative", greetHumble) === "어머니께", "어머니 + 인사드리다 -> 어머니께");
+assert(attachParticle(teacherUnit, K.DATIVE, giveHumble) === "선생님께", "선생님 + 드리다 -> 선생님께");
+assert(attachParticle(parentsUnit, K.DATIVE, tellHumble) === "부모님께", "부모님 + 말씀드리다 -> 부모님께");
+assert(attachParticle("교수님", K.DATIVE, askHumble) === "교수님께", "교수님 + 여쭙다 -> 교수님께");
+assert(attachParticle(grandmaUnit, K.DATIVE, giveHumble) === "할머니께", "할머니 + 드리다 -> 할머니께");
+assert(attachParticle(fatherUnit, K.DATIVE, callHumble) === "아버지께", "아버지 + 전화드리다 -> 아버지께");
+assert(attachParticle(motherUnit, K.DATIVE, greetHumble) === "어머니께", "어머니 + 인사드리다 -> 어머니께");
 
 // Elder nouns with general verbs also take -께
-assert(attachParticle(teacherUnit, "dative", generalCall) === "선생님께", "선생님 + 전화하다 -> 선생님께");
-assert(attachParticle(parentsUnit, "dative", generalAsk) === "부모님께", "부모님 + 묻다 -> 부모님께");
+assert(attachParticle(teacherUnit, K.DATIVE, generalCall) === "선생님께", "선생님 + 전화하다 -> 선생님께");
+assert(attachParticle(parentsUnit, K.DATIVE, generalAsk) === "부모님께", "부모님 + 묻다 -> 부모님께");
 
 // Explicit dative_honorific override
 assert(attachParticle("어르신", "dative_honorific") === "어르신께", "dative_honorific -> 어르신께");
-assert(attachParticle("선배", "dative", null, { honorific: true }) === "선배께", "dative + { honorific: true } -> 선배께");
+assert(attachParticle("선배", K.DATIVE, null, { honorific: true }) === "선배께", "dative + { honorific: true } -> 선배께");
 
 // Negative assertions
-assert(attachParticle(teacherUnit, "dative", giveHumble) !== "선생님에게", "선생님 + 드리다 NEVER produces *선생님에게");
-assert(attachParticle(parentsUnit, "dative", tellHumble) !== "부모님한테", "부모님 + 말씀드리다 NEVER produces *부모님한테");
+assert(attachParticle(teacherUnit, K.DATIVE, giveHumble) !== "선생님에게", "선생님 + 드리다 NEVER produces *선생님에게");
+assert(attachParticle(parentsUnit, K.DATIVE, tellHumble) !== "부모님한테", "부모님 + 말씀드리다 NEVER produces *부모님한테");
 
 // -----------------------------------------------------------------------------
 // [Suite 5] Dative Animacy & Respect: Inanimate Institutions (-에)
@@ -232,20 +232,20 @@ const postOfficeUnit = findUnit("우체국", K.NOUN);
 const sendVerb = findUnit("보내다", K.ACTION_VERB);
 const contactVerb = findUnit("연락하다", K.ACTION_VERB);
 
-assert(attachParticle(companyUnit, "dative", generalCall) === "회사에", "회사 + 전화하다 -> 회사에");
-assert(attachParticle(bankUnit, "dative", sendVerb) === "은행에", "은행 + 보내다 -> 은행에");
-assert(attachParticle(schoolUnit, "dative", generalCall) === "학교에", "학교 + 전화하다 -> 학교에");
-assert(attachParticle(hospitalUnit, "dative", contactVerb) === "병원에", "병원 + 연락하다 -> 병원에");
-assert(attachParticle(postOfficeUnit, "dative", sendVerb) === "우체국에", "우체국 + 보내다 -> 우체국에");
+assert(attachParticle(companyUnit, K.DATIVE, generalCall) === "회사에", "회사 + 전화하다 -> 회사에");
+assert(attachParticle(bankUnit, K.DATIVE, sendVerb) === "은행에", "은행 + 보내다 -> 은행에");
+assert(attachParticle(schoolUnit, K.DATIVE, generalCall) === "학교에", "학교 + 전화하다 -> 학교에");
+assert(attachParticle(hospitalUnit, K.DATIVE, contactVerb) === "병원에", "병원 + 연락하다 -> 병원에");
+assert(attachParticle(postOfficeUnit, K.DATIVE, sendVerb) === "우체국에", "우체국 + 보내다 -> 우체국에");
 
 // Explicit dative_inanimate override
 assert(attachParticle("시청", "dative_inanimate") === "시청에", "dative_inanimate -> 시청에");
-assert(attachParticle("경찰서", "dative", null, { dativeType: "inanimate" }) === "경찰서에", "dative + { dativeType: 'inanimate' } -> 경찰서에");
+assert(attachParticle("경찰서", K.DATIVE, null, { dativeType: "inanimate" }) === "경찰서에", "dative + { dativeType: 'inanimate' } -> 경찰서에");
 
 // Negative assertions: Inanimate institutions strictly NEVER take -에게 or -한테
-assert(attachParticle(companyUnit, "dative", generalCall) !== "회사에게", "회사 + 전화하다 NEVER produces *회사에게");
-assert(attachParticle(bankUnit, "dative", sendVerb) !== "은행에게", "은행 + 보내다 NEVER produces *은행에게");
-assert(attachParticle(schoolUnit, "dative", generalCall) !== "학교한테", "학교 + 전화하다 NEVER produces *학교한테");
+assert(attachParticle(companyUnit, K.DATIVE, generalCall) !== "회사에게", "회사 + 전화하다 NEVER produces *회사에게");
+assert(attachParticle(bankUnit, K.DATIVE, sendVerb) !== "은행에게", "은행 + 보내다 NEVER produces *은행에게");
+assert(attachParticle(schoolUnit, K.DATIVE, generalCall) !== "학교한테", "학교 + 전화하다 NEVER produces *학교한테");
 
 // -----------------------------------------------------------------------------
 // [Suite 6] Dative Animacy & Respect: Animate Non-Elders (-에게 vs -한테)
@@ -260,20 +260,20 @@ const giveVerb = findUnit("주다", K.ACTION_VERB);
 const teachVerb = findUnit("가르치다", K.ACTION_VERB);
 
 // Formal / Written mode (-에게)
-assert(attachParticle(friendUnit, "dative", giveVerb) === "친구에게", "친구 + 주다 -> 친구에게");
-assert(attachParticle(youngerBrother, "dative", generalCall) === "남동생에게", "남동생 + 전화하다 -> 남동생에게");
-assert(attachParticle(studentUnit, "dative", teachVerb) === "학생에게", "학생 + 가르치다 -> 학생에게");
-assert(attachParticle(dogUnit, "dative", giveVerb) === "강아지에게", "강아지 + 주다 -> 강아지에게");
-assert(attachParticle("고양이", "dative", giveVerb) === "고양이에게", "고양이 + 주다 -> 고양이에게");
+assert(attachParticle(friendUnit, K.DATIVE, giveVerb) === "친구에게", "친구 + 주다 -> 친구에게");
+assert(attachParticle(youngerBrother, K.DATIVE, generalCall) === "남동생에게", "남동생 + 전화하다 -> 남동생에게");
+assert(attachParticle(studentUnit, K.DATIVE, teachVerb) === "학생에게", "학생 + 가르치다 -> 학생에게");
+assert(attachParticle(dogUnit, K.DATIVE, giveVerb) === "강아지에게", "강아지 + 주다 -> 강아지에게");
+assert(attachParticle("고양이", K.DATIVE, giveVerb) === "고양이에게", "고양이 + 주다 -> 고양이에게");
 
 // Spoken / Colloquial mode (-한테)
-assert(attachParticle(friendUnit, "dative", giveVerb, { spoken: true }) === "친구한테", "친구 + 주다 { spoken: true } -> 친구한테");
-assert(attachParticle(youngerBrother, "dative", generalCall, { formality: "spoken" }) === "남동생한테", "남동생 + 전화하다 { formality: 'spoken' } -> 남동생한테");
+assert(attachParticle(friendUnit, K.DATIVE, giveVerb, { spoken: true }) === "친구한테", "친구 + 주다 { spoken: true } -> 친구한테");
+assert(attachParticle(youngerBrother, K.DATIVE, generalCall, { formality: "spoken" }) === "남동생한테", "남동생 + 전화하다 { formality: 'spoken' } -> 남동생한테");
 assert(attachParticle("아이", "dative_spoken") === "아이한테", "dative_spoken -> 아이한테");
 
 // Negative assertions
-assert(attachParticle(friendUnit, "dative", giveVerb) !== "친구에", "친구 + 주다 NEVER produces *친구에");
-assert(attachParticle(youngerBrother, "dative", generalCall) !== "남동생에", "남동생 + 전화하다 NEVER produces *남동생에");
+assert(attachParticle(friendUnit, K.DATIVE, giveVerb) !== "친구에", "친구 + 주다 NEVER produces *친구에");
+assert(attachParticle(youngerBrother, K.DATIVE, generalCall) !== "남동생에", "남동생 + 전화하다 NEVER produces *남동생에");
 
 // -----------------------------------------------------------------------------
 // [Suite 7] Instrumental -(으)로 Batchim & Coda ㄹ Exception Concord
@@ -338,8 +338,8 @@ assert(attachParticle(friendUnit, "comitative", null, { spoken: true }) === "친
 assert(attachParticle(teacherUnit, "comitative", null, { spoken: true }) === "선생님하고", "선생님 + { spoken: true } -> 선생님하고");
 
 // Informal: vowel -> -랑, batchim -> -이랑
-assert(attachParticle(friendUnit, "comitative", null, { formality: "informal" }) === "친구랑", "친구 + { informal } -> 친구랑");
-assert(attachParticle(teacherUnit, "comitative", null, { formality: "informal" }) === "선생님이랑", "선생님 + { informal } -> 선생님이랑");
+assert(attachParticle(friendUnit, "comitative", null, { formality: K.INFORMAL }) === "친구랑", "친구 + { informal } -> 친구랑");
+assert(attachParticle(teacherUnit, "comitative", null, { formality: K.INFORMAL }) === "선생님이랑", "선생님 + { informal } -> 선생님이랑");
 
 // -----------------------------------------------------------------------------
 // [Suite 9] Person Source Ablative (-에게서/-한테서) & Subject Honorific (-께서)
@@ -352,15 +352,15 @@ assert(attachParticle(parentsUnit, "source_person") === "부모님에게서", "�
 
 assert(attachParticle(teacherUnit, "subject_honorific") === "선생님께서", "선생님 subject_honorific -> 선생님께서");
 assert(attachParticle(parentsUnit, "subject_honorific") === "부모님께서", "부모님 subject_honorific -> 부모님께서");
-assert(attachParticle(teacherUnit, "subject", null, { honorific: true }) === "선생님께서", "선생님 subject { honorific: true } -> 선생님께서");
+assert(attachParticle(teacherUnit, K.SUBJECT, null, { honorific: true }) === "선생님께서", "선생님 subject { honorific: true } -> 선생님께서");
 
 // Standard subject and object
-assert(attachParticle(teacherUnit, "subject") === "선생님이", "선생님 subject -> 선생님이");
-assert(attachParticle(friendUnit, "subject") === "친구가", "친구 subject -> 친구가");
+assert(attachParticle(teacherUnit, K.SUBJECT) === "선생님이", "선생님 subject -> 선생님이");
+assert(attachParticle(friendUnit, K.SUBJECT) === "친구가", "친구 subject -> 친구가");
 assert(attachParticle(pencilUnit, K.OBJECT) === "연필을", "연필 object -> 연필을");
 assert(attachParticle("사과", K.OBJECT) === "사과를", "사과 object -> 사과를");
-assert(attachParticle(teacherUnit, "topic") === "선생님은", "선생님 topic -> 선생님은");
-assert(attachParticle(friendUnit, "topic") === "친구는", "친구 topic -> 친구는");
+assert(attachParticle(teacherUnit, K.TOPIC) === "선생님은", "선생님 topic -> 선생님은");
+assert(attachParticle(friendUnit, K.TOPIC) === "친구는", "친구 topic -> 친구는");
 
 // -----------------------------------------------------------------------------
 // [Suite 10] Phrase Builders & VP_AVst Token Option Integration

@@ -162,7 +162,7 @@ class VerifiedSentencesView {
 		}
 		// Default to unlocking the first non-fixed slot if empty
 		if (this.unlockedSlotIndices.size === 0) {
-			const nonFixed = tpl.slots.findIndex(s => !(s.inflection && s.inflection.stemForm === "fixed_grammar"));
+			const nonFixed = tpl.slots.findIndex(s => !(s.inflection && s.inflection.stemForm === K.FIXED_GRAMMAR));
 			this.unlockedSlotIndices.add(nonFixed >= 0 ? nonFixed : 0);
 		}
 	}
@@ -206,7 +206,7 @@ class VerifiedSentencesView {
 			if (tpl && Array.isArray(tpl.slots)) {
 				this.unlockedSlotIndices.clear();
 				tpl.slots.forEach((s, sIdx) => {
-					if (sIdx !== idx && !(s.inflection && s.inflection.stemForm === "fixed_grammar")) {
+					if (sIdx !== idx && !(s.inflection && s.inflection.stemForm === K.FIXED_GRAMMAR)) {
 						this.unlockedSlotIndices.add(sIdx);
 					}
 				});
@@ -262,7 +262,7 @@ class VerifiedSentencesView {
 		this.testVaryMode = 'selected';
 		this.unlockedSlotIndices.clear();
 		tpl.slots.forEach((s, idx) => {
-			if (!(s.inflection && s.inflection.stemForm === "fixed_grammar")) {
+			if (!(s.inflection && s.inflection.stemForm === K.FIXED_GRAMMAR)) {
 				this.unlockedSlotIndices.add(idx);
 			}
 		});
@@ -323,7 +323,7 @@ class VerifiedSentencesView {
 		this.container.querySelectorAll('.btn-vary-this-slot').forEach(b => {
 			const sIdx = Number(b.dataset.slotIndex);
 			const slot = tpl.slots && tpl.slots[sIdx];
-			const isFixed = slot && slot.inflection && slot.inflection.stemForm === 'fixed_grammar';
+			const isFixed = slot && slot.inflection && slot.inflection.stemForm === K.FIXED_GRAMMAR;
 			const isU = this.unlockedSlotIndices.has(sIdx);
 			b.className = `btn btn-sm btn-vary-this-slot ${isU ? 'btn-primary' : 'btn-secondary'} ${isFixed ? 'btn-disabled-locked' : ''}`;
 			b.textContent = isFixed ? '🔒 Fixed' : (isU ? '⚡ Varied (Click to Lock)' : '🔒 Original (Click to Vary)');
@@ -757,7 +757,7 @@ class VerifiedSentencesView {
 								${(tpl.slots || []).map((slot, sIdx) => {
 									const stat = analysis.slotStats[sIdx] || { count: 0, isSingleChoice: false };
 									const isSel = (this.unlockedSlotIndices.has(sIdx) && this.unlockedSlotIndices.size === 1);
-									const isFixed = slot.inflection && slot.inflection.stemForm === 'fixed_grammar';
+									const isFixed = slot.inflection && slot.inflection.stemForm === K.FIXED_GRAMMAR;
 									const countNote = isFixed ? '🔒 fixed' : `${stat.count} candidate${stat.count === 1 ? '' : 's'}`;
 									return `<option value="${sIdx}" ${isSel ? 'selected' : ''}>
 										Slot #${sIdx + 1}: [${this._escapeHtml(slot.pos)}] "${this._escapeHtml(slot.originalKo)}" (${countNote})
@@ -913,7 +913,7 @@ class VerifiedSentencesView {
 						${sentenceObj.slotChoices.map(sc => {
 							const isThisVaried = Boolean(sc.isVariedSlot);
 							const slotDef = tpl.slots && tpl.slots[sc.slotIndex];
-							const isFixed = slotDef?.inflection?.stemForm === 'fixed_grammar';
+							const isFixed = slotDef?.inflection?.stemForm === K.FIXED_GRAMMAR;
 							const stat = (gen && typeof gen.getSlotCandidates === 'function' && slotDef)
 								? gen.getSlotCandidates(slotDef)
 								: null;
@@ -955,7 +955,7 @@ class VerifiedSentencesView {
 	_renderSlotCardHtml(tpl, slot, idx, stat) {
 		const tags = Array.isArray(slot.tags) ? slot.tags : [];
 		const grammarList = Array.isArray(slot.grammar) ? slot.grammar : [];
-		const isFixedGrammar = slot.inflection && slot.inflection.stemForm === 'fixed_grammar';
+		const isFixedGrammar = slot.inflection && slot.inflection.stemForm === K.FIXED_GRAMMAR;
 		const availableTags = this._getAvailableSemanticTags();
 
 		let poolBannerHtml = '';
@@ -1032,7 +1032,7 @@ class VerifiedSentencesView {
 							${g.en ? `— ${this._escapeHtml(g.en)}` : ''}
 						</span>
 					`).join('') : `
-						<span class="slot-no-grammar">Bare stem / uninflected (${this._escapeHtml(slot.morphTemplate || 'nominal')})</span>
+						<span class="slot-no-grammar">Bare stem / uninflected (${this._escapeHtml(slot.morphTemplate || K.NOMINAL)})</span>
 					`}
 				</div>
 

@@ -140,10 +140,10 @@ assert(attachParticle(grandmaUnit, "subject_honorific") === "할머니께서", "
 assert(attachParticle(teacherUnit, "topic_honorific") === "선생님께서는", "선생님 + topic_honorific -> 선생님께서는");
 assert(attachParticle(grandmaUnit, "topic_honorific") === "할머니께서는", "할머니 + topic_honorific -> 할머니께서는");
 
-assert(attachParticle(teacherUnit, "subject", null, { honorific: true }) === "선생님께서", "선생님 + subject { honorific: true } -> 선생님께서");
-assert(attachParticle(grandpaUnit, "subject", null, { honorific: true }) === "할아버지께서", "할아버지 + subject { honorific: true } -> 할아버지께서");
-assert(attachParticle(friendUnit, "subject") === "친구가", "친구 + subject -> 친구가");
-assert(attachParticle(studentUnit, "subject") === "학생이", "학생 + subject -> 학생이");
+assert(attachParticle(teacherUnit, K.SUBJECT, null, { honorific: true }) === "선생님께서", "선생님 + subject { honorific: true } -> 선생님께서");
+assert(attachParticle(grandpaUnit, K.SUBJECT, null, { honorific: true }) === "할아버지께서", "할아버지 + subject { honorific: true } -> 할아버지께서");
+assert(attachParticle(friendUnit, K.SUBJECT) === "친구가", "친구 + subject -> 친구가");
+assert(attachParticle(studentUnit, K.SUBJECT) === "학생이", "학생 + subject -> 학생이");
 
 // -----------------------------------------------------------------------------
 // [Suite 2] Predicate Infix -(으)시- Conjugation Engine (Regular & Irregular)
@@ -155,7 +155,7 @@ assert(getHonorificPredicate("가다", "polite") === "가세요", "가다 -> 가
 assert(getHonorificPredicate("가다", "formal") === "가십니다", "가다 -> 가십니다 (formal)");
 assert(getHonorificPredicate("가다", "formal_question") === "가십니까?", "가다 -> 가십니까? (formal question)");
 assert(getHonorificPredicate("가다", "imperative_formal") === "가십시오", "가다 -> 가십시오 (formal imperative)");
-assert(getHonorificPredicate("가다", "past") === "가셨어요", "가다 -> 가셨어요 (past polite)");
+assert(getHonorificPredicate("가다", K.PAST) === "가셨어요", "가다 -> 가셨어요 (past polite)");
 assert(getHonorificPredicate("가다", "stem") === "가시", "가다 -> 가시 (stem)");
 
 // Regular consonant stem: 읽다
@@ -163,30 +163,30 @@ assert(getHonorificPredicate("읽다", "polite") === "읽으세요", "읽다 -> 
 assert(getHonorificPredicate("읽다", "formal") === "읽으십니다", "읽다 -> 읽으십니다 (formal)");
 assert(getHonorificPredicate("읽다", "formal_question") === "읽으십니까?", "읽다 -> 읽으십니까? (formal question)");
 assert(getHonorificPredicate("읽다", "imperative_formal") === "읽으십시오", "읽다 -> 읽으십시오 (formal imperative)");
-assert(getHonorificPredicate("읽다", "past") === "읽으셨어요", "읽다 -> 읽으셨어요 (past polite)");
+assert(getHonorificPredicate("읽다", K.PAST) === "읽으셨어요", "읽다 -> 읽으셨어요 (past polite)");
 
 // ㄹ-drop stem: 살다, 만들다, 알다
 assert(getHonorificPredicate("살다", "polite") === "사세요", "살다 (ㄹ-drop) -> 사세요");
 assert(getHonorificPredicate("살다", "formal") === "사십니다", "살다 (ㄹ-drop) -> 사십니다");
-assert(getHonorificPredicate("살다", "past") === "사셨어요", "살다 (ㄹ-drop) -> 사셨어요");
+assert(getHonorificPredicate("살다", K.PAST) === "사셨어요", "살다 (ㄹ-drop) -> 사셨어요");
 assert(getHonorificPredicate("만들다", "polite") === "만드세요", "만들다 (ㄹ-drop) -> 만드세요");
 assert(getHonorificPredicate("알다", "polite") === "아세요", "알다 (ㄹ-drop) -> 아세요");
 
 // ㄷ-irregular stem: 듣다, 걷다
 assert(getHonorificPredicate("듣다", "polite") === "들으세요", "듣다 (ㄷ-irregular) -> 들으세요");
 assert(getHonorificPredicate("듣다", "formal") === "들으십니다", "듣다 (ㄷ-irregular) -> 들으십니다");
-assert(getHonorificPredicate("듣다", "past") === "들으셨어요", "듣다 (ㄷ-irregular) -> 들으셨어요");
+assert(getHonorificPredicate("듣다", K.PAST) === "들으셨어요", "듣다 (ㄷ-irregular) -> 들으셨어요");
 assert(getHonorificPredicate("걷다", "polite") === "걸으세요", "걷다 (ㄷ-irregular) -> 걸으세요");
 
 // ㅂ-irregular stem: 돕다
 assert(getHonorificPredicate("돕다", "polite") === "도우세요", "돕다 (ㅂ-irregular) -> 도우세요");
 assert(getHonorificPredicate("돕다", "formal") === "도우십니다", "돕다 (ㅂ-irregular) -> 도우십니다");
-assert(getHonorificPredicate("돕다", "past") === "도우셨어요", "돕다 (ㅂ-irregular) -> 도우셨어요");
+assert(getHonorificPredicate("돕다", K.PAST) === "도우셨어요", "돕다 (ㅂ-irregular) -> 도우셨어요");
 
 // ㅅ-irregular stem: 짓다
 assert(getHonorificPredicate("짓다", "polite") === "지으세요", "짓다 (ㅅ-irregular) -> 지으세요");
 assert(getHonorificPredicate("짓다", "formal") === "지으십니다", "짓다 (ㅅ-irregular) -> 지으십니다");
-assert(getHonorificPredicate("짓다", "past") === "지으셨어요", "짓다 (ㅅ-irregular) -> 지으셨어요");
+assert(getHonorificPredicate("짓다", K.PAST) === "지으셨어요", "짓다 (ㅅ-irregular) -> 지으셨어요");
 
 // -----------------------------------------------------------------------------
 // [Suite 3] Lexical Verb Suppletions for Elder Subjects
@@ -210,15 +210,15 @@ assert(isForbiddenForElder("죽다"), "죽다 is forbidden directly for elder su
 // Conjugation of suppletive verbs
 assert(getHonorificPredicate("자다", "polite") === "주무세요", "자다 -> 주무세요");
 assert(getHonorificPredicate("자다", "formal") === "주무십니다", "자다 -> 주무십니다");
-assert(getHonorificPredicate("자다", "past") === "주무셨어요", "자다 -> 주무셨어요");
+assert(getHonorificPredicate("자다", K.PAST) === "주무셨어요", "자다 -> 주무셨어요");
 
 assert(getHonorificPredicate("먹다", "polite") === "드세요", "먹다 -> 드세요");
 assert(getHonorificPredicate("먹다", "formal") === "드십니다", "먹다 -> 드십니다");
-assert(getHonorificPredicate("먹다", "past") === "드셨어요", "먹다 -> 드셨어요");
+assert(getHonorificPredicate("먹다", K.PAST) === "드셨어요", "먹다 -> 드셨어요");
 
 assert(getHonorificPredicate("있다", "polite") === "계세요", "있다 (existence) -> 계세요");
 assert(getHonorificPredicate("있다", "formal") === "계십니다", "있다 (existence) -> 계십니다");
-assert(getHonorificPredicate("있다", "past") === "계셨어요", "있다 (existence) -> 계셨어요");
+assert(getHonorificPredicate("있다", K.PAST) === "계셨어요", "있다 (existence) -> 계셨어요");
 
 // Indirect honorific for elder's attribute/possession: 시간이 있으세요 / 있으십니다
 assert(getHonorificPredicate("있다", "polite", { indirectHonorific: true }) === "있으세요", "있다 (indirect honorific) -> 있으세요");
@@ -226,9 +226,9 @@ assert(getHonorificPredicate("있다", "formal", { indirectHonorific: true }) ==
 
 assert(getHonorificPredicate("아프다", "polite") === "편찮으세요", "아프다 -> 편찮으세요");
 assert(getHonorificPredicate("아프다", "formal") === "편찮으십니다", "아프다 -> 편찮으십니다");
-assert(getHonorificPredicate("아프다", "past") === "편찮으셨어요", "아프다 -> 편찮으셨어요");
+assert(getHonorificPredicate("아프다", K.PAST) === "편찮으셨어요", "아프다 -> 편찮으셨어요");
 
-assert(getHonorificPredicate("죽다", "past") === "돌아가셨어요", "죽다 -> 돌아가셨어요");
+assert(getHonorificPredicate("죽다", K.PAST) === "돌아가셨어요", "죽다 -> 돌아가셨어요");
 assert(getHonorificPredicate("죽다", "past_formal") === "돌아가셨습니다", "죽다 -> 돌아가셨습니다");
 
 // -----------------------------------------------------------------------------
@@ -257,15 +257,15 @@ assert(getPlainCounterpart("분") === "사람", "분 plain counterpart is 사람
 // -----------------------------------------------------------------------------
 console.log("\n[5/10] Dative Animacy & Recipient Respect (-께 vs -에게 / -한테)");
 
-assert(attachParticle(teacherUnit, "dative") === "선생님께", "선생님 dative -> 선생님께");
-assert(attachParticle(grandmaUnit, "dative") === "할머니께", "할머니 dative -> 할머니께");
-assert(attachParticle(parentsUnit, "dative") === "부모님께", "부모님 dative -> 부모님께");
-assert(attachParticle(profUnit, "dative") === "교수님께", "교수님 dative -> 교수님께");
-assert(attachParticle(bossUnit, "dative") === "사장님께", "사장님 dative -> 사장님께");
+assert(attachParticle(teacherUnit, K.DATIVE) === "선생님께", "선생님 dative -> 선생님께");
+assert(attachParticle(grandmaUnit, K.DATIVE) === "할머니께", "할머니 dative -> 할머니께");
+assert(attachParticle(parentsUnit, K.DATIVE) === "부모님께", "부모님 dative -> 부모님께");
+assert(attachParticle(profUnit, K.DATIVE) === "교수님께", "교수님 dative -> 교수님께");
+assert(attachParticle(bossUnit, K.DATIVE) === "사장님께", "사장님 dative -> 사장님께");
 
-assert(attachParticle(friendUnit, "dative") === "친구에게", "친구 dative (formal) -> 친구에게");
-assert(attachParticle(friendUnit, "dative", null, { spoken: true }) === "친구한테", "친구 dative (spoken) -> 친구한테");
-assert(attachParticle(studentUnit, "dative") === "학생에게", "학생 dative (formal) -> 학생에게");
+assert(attachParticle(friendUnit, K.DATIVE) === "친구에게", "친구 dative (formal) -> 친구에게");
+assert(attachParticle(friendUnit, K.DATIVE, null, { spoken: true }) === "친구한테", "친구 dative (spoken) -> 친구한테");
+assert(attachParticle(studentUnit, K.DATIVE) === "학생에게", "학생 dative (formal) -> 학생에게");
 
 // -----------------------------------------------------------------------------
 // [Suite 6] Humble Predicate Suppletions toward Elder Recipients
@@ -289,7 +289,7 @@ assert(isHumbleWord("뵙다"), "뵙다 is identified as humble word");
 // Conjugation of humble predicates
 assert(getHumblePredicate("주다", "polite") === "드려요", "주다 -> 드려요 (polite humble)");
 assert(getHumblePredicate("주다", "formal") === "드립니다", "주다 -> 드립니다 (formal humble)");
-assert(getHumblePredicate("주다", "past") === "드렸어요", "주다 -> 드렸어요 (past polite humble)");
+assert(getHumblePredicate("주다", K.PAST) === "드렸어요", "주다 -> 드렸어요 (past polite humble)");
 assert(getHumblePredicate("주다", "past_formal") === "드렸습니다", "주다 -> 드렸습니다 (past formal humble)");
 
 assert(getHumblePredicate("말하다", "polite") === "말씀드려요", "말하다 -> 말씀드려요 (polite humble)");

@@ -1,3 +1,6 @@
+// Universal Constants
+var { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+
 /**
  * Feature 11: Clausal Connective Distractor & Quiz Item Generation
  *
@@ -93,13 +96,13 @@ function generateClausalDistractor(arg1, arg2, arg3, arg4) {
 
 		case "imperative_in_clause2": {
 			let impC2 = c2;
-			if (detectClauseMood(impC2) !== "imperative") {
+			if (detectClauseMood(impC2) !== K.IMPERATIVE) {
 				const c2Words = c2.split(/\s+/);
 				const lastWord = c2Words[c2Words.length - 1].replace(/[.!?,;~]+$/, "");
 				const c2Prefix = c2Words.slice(0, -1).join(" ");
 				const verbCandidate = getVerbUnit(lastWord) || getVerbUnit(lastWord + "다") || getVerbUnit(getStem(lastWord) + "다");
-				if (verbCandidate && canTakeMood(verbCandidate, "imperative")) {
-					impC2 = (c2Prefix ? c2Prefix + " " : "") + buildMoodPredicate(verbCandidate, "imperative", "polite");
+				if (verbCandidate && canTakeMood(verbCandidate, K.IMPERATIVE)) {
+					impC2 = (c2Prefix ? c2Prefix + " " : "") + buildMoodPredicate(verbCandidate, K.IMPERATIVE, "polite");
 				} else {
 					impC2 = (c2Prefix ? c2Prefix + " " : "") + "하세요";
 				}
@@ -115,7 +118,7 @@ function generateClausalDistractor(arg1, arg2, arg3, arg4) {
 			const c1Prefix = c1Words.slice(0, -1).join(" ");
 			const c1Verb = getVerbUnit(lastC1) || getVerbUnit(lastC1 + "다") || getVerbUnit(getStem(lastC1) + "다");
 			const conjC1Word = c1Verb
-				? conjugatePredicate(c1Verb, "polite", "present").replace(/요$/, "서")
+				? conjugatePredicate(c1Verb, "polite", K.PRESENT).replace(/요$/, "서")
 				: applyMorphology(lastC1 + "아/어서");
 			const conjC1 = (c1Prefix ? c1Prefix + " " : "") + conjC1Word;
 
@@ -124,13 +127,13 @@ function generateClausalDistractor(arg1, arg2, arg3, arg4) {
 
 		case "propositive_in_clause2": {
 			let propC2 = c2;
-			if (detectClauseMood(propC2) !== "propositive") {
+			if (detectClauseMood(propC2) !== K.PROPOSITIVE) {
 				const c2Words = c2.split(/\s+/);
 				const lastWord = c2Words[c2Words.length - 1].replace(/[.!?,;~]+$/, "");
 				const c2Prefix = c2Words.slice(0, -1).join(" ");
 				const verbCandidate = getVerbUnit(lastWord) || getVerbUnit(lastWord + "다") || getVerbUnit(getStem(lastWord) + "다");
-				if (verbCandidate && canTakeMood(verbCandidate, "propositive")) {
-					propC2 = (c2Prefix ? c2Prefix + " " : "") + buildMoodPredicate(verbCandidate, "propositive", "formal");
+				if (verbCandidate && canTakeMood(verbCandidate, K.PROPOSITIVE)) {
+					propC2 = (c2Prefix ? c2Prefix + " " : "") + buildMoodPredicate(verbCandidate, K.PROPOSITIVE, "formal");
 				} else {
 					propC2 = (c2Prefix ? c2Prefix + " " : "") + "갑시다";
 				}
@@ -141,7 +144,7 @@ function generateClausalDistractor(arg1, arg2, arg3, arg4) {
 			const c1Prefix = c1Words.slice(0, -1).join(" ");
 			const c1Verb = getVerbUnit(lastC1) || getVerbUnit(lastC1 + "다") || getVerbUnit(getStem(lastC1) + "다");
 			const conjC1Word = c1Verb
-				? conjugatePredicate(c1Verb, "polite", "present").replace(/요$/, "서")
+				? conjugatePredicate(c1Verb, "polite", K.PRESENT).replace(/요$/, "서")
 				: applyMorphology(lastC1 + "아/어서");
 			const conjC1 = (c1Prefix ? c1Prefix + " " : "") + conjC1Word;
 
@@ -212,7 +215,7 @@ function applyClausalConcord(input, options = {}) {
 	const parsed = parseSentenceToClauses(str);
 	if (parsed && (parsed.connective === "-아/어서" || parsed.connective === "-기 때문에" || parsed.connective.includes("아/어서") || parsed.connective.includes("기 때문에"))) {
 		const mood = detectClauseMood(parsed.clause2);
-		if (mood === "imperative" || mood === "propositive" || mood === "suggestive") {
+		if (mood === K.IMPERATIVE || mood === K.PROPOSITIVE || mood === "suggestive") {
 			const c1 = parsed.clause1;
 			let c1WithNikka = "";
 			if (c1.endsWith("와") || c1.endsWith("오")) c1WithNikka = c1.replace(/와$|오$/, "오니까");

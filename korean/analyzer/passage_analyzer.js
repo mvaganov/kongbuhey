@@ -87,7 +87,7 @@ function analyzePassage(passageText, passageName = "Passage", explicitIndex = nu
 							missingVocab.get(k).contexts.push(`Sent ${sent.sentenceIndex}: ${t.surface}`);
 						}
 					});
-				} else if (t.category === "numeric_phrase" && t.lexical.counter) {
+				} else if (t.category === K.NUMERIC_PHRASE && t.lexical.counter) {
 					const c = t.lexical.counter;
 					if (c.unit) {
 						const id = c.unit[DATA_SCHEMA.Id];

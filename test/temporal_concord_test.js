@@ -202,7 +202,7 @@ console.log("\n[4/10] Past-Restricted Time Words & Predicate Concord");
 
 const pastTestWords = ['어제', '그제', '작년', '지난주', '지난달', '아까', '방금', '옛날'];
 for (const word of pastTestWords) {
-	assert(getTemporalPolarity(word) === "past", `getTemporalPolarity('${word}') is 'past'`);
+	assert(getTemporalPolarity(word) === K.PAST, `getTemporalPolarity('${word}') is 'past'`);
 
 	// Past tense pairings -> valid
 	const validInformal = `${word} 도서관에 갔어요`;
@@ -236,7 +236,7 @@ console.log("\n[5/10] Future-Restricted Time Words & Predicate Concord");
 
 const futureTestWords = ['내일', '모레', '내년', '다음주', '다음달', '곧', '앞으로'];
 for (const word of futureTestWords) {
-	assert(getTemporalPolarity(word) === "future", `getTemporalPolarity('${word}') is 'future'`);
+	assert(getTemporalPolarity(word) === K.FUTURE, `getTemporalPolarity('${word}') is 'future'`);
 
 	// Future tense pairings -> valid
 	const validFuture1 = `${word} 도서관에 갈 거예요`;
@@ -270,7 +270,7 @@ console.log("\n[6/10] Present / Habitual / Progressive Time Words");
 
 const presentTestWords = ['지금', '현재', '요즘', '매일', '항상'];
 for (const word of presentTestWords) {
-	assert(getTemporalPolarity(word) === "present", `getTemporalPolarity('${word}') is 'present'`);
+	assert(getTemporalPolarity(word) === K.PRESENT, `getTemporalPolarity('${word}') is 'present'`);
 
 	const presentSentence1 = `${word} 밥을 먹고 있어요`;
 	const presentSentence2 = `${word} 학교에 가요`;
@@ -287,9 +287,9 @@ for (const word of presentTestWords) {
 console.log("\n[7/10] Word & Grammar Filtering by Tense");
 
 const allAdverbs = getWords(K.POS_ADVERB);
-const pastFilteredWords = filterWordsByTense(allAdverbs, "past");
-const futureFilteredWords = filterWordsByTense(allAdverbs, "future");
-const presentFilteredWords = filterWordsByTense(allAdverbs, "present");
+const pastFilteredWords = filterWordsByTense(allAdverbs, K.PAST);
+const futureFilteredWords = filterWordsByTense(allAdverbs, K.FUTURE);
+const presentFilteredWords = filterWordsByTense(allAdverbs, K.PRESENT);
 
 assert(pastFilteredWords.some(w => w[DATA_SCHEMA.Korean] === "아까"), "pastFilteredWords contains '아까'");
 assert(!pastFilteredWords.some(w => w[DATA_SCHEMA.Korean] === "곧"), "pastFilteredWords excludes future '곧'");
@@ -302,8 +302,8 @@ assert(!presentFilteredWords.some(w => w[DATA_SCHEMA.Korean] === "아까"), "pre
 assert(!presentFilteredWords.some(w => w[DATA_SCHEMA.Korean] === "곧"), "presentFilteredWords excludes future '곧'");
 
 const allGrammars = getWords(K.POS_GRAMMAR);
-const pastFilteredGrammars = filterGrammarByTense(allGrammars, "past");
-const futureFilteredGrammars = filterGrammarByTense(allGrammars, "future");
+const pastFilteredGrammars = filterGrammarByTense(allGrammars, K.PAST);
+const futureFilteredGrammars = filterGrammarByTense(allGrammars, K.FUTURE);
 
 assert(pastFilteredGrammars.some(g => g[DATA_SCHEMA.Id] === 335), "pastFilteredGrammars contains Unit 335 (~았/었어요)");
 assert(!pastFilteredGrammars.some(g => g[DATA_SCHEMA.Id] === 460), "pastFilteredGrammars excludes Unit 460 (~(으)ㄹ 거예요)");
@@ -320,7 +320,7 @@ console.log("\n[8/10] Sentence Generation Tense Concord (generateSemanticSentenc
 for (let i = 0; i < 5; i++) {
 	const res = generateSemanticSentence(335);
 	const resolved = applyMorphology(res.ko);
-	const validation = validateTemporalConcord(resolved, { temporal_polarity: "past" });
+	const validation = validateTemporalConcord(resolved, { temporal_polarity: K.PAST });
 	assert(validation.valid, `generateSemanticSentence(335) valid: "${resolved}"`);
 	assert(!/(내일|모레|다음주|다음달|내년|곧)/.test(resolved), `No future adverbs in past sentence: "${resolved}"`);
 }
@@ -329,21 +329,21 @@ for (let i = 0; i < 5; i++) {
 for (let i = 0; i < 5; i++) {
 	const res = generateSemanticSentence(460);
 	const resolved = applyMorphology(res.ko);
-	const validation = validateTemporalConcord(resolved, { temporal_polarity: "future" });
+	const validation = validateTemporalConcord(resolved, { temporal_polarity: K.FUTURE });
 	assert(validation.valid, `generateSemanticSentence(460) valid: "${resolved}"`);
 	assert(!/(어제|그제|작년|지난주|지난달|아까|방금|옛날)/.test(resolved), `No past adverbs in future sentence: "${resolved}"`);
 }
 
 // Generating with explicit context: { temporal_polarity: "past" }
 for (let i = 0; i < 5; i++) {
-	const res = generateSemanticSentence("{Adv} {VP_AVst}", 0, { temporal_polarity: "past" });
+	const res = generateSemanticSentence("{Adv} {VP_AVst}", 0, { temporal_polarity: K.PAST });
 	const resolved = applyMorphology(res.ko);
 	assert(!/(내일|모레|다음주|다음달|내년|곧)/.test(resolved), `No future adverbs generated under past context: "${resolved}"`);
 }
 
 // Generating with explicit context: { temporal_polarity: "future" }
 for (let i = 0; i < 5; i++) {
-	const res = generateSemanticSentence("{Adv} {VP_AVst}", 0, { temporal_polarity: "future" });
+	const res = generateSemanticSentence("{Adv} {VP_AVst}", 0, { temporal_polarity: K.FUTURE });
 	const resolved = applyMorphology(res.ko);
 	assert(!/(어제|그제|작년|지난주|지난달|아까|방금|옛날)/.test(resolved), `No past adverbs generated under future context: "${resolved}"`);
 }

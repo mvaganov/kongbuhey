@@ -147,9 +147,9 @@ function expandSemanticClause(depth, currentContext) {
 
 	let grammars = getFilteredWords(K.POS_GRAMMAR).filter(g => {
 		const sv = parseSemanticVector(g);
-		return hasTag(g, "declarative") && (sv.logic === "declarative" || g[KoreanWord].includes("아요") || g[KoreanWord].includes("습니다"));
+		return hasTag(g, K.DECLARATIVE) && (sv.logic === K.DECLARATIVE || g[KoreanWord].includes("아요") || g[KoreanWord].includes("습니다"));
 	});
-	if (grammars.length === 0) grammars = getFilteredWords(K.POS_GRAMMAR).filter(g => hasTag(g, "declarative"));
+	if (grammars.length === 0) grammars = getFilteredWords(K.POS_GRAMMAR).filter(g => hasTag(g, K.DECLARATIVE));
 	if (grammars.length === 0) grammars = getFilteredWords(K.POS_GRAMMAR);
 
 	if (currentContext.temporal_polarity) {
@@ -216,7 +216,7 @@ function expandSemanticTerminal(tokenType, tag, currentContext, applyConstraint)
 		});
 	}
 
-	const isNegContext = currentContext.isNegative || currentContext.negated || currentContext.mood === "inability";
+	const isNegContext = currentContext.isNegative || currentContext.negated || currentContext.mood === K.INABILITY;
 	if (!isNegContext && (tokenType.startsWith("Adv") || tag === K.ADVERB)) {
 		words = words.filter(w => !state.ALL_NPI_WORDS.has(w[DATA_SCHEMA.Korean]));
 	}
@@ -279,9 +279,9 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 		currentContext.isDV = true;
 	}
 	if (typeof grammarId === 'number') {
-		if (state.IMPERATIVE_GRAMMAR_IDS.has(grammarId)) currentContext.mood = "imperative";
-		else if (state.PROPOSITIVE_GRAMMAR_IDS.has(grammarId)) currentContext.mood = "propositive";
-		else if (state.INABILITY_NEGATION_IDS.has(grammarId)) currentContext.mood = "inability";
+		if (state.IMPERATIVE_GRAMMAR_IDS.has(grammarId)) currentContext.mood = K.IMPERATIVE;
+		else if (state.PROPOSITIVE_GRAMMAR_IDS.has(grammarId)) currentContext.mood = K.PROPOSITIVE;
+		else if (state.INABILITY_NEGATION_IDS.has(grammarId)) currentContext.mood = K.INABILITY;
 		else if (state.VOLITIONAL_GRAMMAR_IDS.has(grammarId)) currentContext.mood = "volitional";
 
 		if (state.INABILITY_NEGATION_IDS.has(grammarId) || state.GENERAL_NEGATION_IDS.has(grammarId)) {
@@ -293,9 +293,9 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 	}
 	if (!currentContext.temporal_polarity) {
 		if (typeof grammarId === 'number') {
-			if (state.PAST_GRAMMAR_IDS.has(grammarId)) currentContext.temporal_polarity = "past";
-			else if (state.FUTURE_GRAMMAR_IDS.has(grammarId)) currentContext.temporal_polarity = "future";
-			else if (state.PRESENT_GRAMMAR_IDS.has(grammarId)) currentContext.temporal_polarity = "present";
+			if (state.PAST_GRAMMAR_IDS.has(grammarId)) currentContext.temporal_polarity = K.PAST;
+			else if (state.FUTURE_GRAMMAR_IDS.has(grammarId)) currentContext.temporal_polarity = K.FUTURE;
+			else if (state.PRESENT_GRAMMAR_IDS.has(grammarId)) currentContext.temporal_polarity = K.PRESENT;
 		}
 	}
 
@@ -340,8 +340,8 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 			replacementKo = exp.text;
 			childNode = exp.tree;
 		} else if (tokenType === "CountPhrase" || tokenType === "Noun_Count") {
-			let nouns = getWords(K.NOUN).filter(n => !hasTag(n, K.MEASUREWORD) && !hasTag(n, "counter") && !hasTag(n, K.PLACE));
-			if (tag && tag !== K.OBJECT && tag !== "subject" && tag !== "topic" && tag !== "AV" && tag !== "DV") {
+			let nouns = getWords(K.NOUN).filter(n => !hasTag(n, K.MEASUREWORD) && !hasTag(n, K.COUNTER) && !hasTag(n, K.PLACE));
+			if (tag && tag !== K.OBJECT && tag !== K.SUBJECT && tag !== K.TOPIC && tag !== "AV" && tag !== "DV") {
 				nouns = nouns.filter(n => hasTag(n, tag));
 			}
 			if (nouns.length === 0) nouns = getWords(K.NOUN, K.OBJECT);
@@ -352,8 +352,8 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 
 			let particle = null;
 			if (tag === K.OBJECT || tag === "AV" || /을|를/.test(token)) particle = K.OBJECT;
-			else if (tag === "subject" || tag === "DV" || /이|가/.test(token)) particle = "subject";
-			else if (tag === "topic" || /은|는/.test(token)) particle = "topic";
+			else if (tag === K.SUBJECT || tag === "DV" || /이|가/.test(token)) particle = K.SUBJECT;
+			else if (tag === K.TOPIC || /은|는/.test(token)) particle = K.TOPIC;
 
 			replacementKo = buildCountingPhrase(sampledNoun, count, { classifier, particle });
 			childNode = [
@@ -362,17 +362,17 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 				classifierUnit ? classifierUnit[DATA_SCHEMA.Id] : classifier
 			];
 		} else if (tokenType === "Spatial_Phrase" || tokenType === "Relational_Loc") {
-			let groundNouns = getWords(K.NOUN).filter(n => hasTag(n, K.PLACE) || hasTag(n, "furniture") || (hasTag(n, K.OBJECT) && !hasTag(n, K.MEASUREWORD) && !hasTag(n, "counter")));
+			let groundNouns = getWords(K.NOUN).filter(n => hasTag(n, K.PLACE) || hasTag(n, "furniture") || (hasTag(n, K.OBJECT) && !hasTag(n, K.MEASUREWORD) && !hasTag(n, K.COUNTER)));
 			if (groundNouns.length === 0) groundNouns = getWords(K.NOUN, K.PLACE);
 			const sampledGround = groundNouns[Math.floor(prng() * groundNouns.length)];
 			const positions = getSpatialPositions();
 			const sampledPos = positions.length > 0 ? positions[Math.floor(prng() * positions.length)] : "위";
 			const posUnit = state.SPATIAL_POSITIONS.get(sampledPos)?.unit;
 
-			let particleType = "location";
+			let particleType = K.LOCATION;
 			if (tag === "static" || /에$/.test(token)) particleType = "location_static";
 			else if (tag === "dynamic" || /에서$/.test(token)) particleType = "location_dynamic";
-			else if (tag === "direction" || /로$/.test(token)) particleType = "direction";
+			else if (tag === K.DIRECTION || /로$/.test(token)) particleType = K.DIRECTION;
 
 			replacementKo = buildSpatialPhrase(sampledGround, sampledPos, { particle: particleType });
 			childNode = [
@@ -380,8 +380,8 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 				posUnit ? posUnit[DATA_SCHEMA.Id] : sampledPos
 			];
 		} else if (tokenType === "Deictic_NP") {
-			const proximity = tag === "medial" ? "medial" : tag === "distal" ? "distal" : tag === "interrogative" ? "interrogative" : "proximal";
-			let nouns = getWords(K.NOUN).filter(n => !hasTag(n, K.MEASUREWORD) && !hasTag(n, "counter") && !hasTag(n, K.PLACE));
+			const proximity = tag === K.MEDIAL ? K.MEDIAL : tag === K.DISTAL ? K.DISTAL : tag === K.INTERROGATIVE ? K.INTERROGATIVE : K.PROXIMAL;
+			let nouns = getWords(K.NOUN).filter(n => !hasTag(n, K.MEASUREWORD) && !hasTag(n, K.COUNTER) && !hasTag(n, K.PLACE));
 			const sampledNoun = nouns[Math.floor(prng() * nouns.length)];
 			replacementKo = buildDeicticPhrase(proximity, "noun", { noun: sampledNoun });
 			const detUnit = Array.from(state.DEICTIC_DETERMINERS.values()).find(d => d.proximity === proximity)?.unit;
@@ -390,12 +390,12 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 				sampledNoun ? sampledNoun[DATA_SCHEMA.Id] : 0
 			];
 		} else if (tokenType === "Deictic_Loc") {
-			const proximity = tag === "medial" ? "medial" : tag === "distal" ? "distal" : tag === "interrogative" ? "interrogative" : "proximal";
+			const proximity = tag === K.MEDIAL ? K.MEDIAL : tag === K.DISTAL ? K.DISTAL : tag === K.INTERROGATIVE ? K.INTERROGATIVE : K.PROXIMAL;
 			replacementKo = buildDeicticPhrase(proximity, K.PLACE);
 			const locUnit = Array.from(state.DEICTIC_LOCATIVES.values()).find(l => l.proximity === proximity && l.ko === replacementKo)?.unit;
 			childNode = locUnit ? locUnit[DATA_SCHEMA.Id] : replacementKo;
 		} else if (tokenType === "Deictic_Pronoun") {
-			const proximity = tag === "medial" ? "medial" : tag === "distal" ? "distal" : tag === "interrogative" ? "interrogative" : "proximal";
+			const proximity = tag === K.MEDIAL ? K.MEDIAL : tag === K.DISTAL ? K.DISTAL : tag === K.INTERROGATIVE ? K.INTERROGATIVE : K.PROXIMAL;
 			replacementKo = buildDeicticPhrase(proximity, "thing");
 			const proUnit = Array.from(state.DEICTIC_PRONOUNS.values()).find(p => p.proximity === proximity && p.ko === replacementKo)?.unit;
 			childNode = proUnit ? proUnit[DATA_SCHEMA.Id] : replacementKo;
@@ -406,7 +406,7 @@ function generateSemanticSentence(templateOrUnit, depth = 0, incomingContext = {
 				const min = parseInt(rangeMatch[2], 10), max = parseInt(rangeMatch[3], 10);
 				const val = Math.floor(prng() * (max - min + 1)) + min;
 				const isFollowedByMeasureWord = /^\s*\{(?:Noun|N):.*(?:measureWord|koreanMeasureWord|counter)/i.test(afterToken) || /^\s*[가-힣]/.test(afterToken);
-				replacementKo = (baseTag === "sinoNumber") ? getSinoNumber(val) : getKoreanNumber(val, isFollowedByMeasureWord);
+				replacementKo = (baseTag === K.SINO_NUMBER) ? getSinoNumber(val) : getKoreanNumber(val, isFollowedByMeasureWord);
 				const words = getFilteredWords(K.NUMBER, baseTag);
 				const matchedUnit = words.find(w => w[DATA_SCHEMA.Korean] === replacementKo);
 				if (matchedUnit) {

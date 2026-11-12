@@ -34,13 +34,13 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 			let baseVerb = null;
 			let isAdnominal = rule.isAdnominal || false;
 
-			if (rule.stemType === 'fixed_base') {
+			if (rule.stemType === K.FIXED_BASE) {
 				const root = word.slice(0, -rule.suffix.length);
 				baseVerb = root ? root + rule.baseVerb : rule.baseVerb;
 			} else if (rule.stemType === K.HADA) {
 				const root = word.slice(0, -rule.suffix.length);
 				baseVerb = root ? root + "하다" : "하다";
-			} else if (rule.stemType === 'stem_da') {
+			} else if (rule.stemType === K.STEM_DA) {
 				if (word.length <= rule.suffix.length) continue;
 				const stem = word.slice(0, -rule.suffix.length);
 				const lastChar = stem.slice(-1);
@@ -93,7 +93,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 					const nUnit = nounUnits[0];
 					return {
 						surface: word,
-						category: "noun_copula",
+						category: K.NOUN_COPULA,
 						lexical: { text: stem, pos: nUnit[DATA_SCHEMA.PartofSpeech], unit: nUnit, missing: false, gloss: nUnit[DATA_SCHEMA.English] },
 						grammar: rule.grammar.map(g => ({
 							text: g.text,
@@ -362,7 +362,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 
 				return {
 					surface: word,
-					category: isAdnominal ? "adnominal_modifier" : "conjugated_verb",
+					category: isAdnominal ? K.ADNOMINAL_MODIFIER : K.CONJUGATED_VERB,
 					lexical: {
 						text: baseVerb,
 						pos,
@@ -394,7 +394,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 			if (vUnit) {
 				return {
 					surface: word,
-					category: "conjugated_verb",
+					category: K.CONJUGATED_VERB,
 					lexical: { text: baseVerb, pos: vUnit[DATA_SCHEMA.PartofSpeech], unit: vUnit, gloss: vUnit[DATA_SCHEMA.English] },
 					grammar: [{ text: "-ㅂ니다", pos: "Verb Ending", unit: unitById.get(50), gloss: "formal declarative (ID 50)" }]
 				};
@@ -419,7 +419,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 			if (vUnit) {
 				return {
 					surface: word,
-					category: "conjugated_verb",
+					category: K.CONJUGATED_VERB,
 					lexical: { text: baseVerb, pos: vUnit[DATA_SCHEMA.PartofSpeech], unit: vUnit, gloss: vUnit[DATA_SCHEMA.English] },
 					grammar: [{ text: "-아/어서", pos: "Verb Ending", unit: unitById.get(459), gloss: "cause / sequential (ID 459)" }]
 				};
@@ -438,7 +438,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 			if (vUnit) {
 				return {
 					surface: word,
-					category: "conjugated_verb",
+					category: K.CONJUGATED_VERB,
 					lexical: { text: baseVerb, pos: vUnit[DATA_SCHEMA.PartofSpeech], unit: vUnit, missing: false, gloss: vUnit[DATA_SCHEMA.English] },
 					grammar: [{ text: "-아/어", pos: "Verb Ending", unit: unitById.get(459), gloss: "informal / sequential (ID 459)" }]
 				};
@@ -449,7 +449,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 			if (vUnit) {
 				return {
 					surface: word,
-					category: "conjugated_verb",
+					category: K.CONJUGATED_VERB,
 					lexical: { text: baseVerb, pos: vUnit[DATA_SCHEMA.PartofSpeech], unit: vUnit, missing: false, gloss: vUnit[DATA_SCHEMA.English] },
 					grammar: [{ text: "-아/어", pos: "Verb Ending", unit: unitById.get(459), gloss: "informal / sequential (ID 459)" }]
 				};
@@ -474,7 +474,7 @@ function matchVerbSuffix(word, prevWord = "", nextWord = "", index, evaluateSynt
 				const vUnit = vocabByKo.get(baseVerb)[0];
 				return {
 					surface: word,
-					category: "conjugated_verb",
+					category: K.CONJUGATED_VERB,
 					lexical: { text: baseVerb, pos: vUnit[DATA_SCHEMA.PartofSpeech], unit: vUnit, gloss: vUnit[DATA_SCHEMA.English] },
 					grammar: [{ text: "-(으)ㄴ가요", pos: "Verb Ending", unit: unitById.get(932), gloss: "polite interrogative (ID 932)" }]
 				};
@@ -501,7 +501,7 @@ function matchAdnominalEnding(word, index) {
 		const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
 		return {
 			surface: word,
-			category: "adnominal_modifier",
+			category: K.ADNOMINAL_MODIFIER,
 			lexical: { text: baseVerb, pos: K.ACTION_VERB, unit: vUnit, missing: !vUnit, gloss: vUnit ? vUnit[DATA_SCHEMA.English] : "" },
 			grammar: [{ text: "-(으)ㄴ", pos: "Adnominal Ending", unit: unitById.get(644), gloss: "past adnominal (ID 644)" }]
 		};
@@ -511,7 +511,7 @@ function matchAdnominalEnding(word, index) {
 		const vUnit = vocabByKo.get(baseVerb) ? vocabByKo.get(baseVerb)[0] : null;
 		return {
 			surface: word,
-			category: "adnominal_modifier",
+			category: K.ADNOMINAL_MODIFIER,
 			lexical: { text: baseVerb, pos: vUnit ? vUnit[DATA_SCHEMA.PartofSpeech] : K.DESCRIPTIVE_VERB, unit: vUnit, missing: !vUnit, gloss: vUnit ? vUnit[DATA_SCHEMA.English] : "" },
 			grammar: [{ text: "-(으)ㄹ", pos: "Adnominal Ending", unit: unitById.get(646), gloss: "prospective adnominal (ID 646)" }]
 		};
@@ -523,7 +523,7 @@ function matchAdnominalEnding(word, index) {
 		if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB || vUnit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB)) {
 			return {
 				surface: word,
-				category: "adnominal_modifier",
+				category: K.ADNOMINAL_MODIFIER,
 				lexical: { text: baseVerb, pos: vUnit[DATA_SCHEMA.PartofSpeech], unit: vUnit, missing: false, gloss: vUnit[DATA_SCHEMA.English] },
 				grammar: [{ text: "-(으)ㄴ", pos: "Adnominal Ending", unit: unitById.get(644), gloss: "adnominal modifier (ID 644)" }]
 			};
@@ -549,7 +549,7 @@ function matchAdnominalEnding(word, index) {
 		if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || vUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB)) {
 			return {
 				surface: word,
-				category: "adnominal_modifier",
+				category: K.ADNOMINAL_MODIFIER,
 				lexical: { text: baseVerb, pos: vUnit[DATA_SCHEMA.PartofSpeech], unit: vUnit, missing: false, gloss: vUnit[DATA_SCHEMA.English] },
 				grammar: [{ text: "-는", pos: "Adnominal Ending", unit: unitById.get(645), gloss: "present adnominal (ID 645)" }]
 			};
@@ -571,7 +571,7 @@ function matchAdnominalEnding(word, index) {
 			if (vUnit && (vUnit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB || vUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB)) {
 				return {
 					surface: word,
-					category: "adnominal_modifier",
+					category: K.ADNOMINAL_MODIFIER,
 					lexical: { text: baseVerb, pos: vUnit[DATA_SCHEMA.PartofSpeech], unit: vUnit, missing: false, gloss: vUnit[DATA_SCHEMA.English] },
 					grammar: [{ text: "-(으)ㄴ", pos: "Adnominal Ending", unit: unitById.get(644), gloss: "adnominal modifier (ID 644)" }]
 				};
@@ -613,7 +613,7 @@ function matchAdnominalEnding(word, index) {
 			if (chosenUnit) {
 				return {
 					surface: word,
-					category: "adnominal_modifier",
+					category: K.ADNOMINAL_MODIFIER,
 					lexical: { text: chosenVerb, pos: chosenUnit[DATA_SCHEMA.PartofSpeech], unit: chosenUnit, missing: false, gloss: chosenUnit[DATA_SCHEMA.English] },
 					grammar: [{ text: "-(으)ㄹ", pos: "Adnominal Ending", unit: unitById.get(646), gloss: "prospective adnominal (ID 646)" }]
 				};
@@ -672,7 +672,7 @@ function matchAdnominalEnding(word, index) {
 				gList.push({ text: "-(으)ㄹ", pos: "Adnominal Ending", unit: unitById.get(646), gloss: "prospective adnominal (ID 646)" });
 				return {
 					surface: word,
-					category: "adnominal_modifier",
+					category: K.ADNOMINAL_MODIFIER,
 					lexical: { text: baseVerb, pos: vUnit[DATA_SCHEMA.PartofSpeech], unit: vUnit, missing: false, gloss: vUnit[DATA_SCHEMA.English] },
 					grammar: gList
 				};

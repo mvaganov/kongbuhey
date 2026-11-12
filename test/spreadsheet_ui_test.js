@@ -856,29 +856,29 @@ async function runSuite() {
 	// 13e. Editing (adding and removing) semantic tag filters & single-choice slot detection
 	// Slot 1 of vs_1 is Noun ("독일" #1603, which starts with default tags ['country', 'place', 'geography'])
 	assert(
-		clonedEntry.slots[1].tags.includes('country') && clonedEntry.slots[1].tags.includes(K.PLACE),
+		clonedEntry.slots[1].tags.includes(K.COUNTRY) && clonedEntry.slots[1].tags.includes(K.PLACE),
 		'slots by default start with every semantic tag of the original language unit as a filter'
 	);
 
-	const afterRemovePlace = verifiedView.removeTagFromSlot(clonedEntry.id, 1, 'country');
+	const afterRemovePlace = verifiedView.removeTagFromSlot(clonedEntry.id, 1, K.COUNTRY);
 	assert(
-		afterRemovePlace && !afterRemovePlace.slots[1].tags.includes('country'),
+		afterRemovePlace && !afterRemovePlace.slots[1].tags.includes(K.COUNTRY),
 		'removeTagFromSlot removes semantic tag filter ("country") from slot #2'
 	);
 
-	const afterAddPlace = verifiedView.addTagToSlot(clonedEntry.id, 1, 'country');
+	const afterAddPlace = verifiedView.addTagToSlot(clonedEntry.id, 1, K.COUNTRY);
 	assert(
-		afterAddPlace && afterAddPlace.slots[1].tags.includes('country'),
+		afterAddPlace && afterAddPlace.slots[1].tags.includes(K.COUNTRY),
 		'addTagToSlot adds semantic tag filter ("country") to slot #2'
 	);
 
 	// Test Reset to Original filters for slot #2 (default word is "독일" #1603 with tags country, place, geography)
-	verifiedView.removeTagFromSlot(clonedEntry.id, 1, 'country');
+	verifiedView.removeTagFromSlot(clonedEntry.id, 1, K.COUNTRY);
 	verifiedView.removeTagFromSlot(clonedEntry.id, 1, K.PLACE);
 	const afterResetTags = verifiedView.resetSlotTags(clonedEntry.id, 1);
 	assert(
 		afterResetTags &&
-		afterResetTags.slots[1].tags.includes('country') &&
+		afterResetTags.slots[1].tags.includes(K.COUNTRY) &&
 		afterResetTags.slots[1].tags.includes(K.PLACE),
 		'resetSlotTags resets filters to original semantic tags for the default word in that slot'
 	);

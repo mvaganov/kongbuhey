@@ -111,7 +111,7 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 	let detectedInchoative = null;
 	let detectedCopula = null;
 	let detectedW1Grammar = null;
-	if (match.lexicalType === "stem_da") {
+	if (match.lexicalType === K.STEM_DA) {
 		const targetWord = match.lexicalTokenIndex === 2 ? w2 : w1;
 		const suffixLen = (match.stemSuffix || "다").length;
 		const stem = targetWord.slice(0, -suffixLen);
@@ -339,7 +339,7 @@ function buildMweToken(unit, match, rawWords, i, sentenceContext, index) {
 		consumed: span,
 		token: {
 			surface,
-			category: "auxiliary_construction",
+			category: K.AUXILIARY_CONSTRUCTION,
 			pattern: match.pattern || `${unit[DATA_SCHEMA.Korean]} (${unit[DATA_SCHEMA.English]})`,
 			lexical,
 			grammar: grammarList,
