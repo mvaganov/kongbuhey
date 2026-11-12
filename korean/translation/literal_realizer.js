@@ -125,7 +125,7 @@ function getParticleLiteralTag(particleType, particleUnit = null, clauseContext 
 			return "-by/with";
 		case K.TIME:
 		case "temporal":
-			return "-at/on";
+			return particleUnit ? "-at/on" : "";
 		case "dative":
 		case "dative_person":
 			return clauseContext.recipientHonorific ? "-to[hon]" : "-to";
@@ -163,6 +163,7 @@ function getParticleLiteralTag(particleType, particleUnit = null, clauseContext 
 		if (ko.includes("에게서") || ko.includes("한테서")) return "-from";
 		if (ko.includes("에게") || ko.includes("한테")) return "-to";
 		if (ko === "께") return "-to[hon]";
+		if (ko === "씨") return "-Mr./Ms.";
 		if (ko.includes("(으)로")) return "-toward/by";
 		if (ko.startsWith("에")) return "-at/to";
 		if (ko === "도") return "-also";
@@ -173,6 +174,8 @@ function getParticleLiteralTag(particleType, particleUnit = null, clauseContext 
 		if (ko.includes("보다")) return "-than";
 		if (ko.includes("의")) return "-'s";
 		if (ko.includes("랑") || ko === "하고" || ko.includes("와")) return "-with/and";
+		const sd = parseSemanticData(particleUnit);
+		if (ko.includes("emphasis") || (sd && sd.logic === "quantity_emphasis")) return "-as-many-as";
 		if (ko.includes("이나")) return "-or";
 		if (ko.includes("이라서")) return "-because-is";
 		if (ko.includes("이라도")) return "-even-if-is";
@@ -180,7 +183,6 @@ function getParticleLiteralTag(particleType, particleUnit = null, clauseContext 
 		if (ko.includes("만큼")) return "-as-much-as";
 		if (ko === "쯤") return "-approx";
 
-		const sd = parseSemanticData(particleUnit);
 		if (sd && sd.en && sd.en.role) {
 			return `-${sd.en.role}`;
 		}
@@ -207,7 +209,10 @@ function getGrammarEndingLiteralSuffix(predNode) {
 	} = predNode;
 
 	if (predType === "copula") {
-		if (polarity === "negative") return "-not-be";
+		const isNegCopula = polarity === "negative"
+			|| (predNode.explicitSurfaceKo && predNode.explicitSurfaceKo.includes("아니"))
+			|| (grammarUnit && (grammarUnit[DATA_SCHEMA.Korean] || "").includes("아니"));
+		if (isNegCopula) return tense === "past" ? "-was/were-not" : "-not-be";
 		if (tense === "past") return "-was/were";
 		return "-be";
 	}
@@ -253,7 +258,7 @@ function getGrammarEndingLiteralSuffix(predNode) {
 		if (gKo === "~고") return "-and";
 		if (gKo.includes("었다가")) return "-did-and-then";
 		if (gKo.includes("ㄹ게요")) return "-will[promise]";
-		if (gKo.includes("ㄹ까요")) return "-shall-we?";
+		if (gKo.includes("ㄹ까요")) return (predType === "descriptive" || predType === "copula") ? "-do-you-think?" : "-shall-we?";
 		if (gKo.includes("ㄹ래요")) return "-would-you-like?";
 		if (gKo.includes("거예요")) return ["-future", "thing-be(will)"];
 		if (gKo.includes("겠다")) return "-will/must-be";
@@ -342,6 +347,20 @@ function annotateConstituentLiteral(constituent, clauseContext = {}) {
 		return eojeols.map(e => e.surfaceEnLit).filter(Boolean);
 	}
 
+	// 1b. Standalone adverbial counter phrase without head noun (e.g. "두 번", "세 번")
+	if (counterUnit && !nounUnit && countValue !== null && eojeols.length >= 2) {
+		const numLit = String(countValue);
+		const counterLit = `[count:${getUnitLiteralStem(counterUnit)}]`;
+		eojeols[0].segments[0].textEn = numLit;
+		eojeols[0].surfaceEnLit = numLit;
+		for (let i = 1; i < eojeols.length; i++) {
+			const val = i === 1 ? counterLit + pTag : "";
+			if (eojeols[i].segments[0]) eojeols[i].segments[0].textEn = val;
+			eojeols[i].surfaceEnLit = val;
+		}
+		return eojeols.map(e => e.surfaceEnLit).filter(Boolean);
+	}
+
 	// 2. Spatial phrase: [GroundNoun, Position+Particle]
 	if (positionUnit && eojeols.length === 2 && primaryUnit) {
 		const groundLit = getUnitLiteralStem(primaryUnit);
@@ -394,16 +413,27 @@ function annotateConstituentLiteral(constituent, clauseContext = {}) {
 	}
 
 	// 5. Standard single-eojeol constituent (Noun+Particle, Time word, Adverb, Exclamation)
-	const stemLit = primaryUnit ? getUnitLiteralStem(primaryUnit) : (constituent.surfaceKo || "");
+	let stemLit = primaryUnit ? getUnitLiteralStem(primaryUnit) : (constituent.surfaceKo || "");
+	if (primaryUnit && primaryUnit[DATA_SCHEMA.Korean] === "저녁" && (constituent.role === K.TIME || constituent.particleType === K.TIME || (clauseContext.verbUnit && hasTag(clauseContext.verbUnit, K.WEATHER, "descriptive_weather")))) {
+		stemLit = "evening";
+	}
+	let effectivePTag = (pTag && stemLit.endsWith(pTag)) ? "" : pTag;
+	if (particleUnit && particleUnit[DATA_SCHEMA.Korean] === "씨") {
+		const surf = constituent.explicitSurfaceKo || "";
+		if (surf.endsWith("씨가")) effectivePTag = "-Mr./Ms.-[subj]";
+		else if (surf.endsWith("씨는")) effectivePTag = "-Mr./Ms.-[topic]";
+		else if (surf.endsWith("씨를")) effectivePTag = "-Mr./Ms.-[obj]";
+		else effectivePTag = "-Mr./Ms.";
+	}
 	for (let i = 0; i < eojeols.length; i++) {
 		const ej = eojeols[i];
 		const isLast = i === eojeols.length - 1;
 		if (isLast && ej.segments.length >= 2) {
 			ej.segments[0].textEn = stemLit;
-			ej.segments[1].textEn = pTag;
-			ej.surfaceEnLit = stemLit + pTag;
+			ej.segments[1].textEn = effectivePTag;
+			ej.surfaceEnLit = stemLit + effectivePTag;
 		} else if (ej.segments.length >= 1) {
-			const full = isLast ? (stemLit + pTag) : stemLit;
+			const full = isLast ? (stemLit + effectivePTag) : stemLit;
 			ej.segments[0].textEn = full;
 			ej.surfaceEnLit = full;
 		}
@@ -418,7 +448,9 @@ function annotateConstituentLiteral(constituent, clauseContext = {}) {
 function annotatePredicateLiteral(predNode) {
 	if (!predNode || !Array.isArray(predNode.eojeols) || predNode.eojeols.length === 0) return [];
 
-	const headUnit = predNode.verbUnit || predNode.copulaNounUnit || null;
+	const headUnit = predNode.predType === "copula"
+		? (predNode.copulaNounUnit || predNode.verbUnit || null)
+		: (predNode.verbUnit || predNode.copulaNounUnit || null);
 	const stemLit = headUnit ? getUnitLiteralStem(headUnit) : "";
 	const endingSpec = getGrammarEndingLiteralSuffix(predNode);
 	const eojeols = predNode.eojeols;
@@ -472,9 +504,12 @@ function annotatePredicateLiteral(predNode) {
 		firstEj.surfaceEnLit = stemLit + firstSuffix;
 	}
 
+	const headWords = headUnit ? (headUnit[DATA_SCHEMA.Korean] || "").trim().split(/\s+/).length : 1;
 	for (let i = 1; i < eojeols.length; i++) {
 		const auxEj = eojeols[i];
-		const textEn = i === eojeols.length - 1 ? auxGloss : "be";
+		const textEn = i === eojeols.length - 1
+			? auxGloss
+			: ((predNode.predType === "copula" || i < headWords) ? "" : "be");
 		if (auxEj.segments.length >= 1) {
 			auxEj.segments[0].textEn = textEn;
 		}
@@ -500,7 +535,7 @@ function realizeLiteralEnglish(ast) {
 		const pred = clause.predicate || null;
 
 		const clauseContext = {
-			honorific: Boolean(clause.honorific || ast.honorific),
+			honorific: Boolean(clause.honorific || ast.honorific || constituents.some(c => c && ((c.particleUnit && (c.particleUnit[DATA_SCHEMA.Korean] || "").includes("께서")) || (c.surfaceKo && c.surfaceKo.endsWith("께서"))))),
 			verbUnit: pred ? pred.verbUnit : null
 		};
 

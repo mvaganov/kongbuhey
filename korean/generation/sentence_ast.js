@@ -198,6 +198,7 @@ function resolveParticleUnit(particleType, nounUnit = null, options = {}) {
 		case "location":
 		case "location_static":
 			return reg.location_static;
+		case "location_origin":
 		case "location_dynamic":
 			return reg.location_dynamic;
 		case "direction":
@@ -593,7 +594,9 @@ function buildPredicateEojeols(predNode, surfaceKo) {
 	const words = surfaceKo.trim().split(/\s+/).filter(Boolean);
 	if (words.length === 0) return [];
 
-	const headUnit = predNode.verbUnit || predNode.copulaNounUnit || null;
+	const headUnit = predNode.predType === "copula"
+		? (predNode.copulaNounUnit || predNode.verbUnit || null)
+		: (predNode.verbUnit || predNode.copulaNounUnit || null);
 	const endingUnit = predNode.endingUnit || predNode.connectiveUnit || predNode.grammarUnit || null;
 	const negUnit = predNode.negationUnit || null;
 
@@ -895,10 +898,16 @@ function realizePredicateKo(predNode, clauseContext = {}) {
 		} else {
 			const isLexicalHon = state.HONORIFIC_WORDS.has(activeVerbUnit[DATA_SCHEMA.Korean]) && activeVerbUnit[DATA_SCHEMA.Korean].includes("시");
 			if (isElderSubj && !isLexicalHon && !state.HUMBLE_WORDS.has(activeVerbUnit[DATA_SCHEMA.Korean])) {
-				const honEnding = tense === "past"
-					? (politeness === "formal_high" ? "으/셨습니다" : "으/셨어요")
-					: (politeness === "formal_high" ? "으/십니다" : "으/세요");
-				surfaceKo = resolvePureMorphology(stem + honEnding, state);
+				if (tense === "future") {
+					const honStem = resolvePureMorphology(`${stem}으/시`, state);
+					const futEnd = politeness === "formal_high" ? "겁니다" : politeness === "plain" ? "거야" : "거예요";
+					surfaceKo = resolvePureMorphology(`${honStem}으/ㄹ ${futEnd}`, state);
+				} else {
+					const honEnding = tense === "past"
+						? (politeness === "formal_high" ? "으/셨습니다" : "으/셨어요")
+						: (politeness === "formal_high" ? "으/십니다" : "으/세요");
+					surfaceKo = resolvePureMorphology(stem + honEnding, state);
+				}
 			} else {
 				surfaceKo = conjugatePredicate(activeVerbUnit, politeness, tense);
 			}

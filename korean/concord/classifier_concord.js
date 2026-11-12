@@ -123,10 +123,10 @@ function getMatchingNounsForClassifier(classifierOrUnit) {
 	}
 	if (ko === "개") {
 		return allNouns.filter(n => {
-			if (hasTag(n, "language", K.ACADEMIC, "academic_fee", "finance", "currency", "money", K.PLACE, K.FACILITY, "institution", "restaurant", "media_work", "music", "film", "drama", "uncountable", "mass_noun", "liquid", "drink", "soup", "stew", K.ABSTRACT, K.TIME, "temporal", K.PERSON)) return false;
+			if (hasTag(n, "language", K.ACADEMIC, "academic_fee", "finance", "currency", "currency_resource", "money", K.PLACE, K.FACILITY, "institution", "restaurant", "media_work", "music", "film", "drama", "uncountable", "mass_noun", "liquid", "drink", "soup", "stew", K.ABSTRACT, K.TIME, "temporal", K.PERSON, K.FAMILY, "animal", K.CLOTHING, "garment", K.WEARABLE, "footwear", "vehicle", K.TRANSPORTATION, "appliance", "electronics", "machine", "device", "flower", "book", "reading", "media", "broadcast", K.COMMUNICATION, "utensil", "cutlery", K.ACTIVITY, "entertainment", "event", "sports", "art", K.CONCEPT, "work", "attribute", "document", "ticket", "postal")) return false;
 			const nKo = n[DATA_SCHEMA.Korean];
-			if (["한국말", "영어", "일본말", "중국말", "프랑스말", "베트남말", "음악", "영화", "드라마", "밥", "국", "찌개", "돈", "뭘", "뭐", "무엇", "이거", "것", "북경반점", "식당", "빵집", "컴퓨터공학", "교육학", "법학", "곡류", "파스타", "신문", "면", "고기"].includes(nKo)) return false;
-			return hasTag(n, K.OBJECT, "item", "stationery", K.CLOTHING, "fruit", "food_ingredient", "appliance", "tool", "container", "discrete_object") || ["사과", "공책", "핸드백", "냄비", "시계", "선물", "인형", "상자", "지우개", "볼펜", "가방", "우산", "모자", "컵", "달걀", "토마토"].includes(nKo);
+			if (["한국말", "영어", "일본말", "중국말", "프랑스말", "베트남말", "음악", "영화", "드라마", "밥", "국", "찌개", "돈", "뭘", "뭐", "무엇", "이거", "것", "북경반점", "식당", "빵집", "컴퓨터공학", "교육학", "법학", "곡류", "파스타", "신문", "면", "고기", "비옷", "코트", "반바지", "세탁기", "선풍기", "휴대전화", "전화", "지역 번호", "차", "잡지", "장미", "젓가락", "숟가락", "방송", "사진", "공책", "카드", "학생증", "신분증", "여권", "엽서", "명함", "종이", "우표", "표", "기차표", "영화표", "비행기 표", "쓰레기", "포도", "책", "교과서", "사전", "만화책", "노선도", "약도"].includes(nKo)) return false;
+			return hasTag(n, K.OBJECT, "item", "stationery", "fruit", "food_ingredient", "tool", "container", "discrete_object") || ["사과", "빵", "핸드백", "냄비", "시계", "선물", "인형", "상자", "지우개", "볼펜", "가방", "우산", "모자", "컵", "달걀", "토마토"].includes(nKo);
 		});
 	}
 

@@ -212,8 +212,11 @@ function validateSentenceAST(ast, realized) {
 			if (subjUnit) {
 				const subjKo = subjUnit[DATA_SCHEMA.Korean] || "";
 				const isStrictHumanVerb = hasTag(verbUnit, "volitional_human");
-				const isInanimate = hasTag(subjUnit, "inanimate", K.ABSTRACT, K.ACADEMIC, K.CONCEPT, K.FACILITY)
-					|| ["신분증", "경제학", "의자", "공항버스", "수업", "회의", "가구"].includes(subjKo);
+				const isAnimate = hasTag(subjUnit, K.PERSON, K.FAMILY, "pronoun_1st", "pronoun_2nd", "pronoun_3rd", "animal");
+				const isInanimate = !isAnimate && (
+					hasTag(subjUnit, "inanimate", K.ABSTRACT, K.ACADEMIC, K.CONCEPT, K.FACILITY)
+					|| ["신분증", "경제학", "의자", "공항버스", "수업", "회의", "가구"].includes(subjKo)
+				);
 
 				if (isStrictHumanVerb && isInanimate) {
 					warnings.push({

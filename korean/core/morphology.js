@@ -44,6 +44,23 @@ const {
 	resolvePureMorphology
 } = (typeof require !== 'undefined' ? require('./stem_engine.js') : window);
 
+const INANIMATE_PERSON_ATTR_NOUNS = new Set([
+	"나이", "이름", "성함", "연세", "생일", "생신", "고향", "주소",
+	"전화번호", "번호", "취미", "전공", "성별", "국적", "키", "몸무게",
+	"말씀", "진지", "댁", "병환", "약주"
+]);
+
+function filterAnimatePersonSubjects(candidates) {
+	const filtered = candidates.filter(n => {
+		const ko = n[DATA_SCHEMA.Korean] || "";
+		if (INANIMATE_PERSON_ATTR_NOUNS.has(ko)) return false;
+		if (hasTag(n, "honorific_noun", "name")) return false;
+		if (hasTag(n, "colloquial") && parseSemanticVector(n).polarity === -1) return false;
+		return true;
+	});
+	return filtered.length > 0 ? filtered : candidates;
+}
+
 const {
 	getLexiconIndex,
 	getCompiledCollocationFilter
@@ -287,6 +304,7 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 		case "instrumental":
 		case "instrument":
 		case "direction":
+		case "direction_ro":
 		case "-(으)로":
 		case "로":
 			return nounKo + (!hasB || hasRieul ? "로" : "으로");
@@ -701,18 +719,16 @@ function isForbiddenForElder(wordOrKo) {
 
 function isElderNoun(nounUnit, nounKo = "") {
 	// TODO is this already a set defined somewhere? could it be made into a set automatically generated on init?
-	const NON_PERSON_HONORIFICS = new Set(["말씀", "진지", "연세", "댁", "생신", "병환", "약주", "치하"]);
+	const NON_PERSON_HONORIFICS = new Set(["말씀", "진지", "연세", "댁", "생신", "병환", "약주", "치하", "성함", "존함", "이름", "나이"]);
 	const name = nounKo || (nounUnit ? nounUnit[DATA_SCHEMA.Korean] : "");
 	if (name && NON_PERSON_HONORIFICS.has(name)) return false;
 
 	if (nounUnit) {
-		if (hasTag(nounUnit, "elder_noun", K.HONORIFIC, "honorific_person", "elder", "kinship_elder")) return true;
-		if (hasTag(nounUnit, K.CONCEPT, K.COMMUNICATION, K.FOOD, K.PLACE, "attribute", K.TIME) && !hasTag(nounUnit, K.PERSON, K.FAMILY, "profession")) return false;
+		if (hasTag(nounUnit, "honorific_noun")) return false;
 		if (hasTag(nounUnit, "elder_noun", "honorific_person", "elder", "kinship_elder")) return true;
+		if (hasTag(nounUnit, K.CONCEPT, K.COMMUNICATION, K.FOOD, K.PLACE, "attribute", K.TIME) && !hasTag(nounUnit, K.PERSON, K.FAMILY, "profession", "subject_animate")) return false;
 		if (hasTag(nounUnit, K.HONORIFIC) && hasTag(nounUnit, K.PERSON, K.FAMILY, "profession", "subject_animate")) return true;
 		const sv = parseSemanticVector(nounUnit);
-		if (sv && sv.honorific === true) return true;
-		const name = nounUnit[DATA_SCHEMA.Korean];
 		if (sv && sv.honorific === true && hasTag(nounUnit, K.PERSON, K.FAMILY, "profession", "subject_animate")) return true;
 		if (state.ELDER_NOUN_TITLES.has(name) || (name && name.endsWith('님') && hasTag(nounUnit, K.PERSON))) return true;
 	}
@@ -773,11 +789,15 @@ function filterWordsByTense(words, tense) {
 	let filtered = words;
 	if (tense === "past") {
 		filtered = words.filter(w => {
+			const wKo = w[DATA_SCHEMA.Korean] || "";
+			if (["금방", "이제", "곧", "이따가"].includes(wKo)) return false;
 			const pol = getTemporalPolarity(w);
 			return pol !== "future";
 		});
 	} else if (tense === "future") {
 		filtered = words.filter(w => {
+			const wKo = w[DATA_SCHEMA.Korean] || "";
+			if (["늘", "요즘"].includes(wKo)) return false;
 			const pol = getTemporalPolarity(w);
 			return pol !== "past";
 		});
@@ -823,6 +843,8 @@ function filterGrammarByTense(grammars, tense) {
 // =========================================================================
 
 function getVerbParticleType(verbUnit) {
+	const sv = parseSemanticVector(verbUnit);
+	if (sv && typeof sv.particle === 'string' && sv.particle) return sv.particle;
 	if (hasTag(verbUnit, "dative_person")) return "dative";
 	if (hasTag(verbUnit, "intransitive_motion", "intransitive_place")) return "location";
 	const spec = ACTION_VERB_SPECS.find(s => hasTag(verbUnit, s.tag));
@@ -838,8 +860,11 @@ function getNounCandidatesForVerb(verbUnit) {
 		return idx.verbCandidateCache.get(unitId);
 	}
 	const cacheAndReturn = (res) => {
-		if (idx && typeof unitId === 'number') idx.verbCandidateCache.set(unitId, res);
-		return res;
+		const cleaned = Array.isArray(res)
+			? res.filter(n => !hasTag(n, "possessive") && !(parseSemanticVector(n) && parseSemanticVector(n).en && parseSemanticVector(n).en.possOnly))
+			: res;
+		if (idx && typeof unitId === 'number') idx.verbCandidateCache.set(unitId, cleaned);
+		return cleaned;
 	};
 
 	const sv = parseSemanticVector(verbUnit);
@@ -865,6 +890,9 @@ function getNounCandidatesForVerb(verbUnit) {
 		const vKo = verbUnit[DATA_SCHEMA.Korean] || "";
 		if (!["닦다", "뽑다", "치료하다", "갈다"].includes(vKo) && !hasTag(verbUnit, "teeth")) {
 			reqNouns = reqNouns.filter(n => n[DATA_SCHEMA.Korean] !== "이" && n[DATA_SCHEMA.Id] !== 361);
+		}
+		if (sv.req === K.FOOD || sv.req === "drink" || hasTag(verbUnit, "cooking")) {
+			reqNouns = reqNouns.filter(n => !hasTag(n, K.PLACE, K.FACILITY, "restaurant", "store", "bakery", "honorific_noun"));
 		}
 		if (reqNouns.length > 0) return cacheAndReturn(reqNouns);
 	}
@@ -902,8 +930,15 @@ function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
 		return idx.dvCandidateCache.get(unitId);
 	}
 	const cacheAndReturn = (res) => {
-		if (idx && typeof unitId === 'number') idx.dvCandidateCache.set(unitId, res);
-		return res;
+		const cleaned = Array.isArray(res)
+			? res.filter(n =>
+				!hasTag(n, "questionWord", "interrogative", "possessive")
+				&& !(parseSemanticVector(n) && parseSemanticVector(n).en && parseSemanticVector(n).en.possOnly)
+				&& !["누구", "누가", "무엇", "뭐", "언제", "어디"].includes(n[DATA_SCHEMA.Korean])
+			)
+			: res;
+		if (idx && typeof unitId === 'number') idx.dvCandidateCache.set(unitId, cleaned);
+		return cleaned;
 	};
 
 	const sv = parseSemanticVector(dvUnit);
@@ -924,8 +959,14 @@ function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
 		}
 	}
 
+	const dvKorean = dvUnit[DATA_SCHEMA.Korean] || "";
+	const restrictAnimatePerson = dvKorean !== "필요하다";
+
 	if (sv && sv.req && sv.req !== 'any') {
 		let reqNouns = getFilteredWords(K.NOUN, sv.req).filter(n => !hasTag(n, K.MEASUREWORD));
+		if (restrictAnimatePerson && (sv.req === K.PERSON || hasTag(dvUnit, K.DESCRIPTIVE_PERSON))) {
+			reqNouns = filterAnimatePersonSubjects(reqNouns);
+		}
 		const dvKo = dvUnit[DATA_SCHEMA.Korean] || "";
 		if (!["아프다", "시리다", "좋다", "튼튼하다"].includes(dvKo) && !hasTag(dvUnit, "teeth")) {
 			reqNouns = reqNouns.filter(n => n[DATA_SCHEMA.Korean] !== "이" && n[DATA_SCHEMA.Id] !== 361);
@@ -936,6 +977,9 @@ function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
 	for (const spec of DESCRIPTIVE_VERB_SPECS) {
 		if (hasTag(dvUnit, spec.tag)) {
 			let words = getFilteredWords(K.NOUN, spec.nounTag).filter(n => !hasTag(n, K.MEASUREWORD));
+			if (restrictAnimatePerson && (spec.nounTag === K.PERSON || hasTag(dvUnit, K.DESCRIPTIVE_PERSON))) {
+				words = filterAnimatePersonSubjects(words);
+			}
 			if (spec.preferDomain) {
 				const domainWords = words.filter(w => parseSemanticVector(w).domain);
 				if (domainWords.length > 0) words = domainWords;

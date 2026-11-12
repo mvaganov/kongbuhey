@@ -82,9 +82,9 @@ function conjugateAoStem(rawStem, conjRule = K.REGULAR) {
 		return prefix + base + vh;
 	}
 
-	// 4. ㅎ irregular (어떻다 -> 어때, 파랗다 -> 파래, 노랗다 -> 노래)
+	// 4. ㅎ irregular (어떻다 -> 어때, 파랗다 -> 파래, 노랗다 -> 노래, 하얗다 -> 하얘)
 	if (rule.includes(K.H_IRREGULAR) && d.final === 27) {
-		const medial = (lastChar === '렇' || lastChar === '떻') ? 1 : 1; // ㅐ
+		const medial = (d.medial === 2 || d.medial === 6) ? d.medial + 1 : 1; // ㅑ->ㅒ, ㅕ->ㅖ, else ㅐ
 		return prefix + composeHangul(d.initial, medial, 0);
 	}
 
@@ -329,14 +329,14 @@ function resolvePureMorphology(text, stateObj = null) {
 				if (d.medial === 0) return ch + s; // ㅏ (가, 나, 사, 자, 타)
 				if (d.medial === 8) return composeHangul(d.initial, 9, 0) + s; // ㅗ -> ㅘ (보 -> 봐, 오 -> 와)
 				if (d.medial === 13) return composeHangul(d.initial, 14, 0) + s; // ㅜ -> ㅝ (주 -> 줘, 배우 -> 배워)
-				if (d.medial === 20) return composeHangul(d.initial, 6, 0) + s; // ㅣ -> ㅕ (마시 -> 마셔, 기다리 -> 기다려)
+				if (d.medial === 20) return (ch === "비" ? "비어" : composeHangul(d.initial, 6, 0)) + s; // ㅣ -> ㅕ (마시 -> 마셔, 기다리 -> 기다려; 비다 -> 비어)
 				if ([1, 4, 5, 6].includes(d.medial)) return ch + s; // ㅐ, ㅓ, ㅔ, ㅕ
 				if (d.medial === 18) return composeHangul(d.initial, 4, 0) + s; // ㅡ (크 -> 커, 쓰 -> 써)
 			} else if (h === "았/었") {
 				if (d.medial === 0) return composeHangul(d.initial, 0, 20) + s; // ㅏ -> 았 (갔, 났, 샀, 잤)
 				if (d.medial === 8) return composeHangul(d.initial, 9, 20) + s; // ㅗ -> 왔/봤
 				if (d.medial === 13) return composeHangul(d.initial, 14, 20) + s; // ㅜ -> 줬/배웠
-				if (d.medial === 20) return composeHangul(d.initial, 6, 20) + s; // ㅣ -> 마셨/기다렸
+				if (d.medial === 20) return (ch === "비" ? "비었" : composeHangul(d.initial, 6, 20)) + s; // ㅣ -> 마셨/기다렸; 비다 -> 비었
 				if ([1, 4, 5, 6].includes(d.medial)) return composeHangul(d.initial, d.medial, 20) + s; // 섰, 보냈, 켰
 				if (d.medial === 18) return composeHangul(d.initial, 4, 20) + s; // 컸, 썼
 			}
@@ -427,7 +427,7 @@ function resolvePureMorphology(text, stateObj = null) {
 		if (ch === '지' || ch === '이' || ch === '저' || ch === '부' || ch === '그') return m;
 		const d = decomposeHangul(ch);
 		if (!d || d.final !== 0) return m;
-		if (d.medial === 20) return composeHangul(d.initial, 6, 0) + s;
+		if (d.medial === 20 && ch !== '비') return composeHangul(d.initial, 6, 0) + s;
 		if (d.medial === 13) return composeHangul(d.initial, 14, 0) + s;
 		if ([1, 4, 5, 6].includes(d.medial)) return ch + s;
 		return m;
@@ -436,7 +436,7 @@ function resolvePureMorphology(text, stateObj = null) {
 		if (ch === '지' || ch === '이' || ch === '저' || ch === '부' || ch === '그') return m;
 		const d = decomposeHangul(ch);
 		if (!d || d.final !== 0) return m;
-		if (d.medial === 20) return composeHangul(d.initial, 6, 20) + s;
+		if (d.medial === 20 && ch !== '비') return composeHangul(d.initial, 6, 20) + s;
 		if (d.medial === 13) return composeHangul(d.initial, 14, 20) + s;
 		if ([1, 4, 5, 6].includes(d.medial)) return composeHangul(d.initial, d.medial, 20) + s;
 		return m;
