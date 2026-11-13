@@ -89,6 +89,7 @@ let SINO_TEN_THOUSAND = "";
 let NUM_ZERO = "";
 let PURE_KOREAN_TWENTY_ATTRIBUTIVE = "";
 
+// TODO can the Sets near the top of argument_concord.js be merged into these sets, or these be merged into argument_concord.js? can all of these sets be generated automatically with semantic data or semantic tags without needing special code like this? maybe add a special prefix/suffix (like ϵ) to the text of any semantic tag that needs have a set like this? or add a "Sets" field to the semantic data schema?
 // Honorifics & Social Deixis (Feature 5)
 let ELDER_NOUN_TITLES = new Set();
 let INANIMATE_INSTITUTION_NAMES = new Set();

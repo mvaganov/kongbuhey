@@ -43,6 +43,7 @@ const {
 // ============================================================================
 // Concordance Domain Sets (O(1) Membership Lookups)
 // ============================================================================
+// TODO generate these sets automatically at load time. language units should have semantic data or a semantic tag (or tags) that prompts inclusion in a set like this (though a common way of checking for a set requirement like this in the language unit might make the set obsolete, since the language unit can also be checked at O(1) speed). if there are missing language units, create them.
 
 const NON_SUBJECT_DEICTICS = new Set([
 	"누구", "누가", "무엇", "뭐", "어디", "언제", "얼마", "몇",
@@ -53,7 +54,7 @@ const SUBJECT_PERSONAL_PRONOUNS = new Set(["나", "저", "우리", "저희", "�
 const COLLOQUIAL_NON_SUBJECT_PERSONS = new Set(["얘들", "놈", "녀석"]);
 
 const NON_AGENT_PERSON_WORDS = new Set([
-	"나이", "이름", "성함", "연세", "생일", "생신", "고향", "주소", "전화번호", "번호",
+	"사람", "나이", "이름", "성함", "연세", "생일", "생신", "고향", "주소", "전화번호", "번호",
 	"취미", "전공", "성별", "국적", "키", "몸무게", "얼굴", "마음", "성격", "버릇", "습관",
 	"목소리", "눈물", "땀", "피", "꿈", "생각", "기분", "감정", "말씀", "진지", "댁", "병환", "약주"
 ]);
@@ -67,6 +68,12 @@ const PATH_MOTION_NOUNS = new Set(["길", "거리", "횡단보도", "다리", "�
 const DEPARTURE_ORIGIN_NOUNS = new Set(["공항", "인천공항", "김포공항", "한국", "미국", "일본", "중국", "서울"]);
 const BROAD_WORLD_REGIONS = new Set(["서양", "동양", "세계"]);
 const STATIC_REST_PLACES = new Set(["침대", "방", "집", "소파", "의자"]);
+const RESIDENTIAL_LIVING_PLACES = new Set(["집", "아파트", "기숙사", "하숙집", "원룸", "한국", "서울", "부산", "제주도", "미국", "일본", "중국", "고향", "시골", "도시", "동네"]);
+const SEATING_SURFACE_PLACES = new Set(["의자", "자리", "소파", "벤치", "바닥"]);
+const LYING_SURFACE_PLACES = new Set(["침대", "소파", "바닥", "방"]);
+const DAILY_ROUTINE_POSTURE_VERBS = new Set(["샤워하다", "세수하다", "목욕하다", "닦다", "자다", "일어나다", "앉다", "눕다"]);
+const DAILY_DEICTIC_TIME_WORDS = new Set(["아침", "오전", "오후", "저녁", "밤", "오늘", "어제", "내일", "매일", "날마다", "일찍"]);
+const MEDIA_WORK_NOUNS = new Set(["액션영화", "코미디 영화", "영화", "드라마", "프로그램"]);
 const MOVING_RESIDENCE_PLACES = new Set(["집", "원룸", "아파트", "기숙사", "하숙집", "방", "서울", "부산", "대구", "인천", "한국", "고향", "동네"]);
 const ATTENDANCE_VENUES = new Set(["학교", "수업", "학원", "모임", "회의", "대학교"]);
 const RUNNING_VENUES = new Set(["공원", "한강공원", "운동장", "길", "거리", "산", "바다"]);
@@ -333,9 +340,25 @@ function selectArgumentForActionVerb(verbUnit, options = {}, targetId = null) {
 	}
 
 	if (isLocativeStatic) {
-		const places = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n =>
-			hasTag(n, K.PLACE, K.LOCATION, K.FACILITY, "furniture") || STATIC_REST_PLACES.has(n[DATA_SCHEMA.Korean])
-		);
+		let places;
+		if (verbKo === "살다") {
+			places = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n =>
+				RESIDENTIAL_LIVING_PLACES.has(n[DATA_SCHEMA.Korean])
+				|| (hasTag(n, "housing", "residence", "city", K.COUNTRY) && n[DATA_SCHEMA.Korean] !== "곳" && n[DATA_SCHEMA.Korean] !== "회사" && !BROAD_WORLD_REGIONS.has(n[DATA_SCHEMA.Korean]))
+			);
+		} else if (verbKo === "앉다") {
+			places = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n =>
+				SEATING_SURFACE_PLACES.has(n[DATA_SCHEMA.Korean])
+			);
+		} else if (verbKo === "눕다") {
+			places = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n =>
+				LYING_SURFACE_PLACES.has(n[DATA_SCHEMA.Korean])
+			);
+		} else {
+			places = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n =>
+				hasTag(n, K.PLACE, K.LOCATION, K.FACILITY, "furniture") || STATIC_REST_PLACES.has(n[DATA_SCHEMA.Korean])
+			);
+		}
 		if (places.length > 0) {
 			return { nounUnit: pickRandom(places), role: K.LOCATION, particleType: "location_static" };
 		}
@@ -436,8 +459,18 @@ function selectArgumentForActionVerb(verbUnit, options = {}, targetId = null) {
 		);
 		if (elders.length > 0) candidates = elders;
 	} else if (particleType === K.DATIVE && !isHumbleVerb) {
-		const nonElders = candidates.filter(n => !isElderNoun(n));
-		if (nonElders.length > 0) candidates = nonElders;
+		const animateNonElders = getAllUnitsOfPos(K.NOUN, options, targetId).filter(
+			n => hasTag(n, K.PERSON, K.FAMILY, K.PROFESSION)
+				&& !isElderNoun(n)
+				&& !NON_AGENT_PERSON_WORDS.has(n[DATA_SCHEMA.Korean])
+				&& !COLLOQUIAL_NON_SUBJECT_PERSONS.has(n[DATA_SCHEMA.Korean])
+		);
+		if (animateNonElders.length > 0) {
+			candidates = animateNonElders;
+		} else {
+			const nonElders = candidates.filter(n => !isElderNoun(n));
+			if (nonElders.length > 0) candidates = nonElders;
+		}
 	}
 	const isStrictArgVerb = Boolean(sd && (sd.collocation_filter || (sd.req && sd.req !== K.OBJECT && sd.req !== "any")));
 	if (candidates.length === 0 && options.onlyFromSet && !isStrictArgVerb) {
@@ -501,10 +534,12 @@ function selectActionVerbForNoun(nounUnit, options = {}, targetId = null) {
 	) || NON_COMMODITY_NOUNS.has(nounKo);
 
 	const nounId = nounUnit[DATA_SCHEMA.Id];
+	const isMediaWork = MEDIA_WORK_NOUNS.has(nounKo) || hasTag(nounUnit, "movie", "film", "media_work");
 	const matchingAVs = allAVs.filter(av => {
 		const avKo = av[DATA_SCHEMA.Korean] || "";
 		if (avKo.includes(" ")) return false;
 		if (avKo === "말씀하다" || state.HONORIFIC_WORDS.has(avKo) || state.HUMBLE_WORDS.has(avKo)) return false;
+		if (isMediaWork && avKo === "버리다") return false;
 		if (isIntransitiveVerb(av)) return false;
 		if (getVerbParticleType(av) !== K.OBJECT) return false;
 		const cands = getNounCandidatesForVerb(av);
@@ -563,7 +598,7 @@ function selectDescriptiveVerbForNoun(nounUnit, options = {}, targetId = null) {
 		if (!isPricingEligible && PRICING_DVS.has(ko)) return false;
 		if (SMALL_STATIONERY_NOUNS.has(nounKo) && ERGONOMIC_INTEREST_DVS.has(ko)) return false;
 		if (TICKET_CREDENTIAL_NOUNS.has(nounKo) && SIZE_THICKNESS_DVS.has(ko)) return false;
-		if ((nounKo === "게임" || hasTag(nounUnit, K.ACTIVITY)) && PHYSICAL_DIMENSION_DVS.has(ko)) return false;
+		if ((nounKo === "게임" || MEDIA_WORK_NOUNS.has(nounKo) || hasTag(nounUnit, K.ACTIVITY, "movie", "film", "media_work")) && PHYSICAL_DIMENSION_DVS.has(ko)) return false;
 		if (nounKo === "나이" && !AGE_COMPATIBLE_DVS.has(ko)) return false;
 		if (options.tense && options.tense !== K.PAST && (hasTag(dv, "resultative_past") || RESULTATIVE_PAST_DVS.has(ko))) return false;
 		if (!isElder && state.HONORIFIC_WORDS && state.HONORIFIC_WORDS.has(ko)) return false;
@@ -635,6 +670,7 @@ function selectPutInContainerNoun(objectNounUnit, options = {}, targetId = null)
 	));
 	let pool = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => {
 		const nKo = n[DATA_SCHEMA.Korean] || "";
+		if (nKo === "쓰레기통") return false;
 		if (hasTag(n, K.FOOD, K.HONORIFIC, "honorific_noun")) return false;
 		if (!PUT_IN_CONTAINERS.has(nKo) && !hasTag(n, "container")) return false;
 		if (isBulkyOrMedium && TINY_CONTAINERS.has(nKo)) return false;
@@ -654,6 +690,9 @@ function isPluralSubjectUnit(subjUnit) {
 }
 
 function selectTimeUnit(tense, options = {}, targetId = null, targetVerbUnit = null) {
+	const vKo = targetVerbUnit ? (targetVerbUnit[DATA_SCHEMA.Korean] || "") : "";
+	if (vKo === "살다" && tense !== K.PRESENT) return null;
+	// TODO should this be a named set near the top of argument_concord.js?
 	const excludedTimeNouns = new Set([
 		"학기", "날", "때", "번", "월", "년", "한번", "방학중", "학기 중", "계절", "언제", "생신",
 		"며칠", "몇 시", "이때", "순서", "차례", "동안", "하루", "이틀", "사흘", "나흘", "닷새",
@@ -661,16 +700,29 @@ function selectTimeUnit(tense, options = {}, targetId = null, targetVerbUnit = n
 		"미래", "이전", "종일", "요일", "연초", "연말", "오랜만", "-박 -일", "지난", "올해", "금년",
 		"작년", "지난해", "내년", "다음주"
 	]);
-	if (tense !== K.PRESENT) excludedTimeNouns.add("지금");
-	const timeNouns = getAllUnitsOfPos(K.NOUN, options, targetId).filter(
-		n => hasTag(n, K.TIME, "temporal") && !hasTag(n, K.MEASUREWORD, K.COUNTER, K.QUESTION_WORD, K.INTERROGATIVE, K.HONORIFIC, "honorific_noun", K.ABSTRACT, "order", "duration", K.BOUND_NOUN, "schedule", K.CONCEPT, K.EMOTION, "time_modifier", K.DETERMINER) && !excludedTimeNouns.has(n[DATA_SCHEMA.Korean])
-	);
+	if (tense !== K.PRESENT) {
+		excludedTimeNouns.add("지금");
+		excludedTimeNouns.add("요즘");
+		excludedTimeNouns.add("현재");
+	}
+	const isDailyRoutine = DAILY_ROUTINE_POSTURE_VERBS.has(vKo);
+	const timeNouns = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => {
+		const nKo = n[DATA_SCHEMA.Korean];
+		if (!hasTag(n, K.TIME, "temporal")) return false;
+		if (hasTag(n, K.MEASUREWORD, K.COUNTER, K.QUESTION_WORD, K.INTERROGATIVE, K.HONORIFIC, "honorific_noun", K.ABSTRACT, "order", "duration", K.BOUND_NOUN, "schedule", K.CONCEPT, K.EMOTION, "time_modifier", K.DETERMINER)) return false;
+		if (excludedTimeNouns.has(nKo)) return false;
+		if (vKo === "살다" && nKo !== "요즘" && nKo !== "지금") return false;
+		if (isDailyRoutine && !DAILY_DEICTIC_TIME_WORDS.has(nKo)) return false;
+		return true;
+	});
 	const timeAdvs = getAllUnitsOfPos(K.POS_ADVERB, options, targetId).filter(a => {
 		if (!hasTag(a, K.TIME, "temporal", "adverb_time")) return false;
 		if (hasTag(a, K.QUESTION_WORD, K.INTERROGATIVE)) return false;
 		const aKo = a[DATA_SCHEMA.Korean];
 		if (EXCLUDED_TIME_ADVERBS.has(aKo)) return false;
 		if (tense === K.FUTURE && DAILY_HABIT_ADVERBS.has(aKo)) return false;
+		if (vKo === "살다" && aKo !== "요즘" && aKo !== "지금") return false;
+		if (isDailyRoutine && !DAILY_DEICTIC_TIME_WORDS.has(aKo)) return false;
 		if (targetVerbUnit && typeof canAdverbPrecede === 'function' && !canAdverbPrecede(a, targetVerbUnit, { tense })) return false;
 		return true;
 	});

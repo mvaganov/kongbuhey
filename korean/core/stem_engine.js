@@ -123,7 +123,8 @@ function conjugateAoStem(rawStem, conjRule = K.REGULAR) {
 			return prefix + composeHangul(d.initial, 14, 0);
 		}
 		if (d.medial === 20) {
-			// ㅣ -> ㅕ (마시 -> 마셔, 기다리 -> 기다려)
+			// ㅣ -> ㅕ (마시 -> 마셔, 기다리 -> 기다려; single-syllable 비다 -> 비어)
+			if (stem === '비') return '비어';
 			return prefix + composeHangul(d.initial, 6, 0);
 		}
 		if (d.medial === 11) {
@@ -329,14 +330,20 @@ function resolvePureMorphology(text, stateObj = null) {
 				if (d.medial === 0) return ch + s; // ㅏ (가, 나, 사, 자, 타)
 				if (d.medial === 8) return composeHangul(d.initial, 9, 0) + s; // ㅗ -> ㅘ (보 -> 봐, 오 -> 와)
 				if (d.medial === 13) return composeHangul(d.initial, 14, 0) + s; // ㅜ -> ㅝ (주 -> 줘, 배우 -> 배워)
-				if (d.medial === 20) return (ch === "비" ? "비어" : composeHangul(d.initial, 6, 0)) + s; // ㅣ -> ㅕ (마시 -> 마셔, 기다리 -> 기다려; 비다 -> 비어)
+				if (d.medial === 20) {
+					const isSingleBi = ch === "비" && (offset === 0 || !/[가-힣]/.test(resolvedKo[offset - 1]));
+					return (isSingleBi ? "비어" : composeHangul(d.initial, 6, 0)) + s; // ㅣ -> ㅕ (마시 -> 마셔, 기다리 -> 기다려, 비비 -> 비벼; 비다 -> 비어)
+				}
 				if ([1, 4, 5, 6].includes(d.medial)) return ch + s; // ㅐ, ㅓ, ㅔ, ㅕ
 				if (d.medial === 18) return composeHangul(d.initial, 4, 0) + s; // ㅡ (크 -> 커, 쓰 -> 써)
 			} else if (h === "았/었") {
 				if (d.medial === 0) return composeHangul(d.initial, 0, 20) + s; // ㅏ -> 았 (갔, 났, 샀, 잤)
 				if (d.medial === 8) return composeHangul(d.initial, 9, 20) + s; // ㅗ -> 왔/봤
 				if (d.medial === 13) return composeHangul(d.initial, 14, 20) + s; // ㅜ -> 줬/배웠
-				if (d.medial === 20) return (ch === "비" ? "비었" : composeHangul(d.initial, 6, 20)) + s; // ㅣ -> 마셨/기다렸; 비다 -> 비었
+				if (d.medial === 20) {
+					const isSingleBi = ch === "비" && (offset === 0 || !/[가-힣]/.test(resolvedKo[offset - 1]));
+					return (isSingleBi ? "비었" : composeHangul(d.initial, 6, 20)) + s; // ㅣ -> 마셨/기다렸/비볐; 비다 -> 비었
+				}
 				if ([1, 4, 5, 6].includes(d.medial)) return composeHangul(d.initial, d.medial, 20) + s; // 섰, 보냈, 켰
 				if (d.medial === 18) return composeHangul(d.initial, 4, 20) + s; // 컸, 썼
 			}

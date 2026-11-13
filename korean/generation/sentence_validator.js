@@ -62,7 +62,7 @@ const UNRESOLVED_PATTERNS = [
 /**
  * Validates a realization against a SentenceAST.
  *
- * @param {Object} ast - SentenceAST
+ * @param {Object} ast - SentenceAST (schema: header comment of sentence_ast.js)
  * @param {Object} realized - Object returned by realizeKoreanFromAST(ast)
  * @returns {{ valid: boolean, errors: Array<{code: string, message: string}>, warnings: Array<{code: string, message: string}> }}
  */

@@ -789,11 +789,15 @@ function filterWordsByTense(words, tense) {
 	let filtered = words;
 	if (tense === K.PAST) {
 		filtered = words.filter(w => {
+			const ko = typeof w === 'string' ? w : (Array.isArray(w) ? w[DATA_SCHEMA.Korean] : "");
+			if (ko === "요즘" || ko === "지금") return false;
 			const pol = getTemporalPolarity(w);
 			return pol !== K.FUTURE;
 		});
 	} else if (tense === K.FUTURE) {
 		filtered = words.filter(w => {
+			const ko = typeof w === 'string' ? w : (Array.isArray(w) ? w[DATA_SCHEMA.Korean] : "");
+			if (ko === "요즘") return false;
 			const pol = getTemporalPolarity(w);
 			return pol !== K.PAST;
 		});

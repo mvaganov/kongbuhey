@@ -91,7 +91,7 @@
  *      (positive premise leads to negative turn).
  *    * req / prod: Action chains (e.g. 배우다: req "language" -> prod "knowledge").
  *    * en: Structured English literal (Korean-word-order) and natural (SVO) inflection/gloss metadata.
- *    * TODO: Explanatory notes for pending logical constraints to be implemented in generator.
+ *    * TODO: update docs to reflect updated schema and functionality
  *
  *  - SyntaxFrame (Reading / Parsing Only):
  *    Collocation regex pattern used exclusively when READING text in text_analyzer.js to

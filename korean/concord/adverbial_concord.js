@@ -196,7 +196,7 @@ function applyAdverbConcord(input, options = {}) {
 				const repAdverb = options.affirmative_adverb || "아주";
 				return `${p1}${repAdverb} ${targetWord}`;
 			}
-
+			// TODO can this series of if-statements be replaced with a switch/dictionary lookup?
 			if (targetWord.startsWith("알았")) {
 				return `${p1}${npi} ${targetWord.replace(/^알았/, "몰랐")}`;
 			}

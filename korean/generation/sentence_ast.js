@@ -11,13 +11,45 @@ const { K } = (typeof require !== 'undefined') ? require('../../constants.js') :
  * 1. Dynamic Grammar Unit Registry (maps particles, verbal endings, auxiliaries,
  *    copulas, and clausal connectives to their canonical Language Units in data.js
  *    with zero hardcoded magic IDs).
- * 2. Declarative AST node builders (SentenceAST, ClauseAST, ConstituentNode, PredicateNode).
+ * 2. The SentenceAST schema below (produced by unit_sentence_generator.js builders, mutated by the
+ *    realizers here, read by sentence_validator.js and translation/*_realizer.js).
  * 3. Eojeol & Morpheme-Segment Provenance Engine:
  *    Splits every Korean surface word (eojeol) into exact stem + particle/ending segments
  *    where `segments.map(s => s.textKo).join('') === eojeol.surfaceKo`, enabling each
  *    Hangul word/morpheme and English literal token to act as an interactive Language Unit button.
  *
  * Platform: Node.js & Browser (Vanilla JS, zero dependencies).
+ *
+ * SENTENCE AST SCHEMA (plain objects, no classes; "Unit" = a raw data.js row array, read via DATA_SCHEMA.*).
+ * If you add/rename a field, update this block and sentence_validator.js in the same edit.
+ *
+ *   builder result : { ok: boolean, ast: SentenceAST, ...reason fields when !ok }
+ *   SentenceAST    : { type: "Sentence", targetUnitId, speechAct (K.DECLARATIVE|K.INTERROGATIVE|"exclamatory"),
+ *                      politeness, tense, polarity, modality, honorific, clauses: ClauseAST[], tree? }
+ *                    (sentence-level tense/politeness/etc. mirror the predicate; the predicate is authoritative)
+ *   ClauseAST      : { constituents: ConstituentNode[], predicate: PredicateNode }   // realized in array order, then predicate
+ *   ConstituentNode: { role (K.SUBJECT|K.TOPIC|K.OBJECT|K.RECIPIENT|K.ADVERB|K.TIME|location roles|"modifier"...),
+ *                      particleType (K.* case name, or null for bare words),
+ *                      unit | nounUnit,                       // head word; nounUnit wins if both are set
+ *                      determinerUnit?, modifierSurfaceKo?,   // prefix word(s) before the head
+ *                      counterUnit?, numberSurfaceKo?,        // "<noun?> <number> <counter>" phrase; noun optional
+ *                      positionUnit?,                         // "<ground> <position word>" phrase (앞, 위, ...)
+ *                      explicitSurfaceKo?,                    // bypasses all assembly (particle must be baked in)
+ *                      particleUnit? }                        // normally resolved from particleType by the realizer
+ *   PredicateNode  : { role: K.PREDICATE, predType (K.ACTION|K.DESCRIPTIVE|K.COPULA), verbUnit, tense, politeness,
+ *                      polarity (K.AFFIRMATIVE|K.NEGATIVE), speechAct, modality (null|"desire"|"ability"|K.INABILITY|
+ *                      "obligation"|"permission"|K.PROHIBITION|"progressive"|...), negationType?, honorific?,
+ *                      copulaNounUnit? (predType COPULA), connectiveSuffix? (clause-linking stem+suffix),
+ *                      explicitSurfaceKo? (bypasses conjugation), endingUnit? (resolved by realizer) }
+ *   Realizer output (realizeKoreanFromAST): { ko, koBare, pronunciation, enLiteral, enNatural, ast, eojeols, unitsUsed, unitIds, tree }
+ *   Eojeol         : { surfaceKo, role, index, segments: Segment[], unitIds? }  // one per space-separated word
+ *   Segment        : { textKo, unitId|null, koDict, enDict, pos, kind ("lexical"|particle|ending...), role }
+ *                    INVARIANT: segments.map(s => s.textKo).join('') === eojeol.surfaceKo, and
+ *                    eojeols.map(e => e.surfaceKo).join(' ') === ko without terminal punctuation.
+ *
+ * REALIZER SIDE EFFECTS: realizeConstituentKo/realizePredicateKo MUTATE the nodes they receive (set particleUnit,
+ * surfaceKo, eojeols, endingUnit; may swap nounUnit/verbUnit for honorific/humble/negation suppletives and flip
+ * polarity to AFFIRMATIVE once a suppletive verb carries the negation). Deep-copy an AST before re-realizing it.
  */
 
 let dataModule;
@@ -493,6 +525,30 @@ function buildConstituentEojeols(constituent, surfaceKo) {
 				segments: lastSegs
 			});
 			return eojeols;
+		} else if (words.length >= 2 && numberUnit && !primaryUnit) {
+			const numWords = words.slice(0, -1);
+			for (const nw of numWords) {
+				const nId = numberUnit[DATA_SCHEMA.Id];
+				eojeols.push({
+					surfaceKo: nw,
+					role: "number",
+					headUnitId: nId,
+					particleUnitId: null,
+					unitIds: nId !== null ? [nId] : [],
+					segments: [makeSegment(nw, numberUnit, "lexical", "number")]
+				});
+			}
+			const lastWord = words[words.length - 1];
+			const lastSegs = splitNounAndParticleSegments(lastWord, counterUnit, particleUnit, role);
+			eojeols.push({
+				surfaceKo: lastWord,
+				role: K.COUNTER,
+				headUnitId: counterUnit[DATA_SCHEMA.Id],
+				particleUnitId: particleUnit ? particleUnit[DATA_SCHEMA.Id] : null,
+				unitIds: lastSegs.map(s => s.unitId).filter(id => id !== null),
+				segments: lastSegs
+			});
+			return eojeols;
 		}
 	}
 
@@ -719,7 +775,7 @@ function realizeConstituentKo(constituent, clauseContext = {}) {
 	const primaryUnit = nounUnit || unit;
 	const resolvedParticleUnit = constituent.particleUnit !== undefined
 		? constituent.particleUnit
-		: (particleType ? resolveParticleUnit(particleType, primaryUnit, clauseContext) : null);
+		: (particleType ? resolveParticleUnit(particleType, primaryUnit || counterUnit, clauseContext) : null);
 
 	constituent.particleUnit = resolvedParticleUnit;
 
@@ -734,6 +790,13 @@ function realizeConstituentKo(constituent, clauseContext = {}) {
 			? attachParticle(counterUnit, particleType, clauseContext.verbUnit, clauseContext)
 			: counterKo;
 		surfaceKo = `${nounKo} ${numStr} ${counterWithParticle}`;
+	} else if (counterUnit && !primaryUnit) {
+		const counterKo = counterUnit[DATA_SCHEMA.Korean];
+		const numStr = numberSurfaceKo || "한";
+		const counterWithParticle = particleType
+			? attachParticle(counterUnit, particleType, clauseContext.verbUnit, clauseContext)
+			: counterKo;
+		surfaceKo = `${numStr} ${counterWithParticle}`;
 	} else if (positionUnit && primaryUnit) {
 		const groundKo = primaryUnit[DATA_SCHEMA.Korean];
 		const posWithParticle = particleType
