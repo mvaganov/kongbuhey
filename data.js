@@ -317,7 +317,15 @@ const KR_EN_languageUnits = [
 	[51, "~자", "let's do...", G, ["suggestion", K.PROPOSITIVE, "speech_act"], "", ["{AVst}자"], "SUOBI00", 3, "Plain (한다체)", "Cannot be used with honorific subject", {"logic":"propositive","mood":"propositive","speech_act":"proposal","target_pos":"Action Verb","en":{"kind":"ending","lit":"-let's","nat":"let's","mood":"propositive","formality":"casual"}}, ""],
 	[52, "-아/어서", "because / so", G, ["reason", "conjunction", "sequential", "causal", K.CLAUSAL_CONNECTIVE], "", ["{VP_AVst}아/어서 {Clause}", "{VP_DVst}아/어서 {Clause}"], "SUOBI00", 3, "", "No past tense in first clause", {"domain":"causal","logic":"cause_effect","connective_type":"causal","clause1_tense_allowed":false,"clause2_moods_allowed":["declarative"],"clause1_pos":["Action Verb","Descriptive Verb"],"same_subject":false,"outcome_polarity":0,"surface_forms":["아/어서","아서","어서","여서","해서"],"en":{"kind":"connective","lit":"-because/so","frame":"Because {C1}, {C2}","logic":"cause_effect"}}, ""],
 	[53, "-(으)니까", "since / because", G, ["reason", "conjunction", "causal", K.CLAUSAL_CONNECTIVE, DEVTEST], "", ["{VP_AVst}으/니까 {Clause}", "{VP_DVst}으/니까 {Clause}"], "SUOBI00", 3, "", "Often followed by imperative or propositive", {"domain":"causal","logic":"cause_effect","connective_type":"causal","clause1_tense_allowed":true,"clause2_moods_allowed":["declarative","imperative","propositive","suggestive","interrogative"],"clause1_pos":["Action Verb","Descriptive Verb"],"same_subject":false,"outcome_polarity":0,"prefers_command_or_proposal":true,"surface_forms":["(으)니까","으니까","니까"],"en":{"kind":"connective","lit":"-since/because","frame":"Since {C1}, {C2}","logic":"cause_effect"}}, ""],
-	[54, "-기 때문에", "because of", G, ["reason", "conjunction", "causal", K.CLAUSAL_CONNECTIVE], "", ["{VP_AVst}기 때문에 {Clause}", "{VP_DVst}기 때문에 {Clause}", "{N} 때문에 {Clause}"], "SUOBI00", 3, "", "", {"domain":"causal","logic":"cause_effect","connective_type":"causal","clause1_tense_allowed":true,"clause2_moods_allowed":["declarative"],"clause1_pos":["Action Verb","Descriptive Verb"],"same_subject":false,"outcome_polarity":0,"surface_forms":["기 때문에","기때문에"],"en":{"kind":"connective","lit":"-because-of","frame":"Because {C1}, {C2}","logic":"cause_effect"}}, "/*js:matcher*/ ({ w1, cleanW2 }) => w1.endsWith('기') && cleanW2 === '때문에' ? { span: 2, lexicalType: 'stem_da', stemSuffix: '기', pattern: '-기 때문에 (Because of / Since)', grammar: [{ text: '-기 때문에', pos: 'Grammar Pattern', gloss: 'because of' }] } : null"],
+	[
+		54, "-기 때문에", "because of", G, ["reason", "conjunction", "causal", K.CLAUSAL_CONNECTIVE], "", ["{VP_AVst}기 때문에 {Clause}", "{VP_DVst}기 때문에 {Clause}", "{N} 때문에 {Clause}"], "SUOBI00", 3, "", "",
+		{"domain":"causal","logic":"cause_effect","connective_type":"causal","clause1_tense_allowed":true,"clause2_moods_allowed":["declarative"],"clause1_pos":["Action Verb","Descriptive Verb"],"same_subject":false,"outcome_polarity":0,"surface_forms":["기 때문에","기때문에"],"en":{"kind":"connective","lit":"-because-of","frame":"Because {C1}, {C2}","logic":"cause_effect"}},
+		({ w1, cleanW2 }) => {
+			return w1.endsWith('기') && cleanW2 === '때문에'
+				? { span: 2, lexicalType: 'stem_da', stemSuffix: '기', pattern: '-기 때문에 (Because of / Since)', grammar: [{ text: '-기 때문에', pos: 'Grammar Pattern', gloss: 'because of' }] }
+				: null;
+		}
+	],
 	[55, "이다", "to be", DV, [PARTICLE], "", REGULAR, "SUOBI00", 3, "", "Copula verb", {"logic":"identify","en":{"lit":"be","adj":"","copula":true,"stative":"be"}}, ""],
 	[56, "입니다", "is/are", G, [K.DECLARATIVE, K.PRESENT, HONORIFIC], "", ["{N}입니다"], "SUOBI00", 0.5, FORMAL_POLITE, "", {"logic":"declarative","domain":"identify","en":{"kind":"copula","lit":"-is/am/are","nat":"be","tense":"present","formality":"formal"}}, ""],
 	[57, "부사 표현", "adverb expression", G, [K.ADVERB, "modifier", DEVTEST], "", ["{Adv} {Clause}"], "SUOBI00", 2, "", "", {"logic":"modifier","domain":"any","en":{"kind":"pattern","lit":"","nat":""}}, ""],
@@ -557,7 +565,15 @@ const KR_EN_languageUnits = [
 	[273, "만", "ten thousand", NUM, [K.SINO_NUMBER], "", "", SUOBI06, 2, "", "", {"domain":"number","value":10000,"en":{"lit":"ten-thousand","nat":"ten thousand"}}, ""],
 
 	// Grammar from SUOBI06
-	[274, "-지 않다", "to not do/be", G, [K.NEGATIVE, "long_negation"], "", ["{VP_AVst}지 않아요", "{VP_DVst}지 않아요"], SUOBI06, 1, "", "", {"logic":"negation","polarity":-1,"negation_type":"long_general","en":{"kind":"auxiliary","lit":"-not","polarity":"negative","nat":"not"}}, "/*js:matcher*/ ({ w1, cleanW2 }) => (w1.endsWith('지') || w1.endsWith('지는') || w1.endsWith('지도')) && cleanW2.startsWith('않') ? { span: 2, lexicalType: 'stem_da', stemSuffix: w1.endsWith('지는') ? '지는' : w1.endsWith('지도') ? '지도' : '지', pattern: '-지 않다 (Long Negation)', grammar: [{ text: '-지 않다', pos: 'Grammar Pattern', gloss: 'to not do/be' }], extraParticle: w1.endsWith('지는') ? { text: '는', unitId: 36, gloss: 'topic marker (ID 36)' } : w1.endsWith('지도') ? { text: '도', unitId: 366, gloss: 'also/too (ID 366)' } : null, parseW2Grammar: true } : null"],
+	[
+		274, "-지 않다", "to not do/be", G, [K.NEGATIVE, "long_negation"], "", ["{VP_AVst}지 않아요", "{VP_DVst}지 않아요"], SUOBI06, 1, "", "",
+		{"logic":"negation","polarity":-1,"negation_type":"long_general","en":{"kind":"auxiliary","lit":"-not","polarity":"negative","nat":"not"}},
+		({ w1, cleanW2 }) => {
+			return (w1.endsWith('지') || w1.endsWith('지는') || w1.endsWith('지도')) && cleanW2.startsWith('않')
+				? { span: 2, lexicalType: 'stem_da', stemSuffix: w1.endsWith('지는') ? '지는' : w1.endsWith('지도') ? '지도' : '지', pattern: '-지 않다 (Long Negation)', grammar: [{ text: '-지 않다', pos: 'Grammar Pattern', gloss: 'to not do/be' }], extraParticle: w1.endsWith('지는') ? { text: '는', unitId: 36, gloss: 'topic marker (ID 36)' } : w1.endsWith('지도') ? { text: '도', unitId: 366, gloss: 'also/too (ID 366)' } : null, parseW2Grammar: true }
+				: null;
+		}
+	],
 	[275, "에 (time)", "time marker", G, [PARTICLE, TIME], "", ["{N:time}에 {VP_AVst}아/어요"], SUOBI06, 1, "", "", {"logic":"time_marker","en":{"kind":"particle","role":"TIME","lit":"-at/on","prep":"at"}}, "{Noun:time}\\+에"],
 	[276, "(이)랑", "and/with", G, [PARTICLE, "conjunction"], "", ["{N}(이)랑 {N}이/가 {DVst}아/어요"], SUOBI06, 1, "", "", {"logic":"conjunction","allomorph_pair":["이랑","랑"],"allomorph_patterns":["(이)랑","이랑/랑"],"en":{"kind":"particle","role":"COMITATIVE","lit":"-with/and","prep":"with","conj":"and"}}, ""],
 	[277, "시간 표현", "time expression", G, ["N_Phrase", TIME], "", ["{Number:koreanNumber} 시 {Number:sinoNumber} 분"], SUOBI06, 2, "", "", {"logic":"time_expression","en":{"kind":"pattern","lit":"-time-expression","nat":"time expression"}}, ""],
@@ -583,7 +599,15 @@ const KR_EN_languageUnits = [
 	[295, "맛", "taste", N, ["attribute", "sensory"], "", "", SUOBI07, 2, "", "", {"domain":"attribute","en":{"lit":"taste","nat":"taste","count":"c"}}, ""],
 	[296, "비빔밥", "bibimbap", N, [FOOD, "koreanFood"], "", "", SUOBI07, 1, "", "", {"domain":"food","en":{"lit":"bibimbap","nat":"bibimbap","count":"c"}}, ""],
 	[297, "사과", "apple", N, [FOOD, "fruit"], "", "", SUOBI07, 0.5, "", "", {"domain":"food","en":{"lit":"apple","nat":"apple","count":"c"}}, ""],
-	[298, "삼계탕", "ginseng chicken soup", N, [FOOD, "soup", "meat", "koreanFood"], "", "", SUOBI07, 2, "", "", {"domain":"food","en":{"lit":"ginseng-chicken-soup","nat":"ginseng chicken soup","count":"c"}}, "/*js:matcher*/ ({ w1, cleanW2 }) => w1 === '삼계' && cleanW2.startsWith('탕') ? { span: 2, lexicalType: 'self_unit', parseW2Grammar: true } : null"],
+	[
+		298, "삼계탕", "ginseng chicken soup", N, [FOOD, "soup", "meat", "koreanFood"], "", "", SUOBI07, 2, "", "",
+		{"domain":"food","en":{"lit":"ginseng-chicken-soup","nat":"ginseng chicken soup","count":"c"}},
+		({ w1, cleanW2 }) => {
+			return w1 === '삼계' && cleanW2.startsWith('탕')
+				? { span: 2, lexicalType: 'self_unit', parseW2Grammar: true }
+				: null;
+		}
+	],
 	[299, "샌드위치", "sandwich", N, [FOOD], "", "", SUOBI07, 2, "", "", {"domain":"food","en":{"lit":"sandwich","nat":"sandwich","count":"c"}}, ""],
 	[300, "서양", "western", N, [PLACE, "region"], "", "", SUOBI07, 2, "", "", {"domain":"culture","en":{"lit":"the-West","nat":"the West","count":"u"}}, ""],
 	[301, "액션영화", "action movie", N, [OBJECT, "entertainment", "movie", "visual_media"], "", "", SUOBI07, 2, "", "", {"domain":"entertainment","en":{"lit":"action-movie","nat":"action movie","count":"c"}}, ""],
@@ -607,7 +631,21 @@ const KR_EN_languageUnits = [
 	[319, "삼겹살", "pork belly", N, [FOOD, "meat"], "", "", SUOBI07, 2, "", "", {"domain":"food","en":{"lit":"pork-belly","nat":"pork belly","count":"c"}}, ""],
 	[320, "인분", "portion", N, [MEASUREWORD, "sinoMeasureWord", FOOD], "", "", SUOBI07, 2, "", "", {"domain":"quantity","counter":true,"classifier_spec":{"tags":["meat","dish","meal_portion"],"fallbackTag":"food","priority":80},"en":{"lit":"-portion(인분)","nat":"portion","count":"counter"}}, ""],
 	[321, "시키다", "to order", K.AV, [K.TRANSITIVE_GENERAL, "transitive_food", "transitive_drink"], "", K.REGULAR, K.SUOBI07, 2, "", "", {"domain":"action","req":"food","prod":"ordered","polarity":1,"collocation_filter":{"anyTag":["food","drink"],"notTags":["place","facility","measureWord","activity"]},"en":{"lit":"order","base":"order","past":"ordered"}}, ""],
-	[322, "주다", "to give", AV, [TRANSITIVE_GENERAL, K.DATIVE_PERSON], "", REGULAR, SUOBI07, 0.5, "", "", {"domain":"action","req":"object","prod":"received","polarity":1,"humble_suppletion":"드리다","en":{"lit":"give","base":"give","past":"gave","part":"given","s":"gives","ing":"giving"}}, "/*js:matcher*/ ({ isInformal, cleanW2, cleanW3, rawWords, i }) => { if (!isInformal) return null; const w4 = i < rawWords.length - 3 ? rawWords[i + 3].replace(/[^\\w가-힣]+/g, '') : ''; if ((cleanW2 === '줄' || cleanW2.startsWith('줄')) && cleanW3 === '수' && (w4.startsWith('있') || w4.startsWith('없'))) { return { span: 4, pattern: '-아/어 줄 수 있다 (Can do for someone)', lexicalType: 'stem_informal_or_da', grammar: [{ text: '-아/어 주다', pos: 'Auxiliary Verb', id: 322, gloss: 'to give/do for (ID 322)' }, { text: w4.startsWith('없') ? '-(으)ㄹ 수 없다' : '-(으)ㄹ 수 있다', pos: 'Grammar Pattern', id: w4.startsWith('없') ? 523 : 522, gloss: 'can/cannot do' }], parseW2Grammar: false }; } if (cleanW2.startsWith('주') || cleanW2.startsWith('줘') || cleanW2.startsWith('줄') || cleanW2.startsWith('준') || cleanW2.startsWith('줬')) { return { span: 2, pattern: '-아/어 주다 (Do for someone)', grammar: [{ text: '-아/어 주다', pos: 'Auxiliary Verb', gloss: 'to give/do for' }], parseW2Grammar: true }; } return null; }"],
+	[
+		322, "주다", "to give", AV, [TRANSITIVE_GENERAL, K.DATIVE_PERSON], "", REGULAR, SUOBI07, 0.5, "", "",
+		{"domain":"action","req":"object","prod":"received","polarity":1,"humble_suppletion":"드리다","en":{"lit":"give","base":"give","past":"gave","part":"given","s":"gives","ing":"giving"}},
+		({ isInformal, cleanW2, cleanW3, rawWords, i }) => {
+			if (!isInformal) return null;
+			const w4 = i < rawWords.length - 3 ? rawWords[i + 3].replace(/[^\w가-힣]+/g, '') : '';
+			if ((cleanW2 === '줄' || cleanW2.startsWith('줄')) && cleanW3 === '수' && (w4.startsWith('있') || w4.startsWith('없'))) {
+				return { span: 4, pattern: '-아/어 줄 수 있다 (Can do for someone)', lexicalType: 'stem_informal_or_da', grammar: [{ text: '-아/어 주다', pos: 'Auxiliary Verb', id: 322, gloss: 'to give/do for (ID 322)' }, { text: w4.startsWith('없') ? '-(으)ㄹ 수 없다' : '-(으)ㄹ 수 있다', pos: 'Grammar Pattern', id: w4.startsWith('없') ? 523 : 522, gloss: 'can/cannot do' }], parseW2Grammar: false };
+			}
+			if (cleanW2.startsWith('주') || cleanW2.startsWith('줘') || cleanW2.startsWith('줄') || cleanW2.startsWith('준') || cleanW2.startsWith('줬')) {
+				return { span: 2, pattern: '-아/어 주다 (Do for someone)', grammar: [{ text: '-아/어 주다', pos: 'Auxiliary Verb', gloss: 'to give/do for' }], parseW2Grammar: true };
+			}
+			return null;
+		}
+	],
 	[323, "여기요", "excuse me, over here!", EXCL, ["greeting", DISCOURSE], "", "", SUOBI07, 2, "", "", {"domain":"social","logic":"greeting","en":{"lit":"excuse-me","nat":"excuse me"}}, ""],
 	[324, "배가 고프다", "to be hungry", DV, [DESCRIPTIVE_PERSON, "sensory", GRADABLE], "", EU_IRREGULAR, SUOBI07, 2, "", "", {"domain":"state","req":"person","polarity":-1,"en":{"lit":"hungry","adj":"hungry","copula":true}}, ""],
 	[325, "같이", "together", ADV, [K.ADVERB, K.ADVERB_MANNER, K.MANNER, SOCIAL, "accompaniment"], "", "", SUOBI07, 2, "", "", {"domain":"social","adverb_type":"manner","target_pos":"Action Verb","en":{"lit":"together","nat":"together"}}, ""],
@@ -710,7 +748,15 @@ const KR_EN_languageUnits = [
 	[414, "어렵다", "to be difficult", K.DV, [K.DESCRIPTIVE_GENERAL, "descriptive_difficulty", K.GRADABLE], "", K.B_IRREGULAR, K.SUOBI09, 1, "", "", {"domain":"state","req":"any","polarity":-1,"collocation_filter":{"anyTag":["education","task"],"allow":["한국말","토픽","시험"],"notTags":["measureWord","food"]},"en":{"lit":"difficult","adj":"difficult","copula":true}}, ""],
 	[415, "좁다", "to be narrow", K.DV, ["descriptive_place", K.DEVTEST, "descriptive_dimension_spatial", K.GRADABLE], "", K.REGULAR, K.SUOBI09, 2, "", "", {"domain":"state","req":"place","polarity":-1,"collocation_filter":{"anyTag":["room","place","road"],"notTags":["food","measureWord"]},"en":{"lit":"narrow","adj":"narrow","copula":true}}, ""],
 	[416, "~(으)세요", "polite imperative", G, ["verbal_ending", K.IMPERATIVE, "speech_act", "request"], "", ["{AVst}으/세요"], SUOBI09, 1, "Polite Formal", "", {"logic":"imperative","mood":"imperative","speech_act":"request","target_pos":"Action Verb","surface_forms":["(으)세요","으세요","세요"],"en":{"kind":"ending","lit":"-please(imp)","mood":"imperative","formality":"polite"}}, ""],
-	[417, "~고 싶다", "to want to", G, ["desire", "volitional", "speech_act"], "", ["{VP_AVst}고 싶어요"], SUOBI09, 2, "", "", {"logic":"desire","polarity":1,"mood":"volitional","person_perspective":"1st_2nd","target_pos":"Action Verb","en":{"kind":"auxiliary","lit":"-want-to","modal":"want to"}}, "/*js:matcher*/ ({ w1, cleanW2 }) => w1.endsWith('고') && cleanW2.startsWith('싶') && !cleanW2.startsWith('싶어하') && !cleanW2.startsWith('싶어했') ? { span: 2, lexicalType: 'stem_da', stemSuffix: '고', pattern: '-고 싶다 (Want to do)', grammar: [{ text: '~고 싶다', pos: 'Grammar Pattern', gloss: 'want to' }], auxEndingTokenIndex: 2 } : null"],
+	[
+		417, "~고 싶다", "to want to", G, ["desire", "volitional", "speech_act"], "", ["{VP_AVst}고 싶어요"], SUOBI09, 2, "", "",
+		{"logic":"desire","polarity":1,"mood":"volitional","person_perspective":"1st_2nd","target_pos":"Action Verb","en":{"kind":"auxiliary","lit":"-want-to","modal":"want to"}},
+		({ w1, cleanW2 }) => {
+			return w1.endsWith('고') && cleanW2.startsWith('싶') && !cleanW2.startsWith('싶어하') && !cleanW2.startsWith('싶어했')
+				? { span: 2, lexicalType: 'stem_da', stemSuffix: '고', pattern: '-고 싶다 (Want to do)', grammar: [{ text: '~고 싶다', pos: 'Grammar Pattern', gloss: 'want to' }], auxEndingTokenIndex: 2 }
+				: null;
+		}
+	],
 	[418, "공원", "park", N, [PLACE, NATURE], "", "", SUOBI10, 2, "", "", {"domain":"place","polarity":0,"en":{"lit":"park","nat":"park","count":"c"},"venue_allowed_verbs":["산책하다","걷다","운동하다","조깅하다","달리다","쉬다","놀다","만나다","이야기하다","가다","오다","찍다"]}, ""],
 	[419, "어제", "yesterday", N, [TIME, "temporalNoun", "temporal_past", K.PAST, "no_time_particle"], "", "", SUOBI10, 1, "", "", {"domain":"time","tense":"past","no_time_particle":true,"en":{"lit":"yesterday","nat":"yesterday","count":"u"}}, ""],
 	[420, "쉬다", "to rest", AV, [INTRANSITIVE_GENERAL], "", REGULAR, SUOBI10, 1, "", "", {"domain":"action","prod":"rested","polarity":1,"en":{"lit":"rest","base":"rest","past":"rested"}}, ""],
@@ -753,7 +799,15 @@ const KR_EN_languageUnits = [
 	[457, "천천히", "slowly", K.ADV, [K.ADVERB, K.ADVERB_MANNER, K.MANNER, "speed"], "", "", K.SUOBI10, 1, "", "", {"domain":"manner","adverb_type":"manner","target_pos":"Action Verb","en":{"lit":"slowly","nat":"slowly"},"adverb_concord":{"denyVerbs":["받다","주다","얻다","찾다","만나다","사다","팔다","켜다","끄다","열다","닫다","찍다","시작하다","끝나다","도착하다","출발하다","떠나다","죽다","태어나다","잃어버리다","잊어버리다"]}}, ""],
 	[458, "오래", "long", K.ADV, ["adverb_time", K.TIME, "duration"], "", "", K.SUOBI10, 2, "", "", {"domain":"time","en":{"lit":"long","nat":"long"},"adverb_concord":{"denyAffirmativeVerbs":["마시다","먹다","식사하다","사다","팔다","주다","받다","넣다","꺼내다","버리다","켜다","끄다","열다","닫다","찍다","부치다","출발하다","도착하다","일어나다","타다","내리다","입다","벗다","신다","씻다","자르다","서명하다"]}}, ""],
 	[459, "~아/어서", "because/and then", G, ["verbal_ending", "conjunction", "causal", "reason", K.CLAUSAL_CONNECTIVE], "", ["{VP_AVst}아/어서 {Clause}", "{VP_DVst}아/어서 {Clause}"], SUOBI10, 2, "", "", {"domain":"causal","logic":"cause_effect","connective_type":"causal","clause1_tense_allowed":false,"clause2_moods_allowed":["declarative"],"clause1_pos":["Action Verb","Descriptive Verb"],"same_subject":false,"outcome_polarity":0,"surface_forms":["아/어서","아서","어서","여서","해서"],"en":{"kind":"connective","lit":"-and-then/because","frame":"Because {C1}, {C2}"}}, ""],
-	[460, "~(으)ㄹ 거예요", "future tense", G, [K.DECLARATIVE, K.FUTURE], "", ["{AVst}으/ㄹ 거예요"], SUOBI10, 2, "Polite Informal", "", {"logic":"declarative","tense":"future","en":{"kind":"ending","lit":"-will","tense":"future","modal":"will","formality":"polite"}}, "/*js:matcher*/ ({ cleanW2, isAdnominalL }) => isAdnominalL && (cleanW2 === '거예요' || cleanW2 === '것이에요' || cleanW2 === '거다' || cleanW2 === '것이다') ? { span: 2, pattern: '-(으)ㄹ 거예요 (Future / Conjecture)', grammar: [{ text: '-(으)ㄹ 거예요', pos: 'Grammar Pattern', gloss: 'future / conjecture' }] } : null"],
+	[
+		460, "~(으)ㄹ 거예요", "future tense", G, [K.DECLARATIVE, K.FUTURE], "", ["{AVst}으/ㄹ 거예요"], SUOBI10, 2, "Polite Informal", "",
+		{"logic":"declarative","tense":"future","en":{"kind":"ending","lit":"-will","tense":"future","modal":"will","formality":"polite"}},
+		({ cleanW2, isAdnominalL }) => {
+			return isAdnominalL && (cleanW2 === '거예요' || cleanW2 === '것이에요' || cleanW2 === '거다' || cleanW2 === '것이다')
+				? { span: 2, pattern: '-(으)ㄹ 거예요 (Future / Conjecture)', grammar: [{ text: '-(으)ㄹ 거예요', pos: 'Grammar Pattern', gloss: 'future / conjecture' }] }
+				: null;
+		}
+	],
 	[461, "~지만", "but/although", G, ["conjunction", "contrast", K.CLAUSAL_CONNECTIVE], "", ["{VP_AVst}지만 {Clause}", "{VP_DVst}지만 {Clause}"], SUOBI10, 2, "", "", {"domain":"contrast","logic":"contrast","connective_type":"contrast","clause1_tense_allowed":true,"clause2_moods_allowed":["declarative","imperative","propositive","interrogative"],"clause1_pos":["Action Verb","Descriptive Verb"],"surface_forms":["지만"],"en":{"kind":"connective","lit":"-but","frame":"{C1}, but {C2}","logic":"contrast"}}, ""],
 	[462, "약속", "appointment", N, [K.EVENT, SOCIAL], "", "", SUOBI11, 3, "", "", {"domain":"event","polarity":0,"en":{"lit":"appointment","nat":"appointment","count":"c"}}, ""],
 	[463, "한강공원", "Hangang park", N, [PLACE, NATURE, K.PROPER_NOUN], "", "", SUOBI11, 3, "", "", {"domain":"place","polarity":0,"en":{"lit":"Hangang-park","nat":"Hangang park","count":"c"},"venue_allowed_verbs":["산책하다","걷다","운동하다","조깅하다","달리다","쉬다","놀다","만나다","이야기하다","가다","오다","찍다"]}, ""],
@@ -815,8 +869,24 @@ const KR_EN_languageUnits = [
 	[519, "사진을 찍다", "to take a photo", AV, [INTRANSITIVE_GENERAL, "hobby"], "", REGULAR, SUOBI12, 3, "", "", {"domain":"action","prod":"photograph","polarity":1,"en":{"lit":"take-a-photo","base":"take a photo","past":"took a photo","part":"taken a photo","s":"takes a photo","ing":"taking a photo"}}, ""],
 	[520, "요리를 하다", "to cook", AV, [INTRANSITIVE_GENERAL, FOOD, "hobby"], "", HADA, SUOBI12, 3, "", "", {"domain":"action","prod":"meal","polarity":1,"en":{"lit":"cook","base":"cook","past":"cooked"}}, ""],
 	[521, "춤을 추다", "to dance", AV, [INTRANSITIVE_GENERAL, "art", "volitional_human"], "", REGULAR, SUOBI12, 3, "", "", {"domain":"action","prod":"performance","polarity":1,"en":{"lit":"dance","base":"dance","past":"danced"}}, ""],
-	[522, "~(으)ㄹ 수 있다", "can do", G, ["ability"], "", ["{AVst}으/ㄹ 수 있어요"], SUOBI12, 2, "", "", {"logic":"ability","polarity":1,"en":{"kind":"auxiliary","lit":"-can","modal":"can"}}, "/*js:matcher*/ ({ cleanW2, cleanW3 }) => (cleanW2 === '수' || cleanW2 === '수도') && cleanW3 && cleanW3.startsWith('있') ? { span: 3, isAdnominalL: true, pattern: '-(으)ㄹ 수 있다 (Can do)', grammar: [{ text: '-(으)ㄹ 수 있다', pos: 'Grammar Pattern', gloss: 'can do' }], extraParticle: cleanW2 === '수도' ? { text: '도', unitId: 366, gloss: 'also/too (ID 366)' } : null, auxEndingTokenIndex: 3 } : null"],
-	[523, "~(으)ㄹ 수 없다", "cannot do", G, [K.INABILITY], "", ["{AVst}으/ㄹ 수 없어요"], SUOBI12, 2, "", "", {"logic":"inability","polarity":-1,"en":{"kind":"auxiliary","lit":"-cannot","modal":"cannot","polarity":"negative"}}, "/*js:matcher*/ ({ cleanW2, cleanW3 }) => (cleanW2 === '수' || cleanW2 === '수도') && cleanW3 && cleanW3.startsWith('없') ? { span: 3, pattern: '-(으)ㄹ 수 없다 (Cannot do)', grammar: [{ text: '-(으)ㄹ 수 없다', pos: 'Grammar Pattern', gloss: 'cannot do' }], extraParticle: cleanW2 === '수도' ? { text: '도', unitId: 366, gloss: 'also/too (ID 366)' } : null, auxEndingTokenIndex: 3 } : null"],
+	[
+		522, "~(으)ㄹ 수 있다", "can do", G, ["ability"], "", ["{AVst}으/ㄹ 수 있어요"], SUOBI12, 2, "", "",
+		{"logic":"ability","polarity":1,"en":{"kind":"auxiliary","lit":"-can","modal":"can"}},
+		({ cleanW2, cleanW3 }) => {
+			return (cleanW2 === '수' || cleanW2 === '수도') && cleanW3 && cleanW3.startsWith('있')
+				? { span: 3, isAdnominalL: true, pattern: '-(으)ㄹ 수 있다 (Can do)', grammar: [{ text: '-(으)ㄹ 수 있다', pos: 'Grammar Pattern', gloss: 'can do' }], extraParticle: cleanW2 === '수도' ? { text: '도', unitId: 366, gloss: 'also/too (ID 366)' } : null, auxEndingTokenIndex: 3 }
+				: null;
+		}
+	],
+	[
+		523, "~(으)ㄹ 수 없다", "cannot do", G, [K.INABILITY], "", ["{AVst}으/ㄹ 수 없어요"], SUOBI12, 2, "", "",
+		{"logic":"inability","polarity":-1,"en":{"kind":"auxiliary","lit":"-cannot","modal":"cannot","polarity":"negative"}},
+		({ cleanW2, cleanW3 }) => {
+			return (cleanW2 === '수' || cleanW2 === '수도') && cleanW3 && cleanW3.startsWith('없')
+				? { span: 3, pattern: '-(으)ㄹ 수 없다 (Cannot do)', grammar: [{ text: '-(으)ㄹ 수 없다', pos: 'Grammar Pattern', gloss: 'cannot do' }], extraParticle: cleanW2 === '수도' ? { text: '도', unitId: 366, gloss: 'also/too (ID 366)' } : null, auxEndingTokenIndex: 3 }
+				: null;
+		}
+	],
 	[524, "못 ~ / ~지 못하다", "cannot do (external)", G, [K.INABILITY, "action_verb_only"], "", ["못 {AVst}아/어요", "{AVst}지 못해요"], SUOBI12, 2, "", "", {"logic":"inability","polarity":-1,"negation_type":"inability","target_pos":"Action Verb","en":{"kind":"auxiliary","lit":"-cannot","modal":"cannot","polarity":"negative"}}, ""],
 	[525, "얼마", "how much/many", K.PRON, [K.QUESTION_WORD, "quantity"], "", "", K.SUOBI13, 1, "", "", {"domain":"quantity","en":{"lit":"how-much","nat":"how much","wh":true}}, ""],
 	[526, "원", "won", N, [MEASUREWORD, "sinoMeasureWord", "currency"], "", "", SUOBI13, 1, "", "", {"domain":"quantity","counter":true,"classifier_spec":{"tags":["currency","money"],"fallbackTag":"currency","priority":50},"en":{"lit":"-won(원)","nat":"won","count":"counter"}}, ""],
@@ -865,9 +935,33 @@ const KR_EN_languageUnits = [
 	[569, "자루", "counting word for pen/pencil", N, [MEASUREWORD, "koreanMeasureWord", "writingTool"], "", "", SUOBI13, 3, "", "", {"domain":"quantity","counter":true,"classifier_spec":{"tags":["writingTool","pen"],"fallbackTag":"writingTool","priority":80},"en":{"lit":"-counting-word-for-pen(자루)","nat":"counting word for pen","count":"counter"}}, ""],
 	[570, "장", "counting word for paper", N, [MEASUREWORD, "koreanMeasureWord", "document"], "", "", SUOBI13, 3, "", "", {"domain":"quantity","counter":true,"classifier_spec":{"tags":["document","paper","stationery","sheet","ticket","card","postal"],"fallbackTag":"document","priority":80},"en":{"lit":"-counting-word-for-paper(장)","nat":"counting word for paper","count":"counter"}}, ""],
 	[571, "켤레", "counting word for shoes/socks", N, [MEASUREWORD, "koreanMeasureWord", "footwear"], "", "", SUOBI13, 3, "", "", {"domain":"quantity","counter":true,"classifier_spec":{"tags":["footwear","handwear_pair","socks","shoes"],"fallbackTag":"footwear","priority":85},"en":{"lit":"-counting-word-for-shoes(켤레)","nat":"counting word for shoes","count":"counter"}}, ""],
-	[572, "~아/어도 되다", "may I / it is okay to", G, ["permission"], "", ["{AVst}아/어도 돼요"], SUOBI13, 2, "", "", {"logic":"permission","polarity":1,"en":{"kind":"auxiliary","lit":"-may","modal":"may"}}, "/*js:matcher*/ ({ w1, cleanW2, matchesBaseSyllable, checkInformal }) => w1.endsWith('도') && (checkInformal ? checkInformal(w1.slice(0, -1)) : (w1.endsWith('아도') || w1.endsWith('어도') || w1.endsWith('해도'))) && (matchesBaseSyllable(cleanW2, '되', '돼') || cleanW2.startsWith('좋')) ? { span: 2, pattern: '-아/어도 되다 (May do / It is okay to)', lexicalType: 'stem_informal_or_da', grammar: [{ text: '~아/어도 되다', pos: 'Grammar Pattern', gloss: 'it is okay to / may do' }], parseW2Grammar: true } : null"],
-	[573, "~(으)면 안 되다", "must not", G, [K.PROHIBITION], "", ["{AVst}으/면 안 돼요"], SUOBI13, 2, "", "", {"logic":"prohibition","polarity":-1,"en":{"kind":"auxiliary","lit":"-must-not","modal":"must not","polarity":"negative"}}, "/*js:matcher*/ ({ w1, cleanW2, cleanW3, matchesBaseSyllable }) => (w1.endsWith('면') || w1.endsWith('으면') || w1.endsWith('하면')) && cleanW2 === '안' && (cleanW3 && matchesBaseSyllable(cleanW3, '되', '돼')) ? { span: 3, pattern: '-(으)면 안 되다 (Must not do)', lexicalType: 'stem_da', stemSuffix: w1.endsWith('하면') ? '하면' : w1.endsWith('으면') ? '으면' : '면', grammar: [{ text: '~(으)면 안 되다', pos: 'Grammar Pattern', gloss: 'must not do' }], auxEndingTokenIndex: 3 } : null"],
-	[574, "~아/어야 하다/되다", "must / have to do", G, ["obligation"], "", ["{AVst}아/어야 해요", "{AVst}아/어야 돼요"], SUOBI13, 2, "", "", {"logic":"obligation","polarity":0,"en":{"kind":"auxiliary","lit":"-must","modal":"have to"}}, "/*js:matcher*/ ({ w1, cleanW2, matchesBaseSyllable }) => (w1.endsWith('야')) && (matchesBaseSyllable(cleanW2, '하', '되', '돼')) ? { span: 2, pattern: '-아/어야 하다 (Must do / have to)', grammar: [{ text: '-아/어야 하다', pos: 'Grammar Pattern', gloss: 'must/have to do' }], parseW2Grammar: true } : null"],
+	[
+		572, "~아/어도 되다", "may I / it is okay to", G, ["permission"], "", ["{AVst}아/어도 돼요"], SUOBI13, 2, "", "",
+		{"logic":"permission","polarity":1,"en":{"kind":"auxiliary","lit":"-may","modal":"may"}},
+		({ w1, cleanW2, matchesBaseSyllable, checkInformal }) => {
+			return w1.endsWith('도') && (checkInformal
+				? checkInformal(w1.slice(0, -1)) : (w1.endsWith('아도') || w1.endsWith('어도') || w1.endsWith('해도'))) && (matchesBaseSyllable(cleanW2, '되', '돼') || cleanW2.startsWith('좋')) ? { span: 2, pattern: '-아/어도 되다 (May do / It is okay to)', lexicalType: 'stem_informal_or_da', grammar: [{ text: '~아/어도 되다', pos: 'Grammar Pattern', gloss: 'it is okay to / may do' }], parseW2Grammar: true }
+				: null;
+		}
+	],
+	[
+		573, "~(으)면 안 되다", "must not", G, [K.PROHIBITION], "", ["{AVst}으/면 안 돼요"], SUOBI13, 2, "", "",
+		{"logic":"prohibition","polarity":-1,"en":{"kind":"auxiliary","lit":"-must-not","modal":"must not","polarity":"negative"}},
+		({ w1, cleanW2, cleanW3, matchesBaseSyllable }) => {
+			return (w1.endsWith('면') || w1.endsWith('으면') || w1.endsWith('하면')) && cleanW2 === '안' && (cleanW3 && matchesBaseSyllable(cleanW3, '되', '돼'))
+				? { span: 3, pattern: '-(으)면 안 되다 (Must not do)', lexicalType: 'stem_da', stemSuffix: w1.endsWith('하면') ? '하면' : w1.endsWith('으면') ? '으면' : '면', grammar: [{ text: '~(으)면 안 되다', pos: 'Grammar Pattern', gloss: 'must not do' }], auxEndingTokenIndex: 3 }
+				: null;
+		}
+	],
+	[
+		574, "~아/어야 하다/되다", "must / have to do", G, ["obligation"], "", ["{AVst}아/어야 해요", "{AVst}아/어야 돼요"], SUOBI13, 2, "", "",
+		{"logic":"obligation","polarity":0,"en":{"kind":"auxiliary","lit":"-must","modal":"have to"}},
+		({ w1, cleanW2, matchesBaseSyllable }) => {
+			return (w1.endsWith('야')) && (matchesBaseSyllable(cleanW2, '하', '되', '돼'))
+				? { span: 2, pattern: '-아/어야 하다 (Must do / have to)', grammar: [{ text: '-아/어야 하다', pos: 'Grammar Pattern', gloss: 'must/have to do' }], parseW2Grammar: true }
+				: null;
+		}
+	],
 	[575, "모두", "all", K.ADV, ["adverb_quantity", "quantity", K.DEGREE], "", "", K.SUOBI14, 2, "", "", {"logic":"quantity","en":{"lit":"all","nat":"all"},"adverb_concord":{"requirePluralSubject":true,"denyVerbs":["고맙다","감사하다","미안하다","죄송하다","반갑다","아름답다","예쁘다","복잡하다","시끄럽다","조용하다","나쁘다","적다","맑다","흐리다","덥다","춥다"]}}, ""],
 	[576, "선물", "gift", N, [OBJECT, SOCIAL], "", "", SUOBI14, 1, "", "", {"domain":"object","polarity":1,"en":{"lit":"gift","nat":"gift","count":"c"}}, ""],
 	[577, "케이크", "cake", N, [FOOD, "bakery", "dessert"], "", "", SUOBI14, 2, "", "", {"domain":"food","polarity":1,"en":{"lit":"cake","nat":"cake","count":"c"}}, ""],
@@ -884,7 +978,15 @@ const KR_EN_languageUnits = [
 	[588, "이메일", "e-mail", N, [OBJECT, "writing", COMMUNICATION], "", "", SUOBI14, 2, "", "", {"domain":"object","polarity":0,"en":{"lit":"e-mail","nat":"e-mail","count":"c"}}, ""],
 	[589, "인형", "doll", N, [OBJECT, "toy"], "", "", SUOBI14, 3, "", "", {"domain":"object","polarity":1,"en":{"lit":"doll","nat":"doll","count":"c"}}, ""],
 	[590, "향수", "perfume", N, [OBJECT, "beauty"], "", "", SUOBI14, 3, "", "", {"domain":"object","polarity":1,"en":{"lit":"perfume","nat":"perfume","count":"c"}}, ""],
-	[591, "드리다", "to give (honorific)", AV, [TRANSITIVE_GENERAL, K.DATIVE_PERSON, "humbleVerb", "dative_humble"], "", REGULAR, SUOBI14, 3, "", "", {"domain":"action","req":"person","prod":"given","polarity":1,"plain_counterpart":"주다","en":{"lit":"give(humble)","base":"give","past":"gave","part":"given","s":"gives","ing":"giving"}}, "/*js:matcher*/ ({ isInformal, cleanW2 }) => isInformal && cleanW2.startsWith('드리') ? { span: 2, pattern: '-아/어 드리다 (Do for someone - honorific)', grammar: [{ text: '-아/어 드리다', pos: 'Auxiliary Verb', gloss: 'to give/do for (honorific)' }], parseW2Grammar: true } : null"],
+	[
+		591, "드리다", "to give (honorific)", AV, [TRANSITIVE_GENERAL, K.DATIVE_PERSON, "humbleVerb", "dative_humble"], "", REGULAR, SUOBI14, 3, "", "",
+		{"domain":"action","req":"person","prod":"given","polarity":1,"plain_counterpart":"주다","en":{"lit":"give(humble)","base":"give","past":"gave","part":"given","s":"gives","ing":"giving"}},
+		({ isInformal, cleanW2 }) => {
+			return isInformal && cleanW2.startsWith('드리')
+				? { span: 2, pattern: '-아/어 드리다 (Do for someone - honorific)', grammar: [{ text: '-아/어 드리다', pos: 'Auxiliary Verb', gloss: 'to give/do for (honorific)' }], parseW2Grammar: true }
+				: null;
+		}
+	],
 	[592, "말씀드리다", "to say (honorific)", AV, [INTRANSITIVE_GENERAL, K.DATIVE_PERSON, "humbleVerb", "dative_humble"], "", REGULAR, SUOBI14, 3, "", "", {"domain":"action","req":"person","polarity":0,"plain_counterpart":"말하다","en":{"lit":"say(humble)","base":"say","past":"said","part":"said","s":"says","ing":"saying"}}, ""],
 	[593, "말하다", "to say", AV, [INTRANSITIVE_GENERAL, K.DATIVE_PERSON], "", HADA, SUOBI14, 1, "", "", {"domain":"action","req":"person","polarity":0,"humble_suppletion":"말씀드리다","honorific_suppletion":"말씀하시다","en":{"lit":"say","base":"say","past":"said","s":"says","ing":"saying"}}, ""],
 	[594, "보내다", "to send", AV, [TRANSITIVE_GENERAL, K.DATIVE_PERSON], "", REGULAR, SUOBI14, 1, "", "", {"domain":"action","req":"object","prod":"sent","polarity":0,"en":{"lit":"send","base":"send","past":"sent","s":"sends","ing":"sending"}}, ""],
@@ -892,7 +994,15 @@ const KR_EN_languageUnits = [
 	[596, "연락하다", "to contact", AV, [K.DATIVE_PERSON], "", HADA, SUOBI14, 3, "", "", {"domain":"action","req":"person","prod":"contacted","polarity":0,"en":{"lit":"contact","base":"contact","past":"contacted"}}, ""],
 	[597, "인사드리다", "to greet (honorific)", AV, [K.DATIVE_PERSON, "humbleVerb", "dative_humble"], "", REGULAR, SUOBI14, 3, "", "", {"domain":"action","req":"person","prod":"greeted","polarity":1,"en":{"lit":"greet","base":"greet","past":"greeted"}}, ""],
 	[598, "인사하다", "to greet", AV, [K.DATIVE_PERSON, SOCIAL], "", HADA, SUOBI14, 3, "", "", {"domain":"action","req":"person","prod":"greeted","polarity":1,"en":{"lit":"greet","base":"greet","past":"greeted"}}, ""],
-	[599, "전화드리다", "to call (honorific)", AV, [K.DATIVE_PERSON, "humbleVerb", "dative_humble"], "", REGULAR, SUOBI14, 3, "", "", {"domain":"action","req":"person","prod":"called","polarity":1,"en":{"lit":"call","base":"call","past":"called"}}, "/*js:matcher*/ ({ w1, cleanW2 }) => w1 === '전화' && cleanW2.startsWith('드리') ? { span: 2, pattern: '전화드리다 (To call - honorific)', lexicalType: 'self_unit', parseW2Grammar: true } : null"],
+	[
+		599, "전화드리다", "to call (honorific)", AV, [K.DATIVE_PERSON, "humbleVerb", "dative_humble"], "", REGULAR, SUOBI14, 3, "", "",
+		{"domain":"action","req":"person","prod":"called","polarity":1,"en":{"lit":"call","base":"call","past":"called"}},
+		({ w1, cleanW2 }) => {
+			return w1 === '전화' && cleanW2.startsWith('드리')
+				? { span: 2, pattern: '전화드리다 (To call - honorific)', lexicalType: 'self_unit', parseW2Grammar: true }
+				: null;
+		}
+	],
 	[600, "전화하다", "to call", AV, [K.DATIVE_PERSON], "", HADA, SUOBI14, 3, "", "", {"domain":"action","req":"person","prod":"called","polarity":0,"en":{"lit":"call","base":"call","past":"called"}}, ""],
 	[601, "그렇지만", "however", ADV, ["conjunction", "adverb_discourse", DISCOURSE, "contrast"], "", "", SUOBI14, 2, "", "", {"domain":"discourse","adverb_type":"discourse","position":"sentence_initial","en":{"lit":"however","nat":"however"}}, ""],
 	[602, "그래서", "so", ADV, ["conjunction", "adverb_discourse", DISCOURSE, "cause"], "", "", SUOBI14, 1, "", "", {"domain":"discourse","adverb_type":"discourse","position":"sentence_initial","en":{"lit":"so","nat":"so"}}, ""],
@@ -1003,7 +1113,15 @@ const KR_EN_languageUnits = [
 	[707, "내려가다", "to go down", K.AV, [K.INTRANSITIVE_MOTION, K.INTRANSITIVE_PLACE, K.LOCATIVE_GOAL, "motion_concord", K.INTRANSITIVE, "inchoative"], "", K.REGULAR, K.SUOBI17, 3, "", "", {"domain":"motion","req":"high","prod":"low","polarity":0,"en":{"lit":"go-down","base":"go down","past":"went down","part":"gone down","s":"goes down","ing":"going down"}}, ""],
 	[708, "들어가다", "to enter", AV, [K.INTRANSITIVE_MOTION, K.INTRANSITIVE_PLACE, K.LOCATIVE_GOAL, "motion_concord"], "", REGULAR, SUOBI17, 3, "", "", {"domain":"motion","req":"outside","prod":"inside","polarity":0,"en":{"lit":"enter","base":"enter","past":"entered"}}, ""],
 	[709, "올라가다", "to go up", K.AV, [K.INTRANSITIVE_MOTION, K.INTRANSITIVE_PLACE, K.LOCATIVE_GOAL, "motion_concord", K.INTRANSITIVE, "inchoative"], "", K.REGULAR, K.SUOBI17, 3, "", "", {"domain":"motion","req":"low","prod":"high","polarity":0,"en":{"lit":"go-up","base":"go up","past":"went up","part":"gone up","s":"goes up","ing":"going up"}}, ""],
-	[710, "~(으)ㄴ 후에 / ~기 전에", "after / before doing", G, ["time_clause"], "", ["{AVst}으/ㄴ 후에 {Clause}", "{AVst}기 전에 {Clause}"], SUOBI17, 2, "", "", {"logic":"sequence","polarity":0,"en":{"kind":"connective","lit":"-after/before","frame":"After {C1}, {C2}"}}, "/*js:matcher*/ ({ cleanW2, isAdnominalN }) => isAdnominalN && cleanW2 === '후에' ? { span: 2, pattern: '-(으)ㄴ 후에 (After doing)', grammar: [{ text: '-(으)ㄴ 후에', pos: 'Grammar Pattern', gloss: 'after doing' }], disambiguation: { target: '-(으)ㄴ 후에 (ID 710)', rule: 'Preceded by adnominal verb modifier' } } : null"],
+	[
+		710, "~(으)ㄴ 후에 / ~기 전에", "after / before doing", G, ["time_clause"], "", ["{AVst}으/ㄴ 후에 {Clause}", "{AVst}기 전에 {Clause}"], SUOBI17, 2, "", "",
+		{"logic":"sequence","polarity":0,"en":{"kind":"connective","lit":"-after/before","frame":"After {C1}, {C2}"}},
+		({ cleanW2, isAdnominalN }) => {
+			return isAdnominalN && cleanW2 === '후에'
+				? { span: 2, pattern: '-(으)ㄴ 후에 (After doing)', grammar: [{ text: '-(으)ㄴ 후에', pos: 'Grammar Pattern', gloss: 'after doing' }], disambiguation: { target: '-(으)ㄴ 후에 (ID 710)', rule: 'Preceded by adnominal verb modifier' } }
+				: null;
+		}
+	],
 	[711, "~(으)면서", "while doing", G, ["conjunction", "simultaneous", K.CLAUSAL_CONNECTIVE, DEVTEST], "", ["{AVst}으/면서 {Clause}"], SUOBI17, 2, "", "", {"domain":"simultaneous","logic":"parallel","connective_type":"simultaneous","clause1_tense_allowed":false,"clause2_moods_allowed":["declarative","imperative","propositive","interrogative"],"clause1_pos":["Action Verb"],"same_subject":true,"surface_forms":["(으)면서","으면서","면서"],"en":{"kind":"connective","lit":"-while","frame":"While {C1}, {C2}"}}, ""],
 	[712, "일기예보", "weather forecast", N, [CONCEPT, "media", WEATHER], "", "", SUOBI18, 3, "", "", {"domain":"information","polarity":0,"en":{"lit":"weather-forecast","nat":"weather forecast","count":"u"}}, ""],
 	[713, "따뜻하다", "to be warm", K.DV, [K.DESCRIPTIVE_GENERAL, K.WEATHER, "descriptive_weather", K.GRADABLE, "sensory_weather_taste"], "", K.HADA, K.SUOBI18, 2, "", "", {"domain":"weather","attribute":"temperature","polarity":1,"collocation_filter":{"anyTag":["weather","clothing","room"],"allow":["물"],"notTags":["measureWord"]},"en":{"lit":"warm","adj":"warm","copula":true}}, ""],
@@ -1110,7 +1228,15 @@ const KR_EN_languageUnits = [
 	[814, "졸업하다", "to graduate", AV, ["transitive_place", INTRANSITIVE_GENERAL, ACADEMIC, K.LOCATIVE_ORIGIN], "", HADA, CLASS2012, 2, "", "", {"domain":"action","req":"place","prod":"completion","polarity":1,"en":{"lit":"graduate","base":"graduate","past":"graduated"}}, ""],
 	[815, "컴퓨터공학", "computer engineering", N, [CONCEPT, ACADEMIC, ABSTRACT], "", "", CLASS2012, 3, "", "", {"domain":"academic","en":{"lit":"computer-engineering","nat":"computer engineering","count":"c"}}, ""],
 	[816, "-(으)려고", "in order to, intending to", G, ["purpose", "intention", K.FUTURE, "temporal_future", K.CLAUSAL_CONNECTIVE], "", ["{Adv} {VP_AVst}으/려고 해요", "{VP_AVst}으/려고 {Clause}"], CLASS2012, 3, "", "", {"domain":"purpose","logic":"intention","connective_type":"purpose","clause1_tense_allowed":false,"clause2_moods_allowed":["declarative"],"clause1_pos":["Action Verb"],"surface_forms":["(으)려고","으려고","려고"],"en":{"kind":"connective","lit":"-in-order-to","frame":"In order to {C1_inf}, {C2}"}}, ""],
-	[817, "-(으)ㄴ 지", "since (time elapsed)", G, ["time_clause", "duration"], "", ["{VP_AVst}으/ㄴ 지 오래됐어요", "{VP_AVst}으/ㄴ 지 {Number:sinoNumber(1,10)}년이 됐어요"], CLASS2012, 3, "", "", {"logic":"duration","domain":"time","en":{"kind":"connective","lit":"-since(elapsed)","frame":"Since {C1}, {C2}"}}, "/*js:matcher*/ ({ w1, cleanW2, isAdnominalN }) => isAdnominalN && cleanW2 === '지' ? { span: 2, surfaceOverride: w1 + ' 지', pattern: '-(으)ㄴ 지 (Time elapsed since doing)', grammar: [{ text: '-(으)ㄴ 지', pos: 'Grammar Pattern', gloss: 'time elapsed since' }], disambiguation: { target: '-(으)ㄴ 지 (ID 817)', rule: 'Preceded by adnominal verb modifier' } } : null"],
+	[
+		817, "-(으)ㄴ 지", "since (time elapsed)", G, ["time_clause", "duration"], "", ["{VP_AVst}으/ㄴ 지 오래됐어요", "{VP_AVst}으/ㄴ 지 {Number:sinoNumber(1,10)}년이 됐어요"], CLASS2012, 3, "", "",
+		{"logic":"duration","domain":"time","en":{"kind":"connective","lit":"-since(elapsed)","frame":"Since {C1}, {C2}"}},
+		({ w1, cleanW2, isAdnominalN }) => {
+			return isAdnominalN && cleanW2 === '지'
+				? { span: 2, surfaceOverride: w1 + ' 지', pattern: '-(으)ㄴ 지 (Time elapsed since doing)', grammar: [{ text: '-(으)ㄴ 지', pos: 'Grammar Pattern', gloss: 'time elapsed since' }], disambiguation: { target: '-(으)ㄴ 지 (ID 817)', rule: 'Preceded by adnominal verb modifier' } }
+				: null;
+		}
+	],
 	[818, "귀", "ear", N, ["bodyPart"], "", "", "class2021", 1, "", "", {"domain":"body","en":{"lit":"ear","nat":"ear","count":"c"}}, ""],
 	[819, "날씬하다", "slender, slim", K.DV, [K.DESCRIPTIVE_PERSON, K.DESCRIPTIVE_GENERAL, "descriptive_person_trait", K.GRADABLE], "", K.HADA, "class2021", 3, "", "", {"domain":"state","req":"person","polarity":1,"collocation_filter":{"anyTag":["person"],"notTags":["measureWord"]},"en":{"lit":"slender","adj":"slender","copula":true}}, ""],
 	[820, "도와주다", "to help, give help", AV, [TRANSITIVE_GENERAL, "transitive_person", K.DATIVE_PERSON], "", REGULAR, "class2021", 2, "", "", {"domain":"action","req":"person","prod":"assistance","polarity":1,"humble_suppletion":"도와드리다","en":{"lit":"help","base":"help","past":"helped"}}, ""],
@@ -1148,7 +1274,15 @@ const KR_EN_languageUnits = [
 	[852, "친척", "relative, relation", N, [PERSON, FAMILY], "", "", "class2022", 2, "", "", {"domain":"family","polarity":1,"en":{"lit":"relative","nat":"relative","count":"k"}}, ""],
 	[853, "큰아버지", "paternal uncle (father's older brother)", N, [PERSON, FAMILY, "male", "honorific_person", K.ELDER_NOUN], "", "", "class2022", 3, "", "", {"domain":"family","polarity":1,"en":{"lit":"paternal-uncle","nat":"paternal uncle","count":"k"}}, ""],
 	[854, "큰어머니", "aunt (wife of father's older brother)", N, [PERSON, FAMILY, "female", "honorific_person", K.ELDER_NOUN], "", "", "class2022", 3, "", "", {"domain":"family","polarity":1,"en":{"lit":"aunt","nat":"aunt","count":"k"}}, ""],
-	[855, "-(으)ㄹ 때", "when, at the time of", G, ["time_clause", "temporal"], "", ["{DVst}으/ㄹ 때 {Clause}", "{VP_AVst}으/ㄹ 때 {Clause}"], "class2022", 3, "", "", {"logic":"time_condition","domain":"time","en":{"kind":"connective","lit":"-when","frame":"When {C1}, {C2}"}}, "/*js:matcher*/ ({ cleanW2, isAdnominalL }) => cleanW2.startsWith('때') && isAdnominalL ? { span: 2, pattern: '-(으)ㄹ 때 (When doing / during)', grammar: [{ text: '-(으)ㄹ 때', pos: 'Grammar Pattern', gloss: 'when doing' }], parseTrailingParticle: '때' } : null"],
+	[
+		855, "-(으)ㄹ 때", "when, at the time of", G, ["time_clause", "temporal"], "", ["{DVst}으/ㄹ 때 {Clause}", "{VP_AVst}으/ㄹ 때 {Clause}"], "class2022", 3, "", "",
+		{"logic":"time_condition","domain":"time","en":{"kind":"connective","lit":"-when","frame":"When {C1}, {C2}"}},
+		({ cleanW2, isAdnominalL }) => {
+			return cleanW2.startsWith('때') && isAdnominalL
+				? { span: 2, pattern: '-(으)ㄹ 때 (When doing / during)', grammar: [{ text: '-(으)ㄹ 때', pos: 'Grammar Pattern', gloss: 'when doing' }], parseTrailingParticle: '때' }
+				: null;
+		}
+	],
 	[856, "의 (possessive)", "possessive particle ('s, of)", G, [PARTICLE, "possessive"], "possessive", ["{Noun:person}의 {Noun:person}", "{Noun:person}의 {Noun:place}"], "class2022", 2, "", "", {"logic":"possessive","en":{"kind":"particle","role":"GENITIVE","lit":"-'s/of","prep":"of"}}, ""],
 	[857, "의 (relation)", "relationship/origin particle (of)", G, [PARTICLE, "relation"], "relationship", ["{Noun:person}의 {Noun}"], "class2022", 2, "", "", {"logic":"relationship","en":{"kind":"particle","role":"GENITIVE","lit":"-of","prep":"of"}}, ""],
 	[858, "거리", "street, road, distance", N, [PLACE, "road"], "", "", "class2031", 2, "", "", {"domain":"place","en":{"lit":"street","nat":"street","count":"c"}}, ""],
@@ -1172,7 +1306,16 @@ const KR_EN_languageUnits = [
 	[876, "해산물", "seafood", N, [FOOD, "ingredient", "seafood"], "", "", "class2031", 3, "", "", {"domain":"food","en":{"lit":"seafood","nat":"seafood","count":"c"}}, ""],
 	[877, "-만에", "after, for the first time in (time duration)", G, [PARTICLE, "temporal", "duration"], "", ["{Number:sinoNumber(1,10)}년만에 {VP_AVst}아/어요", "얼마만에 {VP_AVst}아/어요"], "class2031", 3, "", "", {"logic":"duration","domain":"time","en":{"kind":"particle","lit":"-after(duration)","prep":"after"}}, ""],
 	[878, "-어 보다 (attempt)", "try doing (attempt)", G, ["auxiliary_verb", "attempt"], "attempt", ["{VP_AVst}아/어 봐요", "{VP_AVst}아/어 보세요"], "class2031", 3, "", "", {"logic":"attempt","domain":"action","en":{"kind":"auxiliary","lit":"-try-doing","modal":"try to"}}, ""],
-	[879, "-어 보다 (experience)", "have tried, experienced (experience)", G, ["auxiliary_verb", "experience", "aspect"], "experience", ["{VP_AVst}아/어 봤어요"], "class2031", 3, "", "", {"logic":"experience","domain":"aspect","en":{"kind":"auxiliary","lit":"-tried-doing","modal":"have tried","tense":"past"}}, "/*js:matcher*/ ({ isInformal, cleanW2, cleanW3 }) => { if (!isInformal || cleanW2.startsWith('보내') || cleanW2.startsWith('보이') || (cleanW2 === '볼' && cleanW3 === '수')) return null; if (cleanW2 === '보고' && cleanW3 && cleanW3.startsWith('싶')) return { span: 3, pattern: '-아/어 보다 (Try doing / experience)', grammar: [{ text: '-아/어 보다', pos: 'Auxiliary Verb', unitId: 879, gloss: 'to try doing / experience' }, { text: '~고 싶다', pos: 'Grammar Pattern', unitId: 417, gloss: 'want to' }], auxEndingTokenIndex: 3 }; if (cleanW2.startsWith('보') || cleanW2.startsWith('볼') || cleanW2.startsWith('봐') || cleanW2 === '본' || cleanW2.startsWith('봤')) return { span: 2, pattern: '-아/어 보다 (Try doing / experience)', grammar: [{ text: '-아/어 보다', pos: 'Auxiliary Verb', gloss: 'to try doing / experience' }], parseW2Grammar: true }; return null; }"],
+	[
+		879, "-어 보다 (experience)", "have tried, experienced (experience)", G, ["auxiliary_verb", "experience", "aspect"], "experience", ["{VP_AVst}아/어 봤어요"], "class2031", 3, "", "",
+		{"logic":"experience","domain":"aspect","en":{"kind":"auxiliary","lit":"-tried-doing","modal":"have tried","tense":"past"}},
+		({ isInformal, cleanW2, cleanW3 }) => {
+			if (!isInformal || cleanW2.startsWith('보내') || cleanW2.startsWith('보이') || (cleanW2 === '볼' && cleanW3 === '수')) return null;
+			if (cleanW2 === '보고' && cleanW3 && cleanW3.startsWith('싶')) return { span: 3, pattern: '-아/어 보다 (Try doing / experience)', grammar: [{ text: '-아/어 보다', pos: 'Auxiliary Verb', unitId: 879, gloss: 'to try doing / experience' }, { text: '~고 싶다', pos: 'Grammar Pattern', unitId: 417, gloss: 'want to' }], auxEndingTokenIndex: 3 };
+			if (cleanW2.startsWith('보') || cleanW2.startsWith('볼') || cleanW2.startsWith('봐') || cleanW2 === '본' || cleanW2.startsWith('봤')) return { span: 2, pattern: '-아/어 보다 (Try doing / experience)', grammar: [{ text: '-아/어 보다', pos: 'Auxiliary Verb', gloss: 'to try doing / experience' }], parseW2Grammar: true };
+			return null;
+		}
+	],
 	[880, "관광지", "tourist attraction, sight", N, [PLACE, "tourism", "attraction"], "", "", "class2032", 2, "", "", {"domain":"place","en":{"lit":"tourist-attraction","nat":"tourist attraction","count":"c"}}, ""],
 	[881, "그립다", "to miss, long for", K.DV, [K.DESCRIPTIVE_PERSON, K.EMOTION, "descriptive_emotion", K.GRADABLE], "", K.B_IRREGULAR, "class2032", 2, "", "", {"domain":"emotion","req":"person","polarity":-1,"collocation_filter":{"anyTag":["person","place"],"allow":["가족"],"notTags":["measureWord"]},"en":{"lit":"miss","adj":"miss","copula":true}}, ""],
 	[882, "기쁘다", "glad, happy", K.DV, [K.DESCRIPTIVE_PERSON, K.EMOTION, "descriptive_emotion", K.GRADABLE], "", K.EU_IRREGULAR, "class2032", 2, "", "", {"domain":"emotion","req":"person","polarity":1,"collocation_filter":{"anyTag":["person","emotion"],"notTags":["measureWord"],"deny":["스트레스","여유","나이"]},"en":{"lit":"glad","adj":"glad","copula":true}}, ""],
@@ -1224,7 +1367,15 @@ const KR_EN_languageUnits = [
 	[928, "주변", "surroundings, vicinity", N, [PLACE, "spatial"], "", "", "class2042", 2, "", "", {"domain":"place","en":{"lit":"surroundings","nat":"surroundings","count":"c"}}, ""],
 	[929, "현관", "main entrance, front door, foyer", N, [PLACE, "architectural"], "", "", "class2042", 2, "", "", {"domain":"place","en":{"lit":"main-entrance","nat":"main entrance","count":"c"}}, ""],
 	[930, "-나요?", "is it? does it? (interrogative)", G, ["verbal_ending", K.INTERROGATIVE, "polite"], "", ["{VP_AVst}나요?", "{Adv} {VP_AVst}나요?"], "class2042", 3, "", "", {"logic":"interrogative","domain":"aspect","surface_forms":["나요"],"en":{"kind":"ending","lit":"-?","mood":"interrogative"}}, ""],
-	[931, "-는 중이다", "in the middle of, currently doing", G, ["auxiliary_verb", "progressive", "aspect"], "", ["{VP_AVst}는 중이에요", "{VP_AVst}는 중입니다"], "class2042", 3, "", "", {"logic":"progressive","domain":"aspect","en":{"kind":"auxiliary","lit":"-in-middle-of","aspect":"progressive"}}, "/*js:matcher*/ ({ w1, cleanW2 }) => (w1.endsWith('는') || w1.endsWith('은')) && cleanW2.startsWith('중') ? { span: 2, pattern: '-는 중이다 (In the middle of doing)', grammar: [{ text: '-는 중이다', pos: 'Grammar Pattern', gloss: 'in the middle of doing' }], auxEndingTokenIndex: 2 } : null"],
+	[
+		931, "-는 중이다", "in the middle of, currently doing", G, ["auxiliary_verb", "progressive", "aspect"], "", ["{VP_AVst}는 중이에요", "{VP_AVst}는 중입니다"], "class2042", 3, "", "",
+		{"logic":"progressive","domain":"aspect","en":{"kind":"auxiliary","lit":"-in-middle-of","aspect":"progressive"}},
+		({ w1, cleanW2 }) => {
+			return (w1.endsWith('는') || w1.endsWith('은')) && cleanW2.startsWith('중')
+				? { span: 2, pattern: '-는 중이다 (In the middle of doing)', grammar: [{ text: '-는 중이다', pos: 'Grammar Pattern', gloss: 'in the middle of doing' }], auxEndingTokenIndex: 2 }
+				: null;
+		}
+	],
 	[932, "-은가요?", "is it? (descriptive interrogative)", G, [K.INTERROGATIVE, "polite"], "", ["{VP_DVst}으/ㄴ가요?", "{Adv} {VP_DVst}으/ㄴ가요?"], "class2042", 3, "", "", {"logic":"interrogative","domain":"aspect","en":{"kind":"ending","lit":"-?","mood":"interrogative"}}, ""],
 	[933, "고추장", "red chili paste", N, [FOOD, "condiment", "spicy"], "", "", CLASS2051, 2, "", "", {"domain":"food","en":{"lit":"red-chili-paste","nat":"red chili paste","count":"c"}}, ""],
 	[934, "깎다", "to peel, cut, pare, discount", K.AV, [K.TRANSITIVE_GENERAL], "to peel, cut, discount", K.REGULAR, K.CLASS2051, 2, "", "", {"domain":"action","req":"object","prod":"peeled","en":{"lit":"peel","base":"peel","past":"peeled"},"collocation_filter":{"anyTag":["fruit"],"allow":["값","가격","머리"],"notTags":["place","facility","measureWord"]}}, ""],
@@ -1339,7 +1490,15 @@ const KR_EN_languageUnits = [
 	[1043, "핸드백", "handbag, purse", N, [OBJECT, "bag", "accessory"], "", "", CLASS2062, 2, "", "", {"domain":"object","en":{"lit":"handbag","nat":"handbag","count":"c"}}, ""],
 	[1044, "-는데 (background)", "and, so, while (background context)", G, [K.CONNECTIVE, "background"], "background", ["{VP_AVst}는데 {Clause}"], CLASS2062, 3, "", "", {"logic":"background","domain":"aspect","en":{"kind":"connective","lit":"-and/so","frame":"{C1}, and {C2}"}}, ""],
 	[1045, "-는데 (contrast)", "but, however (contrast)", G, [K.CONNECTIVE, "contrast"], "contrast", ["{VP_DVst}으/ㄴ데 {Clause}", "{VP_AVst}는데 {Clause}"], CLASS2062, 3, "", "", {"logic":"contrast","domain":"aspect","en":{"kind":"connective","lit":"-but","frame":"{C1}, but {C2}"}}, ""],
-	[1046, "-어하다", "to feel, find it to be (3rd person emotion)", G, ["auxiliary_verb", EMOTION, "aspect"], "expressing emotion for 3rd person", ["{DVst}아/어해요", "{DVst}아/어합니다"], CLASS2062, 2, "", "", {"logic":"emotion_transitive","domain":"aspect","en":{"kind":"auxiliary","lit":"-feel(3rd)","modal":"feel"}}, "/*js:matcher*/ ({ w1, cleanW2, cleanW3 }) => (w1 === '더워' || w1.endsWith('워') || w1.endsWith('아') || w1.endsWith('어')) && (cleanW2.startsWith('하') || cleanW2.startsWith('해')) ? { span: cleanW2 === '하' && cleanW3 && cleanW3.startsWith('나') ? 3 : 2, pattern: '-어하다 (To feel - 3rd person)', lexicalType: 'stem_b_irregular_or_da', grammar: [{ text: '-어하다', pos: 'Auxiliary Verb', gloss: 'to feel (3rd person)' }], auxEndingTokenIndex: cleanW2 === '하' && cleanW3 ? 3 : 2 } : null"],
+	[
+		1046, "-어하다", "to feel, find it to be (3rd person emotion)", G, ["auxiliary_verb", EMOTION, "aspect"], "expressing emotion for 3rd person", ["{DVst}아/어해요", "{DVst}아/어합니다"], CLASS2062, 2, "", "",
+		{"logic":"emotion_transitive","domain":"aspect","en":{"kind":"auxiliary","lit":"-feel(3rd)","modal":"feel"}},
+		({ w1, cleanW2, cleanW3 }) => {
+			return (w1 === '더워' || w1.endsWith('워') || w1.endsWith('아') || w1.endsWith('어')) && (cleanW2.startsWith('하') || cleanW2.startsWith('해'))
+				? { span: cleanW2 === '하' && cleanW3 && cleanW3.startsWith('나') ? 3 : 2, pattern: '-어하다 (To feel - 3rd person)', lexicalType: 'stem_b_irregular_or_da', grammar: [{ text: '-어하다', pos: 'Auxiliary Verb', gloss: 'to feel (3rd person)' }], auxEndingTokenIndex: cleanW2 === '하' && cleanW3 ? 3 : 2 }
+				: null;
+		}
+	],
 	[1047, "갈아입다", "to change clothes", K.AV, [K.TRANSITIVE_GENERAL, K.CLOTHING, "swap_verb"], "to change clothes", K.REGULAR, "class2071", 2, "", "", {"domain":"action","req":"clothing","prod":"changed_clothes","en":{"lit":"change-clothes","base":"change clothes","past":"changed clothes"}}, ""],
 	[1048, "떠들다", "to make noise, chatter", AV, ["intransitive_person"], "to make noise, chatter", L_IRREGULAR, "class2071", 2, "", "", {"domain":"action","req":"person","prod":"noise","en":{"lit":"make-noise","base":"make noise","past":"made noise","s":"makes noise","ing":"making noise"}}, ""],
 	[1049, "뛰다", "to run, jump", AV, ["intransitive_person", "motion"], "to run, jump", REGULAR, "class2071", 2, "", "", {"domain":"motion","req":"person","prod":"running","en":{"lit":"run","base":"run","past":"ran","part":"run","s":"runs","ing":"running"}}, ""],
@@ -1385,7 +1544,15 @@ const KR_EN_languageUnits = [
 	[1089, "파랗다", "blue", DV, [DESCRIPTIVE_GENERAL, "descriptive_color", "color", GRADABLE], "blue", H_IRREGULAR, CLASS2072, 2, "", "", {"domain":"color","en":{"lit":"blue","adj":"blue","copula":true}}, ""],
 	[1090, "하얗다", "white", DV, [DESCRIPTIVE_GENERAL, "descriptive_color", "color", GRADABLE], "white", H_IRREGULAR, CLASS2072, 2, "", "", {"domain":"color","en":{"lit":"white","adj":"white","copula":true}}, ""],
 	[1091, "화려하다", "fancy, colorful, glamorous", K.DV, [K.DESCRIPTIVE_GENERAL, "appearance", K.GRADABLE], "", K.HADA, K.CLASS2072, 2, "", "", {"domain":"appearance","polarity":1,"collocation_filter":{"allow":["꽃","식당","방","집","옷","호텔","치마","구두","케이크","파티","모자","도시","색깔","결혼식","사진","바지"],"notTags":["measureWord","proper_noun"]},"en":{"lit":"fancy","adj":"fancy","copula":true}}, ""],
-	[1092, "얼마나 -는지 모르다", "you have no idea how... (high degree)", G, [K.CONNECTIVE, DEGREE, "emphasis"], "", ["얼마나 {VP_AVst}는지 몰라요", "얼마나 {VP_DVst}으/ㄴ지 몰라요"], CLASS2072, 2, "", "", {"logic":"high_degree","domain":"aspect","en":{"kind":"ending","lit":"-how-much-unknowable","modal":"so much"}}, "/*js:matcher*/ ({ w1, w2, cleanW3, matchesBaseSyllable, checkAdnominalN }) => w1 === '얼마나' && w2 && w2.endsWith('지') && (w2.endsWith('는지') || (checkAdnominalN && checkAdnominalN(w2.slice(0, -1)))) && (cleanW3 && matchesBaseSyllable(cleanW3, '모르', '몰라')) ? { span: 3, pattern: '얼마나 -는지 모르다 (High Degree)', lexicalType: 'stem_da', lexicalTokenIndex: 2, stemSuffix: '지', grammar: [{ text: '얼마나 -는지 모르다', pos: 'Grammar Pattern', gloss: 'you have no idea how...' }], auxEndingTokenIndex: 3 } : null"],
+	[
+		1092, "얼마나 -는지 모르다", "you have no idea how... (high degree)", G, [K.CONNECTIVE, DEGREE, "emphasis"], "", ["얼마나 {VP_AVst}는지 몰라요", "얼마나 {VP_DVst}으/ㄴ지 몰라요"], CLASS2072, 2, "", "",
+		{"logic":"high_degree","domain":"aspect","en":{"kind":"ending","lit":"-how-much-unknowable","modal":"so much"}},
+		({ w1, w2, cleanW3, matchesBaseSyllable, checkAdnominalN }) => {
+			return w1 === '얼마나' && w2 && w2.endsWith('지') && (w2.endsWith('는지') || (checkAdnominalN && checkAdnominalN(w2.slice(0, -1)))) && (cleanW3 && matchesBaseSyllable(cleanW3, '모르', '몰라'))
+				? { span: 3, pattern: '얼마나 -는지 모르다 (High Degree)', lexicalType: 'stem_da', lexicalTokenIndex: 2, stemSuffix: '지', grammar: [{ text: '얼마나 -는지 모르다', pos: 'Grammar Pattern', gloss: 'you have no idea how...' }], auxEndingTokenIndex: 3 }
+				: null;
+		}
+	],
 	[1093, "ㅎ동사", "h-irregular verbs (grammatical category)", N, [CONCEPT, ACADEMIC, K.GRAMMAR], "h-irregular verbs category", "", CLASS2072, 3, "", "", {"domain":"academic","en":{"lit":"h-irregular-verbs","nat":"h-irregular verbs","count":"c"}}, ""],
 	[1094, "강아지", "puppy, dog", N, ["animal", "pet"], "", "", "class2081", 0.5, "", "", {"domain":"entity","en":{"lit":"puppy","nat":"puppy","count":"c"}}, ""],
 	[1095, "기대", "expectation, anticipation", N, [CONCEPT, EMOTION], "expectation, anticipation", "", "class2081", 2, "", "", {"domain":"emotion","polarity":1,"en":{"lit":"expectation","nat":"expectation","count":"c"}}, ""],
@@ -1407,7 +1574,15 @@ const KR_EN_languageUnits = [
 	[1111, "환영회", "welcome party", N, [K.EVENT, SOCIAL], "", "", "class2081", 3, "", "", {"domain":"event","en":{"lit":"welcome-party","nat":"welcome party","count":"c"}}, ""],
 	[1112, "회비", "membership fee, dues", N, [CONCEPT, "economy"], "", "", "class2081", 3, "", "", {"domain":"economy","en":{"lit":"membership-fee","nat":"membership fee","count":"c"}}, ""],
 	[1113, "-아/어 (informal intimate)", "informal intimate sentence ending (panmal)", G, [K.DECLARATIVE, K.INFORMAL], "panmal informal", ["{VP_AVst}아/어", "{VP_DVst}아/어"], "class2081", 2, "Informal/Intimate", "", {"logic":"informal_speech","domain":"aspect","en":{"kind":"ending","lit":"","formality":"casual"}}, ""],
-	[1114, "-(으)ㄹ까 하다", "thinking of doing, considering", G, ["auxiliary_verb", "intention"], "", ["{VP_AVst}으/ㄹ까 해요", "{Adv} {VP_AVst}으/ㄹ까 해요"], "class2081", 3, "", "", {"logic":"intention","domain":"aspect","en":{"kind":"auxiliary","lit":"-thinking-of-doing","modal":"be thinking of"}}, "/*js:matcher*/ ({ w1, cleanW2, matchesBaseSyllable }) => (w1.endsWith('ㄹ까') || w1.endsWith('을까') || w1.endsWith('할까')) && matchesBaseSyllable(cleanW2, '하') ? { span: 2, pattern: '-(으)ㄹ까 하다 (Thinking of doing)', grammar: [{ text: '-(으)ㄹ까 하다', pos: 'Grammar Pattern', gloss: 'thinking of doing, considering' }], parseW2Grammar: true } : null"],
+	[
+		1114, "-(으)ㄹ까 하다", "thinking of doing, considering", G, ["auxiliary_verb", "intention"], "", ["{VP_AVst}으/ㄹ까 해요", "{Adv} {VP_AVst}으/ㄹ까 해요"], "class2081", 3, "", "",
+		{"logic":"intention","domain":"aspect","en":{"kind":"auxiliary","lit":"-thinking-of-doing","modal":"be thinking of"}},
+		({ w1, cleanW2, matchesBaseSyllable }) => {
+			return (w1.endsWith('ㄹ까') || w1.endsWith('을까') || w1.endsWith('할까')) && matchesBaseSyllable(cleanW2, '하')
+				? { span: 2, pattern: '-(으)ㄹ까 하다 (Thinking of doing)', grammar: [{ text: '-(으)ㄹ까 하다', pos: 'Grammar Pattern', gloss: 'thinking of doing, considering' }], parseW2Grammar: true }
+				: null;
+		}
+	],
 	[1115, "꽃바구니", "flower basket", N, [OBJECT, "plant"], "", "", CLASS2082, 3, "", "", {"domain":"object","en":{"lit":"flower-basket","nat":"flower basket","count":"c"}}, ""],
 	[1116, "떡", "rice cake", N, [FOOD, "traditional"], "", "", CLASS2082, 2, "", "", {"domain":"food","en":{"lit":"rice-cake","nat":"rice cake","count":"c"}}, ""],
 	[1117, "박수를 치다", "to clap, applaud", AV, ["intransitive_person"], "", REGULAR, CLASS2082, 2, "", "", {"domain":"action","req":"person","prod":"applause","en":{"lit":"clap","base":"clap","past":"clapped"}}, ""],
@@ -1433,8 +1608,24 @@ const KR_EN_languageUnits = [
 	[1137, "화분", "flowerpot, potted plant", N, [OBJECT, "plant"], "", "", CLASS2082, 2, "", "", {"domain":"object","en":{"lit":"flowerpot","nat":"flowerpot","count":"c"}}, ""],
 	[1138, "휴지", "tissue, toilet paper", N, [OBJECT, "toiletry"], "", "", CLASS2082, 2, "", "", {"domain":"object","en":{"lit":"tissue","nat":"tissue","count":"c"}}, ""],
 	[1139, "-아/어 가지고 (reason)", "because, so (cause or reason)", G, ["causal", "reason", "colloquial", K.CLAUSAL_CONNECTIVE], "reason", ["{VP_AVst}아/어 가지고 {Clause}", "{VP_DVst}아/어 가지고 {Clause}"], CLASS2082, 3, "", "", {"domain":"causal","logic":"cause_effect","connective_type":"causal","clause1_tense_allowed":false,"clause2_moods_allowed":["declarative"],"clause1_pos":["Action Verb","Descriptive Verb"],"colloquial":true,"en":{"kind":"connective","lit":"-because/so","frame":"Because {C1}, {C2}"}}, ""],
-	[1140, "-아/어 가지고 (sequence)", "and then, having done (sequential action)", G, [K.CONNECTIVE, "sequential", "colloquial"], "sequence", ["{VP_AVst}아/어 가지고 {Clause}"], CLASS2082, 3, "", "", {"logic":"sequence","domain":"aspect","en":{"kind":"connective","lit":"-and-then","frame":"{C1}, and then {C2}"}}, "/*js:matcher*/ ({ w1, cleanW2, isInformal }) => cleanW2 === '가지고' && isInformal ? { span: 2, pattern: '-아/어 가지고 (Sequence)', lexicalType: 'stem_informal_or_da', grammar: [{ text: '-아/어 가지고', pos: 'Grammar Pattern', gloss: 'and then, having done (sequential action)' }] } : null"],
-	[1141, "-지 마", "don't (informal imperative prohibitive)", G, ["auxiliary_verb", K.PROHIBITION, K.INFORMAL, "speech_act"], "informal prohibitive", ["{Exclamation} {VP_AVst}지 마", "{Adv} {VP_AVst}지 마", "{VP_AVst}지 마", "{VP_AVst}지 마요"], CLASS2082, 2, "Informal/Intimate", "", {"logic":"prohibition","mood":"imperative","speech_act":"prohibition","target_pos":"Action Verb","domain":"aspect","polarity":-1,"en":{"kind":"ending","lit":"-do-not(imp)","mood":"imperative","polarity":"negative","formality":"casual"}}, "/*js:matcher*/ ({ w1, cleanW2 }) => w1.endsWith('지') && (cleanW2 === '마' || cleanW2 === '마요') ? { span: 2, pattern: '-지 마 (Don\\'t)', lexicalType: 'stem_da', stemSuffix: '지', grammar: [{ text: '-지 마', pos: 'Grammar Pattern', gloss: \"don't (informal imperative prohibitive)\" }] } : null"],
+	[
+		1140, "-아/어 가지고 (sequence)", "and then, having done (sequential action)", G, [K.CONNECTIVE, "sequential", "colloquial"], "sequence", ["{VP_AVst}아/어 가지고 {Clause}"], CLASS2082, 3, "", "",
+		{"logic":"sequence","domain":"aspect","en":{"kind":"connective","lit":"-and-then","frame":"{C1}, and then {C2}"}},
+		({ w1, cleanW2, isInformal }) => {
+			return cleanW2 === '가지고' && isInformal
+				? { span: 2, pattern: '-아/어 가지고 (Sequence)', lexicalType: 'stem_informal_or_da', grammar: [{ text: '-아/어 가지고', pos: 'Grammar Pattern', gloss: 'and then, having done (sequential action)' }] }
+				: null;
+		}
+	],
+	[
+		1141, "-지 마", "don't (informal imperative prohibitive)", G, ["auxiliary_verb", K.PROHIBITION, K.INFORMAL, "speech_act"], "informal prohibitive", ["{Exclamation} {VP_AVst}지 마", "{Adv} {VP_AVst}지 마", "{VP_AVst}지 마", "{VP_AVst}지 마요"], CLASS2082, 2, "Informal/Intimate", "",
+		{"logic":"prohibition","mood":"imperative","speech_act":"prohibition","target_pos":"Action Verb","domain":"aspect","polarity":-1,"en":{"kind":"ending","lit":"-do-not(imp)","mood":"imperative","polarity":"negative","formality":"casual"}},
+		({ w1, cleanW2 }) => {
+			return w1.endsWith('지') && (cleanW2 === '마' || cleanW2 === '마요')
+				? { span: 2, pattern: '-지 마 (Don\'t)', lexicalType: 'stem_da', stemSuffix: '지', grammar: [{ text: '-지 마', pos: 'Grammar Pattern', gloss: "don't (informal imperative prohibitive)" }] }
+				: null;
+		}
+	],
 	[1142, "그래", "yes, alright, okay (informal)", EXCL, ["exclamation", K.INFORMAL], "yes, alright", "", "class2091", 3, "Informal intimate", "Cannot be used toward elders", {"domain":"discourse","en":{"lit":"yes","nat":"yes"}}, ""],
 	[1143, "너희", "you guys, you all (informal plural)", PRON, ["pronoun", "2nd_person", K.INFORMAL], "you guys", "", "class2091", 2, "Informal intimate", "Plain form for peers or younger", {"domain":"person","en":{"lit":"you-all","nat":"you all","obj":"you all","poss":"your","person":2,"number":"pl"}}, ""],
 	[1144, "뒤풀이", "after-party, post-event gathering", N, [K.EVENT, SOCIAL], "after-party", "", "class2091", 2, "", "", {"domain":"event","en":{"lit":"after-party","nat":"after-party","count":"c"}}, ""],
@@ -1725,7 +1916,15 @@ const KR_EN_languageUnits = [
 	[1429, "콧물", "runny nose, nasal discharge", N, ["illness", HEALTH, "symptom"], "nasal discharge, runny nose", "", CLASS2161, 3, "", "", {"domain":"health","en":{"lit":"runny-nose","nat":"runny nose","count":"c"}}, ""],
 	[1430, "푹", "thoroughly, deeply, soundly (rest)", K.ADV, [K.ADVERB, K.ADVERB_MANNER, K.MANNER, K.HEALTH, K.DEGREE], "deeply, soundly, thoroughly (sleep, boil)", "", K.CLASS2161, 4, "", "", {"domain":"manner","adverb_type":"manner","target_pos":"Action Verb","en":{"lit":"thoroughly","nat":"thoroughly"},"adverb_concord":{"allowVerbs":["자다","쉬다","주무시다","삶다","끓이다","익히다","잠들다"]}}, ""],
 	[1431, "피", "blood", N, ["anatomy", HEALTH, "body_fluid"], "blood", "", CLASS2161, 3, "", "", {"domain":"body","en":{"lit":"blood","nat":"blood","count":"c"}}, ""],
-	[1432, "-는 데다가", "connective expression indicating addition (\"in addition to\", \"on top of\")", G, [K.GRAMMAR, K.CONNECTIVE, "addition"], "in addition to, on top of that", ["{VP_AVst}는 데다가 {Clause}", "{VP_DVst}으/ㄴ 데다가 {Clause}", "{Adv} {VP_AVst}는 데다가 {Clause}"], CLASS2161, 4, FLEXIBLE, "", {"logic":"addition","domain":"aspect","en":{"kind":"connective","lit":"-in-addition-to","frame":"In addition to {C1}, {C2}"}}, "/*js:matcher*/ ({ cleanW2, isAdnominalN, rawWords, i }) => (cleanW2 === '데다가' || cleanW2 === '데다') && (isAdnominalN || (i > 0 && (rawWords[i-1].endsWith('는') || rawWords[i-1].endsWith('은') || rawWords[i-1].endsWith('ㄴ')))) ? { span: 2, pattern: '-(으)ㄴ/는 데다가 (in addition to, on top of)', grammar: [{ text: '-(으)ㄴ/는 데다가', pos: 'Grammar Pattern', gloss: 'in addition to / on top of' }] } : null"],
+	[
+		1432, "-는 데다가", "connective expression indicating addition (\"in addition to\", \"on top of\")", G, [K.GRAMMAR, K.CONNECTIVE, "addition"], "in addition to, on top of that", ["{VP_AVst}는 데다가 {Clause}", "{VP_DVst}으/ㄴ 데다가 {Clause}", "{Adv} {VP_AVst}는 데다가 {Clause}"], CLASS2161, 4, FLEXIBLE, "",
+		{"logic":"addition","domain":"aspect","en":{"kind":"connective","lit":"-in-addition-to","frame":"In addition to {C1}, {C2}"}},
+		({ cleanW2, isAdnominalN, rawWords, i }) => {
+			return (cleanW2 === '데다가' || cleanW2 === '데다') && (isAdnominalN || (i > 0 && (rawWords[i-1].endsWith('는') || rawWords[i-1].endsWith('은') || rawWords[i-1].endsWith('ㄴ'))))
+				? { span: 2, pattern: '-(으)ㄴ/는 데다가 (in addition to, on top of)', grammar: [{ text: '-(으)ㄴ/는 데다가', pos: 'Grammar Pattern', gloss: 'in addition to / on top of' }] }
+				: null;
+		}
+	],
 	[1433, "ㅅ동사", "s-irregular verbs (grammatical category)", N, [ACADEMIC, CONCEPT, "linguistics"], "s-irregular verbs category", "", CLASS2161, 3, "", "", {"domain":"academic","en":{"lit":"s-irregular-verbs","nat":"s-irregular verbs","count":"c"}}, ""],
 	[1434, "감기약", "cold medicine", N, ["medicine", HEALTH, "pharmacy"], "cold medicine", "", "class2162", 3, "", "", {"domain":"health","en":{"lit":"cold-medicine","nat":"cold medicine","count":"c"}}, ""],
 	[1435, "건강 보험", "health insurance", N, [HEALTH, K.FINANCE, "administration"], "health insurance", "", "class2162", 4, "", "", {"domain":"finance","en":{"lit":"health-insurance","nat":"health insurance","count":"c"}}, ""],
@@ -1918,7 +2117,15 @@ const KR_EN_languageUnits = [
 	[1622, "소개하다", "to introduce, present", K.AV, ["transitive_person", K.TRANSITIVE_GENERAL, K.COMMUNICATION, K.SOCIAL], "to introduce someone or something", K.HADA, "studytext12", 2, K.UNIVERSAL, "", {"domain":"communication","en":{"lit":"introduce","base":"introduce","past":"introduced"},"collocation_filter":{"anyTag":["person"],"allow":["가족","책","영화"],"notTags":["place","measureWord"],"overrideAllow":["고향"]}}, ""],
 	[1623, "년", "year (counter)", N, [TIME, K.COUNTER, "calendar", MEASUREWORD, "sinoMeasureWord"], "classifier for years or duration in years", "", "studytext12", 2, UNIVERSAL, "", {"domain":"time","counter":true,"classifier_spec":{"tags":["calendar","year","time"],"fallbackTag":"time","priority":50},"en":{"lit":"-year(년)","nat":"year","count":"counter"}}, "{Number}\\s*_"],
 	[1624, "와 / 과", "and / with (comitative nominal particle)", G, [K.GRAMMAR, PARTICLE, "conjunction", "comitative"], "nominal conjunction: 과 after consonant, 와 after vowel", ["{N}와/과 {N}이/가 {DVst}아/어요", "{Det} {N}와/과 {Det} {N}이/가 {DVst}아/어요"], "studytext12", 1, UNIVERSAL, "", {"domain":"grammar","logic":"nominal_conjunction","allomorph_pair":["과","와"],"allomorph_patterns":["과/와","와/과","과 / 와","와 / 과"],"en":{"kind":"particle","role":"COMITATIVE","lit":"-with/and","prep":"with","conj":"and"}}, "{Noun}\\+(_|과|와)"],
-	[1625, "-고 싶어하다", "want to do (3rd person perspective)", G, [K.GRAMMAR, K.AUXILIARY, "desire", K.PREDICATE, "volitional"], "expresses 3rd-person desire/wishes", ["{VP_AVst}고 싶어해요", "{Adv} {VP_AVst}고 싶어해요"], "studytext12", 3, UNIVERSAL, "", {"domain":"grammar","logic":"third_person_desire","mood":"volitional","person_perspective":"3rd","target_pos":"Action Verb","en":{"kind":"auxiliary","lit":"-wants-to","modal":"want to"}}, "/*js:matcher*/ ({ w1, cleanW2, cleanW3 }) => w1.endsWith('고') && ((cleanW2.startsWith('싶어하') || cleanW2.startsWith('싶어했')) || (cleanW2 === '싶어' && cleanW3 && cleanW3.startsWith('하'))) ? { span: cleanW2 === '싶어' ? 3 : 2, pattern: '-고 싶어하다 (Want to do - 3rd person)', grammar: [{ text: '-고 싶어하다', pos: 'Grammar Pattern', gloss: 'want to do' }], disambiguation: { target: '-고 싶어하다 (ID 1625)', rule: 'Third-person psychological predicate frame {VP}+고 싶어하 matched auxiliary 싶어하다' }, auxEndingTokenIndex: cleanW2 === '싶어' ? 3 : 2 } : null"],
+	[
+		1625, "-고 싶어하다", "want to do (3rd person perspective)", G, [K.GRAMMAR, K.AUXILIARY, "desire", K.PREDICATE, "volitional"], "expresses 3rd-person desire/wishes", ["{VP_AVst}고 싶어해요", "{Adv} {VP_AVst}고 싶어해요"], "studytext12", 3, UNIVERSAL, "",
+		{"domain":"grammar","logic":"third_person_desire","mood":"volitional","person_perspective":"3rd","target_pos":"Action Verb","en":{"kind":"auxiliary","lit":"-wants-to","modal":"want to"}},
+		({ w1, cleanW2, cleanW3 }) => {
+			return w1.endsWith('고') && ((cleanW2.startsWith('싶어하') || cleanW2.startsWith('싶어했')) || (cleanW2 === '싶어' && cleanW3 && cleanW3.startsWith('하')))
+				? { span: cleanW2 === '싶어' ? 3 : 2, pattern: '-고 싶어하다 (Want to do - 3rd person)', grammar: [{ text: '-고 싶어하다', pos: 'Grammar Pattern', gloss: 'want to do' }], disambiguation: { target: '-고 싶어하다 (ID 1625)', rule: 'Third-person psychological predicate frame {VP}+고 싶어하 matched auxiliary 싶어하다' }, auxEndingTokenIndex: cleanW2 === '싶어' ? 3 : 2 }
+				: null;
+		}
+	],
 	[1626, "저", "that (over there, determiner)", DET, ["determiner", K.DEMONSTRATIVE, K.DISTAL, "deictic"], "prenominal demonstrative modifier 'that (over there)'", "", "studytext12", 0.5, UNIVERSAL, "", {"domain":"deixis","proximity":"distal","deictic_type":"determiner","en":{"lit":"that","nat":"that"}}, "^_\\s+{Noun}"],
 	[1627, "러시아", "Russia", N, [K.COUNTRY, PLACE, "geography", PROPER_NOUN], "Russian Federation", "", "studytext21", 2, UNIVERSAL, "", {"domain":"location","en":{"lit":"Russia","nat":"Russia","count":"p"}}, ""],
 	[1628, "일본어", "Japanese language", N, ["language", "education", "culture", ABSTRACT], "Japanese language", "", "studytext21", 2, UNIVERSAL, "", {"domain":"language","en":{"lit":"Japanese-language","nat":"Japanese language","count":"u"}}, ""],
@@ -1931,7 +2138,15 @@ const KR_EN_languageUnits = [
 	[1635, "지루하다", "to be boring, tedious, dull", K.DV, [K.DESCRIPTIVE_GENERAL, "state", K.EMOTION, "descriptive_emotion", K.GRADABLE], "tedious, uninteresting", K.HADA, "studytext21", 2, K.UNIVERSAL, "", {"domain":"state","polarity":-1,"collocation_filter":{"allow":["수업","영화","시간","이야기","일","공부","드라마","생활","하루"],"notTags":["measureWord"]},"en":{"lit":"boring","adj":"boring","copula":true}}, ""],
 	[1636, "노래", "song", N, ["art", "music", "song", "culture", OBJECT, "audio"], "vocal song, music piece", "", "studytext21", 2, UNIVERSAL, "", {"domain":"art","en":{"lit":"song","nat":"song","count":"c"}}, ""],
 	[1637, "취미", "hobby, pastime", N, ["leisure", ACTIVITY, "interest", ABSTRACT], "leisure interest, hobby", "", "studytext21", 2, UNIVERSAL, "", {"domain":"leisure","en":{"lit":"hobby","nat":"hobby","count":"c"}}, ""],
-	[1638, "같다", "to be same, identical, similar, like", K.DV, [K.DESCRIPTIVE_GENERAL, "state", "comparison"], "identical, similar, same", K.REGULAR, "studytext21", 1, K.UNIVERSAL, "", {"domain":"state","collocation_filter":{"allow":["이름","나라","고향","나이","값","마음","성격","방법","색깔","모양","크기","날짜","취미","생각","이유","가격"],"notTags":["measureWord","proper_noun","furniture","stationery"]},"en":{"lit":"same","adj":"same","copula":true}}, "/*js:matcher*/ ({ cleanW2, cleanW3 }) => (cleanW2 === '것' || cleanW2 === '거') && cleanW3 && cleanW3.startsWith('같') ? { span: 3, pattern: '-(으)ㄹ 것 같다 (It seems like / looks like)', boundNounId: 581, boundNounText: '것', auxEndingTokenIndex: 3 } : null"],
+	[
+		1638, "같다", "to be same, identical, similar, like", K.DV, [K.DESCRIPTIVE_GENERAL, "state", "comparison"], "identical, similar, same", K.REGULAR, "studytext21", 1, K.UNIVERSAL, "",
+		{"domain":"state","collocation_filter":{"allow":["이름","나라","고향","나이","값","마음","성격","방법","색깔","모양","크기","날짜","취미","생각","이유","가격"],"notTags":["measureWord","proper_noun","furniture","stationery"]},"en":{"lit":"same","adj":"same","copula":true}},
+		({ cleanW2, cleanW3 }) => {
+			return (cleanW2 === '것' || cleanW2 === '거') && cleanW3 && cleanW3.startsWith('같')
+				? { span: 3, pattern: '-(으)ㄹ 것 같다 (It seems like / looks like)', boundNounId: 581, boundNounText: '것', auxEndingTokenIndex: 3 }
+				: null;
+		}
+	],
 	[1639, "분", "person (honorific), counter for people", N, [PERSON, HONORIFIC, K.COUNTER, MEASUREWORD, "koreanMeasureWord"], "honorific term/classifier for person", "", "studytext21", 2, "Honorific", "Honorific equivalent of 사람 / 명", {"domain":"person","honorific":true,"plain_counterpart":"사람","counter":true,"classifier_spec":{"tags":["elder_noun","honorific","elder","kinship_elder"],"fallbackTag":"person","honorificPerson":true,"priority":90},"en":{"lit":"-person(분)","nat":"person","count":"counter"}}, "{VP_adnominal}\\s*_"],
 	[1640, "전화", "telephone, phone call", N, [COMMUNICATION, "device", "technology", OBJECT], "telephone equipment or telephone call", "", "studytext21", 1, UNIVERSAL, "", {"domain":"communication","en":{"lit":"telephone","nat":"telephone","count":"c"}}, ""],
 	[1641, "일", "work, task, matter, thing, business", N, ["work", ACTIVITY, "task", ABSTRACT], "task, business, matter ('할 일')", "", "studytext21", 1, UNIVERSAL, "", {"domain":"activity","en":{"lit":"work","nat":"work","count":"c"}}, "{VP_adnominal}\\s*_"],
@@ -1939,7 +2154,15 @@ const KR_EN_languageUnits = [
 	[1643, "마리", "Marie (name)", N, ["name", PERSON, PROPER_NOUN], "given name Marie", "", "studytext21", 2, UNIVERSAL, "", {"domain":"person","en":{"lit":"Marie","nat":"Marie","count":"p"}}, ""],
 	[1644, "-(으)십시오", "please do (formal polite imperative)", G, ["verbal_ending", K.GRAMMAR, K.IMPERATIVE, HONORIFIC, "formal_polite", "speech_act", "command"], "formal polite imperative verb ending", ["{AVst}으/십시오"], "studytext21", 2, FORMAL, "Formal polite imperative", {"domain":"aspect","logic":"formal_imperative","mood":"imperative","speech_act":"command","target_pos":"Action Verb","surface_forms":["(으)십시오","으십시오","십시오"],"en":{"kind":"ending","lit":"-please(formal-imp)","mood":"imperative","formality":"formal"}}, "{VP_AVst}\\+으?십시오"],
 	[1645, "-는군요 / -군요", "exclamatory ending expressing realization/discovery ('I see that..., oh so...')", G, [K.GRAMMAR, "exclamatory", "perception", "sentence_ender"], "expresses surprise/discovery of newly realized fact", ["{VP_AVst}는군요", "{VP_DVst}군요"], "studytext21", 3, UNIVERSAL, "", {"domain":"aspect","logic":"exclamatory_realization","en":{"kind":"ending","lit":"-I-see!","mood":"exclamatory"}}, "{VP}\\+는?군요"],
-	[1646, "-(으)면 좋겠다", "I hope/wish that (present desire)", G, [K.GRAMMAR, "desire", "conditional", K.AUXILIARY], "expresses speaker's wish or desired state", ["{VP_AVst}으/면 좋겠어요", "{VP_DVst}으/면 좋겠어요"], "studytext21", 3, UNIVERSAL, "", {"domain":"aspect","logic":"optative_wish","en":{"kind":"ending","lit":"-hope-that","modal":"hope that"}}, "/*js:matcher*/ ({ w1, cleanW2 }) => (w1.endsWith('면') || w1.endsWith('으면') || w1.endsWith('하면')) && cleanW2.startsWith('좋겠') ? { span: 2, pattern: '-(으)면 좋겠다 (I wish/hope that)', grammar: [{ text: '-(으)면 좋겠다', pos: 'Grammar Pattern', gloss: 'I wish that' }], auxEndingTokenIndex: 2 } : null"],
+	[
+		1646, "-(으)면 좋겠다", "I hope/wish that (present desire)", G, [K.GRAMMAR, "desire", "conditional", K.AUXILIARY], "expresses speaker's wish or desired state", ["{VP_AVst}으/면 좋겠어요", "{VP_DVst}으/면 좋겠어요"], "studytext21", 3, UNIVERSAL, "",
+		{"domain":"aspect","logic":"optative_wish","en":{"kind":"ending","lit":"-hope-that","modal":"hope that"}},
+		({ w1, cleanW2 }) => {
+			return (w1.endsWith('면') || w1.endsWith('으면') || w1.endsWith('하면')) && cleanW2.startsWith('좋겠')
+				? { span: 2, pattern: '-(으)면 좋겠다 (I wish/hope that)', grammar: [{ text: '-(으)면 좋겠다', pos: 'Grammar Pattern', gloss: 'I wish that' }], auxEndingTokenIndex: 2 }
+				: null;
+		}
+	],
 	[1647, "이야기하다", "to talk, converse, chat", AV, [TRANSITIVE_GENERAL, INTRANSITIVE_GENERAL, COMMUNICATION, SOCIAL, "volitional_human"], "to converse, chat, tell a story", HADA, "studytext21", 1, UNIVERSAL, "Replace with 말씀하시다 for respected subjects", {"domain":"communication","humble_suppletion":"말씀드리다","honorific_suppletion":"말씀하시다","en":{"lit":"talk","base":"talk","past":"talked"}}, ""],
 	[1648, "태어나다", "to be born", AV, [K.INTRANSITIVE_PLACE, INTRANSITIVE_GENERAL, "life", K.EVENT, K.LOCATIVE_ORIGIN], "", REGULAR, STUDYTEXT22, 2, UNIVERSAL, "", {"domain":"life","en":{"lit":"be-born","base":"be born","past":"was born","part":"been born","s":"is born","ing":"being born"}}, ""],
 	[1649, "못하다", "to be poor at, cannot do", AV, [TRANSITIVE_GENERAL, INTRANSITIVE_GENERAL, "ability", "negation"], "to be poor at / incapable", HADA, STUDYTEXT22, 1, UNIVERSAL, "", {"domain":"ability","polarity":-1,"en":{"lit":"be-poor-at","base":"be poor at","past":"was poor at","part":"been poor at","s":"is poor at","ing":"being poor at"}}, ""],
@@ -2005,7 +2228,15 @@ const KR_EN_languageUnits = [
 	[1709, "곧", "soon, shortly, right away", ADV, [TIME, "adverb_time", "temporal_future", K.FUTURE, "no_time_particle"], "temporal prospective adverb indicating imminent occurrence ('soon / shortly / in a moment'); strictly requires future/prospective predicates; does not take -에", "", "::20261023", 1, "neutral", "", {"domain":"time","tense":"future","no_time_particle":true,"en":{"lit":"soon","nat":"soon"}}, ""],
 	[1710, "-고 있다", "present progressive verbal ending (\"is/are doing\")", G, [K.GRAMMAR, "aspect", "progressive", "temporal_present", K.PRESENT, K.DECLARATIVE], "present progressive auxiliary construction (-고 있다); expresses ongoing action; pairs with present temporal adverbs (지금, 현재)", ["{VP_AVst}고 있어요", "{VP_AVst}고 있습니다"], "::20261023", 2, "polite", "Honorific form: -고 계시다", {"logic":"progressive","domain":"aspect","tense":"present","en":{"kind":"auxiliary","lit":"-ing(prog)","aspect":"progressive"}}, ""],
 	[1711, "~았/었습니다", "formal polite past tense ending", G, [K.GRAMMAR, "sentence_ending", "formal_polite", K.DECLARATIVE, "temporal_past", K.PAST], "formal polite past tense declarative ending (-았/었습니다 / -었/였습니다); marks completed past event/state in formal register", ["{VP_AVst}았/었습니다", "{VP_DVst}았/었습니다"], "::20261023", 2, "formal", "", {"logic":"declarative","domain":"aspect","tense":"past","en":{"kind":"ending","lit":"-past","tense":"past","formality":"formal"}}, ""],
-	[1712, "-(으)려고 하다", "future plan or intentional ending (\"plan to / intend to do\")", G, [K.GRAMMAR, "intention", "future_plan", "temporal_future", K.FUTURE, K.DECLARATIVE], "prospective intention/plan ending (-(으)려고 하다 = 'intend to / plan to do'); pairs with future temporal adverbs (내일, 다음주)", ["{VP_AVst}으/려고 해요", "{VP_AVst}으/려고 합니다"], "::20261023", 3, "polite", "", {"logic":"intention","domain":"aspect","tense":"future","en":{"kind":"auxiliary","lit":"-plan-to","modal":"plan to"}}, "/*js:matcher*/ ({ w1, cleanW2 }) => (w1.endsWith('려고') || w1.endsWith('으려고')) && (cleanW2.startsWith('합') || cleanW2.startsWith('하')) ? { span: 2, pattern: '-(으)려고 하다 (Intend to do)', grammar: [{ text: '-(으)려고', pos: 'Grammar Pattern', unitId: 816, gloss: 'in order to (ID 816)' }, { text: '하다', pos: 'Auxiliary Verb', unitId: 158, gloss: 'to do (auxiliary, ID 158)' }, { text: '-ㅂ니다', pos: 'Verb Ending', unitId: 50, gloss: 'formal declarative (ID 50)' }] } : null"],
+	[
+		1712, "-(으)려고 하다", "future plan or intentional ending (\"plan to / intend to do\")", G, [K.GRAMMAR, "intention", "future_plan", "temporal_future", K.FUTURE, K.DECLARATIVE], "prospective intention/plan ending (-(으)려고 하다 = 'intend to / plan to do'); pairs with future temporal adverbs (내일, 다음주)", ["{VP_AVst}으/려고 해요", "{VP_AVst}으/려고 합니다"], "::20261023", 3, "polite", "",
+		{"logic":"intention","domain":"aspect","tense":"future","en":{"kind":"auxiliary","lit":"-plan-to","modal":"plan to"}},
+		({ w1, cleanW2 }) => {
+			return (w1.endsWith('려고') || w1.endsWith('으려고')) && (cleanW2.startsWith('합') || cleanW2.startsWith('하'))
+				? { span: 2, pattern: '-(으)려고 하다 (Intend to do)', grammar: [{ text: '-(으)려고', pos: 'Grammar Pattern', unitId: 816, gloss: 'in order to (ID 816)' }, { text: '하다', pos: 'Auxiliary Verb', unitId: 158, gloss: 'to do (auxiliary, ID 158)' }, { text: '-ㅂ니다', pos: 'Verb Ending', unitId: 50, gloss: 'formal declarative (ID 50)' }] }
+				: null;
+		}
+	],
 	[1713, "살", "years old (native Korean age counter)", K.N, [K.MEASUREWORD, "koreanMeasureWord", K.COUNTER, "age"], "", [], "::20261023", 1, "", "", {"domain":"age","numType":"pure","counter":true,"classifier_spec":{"tags":["age"],"fallbackTag":"age","priority":96,"incompatibleTags":["elder","elder_noun"],"allow":["아이","아기","조카","동생","남동생","여동생","학생","친구","딸","아들"],"deny":["어른","노인","연세","나이"],"poolTags":["child","junior"]},"en":{"lit":"-years-old(살)","nat":"years old","count":"counter"}}, ""],
 	[1714, "대", "counter for vehicles, machines, appliances", K.N, [K.MEASUREWORD, "koreanMeasureWord", K.COUNTER, K.VEHICLE, "electronics", "machine"], "", [], "::20261023", 2, "", "", {"domain":"quantity","numType":"pure","counter":true,"req":["vehicle","electronics","machine"],"classifier_spec":{"tags":["vehicle","transportation","electronics","machine","appliance"],"fallbackTag":"vehicle","priority":80,"incompatibleTags":["ticket","travel","activity"],"poolTags":["vehicle","electronics","machine","appliance"]},"en":{"lit":"-counter-for-vehicles(대)","nat":"counter for vehicles","count":"counter"}}, ""],
 	[1715, "채", "counter for houses, buildings", K.N, [K.MEASUREWORD, "koreanMeasureWord", K.COUNTER, "building"], "", [], "::20261023", 2, "", "", {"domain":"quantity","numType":"pure","counter":true,"req":["building"],"classifier_spec":{"tags":["building","residence","housing"],"fallbackTag":"building","priority":80,"incompatibleTags":["finance","currency","money","expense"],"allow":["집","하숙집","빌딩","건물","아파트","단독주택"],"poolTags":["building"]},"en":{"lit":"-counter-for-houses(채)","nat":"counter for houses","count":"counter"}}, ""],
@@ -2030,7 +2261,15 @@ const KR_EN_languageUnits = [
 	[1734, "저거", "that thing over there (distal, colloquial)", PRON, [K.DEMONSTRATIVE, OBJECT, "deictic", K.DISTAL], "that thing over there (colloquial)", "", CLASS2012, 0.5, "informal_low", "", {"domain":"object","proximity":"distal","deictic_type":"thing","sandhi":[{"pattern":"(^|[^가-힣])저거가([^가-힣]|$)","replacement":"$1저게$2"},{"pattern":"(^|[^가-힣])저거는([^가-힣]|$)","replacement":"$1저건$2"},{"pattern":"(^|[^가-힣])저거를([^가-힣]|$)","replacement":"$1저걸$2"}],"en":{"lit":"that-thing(distal)","nat":"that over there"}}, ""],
 	[1735, "어떤", "which, what kind of, some", DET, [K.QUESTION_WORD, "determiner", "modifier", "deictic", K.INTERROGATIVE], "which/what kind of (determiner)", "", CLASS2012, 1, "neutral", "", {"domain":"attribute","proximity":"interrogative","deictic_type":"determiner","en":{"lit":"which","nat":"which"}}, ""],
 	[1736, "-(으)ㅂ시다", "let's do... (formal propositive)", G, [K.GRAMMAR, K.PROPOSITIVE, K.FORMAL_HIGH, "speech_act"], "let's do (formal)", ["{VP_AVst}으/ㅂ시다", "{Adv} {VP_AVst}으/ㅂ시다"], CLASS2012, 2, K.FORMAL_HIGH, "", {"logic":"propositive","mood":"propositive","speech_act":"proposal","target_pos":"Action Verb","en":{"kind":"ending","lit":"-let's","mood":"propositive","formality":"formal"}}, ""],
-	[1737, "-지 마세요", "please do not... (polite prohibitive imperative)", G, [K.GRAMMAR, K.IMPERATIVE, K.PROHIBITION, "polite", "speech_act"], "please do not (polite)", ["{VP_AVst}지 마세요", "{Adv} {VP_AVst}지 마세요"], CLASS2012, 2, "polite", "", {"logic":"prohibition","mood":"imperative","speech_act":"prohibition","target_pos":"Action Verb","en":{"kind":"ending","lit":"-please-do-not","mood":"imperative","polarity":"negative","formality":"polite"}}, "/*js:matcher*/ ({ w1, cleanW2 }) => (w1.endsWith('지') || w1.endsWith('지는') || w1.endsWith('지도')) && (cleanW2.startsWith('말') || cleanW2.startsWith('마')) ? { span: 2, lexicalType: 'stem_da', stemSuffix: w1.endsWith('지는') ? '지는' : w1.endsWith('지도') ? '지도' : '지', pattern: '-지 마세요 (Prohibitive)', grammar: [{ text: '-지 마세요', pos: 'Grammar Pattern', gloss: 'please do not...' }], extraParticle: w1.endsWith('지는') ? { text: '는', unitId: 36, gloss: 'topic marker (ID 36)' } : w1.endsWith('지도') ? { text: '도', unitId: 366, gloss: 'also/too (ID 366)' } : null, parseW2Grammar: true } : null"],
+	[
+		1737, "-지 마세요", "please do not... (polite prohibitive imperative)", G, [K.GRAMMAR, K.IMPERATIVE, K.PROHIBITION, "polite", "speech_act"], "please do not (polite)", ["{VP_AVst}지 마세요", "{Adv} {VP_AVst}지 마세요"], CLASS2012, 2, "polite", "",
+		{"logic":"prohibition","mood":"imperative","speech_act":"prohibition","target_pos":"Action Verb","en":{"kind":"ending","lit":"-please-do-not","mood":"imperative","polarity":"negative","formality":"polite"}},
+		({ w1, cleanW2 }) => {
+			return (w1.endsWith('지') || w1.endsWith('지는') || w1.endsWith('지도')) && (cleanW2.startsWith('말') || cleanW2.startsWith('마'))
+				? { span: 2, lexicalType: 'stem_da', stemSuffix: w1.endsWith('지는') ? '지는' : w1.endsWith('지도') ? '지도' : '지', pattern: '-지 마세요 (Prohibitive)', grammar: [{ text: '-지 마세요', pos: 'Grammar Pattern', gloss: 'please do not...' }], extraParticle: w1.endsWith('지는') ? { text: '는', unitId: 36, gloss: 'topic marker (ID 36)' } : w1.endsWith('지도') ? { text: '도', unitId: 366, gloss: 'also/too (ID 366)' } : null, parseW2Grammar: true }
+				: null;
+		}
+	],
 	[1738, "-지 마십시오", "please do not... (formal prohibitive imperative)", G, [K.GRAMMAR, K.IMPERATIVE, K.PROHIBITION, K.FORMAL_HIGH, "speech_act"], "please do not (formal)", ["{VP_AVst}지 마십시오", "{Adv} {VP_AVst}지 마십시오"], CLASS2012, 3, K.FORMAL_HIGH, "", {"logic":"prohibition","mood":"imperative","speech_act":"prohibition","target_pos":"Action Verb","en":{"kind":"ending","lit":"-please-do-not(formal)","mood":"imperative","polarity":"negative","formality":"formal"}}, ""],
 	[1739, "못", "cannot, unable to (short negative adverb)", ADV, [K.ADVERB, K.ADVERB_MANNER, K.MANNER, K.NEGATIVE, K.INABILITY, "short_negation", "action_verb_only"], "cannot (inability adverb)", "", CLASS2012, 0.5, "", "", {"domain":"manner","adverb_type":"manner","logic":"inability","polarity":-1,"negation_type":"short_inability","target_pos":"Action Verb","en":{"lit":"cannot","nat":"cannot"}}, ""],
 	[1740, "매우", "very, extremely", ADV, [K.ADVERB, "adverb_degree", DEGREE, "degree_pure"], "very, extremely", "", CLASS2012, 2, "", "", {"domain":"degree","adverb_type":"degree","target_pos":"Descriptive Verb","en":{"lit":"very","nat":"very"}}, ""],
@@ -2287,7 +2526,15 @@ const KR_EN_languageUnits = [
 	[1991, "검사하다", "to examine, inspect, check, test", K.AV, [K.ACTION, "medical", K.GENERAL], "examine, inspect (medical, technical)", "regular_hada", "studytext161", 2, K.UNIVERSAL, "{\"subject\":678}", {"domain":"medical","req":"object","en":{"lit":"examine","base":"examine","past":"examined"},"collocation_filter":{"anyTag":["medical","health","symptom","document"],"allow":["귀","이","열","가방","짐","숙제","컴퓨터"],"notTags":["person","place","facility","food","drink","language","appliance","furniture","clothing","measureWord","medicine","pharmacy"],"deny":["치료비"]}}, ""],
 	[1992, "말씀하다", "to speak, say (honorific or humble of 말하다)", K.AV, [K.ACTION, "speech", K.HONORIFIC], "speak, say (honorific/formal)", "regular_hada", "studytext161", 2, K.UNIVERSAL, "{\"subject\":678,\"seniority\":\"senior\"}", {"domain":"speech","honorific":"senior","collocation_filter":{"allow":["말씀","말","이야기","사실","이유","내용","이름","소식","계획","생각","뜻","방법","제목","전화번호","주소"],"notTags":["measureWord","proper_noun"]},"en":{"lit":"speak","base":"speak","past":"spoke","part":"spoken","s":"speaks","ing":"speaking"}}, ""],
 	[1993, "싫다", "to dislike, be unpleasant, unwelcome", K.DV, [K.EMOTION, "preference", "description", K.GRADABLE], "disliked, unpleasant (antonym of 좋다)", K.REGULAR_CONSONANT, "studytext161", 2, K.UNIVERSAL, "", {"domain":"emotion","polarity":"negative","collocation_filter":{"allow":["숙제","공부","시험","일","운동","청소","비","눈","바람","여름","겨울","날씨","병원","약","감기","커피","술","김치","사람","친구","것","거"],"notTags":["measureWord","proper_noun","furniture","stationery","tool"]},"en":{"lit":"dislike","adj":"dislike","copula":true}}, ""],
-	[1994, "-기 싫다", "to not want to do, hate doing (verb)", G, [K.GRAMMAR, K.AUXILIARY, "preference"], "not want to do, reluctant to do", ["{VP_AVst}기 싫다"], "studytext161", 3, UNIVERSAL, "", {"domain":"aspect","polarity":"negative","en":{"kind":"auxiliary","lit":"-dislike-doing","modal":"hate to","polarity":"negative"}}, "/*js:matcher*/ ({ cleanW2, w1 }) => (cleanW2.startsWith('싫') && w1.endsWith('기')) ? { span: 2, pattern: '-기 싫다 (not want to do)', grammar: [{ text: '-기 싫다', pos: 'Grammar Pattern', gloss: 'not want to do' }], parseW2Grammar: true } : null"],
+	[
+		1994, "-기 싫다", "to not want to do, hate doing (verb)", G, [K.GRAMMAR, K.AUXILIARY, "preference"], "not want to do, reluctant to do", ["{VP_AVst}기 싫다"], "studytext161", 3, UNIVERSAL, "",
+		{"domain":"aspect","polarity":"negative","en":{"kind":"auxiliary","lit":"-dislike-doing","modal":"hate to","polarity":"negative"}},
+		({ cleanW2, w1 }) => {
+			return (cleanW2.startsWith('싫') && w1.endsWith('기'))
+				? { span: 2, pattern: '-기 싫다 (not want to do)', grammar: [{ text: '-기 싫다', pos: 'Grammar Pattern', gloss: 'not want to do' }], parseW2Grammar: true }
+				: null;
+		}
+	],
 	[1995, "치료하다", "to treat, cure, heal", K.AV, [K.ACTION, "medical", K.HEALTH], "treat, cure (medical treatment)", "regular_hada", "studytext162", 2, K.UNIVERSAL, "{\"subject\":678}", {"domain":"medical","req":"object","en":{"lit":"treat","base":"treat","past":"treated"},"allows_teeth":true}, ""],
 	[1996, "넘어지다", "to fall down, trip over, tumble", AV, [ACTION, "movement", "body"], "fall down, trip and fall", REGULAR_VOWEL, "studytext162", 2, UNIVERSAL, "{\"subject\":678}", {"domain":"motion","req":"subject","en":{"lit":"fall-down","base":"fall down","past":"fell down","part":"fallen down","s":"falls down","ing":"falling down"}}, ""],
 	[1997, "소독하다", "to disinfect, sanitize, sterilize", AV, [ACTION, "medical", HEALTH], "disinfect, sanitize (wound, surface)", "regular_hada", "studytext162", 2, UNIVERSAL, "{\"subject\":678}", {"domain":"medical","req":"object","en":{"lit":"disinfect","base":"disinfect","past":"disinfected"}}, ""],

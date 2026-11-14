@@ -44,6 +44,9 @@ function evaluateDeclarativeCollocationFilter(spec, unit, hasTagFn) {
 }
 
 function parseAndValidateCollocationFilter(filterVal, verbId = "unknown") {
+	if (typeof filterVal === 'function') {
+		return { lang: 'js', subtype: 'function', fn: filterVal, code: filterVal };
+	}
 	if (filterVal && typeof filterVal === 'object' && !Array.isArray(filterVal)) {
 		const keys = Object.keys(filterVal);
 		if (keys.length === 0) {
@@ -84,6 +87,9 @@ function parseAndValidateCollocationFilter(filterVal, verbId = "unknown") {
 }
 
 function compileCollocationFilter(codeOrSpec, verbId = "unknown") {
+	if (typeof codeOrSpec === 'function') {
+		return codeOrSpec;
+	}
 	if (codeOrSpec && typeof codeOrSpec === 'object' && !Array.isArray(codeOrSpec)) {
 		return (n, hasTag) => evaluateDeclarativeCollocationFilter(codeOrSpec, n, hasTag);
 	}

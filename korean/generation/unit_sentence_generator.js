@@ -1473,7 +1473,10 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 			}
 			return true;
 		});
-		const agentiveAvs = allAvs.filter(v => getVerbParticleType(v) !== K.SUBJECT && !/이\/가/.test(String(v[DATA_SCHEMA.SyntaxFrame] || "")));
+		const agentiveAvs = allAvs.filter(v => {
+			const rawFrame = v[DATA_SCHEMA.SyntaxFrame];
+			return getVerbParticleType(v) !== K.SUBJECT && !/이\/가/.test(typeof rawFrame === 'string' ? rawFrame : "");
+		});
 		const avs = agentiveAvs.length > 0 ? agentiveAvs : allAvs;
 		const matchedPlaceDv = selectDescriptiveVerbForNoun(nominalUnit, { ...options, tense }, targetId);
 		const dvs = matchedPlaceDv ? [matchedPlaceDv] : [];

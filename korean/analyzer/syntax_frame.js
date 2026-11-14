@@ -85,7 +85,7 @@ function matchesSemanticCategory(unit, categoryExpr, index) {
  */
 function evaluateSyntaxFrame(unit, context = {}, index = null) {
 	const frame = unit[DATA_SCHEMA.SyntaxFrame];
-	if (!frame || frame.trim() === "") {
+	if (!frame || typeof frame !== 'string' || frame.trim() === "") {
 		return { matches: true, score: 0.5, reason: "No SyntaxFrame constraint specified" };
 	}
 

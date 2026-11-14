@@ -228,10 +228,19 @@ function unitToRecord(unit, selectedCols = null, DATA_SCHEMA) {
 			record.SemanticTags = raw instanceof Set ? Array.from(raw) : (Array.isArray(raw) ? raw : []);
 		} else {
 			const idx = DATA_SCHEMA[canonical];
-			record[canonical] = idx !== undefined && unit[idx] !== undefined ? unit[idx] : "";
+			const rawVal = idx !== undefined && unit[idx] !== undefined ? unit[idx] : "";
+			record[canonical] = typeof rawVal === 'function' ? rawVal.toString() : rawVal;
 		}
 	}
 	return record;
+}
+
+function serializeObjectWithFunctions(obj) {
+	if (typeof obj === 'function') return obj.toString();
+	if (obj === null || typeof obj !== 'object') return JSON.stringify(obj);
+	if (Array.isArray(obj)) return `[${obj.map(serializeObjectWithFunctions).join(', ')}]`;
+	const entries = Object.entries(obj).map(([k, v]) => `${JSON.stringify(k)}: ${serializeObjectWithFunctions(v)}`);
+	return `{${entries.join(', ')}}`;
 }
 
 function formatColumnValue(colName, val) {
@@ -259,7 +268,8 @@ function formatColumnValue(colName, val) {
 	if (canonical === 'SemanticData' || canonical === 'SemanticVector') {
 		if (val !== undefined && val !== null && val !== "") {
 			if (typeof val === 'object') {
-				return JSON.stringify(val);
+				const hasFn = Object.values(val).some(v => typeof v === 'function');
+				return hasFn ? serializeObjectWithFunctions(val) : JSON.stringify(val);
 			}
 			const s = String(val).trim();
 			if (s.startsWith('{') && s.endsWith('}')) {
@@ -268,6 +278,9 @@ function formatColumnValue(colName, val) {
 			return JSON.stringify(s);
 		}
 		return '{}';
+	}
+	if (typeof val === 'function') {
+		return val.toString();
 	}
 	if (typeof val === 'number') {
 		return String(val);
@@ -423,35 +436,30 @@ function detectUndifferentiatedHomonym(unit, schemaCols = SCHEMA_COLUMNS) {
 	const selTags = tags.filter(t => t.startsWith('transitive_') || t.startsWith('descriptive_') || t.startsWith('intransitive_') || t.startsWith('dative_'));
 	const issues = [];
 
-	// TODO create some better data structure defining tag incompatability. a matrix, or a dictionary of sets, or something. this collection of specific bools and if-statement block has a code smell.
-	// 1. Cross-Domain Conflations in Tags
-	const hasWeather = tags.includes(K.WEATHER) || (sv && sv.domain === K.WEATHER);
-	const hasWearable = tags.includes(K.WEARABLE) || tags.includes(K.CLOTHING) || tags.includes('footwear') || tags.includes('handwear') || (sv && sv.domain === K.CLOTHING);
-	const hasFood = tags.includes(K.FOOD) || tags.includes(K.DRINK) || tags.includes('cooking') || (sv && sv.domain === K.FOOD);
-	const hasTransport = tags.includes(K.TRANSPORTATION) || tags.includes(K.VEHICLE) || (sv && sv.domain === K.TRANSPORTATION);
-	const hasSports = tags.includes(K.SPORTS) || selTags.includes('transitive_sports');
-	const hasInstrument = tags.includes('instrument') || tags.includes('music') || selTags.includes('transitive_instrument');
-	const hasPostal = tags.includes('postal') || (sv && sv.domain === 'postal');
-	const hasTheater = tags.includes('theater') || tags.includes('acting');
-	const hasSchedule = tags.includes('schedule');
-
-	if (hasWeather && hasWearable) {
-		issues.push("Contradictory domain tags conflated: 'weather' + 'wearable/clothing'");
-	}
-	if (hasWeather && hasFood) {
-		issues.push("Contradictory domain tags conflated: 'weather' + 'food/cooking'");
-	}
-	if (hasWeather && hasTransport) {
-		issues.push("Contradictory domain tags conflated: 'weather' + 'transportation'");
-	}
-	if (hasSports && hasInstrument) {
-		issues.push("Contradictory domain tags conflated: 'sports' + 'musical instrument'");
-	}
-	if (hasPostal && hasFood) {
-		issues.push("Contradictory domain tags conflated: 'postal' + 'food/cooking'");
-	}
-	if (hasSchedule && hasTheater) {
-		issues.push("Contradictory domain tags conflated: 'schedule' + 'theater/acting'");
+	// 1. Cross-Domain Conflations in Tags (declarative incompatibility matrix)
+	const DOMAIN_DETECTORS = {
+		weather: (t, s, v) => t.includes(K.WEATHER) || (v && v.domain === K.WEATHER),
+		wearable: (t, s, v) => t.includes(K.WEARABLE) || t.includes(K.CLOTHING) || t.includes('footwear') || t.includes('handwear') || (v && v.domain === K.CLOTHING),
+		food: (t, s, v) => t.includes(K.FOOD) || t.includes(K.DRINK) || t.includes('cooking') || (v && v.domain === K.FOOD),
+		transportation: (t, s, v) => t.includes(K.TRANSPORTATION) || t.includes(K.VEHICLE) || (v && v.domain === K.TRANSPORTATION),
+		sports: (t, s) => t.includes(K.SPORTS) || s.includes('transitive_sports'),
+		instrument: (t, s) => t.includes('instrument') || t.includes('music') || s.includes('transitive_instrument'),
+		postal: (t, s, v) => t.includes('postal') || (v && v.domain === 'postal'),
+		theater: (t) => t.includes('theater') || t.includes('acting'),
+		schedule: (t) => t.includes('schedule')
+	};
+	const INCOMPATIBLE_DOMAIN_PAIRS = [
+		[K.WEATHER, K.WEARABLE, "'weather' + 'wearable/clothing'"],
+		[K.WEATHER, K.FOOD, "'weather' + 'food/cooking'"],
+		[K.WEATHER, K.TRANSPORTATION, "'weather' + 'transportation'"],
+		[K.SPORTS, 'instrument', "'sports' + 'musical instrument'"],
+		['postal', K.FOOD, "'postal' + 'food/cooking'"],
+		['schedule', 'theater', "'schedule' + 'theater/acting'"]
+	];
+	for (const [domA, domB, label] of INCOMPATIBLE_DOMAIN_PAIRS) {
+		if (DOMAIN_DETECTORS[domA](tags, selTags, sv) && DOMAIN_DETECTORS[domB](tags, selTags, sv)) {
+			issues.push(`Contradictory domain tags conflated: ${label}`);
+		}
 	}
 
 	// 2. Domain vs Selection Tag Contradiction
@@ -1168,24 +1176,7 @@ function formatResults(results, format = 'jsonl', summary = null) {
 
 // --- Data File Modification Engine ---
 function getUnitLineIndices(lines) {
-	const unitIndices = [];
-	let inArray = false;
-	for (let i = 0; i < lines.length; i++) {
-		const trimmed = lines[i].trim();
-		if (trimmed.startsWith('const KR_EN_languageUnits = [')) {
-			inArray = true;
-			continue;
-		}
-		if (inArray) {
-			if (trimmed.startsWith('];')) {
-				break;
-			}
-			if (trimmed.startsWith('[')) {
-				unitIndices.push(i);
-			}
-		}
-	}
-	return unitIndices;
+	return getUnitLineRanges(lines).map(r => r.start);
 }
 
 /**
@@ -2095,5 +2086,7 @@ module.exports = {
 	getVerbSemanticConstraint,
 	formatResults,
 	loadData,
+	getUnitLineRanges,
+	getUnitLineIndices,
 	DATA_SCHEMA: SCHEMA_COLUMNS
 };

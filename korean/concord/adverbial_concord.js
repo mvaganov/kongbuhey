@@ -27,6 +27,21 @@ const { DATA_SCHEMA, hasTag } = (typeof require !== 'undefined' ? require('../co
 const { ERROR_CODES } = (typeof require !== 'undefined' ? require('../constants/error_codes.js') : window);
 const { isDescriptiveVerb, isActionVerb } = (typeof require !== 'undefined' ? require('../core/morphology.js') : window);
 
+const NPI_NEGATIVE_PREFIX_REPAIRS = [
+	["알았", "몰랐"],
+	["알아", "몰라"],
+	["압니", "모릅니"],
+	["알다", "모르다"],
+	["알고", "모르고"],
+	["알면", "모르면"],
+	["있었", "없었"],
+	["있어", "없어"],
+	["있습니", "없습니"],
+	["있다", "없다"],
+	["있고", "없고"],
+	["있으면", "없으면"]
+];
+
 function isDegreeAdverb(wordOrUnit) {
 	if (!wordOrUnit) return false;
 	const ko = typeof wordOrUnit === 'string' ? wordOrUnit : (Array.isArray(wordOrUnit) ? wordOrUnit[DATA_SCHEMA.Korean] : wordOrUnit.ko || wordOrUnit[DATA_SCHEMA.Korean]);
@@ -196,43 +211,10 @@ function applyAdverbConcord(input, options = {}) {
 				const repAdverb = options.affirmative_adverb || "아주";
 				return `${p1}${repAdverb} ${targetWord}`;
 			}
-			// TODO can this series of if-statements be replaced with a switch/dictionary lookup?
-			if (targetWord.startsWith("알았")) {
-				return `${p1}${npi} ${targetWord.replace(/^알았/, "몰랐")}`;
-			}
-			if (targetWord.startsWith("알아")) {
-				return `${p1}${npi} ${targetWord.replace(/^알아/, "몰라")}`;
-			}
-			if (targetWord.startsWith("압니")) {
-				return `${p1}${npi} ${targetWord.replace(/^압니/, "모릅니")}`;
-			}
-			if (targetWord.startsWith("알다")) {
-				return `${p1}${npi} ${targetWord.replace(/^알다/, "모르다")}`;
-			}
-			if (targetWord.startsWith("알고")) {
-				return `${p1}${npi} ${targetWord.replace(/^알고/, "모르고")}`;
-			}
-			if (targetWord.startsWith("알면")) {
-				return `${p1}${npi} ${targetWord.replace(/^알면/, "모르면")}`;
-			}
-
-			if (targetWord.startsWith("있었")) {
-				return `${p1}${npi} ${targetWord.replace(/^있었/, "없었")}`;
-			}
-			if (targetWord.startsWith("있어")) {
-				return `${p1}${npi} ${targetWord.replace(/^있어/, "없어")}`;
-			}
-			if (targetWord.startsWith("있습니")) {
-				return `${p1}${npi} ${targetWord.replace(/^있습니/, "없습니")}`;
-			}
-			if (targetWord.startsWith("있다")) {
-				return `${p1}${npi} ${targetWord.replace(/^있다/, "없다")}`;
-			}
-			if (targetWord.startsWith("있고")) {
-				return `${p1}${npi} ${targetWord.replace(/^있고/, "없고")}`;
-			}
-			if (targetWord.startsWith("있으면")) {
-				return `${p1}${npi} ${targetWord.replace(/^있으면/, "없으면")}`;
+			for (const [prefix, negPrefix] of NPI_NEGATIVE_PREFIX_REPAIRS) {
+				if (targetWord.startsWith(prefix)) {
+					return `${p1}${npi} ${negPrefix}${targetWord.slice(prefix.length)}`;
+				}
 			}
 			return `${p1}${npi} 안 ${targetWord}`;
 		});

@@ -108,6 +108,8 @@ function analyzeSchema(dataPath = DEFAULT_DATA_PATH) {
 						});
 					} else if (typeof v === 'object' && v !== null) {
 						vectorKeyValues[k].add(JSON.stringify(v));
+					} else if (typeof v === 'function') {
+						vectorKeyValues[k].add(v.toString());
 					} else {
 						vectorKeyValues[k].add(v);
 						if (k === 'type') domainTaxonomy[domain].types.add(String(v));

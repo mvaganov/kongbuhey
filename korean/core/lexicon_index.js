@@ -133,6 +133,10 @@ function getCompiledCollocationFilter(unit, parseAndValidateFn) {
 		idx.compiledCollocationFilters.set(id, null);
 		return null;
 	}
+	if (typeof sd.collocation_filter === 'function') {
+		idx.compiledCollocationFilters.set(id, sd.collocation_filter);
+		return sd.collocation_filter;
+	}
 	if (typeof sd.collocation_filter === 'object' && !Array.isArray(sd.collocation_filter)) {
 		const spec = sd.collocation_filter;
 		const fn = (noun, hasTag) => evaluateDeclarativeCollocationFilter(spec, noun, hasTag);

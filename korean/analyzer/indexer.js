@@ -244,12 +244,14 @@ function getIndex(languageUnits) {
 		pronounSandhiMap.set("네", { baseId: neoUnit ? neoUnit[DATA_SCHEMA.Id] : 2, baseWord: neoUnit ? "너" : "저", particleId: 96, particleWord: "가", surfaceForm: "네가" });
 	}
 
-	// 5. Embedded SyntaxFrame MWE Matchers (/*js:matcher*/)
+	// 5. Embedded SyntaxFrame MWE Matchers (native functions or legacy /*js:matcher*/ strings)
 	const mweRules = [];
 	for (const u of units) {
 		if (!u) continue;
 		const frame = u[DATA_SCHEMA.SyntaxFrame];
-		if (typeof frame === 'string' && frame.includes('/*js:matcher*/')) {
+		if (typeof frame === 'function') {
+			mweRules.push({ unit: u, id: u[DATA_SCHEMA.Id], matcherFn: frame });
+		} else if (typeof frame === 'string' && frame.includes('/*js:matcher*/')) {
 			const matcherFn = compileMweMatcher(frame, u[DATA_SCHEMA.Id]);
 			if (matcherFn) {
 				mweRules.push({ unit: u, id: u[DATA_SCHEMA.Id], matcherFn });
@@ -327,6 +329,7 @@ function getIndex(languageUnits) {
  * Format: /*js:matcher* / ({ w1, w2, w3, ... }) => ...
  */
 function compileMweMatcher(frameStr, unitId = "unknown") {
+	if (typeof frameStr === 'function') return frameStr;
 	if (typeof frameStr !== 'string') return null;
 	const match = frameStr.match(/\/\*\s*js:matcher\s*\*\/\s*([\s\S]*)$/);
 	if (!match || !match[1].trim()) return null;
