@@ -29,6 +29,7 @@ const {
 	formatPithyTime,
 	formatHudTelemetry,
 	generateSentencesForUnit,
+	buildFlagEntry,
 	UnitSelectorView
 } = require('../webapp/selector.js');
 const { TextImporterView } = require('../webapp/text_importer.js');
@@ -604,6 +605,41 @@ async function runSuite() {
 		!dbSetsAfterDelete.some(s => s.id === foundSet.id),
 		'deleteNamedSet successfully removes set from database'
 	);
+
+	// -------------------------------------------------------------------------
+	// 11b. "Bad sentence" flags: record shape, DB persistence, toggle, export
+	// -------------------------------------------------------------------------
+	console.log(`\n--- 11b. Bad-Sentence Flagging ---`);
+	const flagSample = generateSentencesForUnit(5, 3, { seedOffset: 3 })[0];
+	const flagEntry = buildFlagEntry(flagSample, 5, 'all');
+	assert(
+		flagEntry.ko === flagSample.ko && flagEntry.targetUnitId === 5 && flagEntry.mode === 'all' &&
+		Array.isArray(flagEntry.segments) && flagEntry.segments.length > 0 && flagEntry.unitIds.includes(5),
+		'buildFlagEntry captures surface text, target unit, mode, per-morpheme segments and unit ids'
+	);
+	assert(selectorView.isSentenceFlagged(flagSample.ko) === false, 'sentence starts un-flagged');
+	selectorView.selectedUnitId = 5;
+	const flaggedNow = await selectorView.toggleSentenceFlag(flagSample);
+	const storedFlags = await selectorEngine.db.getFlaggedSentences();
+	assert(
+		flaggedNow === true && selectorView.isSentenceFlagged(flagSample.ko) &&
+		storedFlags.length === 1 && storedFlags[0].ko === flagSample.ko && storedFlags[0].id && storedFlags[0].flaggedAt,
+		'toggleSentenceFlag flags the sentence and persists it (id + timestamp) in the database'
+	);
+	await selectorEngine.db.flagSentence(buildFlagEntry(flagSample, 5, 'all'));
+	assert((await selectorEngine.db.getFlaggedSentences()).length === 1, 'flagging the same sentence twice does not duplicate it');
+	const exported = await selectorView.exportFlaggedSentences();
+	assert(
+		exported.kind === 'flagged-sentences' && exported.version === 1 && exported.items.length === 1,
+		'exportFlaggedSentences returns a versioned payload that tools/triage_flags.js can read'
+	);
+	const unflaggedNow = await selectorView.toggleSentenceFlag(flagSample);
+	assert(
+		unflaggedNow === false && !selectorView.isSentenceFlagged(flagSample.ko) &&
+		(await selectorEngine.db.getFlaggedSentences()).length === 0,
+		'toggling again un-flags the sentence and removes it from the database'
+	);
+	selectorView.selectedUnitId = null;
 
 	// -------------------------------------------------------------------------
 	// 12. Korean Text Ingestion & Passage Analysis (TextImporterView)

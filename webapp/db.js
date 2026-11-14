@@ -642,6 +642,43 @@ class KongbuheyDB {
 		return true;
 	}
 
+	// --- "This is a bad sentence" inbox ---------------------------------------------------
+	// One view_settings record holding every flagged sentence. The user exports it as JSON into
+	// flagged/, then tools/triage_flags.js + an LLM agent triage it into test/golden_sentences.json.
+	async getFlaggedSentences() {
+		const rec = await this._getRecord('view_settings', 'flagged_sentences');
+		return (rec && Array.isArray(rec.items)) ? rec.items : [];
+	}
+
+	async flagSentence(entry) {
+		const ko = String((entry && entry.ko) || '').trim();
+		if (!ko) return null;
+		const items = await this.getFlaggedSentences();
+		const existing = items.find(f => f.ko === ko);
+		if (existing) return existing;
+		const flag = {
+			...entry,
+			ko,
+			id: 'flag_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+			flaggedAt: Date.now()
+		};
+		items.push(flag);
+		await this._putRecord('view_settings', { id: 'flagged_sentences', items });
+		return flag;
+	}
+
+	async unflagSentence(ko) {
+		const items = await this.getFlaggedSentences();
+		const filtered = items.filter(f => f.ko !== ko);
+		await this._putRecord('view_settings', { id: 'flagged_sentences', items: filtered });
+		return items.length - filtered.length;
+	}
+
+	async clearFlaggedSentences() {
+		await this._putRecord('view_settings', { id: 'flagged_sentences', items: [] });
+		return true;
+	}
+
 	async getVerifiedSentencesCustomizations() {
 		const rec = await this._getRecord('view_settings', 'verified_sentences_customizations');
 		return rec ? rec.state : null;

@@ -1,0 +1,20 @@
+{
+  "name": "kongbuhey",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Kongbuhey (공부해): client-side Korean study web app with CLI tooling",
+  "scripts": {
+    "test": "node test.js",
+    "test:full": "node test.js --full",
+    "test:browser": "node test/browser_load_test.js",
+    "lint": "eslint ."
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.5",
+    "globals": "^17.14.0",
+    "jsdom": "^24.1.3"
+  }
+}

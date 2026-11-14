@@ -2011,8 +2011,7 @@ function runCli() {
 		} else if (arg.startsWith('--summary=')) {
 			summary = parseInt(arg.substring(10), 10) || 5;
 		} else if (arg === '--strict') {
-			options = options || {};
-			options.strict = true;
+			// Accepted as a no-op: the semantic checks always run strictly (see test.js Stage 1).
 		} else if (arg === '--audit' || arg === '--audit-semantic') {
 			filteredArgs.push('AUDIT');
 		} else if (arg === '-v' || arg === '--verbose') {

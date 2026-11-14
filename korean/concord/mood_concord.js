@@ -1,3 +1,4 @@
+(function() {
 /**
  * Feature 8: Predicate Mood, Speech Acts & Negation Concord
  *
@@ -209,3 +210,4 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = moodExports;
 }
+})();

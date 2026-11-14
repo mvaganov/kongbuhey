@@ -188,6 +188,7 @@ class KongbuheyApp {
 		this._setDbStatus('DB Synced', false);
 		this.updateStatsBar();
 		if (this.selectorView) {
+			await this.selectorView.loadFlags();
 			this.selectorView.render();
 		}
 	}

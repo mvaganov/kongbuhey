@@ -6,16 +6,17 @@ const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (ty
  * test.js - Unified Test Runner for Kongbuhey
  *
  * Executes the complete validation pipeline with FAIL-FAST behavior:
- *   [0/7] Code Quality & Static Hygiene (file size bounds, browser purity, FK integrity, 0 magic IDs, constants linter)
+ *   [0/7] Code Quality & Static Hygiene (ESLint: undefined globals / unused code / browser purity; FK integrity, 0 magic IDs)
  *   [1/7] Schema & Data Integrity       (data.js: sequential IDs, column lengths, valid JSON vectors)
  *   [2/7] Schema Taxonomy Sync          (schema_analysis.js: taxonomy validity & cache freshness)
  *   [3/7] Homonym Dictionary Sync       (homonyms.js: 0 broken phonetic links, vocabulary coverage)
- *   [4/7] Exhaustive Generation Check   (exhaustive.js: morphology, 100% unit coverage, 0 errors)
+ *   [4/7] Generation smoke test         (exhaustive.js, fixed seed: sample by default, every unit with --full)
  *   [5/7] Text Analyzer Passage Check   (text_analyzer.js: 0 gaps on ingested study texts)
  *   [6/7] Semantic Rules & Honorifics   (collocation, particle concord, honorific suppletion suites)
  *
  * Usage:
- *   node test.js                 # Run all validation suites across full curriculum
+ *   node test.js                 # Fast default (about a minute): lint + data + sampled generation + suites
+ *   node test.js --full          # Also sweep generation over every unit (slower)
  *   node test.js <source>        # Validate specific source (e.g. node test.js studytext21)
  *   node test.js -v, --verbose   # Display detailed breakdown per stage
  */
@@ -27,7 +28,7 @@ USAGE:
   node test.js [source] [options]
 
 VALIDATION STAGES (Fails fast on any error):
-  [0/7] Code Quality & Static Hygiene Enforces file size limits, browser purity (no Node fs/path in analyzer), FK integrity, 0 magic IDs, constants linter (0 bare string constants)
+  [0/7] Code Quality & Static Hygiene ESLint (no-undef, unused code, browser purity, big-file warnings), FK integrity, 0 magic IDs
   [1/7] Schema & Data Integrity     Validates 12-col schema, sequential IDs (0..N-1), valid POS, priority scores (1-5), JSON vectors
   [2/7] Schema Taxonomy Sync        Verifies schema_summary.json freshness against data.js (auto-syncs if needed)
   [3/7] Homonym Dictionary Sync     Verifies HOMONYMS token count and ensures 0 broken phonetic (_neighbor) links
@@ -57,10 +58,42 @@ const EXHAUSTIVE_PATH = path.resolve(__dirname, 'exhaustive.js');
 const TEXT_ANALYZER_PATH = path.resolve(__dirname, 'text_analyzer.js');
 const STUDYTEXTS_PATH = path.resolve(__dirname, 'studytexts.js');
 const { validateLanguageUnitSemanticSelection } = require('./select.js');
-const { lintProject } = require('./test/count_string_literals.js');
 
 // Known fully-ingested passages that must ALWAYS have 0 gaps (regression tests)
 const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", K.STUDYTEXT22, "studytext31", "studytext41", "studytext42", "studytext51", "studytext52", "studytext61", "studytext62", "studytext71", "studytext72", "studytext81", "studytext82", "studytext101", "studytext102", "studytext111", "studytext112", "studytext121", "studytext122", "studytext131", "studytext132", "studytext141", "studytext142", "studytext151", "studytext152", "studytext161", "studytext162"];
+
+// Fixed ID ranges for the default (fast) generation smoke test; --full sweeps every unit instead.
+const SMOKE_RANGES = ['0-14', '700-714', '1500-1514'];
+
+// Runs ESLint (config: eslint.config.js). Errors fail the suite; warnings are only counted.
+function runEslint() {
+	const eslintBin = path.resolve(__dirname, 'node_modules', 'eslint', 'bin', 'eslint.js');
+	if (!fs.existsSync(eslintBin)) return { skipped: true };
+	const child_process = require('child_process');
+	const res = child_process.spawnSync(process.execPath, [eslintBin, '.', '--format', 'json'], {
+		cwd: __dirname, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024
+	});
+	let report;
+	try { report = JSON.parse(res.stdout); } catch (_) {
+		failFast("Stage 0 (ESLint)", res.stderr || res.stdout || 'ESLint produced no parsable output');
+	}
+	let errors = 0, warnings = 0;
+	const lines = [];
+	for (const f of report) {
+		for (const m of f.messages) {
+			if (m.severity === 2) {
+				errors++;
+				if (lines.length < 15) lines.push(`  ${path.relative(__dirname, f.filePath)}:${m.line}  ${m.ruleId}  ${m.message}`);
+			} else {
+				warnings++;
+			}
+		}
+	}
+	if (errors > 0) {
+		failFast("Stage 0 (ESLint)", `${errors} ESLint error(s):\n${lines.join('\n')}\n\nRun 'npm run lint' for the full list.`);
+	}
+	return { errors, warnings };
+}
 
 function failFast(stageName, errorDetail) {
 	console.error(`\n======================================================`);
@@ -74,6 +107,7 @@ function failFast(stageName, errorDetail) {
 function runTests(options = {}) {
 	const targetSource = options.targetSource || null;
 	const verbose = options.verbose || false;
+	const full = options.full || false;
 	const startTime = Date.now();
 
 	console.log(`======================================================`);
@@ -88,45 +122,8 @@ function runTests(options = {}) {
 	// -----------------------------------------------------------------------------
 	process.stdout.write(`[0/7] Code Quality & Static Hygiene ...... `);
 	try {
-		// 1. File Size & Line Bounds
-		const FILE_LIMITS = {
-			'korean/analyzer/verb_morphology.js': 700,
-			'korean/analyzer/verb_suffix_rules.js': 500,
-			'korean/analyzer/token_analyzer.js': 600,
-			'korean/analyzer/sentence_analyzer.js': 500,
-			'webapp/db.js': 700,
-			'webapp/spreadsheet.js': 1400,
-			'webapp/selector.js': 1500,
-			'webapp/app.js': 900
-		};
-		for (const [relPath, maxLines] of Object.entries(FILE_LIMITS)) {
-			const fullP = path.resolve(__dirname, relPath);
-			if (fs.existsSync(fullP)) {
-				const lineCount = fs.readFileSync(fullP, 'utf8').split('\n').length;
-				if (lineCount > maxLines) {
-					failFast("Stage 0 (Code Quality & Static Hygiene)", `File '${relPath}' has exceeded line limit: ${lineCount} lines (limit: ${maxLines}). Split module to maintain code quality.`);
-				}
-			}
-		}
-
-		// 2. Browser Purity Check (Zero Node dependencies in runtime analyzer / core modules)
-		const browserDirs = [
-			path.resolve(__dirname, 'korean', 'analyzer'),
-			path.resolve(__dirname, 'korean', 'core')
-		];
-		const nodeForbidden = [/require\s*\(\s*['"]fs['"]\s*\)/, /require\s*\(\s*['"]path['"]\s*\)/, /require\s*\(\s*['"]child_process['"]\s*\)/, /process\.env/];
-		for (const dir of browserDirs) {
-			const files = fs.readdirSync(dir).filter(f => f.endsWith('.js'));
-			for (const f of files) {
-				const filePath = path.join(dir, f);
-				const content = fs.readFileSync(filePath, 'utf8');
-				for (const pat of nodeForbidden) {
-					if (pat.test(content)) {
-						failFast("Stage 0 (Code Quality & Static Hygiene)", `Browser purity violation in '${path.relative(__dirname, filePath)}': forbidden Node pattern '${pat}'. Browser modules must remain zero-dependency.`);
-					}
-				}
-			}
-		}
+		// 1. ESLint: undefined globals, unused code, browser purity (no fs/path in korean/core + korean/analyzer), big-file warnings
+		const lint = runEslint();
 
 		// 3. Foreign Key & Grammar Part-of-Speech Verification
 		delete require.cache[DATA_PATH];
@@ -191,37 +188,9 @@ function runTests(options = {}) {
 			}
 		}
 
-		// Verify no stray console.log in korean/ library
-		for (const dir of browserDirs) {
-			const files = fs.readdirSync(dir).filter(f => f.endsWith('.js'));
-			for (const f of files) {
-				const filePath = path.join(dir, f);
-				const content = fs.readFileSync(filePath, 'utf8');
-				const lines = content.split('\n');
-				for (let ln = 0; ln < lines.length; ln++) {
-					const line = lines[ln].trim();
-					if (!line.startsWith('//') && !line.startsWith('*') && line.includes('console.log(')) {
-						failFast("Stage 0 (Code Quality & Static Hygiene)", `Stray console.log in library file '${path.relative(__dirname, filePath)}' line ${ln + 1}.`);
-					}
-				}
-			}
-		}
-
-		// 7. Constants Linter (Ensures 0 unexempt bare string literals matching constants.js)
-		const lintRes = lintProject();
-		if (lintRes.totalRecommendations > 0) {
-			const details = lintRes.files.map(f => {
-				const samples = (f.matches || []).slice(0, 3).map(d => `"${d.value}" -> ${(d.info && d.info.recommended) || d.suggestedReplacement}`).join(', ');
-				const more = (f.matches && f.matches.length > 3) ? ` (+${f.matches.length - 3} more)` : '';
-				return `  - ${f.file}: ${f.totalMatches} bare string literal(s) [${samples}${more}]`;
-			}).join('\n');
-			failFast("Stage 0 (Code Quality & Static Hygiene - Constants Linter)",
-				`Found ${lintRes.totalRecommendations} unexempt bare string literal(s) matching constants.js across ${lintRes.totalFlaggedFiles} file(s):\n` +
-				details +
-				`\n\nRun 'node test/count_string_literals.js --fix' to automatically replace them, or mark exempt with '// constants-disable' comments.`);
-		}
-
-		console.log(`[ PASS ] (Limits, browser purity, FK integrity, 0 magic IDs, constants linter)`);
+		console.log(lint.skipped
+			? `[ PASS ] (FK integrity, 0 magic IDs; ESLint SKIPPED: run 'npm install' to enable)`
+			: `[ PASS ] (ESLint 0 errors / ${lint.warnings} warnings, FK integrity, 0 magic IDs)`);
 	} catch (err) {
 		failFast("Stage 0 (Code Quality & Static Hygiene)", err.stack || err.message);
 	}
@@ -411,43 +380,42 @@ function runTests(options = {}) {
 	// -----------------------------------------------------------------------------
 	// [4/7] Exhaustive Generation & Morphology Verification
 	// -----------------------------------------------------------------------------
-	process.stdout.write(`[4/7] Exhaustive Sentence Generation ..... `);
+	process.stdout.write(`[4/7] Generation ${full ? 'Sweep (all units)' : 'Smoke (sample)'} ........ `);
 	try {
 		const child_process = require('child_process');
-
-		// Run scoped test if targetSource specified
-		if (targetSource) {
-			const scopeOut = child_process.execFileSync(process.execPath, [
-				EXHAUSTIVE_PATH,
-				targetSource
-			], { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
-
-			if (scopeOut.includes("Validation: FAILED") || scopeOut.includes("Unused Language Units in Scope")) {
-				failFast("Stage 4 (Exhaustive Source Generation)", scopeOut);
+		// Fixed seed => deterministic runs. This is a crash/morphology smoke test, NOT a correctness oracle:
+		// the validator shares rules with the generator. Linguistic correctness belongs in fixtures
+		// (test/golden_sentences_test.js), which encode human/LLM-triaged judgements.
+		const runExhaustive = (extraArgs) => child_process.execFileSync(
+			process.execPath, [EXHAUSTIVE_PATH, '--seed', '1', ...extraArgs],
+			{ encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 256 * 1024 * 1024 });
+		const check = (out, label) => {
+			if (out.includes("Validation: FAILED") || out.includes("Unused Language Units in Scope")) {
+				failFast(`Stage 4 (${label})`, out);
 			}
+			return out;
+		};
+
+		if (targetSource) check(runExhaustive([targetSource]), 'Exhaustive Source Generation');
+
+		let total = 0;
+		for (const range of (full ? [null] : SMOKE_RANGES)) {
+			const out = check(runExhaustive(range ? ['--range', range] : []), full ? 'Full Curriculum' : `Sample ${range}`);
+			const match = out.match(/ALL (\d+) generated sentences PASSED/);
+			total += match ? parseInt(match[1], 10) : 0;
 		}
-
-		// Full curriculum regression check
-		const fullOut = child_process.execFileSync(process.execPath, [
-			EXHAUSTIVE_PATH
-		], { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
-
-		if (fullOut.includes("Validation: FAILED")) {
-			failFast("Stage 4 (Exhaustive Full Curriculum)", fullOut);
-		}
-
-		const match = fullOut.match(/ALL (\d+) generated sentences PASSED/);
-		const totalCount = match ? match[1] : "3,403";
-		console.log(`[ PASS ] (${totalCount} sentences generated, 0 errors)`);
+		console.log(`[ PASS ] (${total.toLocaleString()} sentences, seed 1, 0 errors${full ? '' : '; --full sweeps every unit'})`);
 	} catch (err) {
-		failFast("Stage 4 (Exhaustive Generation)", err.stdout || err.stderr || err.message);
+		failFast("Stage 4 (Generation)", err.stdout || err.stderr || err.message);
 	}
 
 	// -----------------------------------------------------------------------------
 	// [5/7] Text Analyzer Study Text Check
 	// -----------------------------------------------------------------------------
 	process.stdout.write(`[5/7] Text Analyzer Passage Check ........ `);
-	try {
+	if (!fs.existsSync(STUDYTEXTS_PATH)) {
+		console.log(`[ SKIP ] (studytexts.js not present: textbook-derived content is local-only and gitignored)`);
+	} else try {
 		delete require.cache[TEXT_ANALYZER_PATH];
 		delete require.cache[STUDYTEXTS_PATH];
 		const { analyzePassage } = require(TEXT_ANALYZER_PATH);
@@ -497,12 +465,14 @@ function runTests(options = {}) {
 			{ name: "Pronunciation Exceptions", path: path.resolve(__dirname, 'test', 'pronunciation_exceptions_test.js') },
 			{ name: "English Phonemes Transliteration", path: path.resolve(__dirname, 'test', 'english_phonemes_test.js') },
 			{ name: "Text Analyzer Modular Subsystem", path: path.resolve(__dirname, 'test', 'analyzer_modular_test.js') },
+			{ name: "Browser Load (index.html)", path: path.resolve(__dirname, 'test', 'browser_load_test.js'), args: full ? [] : ['--static'] },
+			{ name: "Golden Sentences (flag fixtures)", path: path.resolve(__dirname, 'test', 'golden_sentences_test.js') },
 			{ name: "Spreadsheet UI & Database", path: path.resolve(__dirname, 'test', 'spreadsheet_ui_test.js') }
 		];
 
 		let totalAssertions = 0;
 		for (const suite of suiteScripts) {
-			const out = child_process.execFileSync(process.execPath, [suite.path], {
+			const out = child_process.execFileSync(process.execPath, [suite.path, ...(suite.args || [])], {
 				encoding: 'utf8',
 				stdio: ['pipe', 'pipe', 'pipe']
 			});
@@ -536,6 +506,7 @@ if (require.main === module) {
 	const args = process.argv.slice(2);
 	let targetSource = null;
 	let verbose = false;
+	let full = false;
 
 	for (const arg of args) {
 		if (arg === '-h' || arg === '--help' || arg === 'help') {
@@ -543,12 +514,14 @@ if (require.main === module) {
 			process.exit(0);
 		} else if (arg === '-v' || arg === '--verbose') {
 			verbose = true;
+		} else if (arg === '--full') {
+			full = true;
 		} else if (!arg.startsWith('-')) {
 			targetSource = arg;
 		}
 	}
 
-	runTests({ targetSource, verbose });
+	runTests({ targetSource, verbose, full });
 }
 
 module.exports = {

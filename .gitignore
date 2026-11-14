@@ -1,18 +1,23 @@
-exhaustive_output.txt
-importer.js
-tag_devtest.js
-test_morphology.js
-import_*.js
-check_templates.js
-validate_output.js
-exhaustive_output_devtest.txt
-finiteUseScripts/
-exhaustive_output_*.txt
+# dependencies
+node_modules/
+
+# generated / local-only output
+exhaustive_output*.txt
 output.txt
 scratch/
+flagged/
+
+# local-only curriculum content (textbook-derived; never commit)
 studytexts.js
-history/migrations/
-test.txt
-audit/batches/
 scripts/justKorean.txt
 scripts/koreanExamples.txt
+local/
+
+# one-off local scripts
+importer.js
+import_*.js
+tag_devtest.js
+test_morphology.js
+check_templates.js
+validate_output.js
+finiteUseScripts/

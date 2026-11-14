@@ -1,3 +1,4 @@
+(function() {
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
 
@@ -27,7 +28,8 @@ if (typeof require !== 'undefined') {
 const state = (typeof require !== 'undefined' ? require('../state.js') : window);
 const { DATA_SCHEMA, decomposeHangul, getStem } = (typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 const { ERROR_CODES } = (typeof require !== 'undefined' ? require('../constants/error_codes.js') : window);
-const { getVerbUnit, isActionVerb, isDescriptiveVerb } = (typeof require !== 'undefined' ? require('../core/morphology.js') : window);
+const { getVerbUnit, getNounUnit, isActionVerb, isDescriptiveVerb } = (typeof require !== 'undefined' ? require('../core/morphology.js') : window);
+const { hasTag } = dataModule;
 
 function getConnectiveSpecs(connective) {
 	if (!connective) return null;
@@ -363,3 +365,4 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = clausalValidationExports;
 }
+})();

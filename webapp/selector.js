@@ -258,6 +258,32 @@ function generateSentencesForUnit(unitId, count = 3, optionsOrRawUnits = null, d
 	return [];
 }
 
+/**
+ * Builds the JSON record stored when the user flags a generated sentence as bad.
+ * Everything the triage agent needs to reproduce and judge it is captured here:
+ * surface forms, the target unit, the template, and every unit used (per-morpheme).
+ */
+function buildFlagEntry(item, targetUnitId, mode = 'all') {
+	const segments = [];
+	for (const ej of (item && Array.isArray(item.eojeols)) ? item.eojeols : []) {
+		for (const seg of Array.isArray(ej.segments) ? ej.segments : []) {
+			segments.push({ ko: seg.textKo || '', unitId: typeof seg.unitId === 'number' ? seg.unitId : null, kind: seg.kind || 'stem' });
+		}
+	}
+	return {
+		ko: String((item && item.ko) || ''),
+		enLiteral: (item && item.enLiteral) || '',
+		enNatural: (item && item.enNatural) || '',
+		targetUnitId: (typeof targetUnitId === 'number') ? targetUnitId : null,
+		mode,
+		origin: item && item.isVerifiedStructure ? 'verified' : 'ast',
+		templateId: (item && item.verifiedTemplateId) || null,
+		tier: (item && item.difficultyTier) || null,
+		unitIds: Array.from(new Set([...(item && item.unitIds) || [], ...(item && item.unitsUsed) || []].filter(n => typeof n === 'number'))),
+		segments
+	};
+}
+
 // 4. Streamlined Unit Selector & Details View Controller
 class UnitSelectorView {
 	constructor(options = {}) {
@@ -272,6 +298,7 @@ class UnitSelectorView {
 		this.lastGenerationError = null;
 		this.lastGenerationMode = 'all';
 		this.searchQuery = '';
+		this.flaggedKo = new Set();
 
 		let initialSentenceCount = 3;
 		if (typeof window !== 'undefined' && window.localStorage) {
@@ -588,6 +615,63 @@ class UnitSelectorView {
 
 	selectUnit(unitId) {
 		return this.selectUnitForDetails(unitId);
+	}
+
+	// --- Bad-sentence flagging ---------------------------------------------------------------
+	async loadFlags() {
+		const db = this.db || this.engine?.db;
+		try {
+			const items = (db && typeof db.getFlaggedSentences === 'function') ? await db.getFlaggedSentences() : [];
+			this.flaggedKo = new Set(items.map(f => f.ko));
+		} catch (_) {
+			this.flaggedKo = new Set();
+		}
+		return this.flaggedKo.size;
+	}
+
+	isSentenceFlagged(ko) {
+		return this.flaggedKo.has(String(ko || ''));
+	}
+
+	async toggleSentenceFlag(item) {
+		const db = this.db || this.engine?.db;
+		if (!item || !item.ko || !db || typeof db.flagSentence !== 'function') return false;
+		let nowFlagged;
+		if (this.flaggedKo.has(item.ko)) {
+			await db.unflagSentence(item.ko);
+			this.flaggedKo.delete(item.ko);
+			nowFlagged = false;
+		} else {
+			await db.flagSentence(buildFlagEntry(item, this.selectedUnitId, this.lastGenerationMode));
+			this.flaggedKo.add(item.ko);
+			nowFlagged = true;
+		}
+		this.onStateChange({ type: 'selector-sentence-flag-toggled', ko: item.ko, flagged: nowFlagged });
+		return nowFlagged;
+	}
+
+	/** Downloads every flagged sentence as JSON. Drop the file into the project's flagged/ folder. */
+	async exportFlaggedSentences() {
+		const db = this.db || this.engine?.db;
+		const items = (db && typeof db.getFlaggedSentences === 'function') ? await db.getFlaggedSentences() : [];
+		const payload = { app: 'kongbuhey', kind: 'flagged-sentences', version: 1, exportedAt: new Date().toISOString(), items };
+		if (typeof document !== 'undefined' && typeof Blob !== 'undefined' && typeof URL !== 'undefined' && URL.createObjectURL) {
+			const a = document.createElement('a');
+			a.href = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+			a.download = 'flags-' + payload.exportedAt.replace(/[:.]/g, '-').slice(0, 19) + '.json';
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+		}
+		return payload;
+	}
+
+	async clearFlaggedSentences() {
+		const db = this.db || this.engine?.db;
+		if (db && typeof db.clearFlaggedSentences === 'function') await db.clearFlaggedSentences();
+		this.flaggedKo = new Set();
+		this.renderDetailsPane();
+		return true;
 	}
 
 	getSentencesForSelectedUnit() {
@@ -1224,6 +1308,29 @@ class UnitSelectorView {
 		});
 		sentActions.appendChild(onlySetBtn);
 
+		if (this.flaggedKo.size > 0) {
+			const exportBtn = document.createElement('button');
+			exportBtn.type = 'button';
+			exportBtn.id = 'btn-export-flags';
+			exportBtn.className = 'btn btn-ghost';
+			exportBtn.textContent = `⬇ Flags (${this.flaggedKo.size})`;
+			exportBtn.title = 'Download all flagged sentences as JSON (put the file in the flagged/ folder for triage)';
+			exportBtn.addEventListener('click', () => this.exportFlaggedSentences());
+			sentActions.appendChild(exportBtn);
+
+			const clearFlagsBtn = document.createElement('button');
+			clearFlagsBtn.type = 'button';
+			clearFlagsBtn.id = 'btn-clear-flags';
+			clearFlagsBtn.className = 'btn btn-ghost';
+			clearFlagsBtn.textContent = '🗑';
+			clearFlagsBtn.title = 'Clear all flags (export first!)';
+			clearFlagsBtn.addEventListener('click', () => {
+				if (typeof confirm === 'function' && !confirm('Clear all flagged sentences? Export them first if you have not.')) return;
+				this.clearFlaggedSentences();
+			});
+			sentActions.appendChild(clearFlagsBtn);
+		}
+
 		sentHeader.appendChild(sentActions);
 		sentencesSection.appendChild(sentHeader);
 
@@ -1324,6 +1431,22 @@ class UnitSelectorView {
 				tierBadge.innerHTML = `<span class="tier-icon" aria-hidden="true">${tierIcon}</span> <span class="tier-label">${item.difficultyLabel || item.difficultyTier}</span>`;
 				originHeader.appendChild(tierBadge);
 			}
+
+			const isFlagged = this.isSentenceFlagged(item.ko);
+			const flagBtn = document.createElement('button');
+			flagBtn.type = 'button';
+			flagBtn.className = 'sentence-flag-btn' + (isFlagged ? ' is-flagged' : '');
+			flagBtn.setAttribute('aria-pressed', String(isFlagged));
+			flagBtn.textContent = isFlagged ? '⚑ Flagged' : '⚐ Bad sentence';
+			flagBtn.title = isFlagged
+				? 'Flagged for review. Click to un-flag.'
+				: 'This Korean sentence sounds wrong or unnatural: flag it for review';
+			flagBtn.addEventListener('click', async (e) => {
+				e.stopPropagation();
+				await this.toggleSentenceFlag(item);
+				this.renderDetailsPane();
+			});
+			originHeader.appendChild(flagBtn);
 
 			li.appendChild(originHeader);
 
@@ -1466,6 +1589,7 @@ if (typeof module !== 'undefined' && module.exports) {
 		formatPithyTime,
 		formatHudTelemetry,
 		generateSentencesForUnit,
+		buildFlagEntry,
 		UnitSelectorView
 	};
 }

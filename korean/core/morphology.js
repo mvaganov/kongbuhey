@@ -85,35 +85,48 @@ const { parseAndValidateCollocationFilter } =
 const { getPronunciationWord, getPronunciation } =
 	(typeof require !== 'undefined' ? require('../phonetics/pronunciation.js') : window);
 
+// Resolving a module on every call costs a filesystem stat per require(); cache once the module has finished loading.
+const _lazyModuleCache = new Map();
+function loadLazyModule(relPath) {
+	if (typeof require === 'undefined') return window;
+	if (_lazyModuleCache.has(relPath)) return _lazyModuleCache.get(relPath);
+	const mod = require(relPath);
+	if (mod && Object.keys(mod).length > 0) _lazyModuleCache.set(relPath, mod);
+	return mod;
+}
+function resolveGetFilteredWords() {
+	return typeof window !== 'undefined' ? window.getFilteredWords : loadLazyModule('./numbers.js').getFilteredWords;
+}
+
 // Concord repair delegators (dynamically resolved or injected to avoid circular dependency)
 let concordRepairs = {
 	applyCounterConcord: (t) => {
 		try {
-			const mod = typeof require !== 'undefined' ? require('../concord/classifier_concord.js') : window;
+			const mod = loadLazyModule('../concord/classifier_concord.js');
 			return mod.applyCounterConcord ? mod.applyCounterConcord(t) : t;
 		} catch (e) { return t; }
 	},
 	applySpatialConcord: (t) => {
 		try {
-			const mod = typeof require !== 'undefined' ? require('../concord/spatial_concord.js') : window;
+			const mod = loadLazyModule('../concord/spatial_concord.js');
 			return mod.applySpatialConcord ? mod.applySpatialConcord(t) : t;
 		} catch (e) { return t; }
 	},
 	applyMoodConcord: (t) => {
 		try {
-			const mod = typeof require !== 'undefined' ? require('../concord/mood_concord.js') : window;
+			const mod = loadLazyModule('../concord/mood_concord.js');
 			return mod.applyMoodConcord ? mod.applyMoodConcord(t) : t;
 		} catch (e) { return t; }
 	},
 	applyAdverbConcord: (t) => {
 		try {
-			const mod = typeof require !== 'undefined' ? require('../concord/adverbial_concord.js') : window;
+			const mod = loadLazyModule('../concord/adverbial_concord.js');
 			return mod.applyAdverbConcord ? mod.applyAdverbConcord(t) : t;
 		} catch (e) { return t; }
 	},
 	applyClausalConcord: (t) => {
 		try {
-			const mod = typeof require !== 'undefined' ? require('../concord/clausal_generator.js') : window;
+			const mod = loadLazyModule('../concord/clausal_generator.js');
 			return mod.applyClausalConcord ? mod.applyClausalConcord(t) : t;
 		} catch (e) { return t; }
 	}
@@ -868,7 +881,7 @@ function getNounCandidatesForVerb(verbUnit) {
 	};
 
 	const sv = parseSemanticVector(verbUnit);
-	const getFilteredWords = typeof window !== 'undefined' ? window.getFilteredWords : require('./numbers.js').getFilteredWords;
+	const getFilteredWords = resolveGetFilteredWords();
 
 	if (sv && sv.collocation_filter) {
 		const filterFn = getCompiledCollocationFilter(verbUnit, parseAndValidateCollocationFilter);
@@ -939,7 +952,7 @@ function getSubjectCandidatesForDescriptiveVerb(dvUnit) {
 	};
 
 	const sv = parseSemanticVector(dvUnit);
-	const getFilteredWords = typeof window !== 'undefined' ? window.getFilteredWords : require('./numbers.js').getFilteredWords;
+	const getFilteredWords = resolveGetFilteredWords();
 
 	if (sv && sv.collocation_filter) {
 		const filterFn = getCompiledCollocationFilter(dvUnit, parseAndValidateCollocationFilter);
@@ -1045,7 +1058,7 @@ function buildActionVerbPhrase(word, stem, chosenNoun = null, options = {}) {
 		&& !ACTION_VERB_SPECS.some(s => s.particle === K.OBJECT && hasTag(activeWord, s.tag))
 		&& !parseSemanticVector(activeWord).collocation_filter;
 
-	const getFilteredWords = typeof window !== 'undefined' ? window.getFilteredWords : require('./numbers.js').getFilteredWords;
+	const getFilteredWords = resolveGetFilteredWords();
 	const getWords = dataModule.getWords || (typeof window !== 'undefined' ? window.getWords : () => []);
 
 	if (isPureIntransitive) {

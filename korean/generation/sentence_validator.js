@@ -1,3 +1,4 @@
+(function() {
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
 
@@ -372,3 +373,4 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = sentenceValidatorExports;
 }
+})();
