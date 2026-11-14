@@ -1,10 +1,37 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "model": "sonnet",
   "permissions": {
+    "allow": [
+      "Bash(node test.js:*)",
+      "Bash(node test/*)",
+      "Bash(node select.js:*)",
+      "Bash(node exhaustive.js:*)",
+      "Bash(node tools/triage_flags.js:*)",
+      "Bash(npm test)",
+      "Bash(npm run lint)",
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
+    ],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)"
+    ],
     "deny": [
-      "Read(./data.js)", "Read(./homonyms.js)", "Read(./schema_summary.json)",
-      "Read(./studytexts.js)", "Read(./scratch/**)", "Read(./audit/**)",
-      "Read(./history/**)", "Read(./exhaustive_output*.txt)", "Read(./output.txt)"
+      "Read(./exhaustive_output*.txt)",
+      "Read(./output.txt)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Bash",
+        "hooks": [
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-big-reads.js\"" }
+        ]
+      }
     ]
   }
 }

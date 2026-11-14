@@ -1,159 +1,68 @@
-# Kongbuhey - Project Handoff & Architecture Guide
+# Kongbuhey (공부해): Handoff
 
-## 1. Project Overview & Vision
-**Kongbuhey (공부해)** is an educational, client-side web application built with pure HTML, modern CSS, and Vanilla JavaScript (zero server, zero external dependencies, no build step). Its purpose is to train learners in Korean sentence construction, vocabulary recognition, honorific concord, and grammar patterns through dynamically generated, linguistically guaranteed sentences, paired with multi-voice speech synthesis.
+Updated 2026-11-14. Working rules and commands live in `CLAUDE.md`; this file is state, architecture and priorities.
 
-### Development Roadmap
-- **Phase 1 [COMPLETE]**: Core Morphology, Semantic Rule Matrix (Features F1–F11), Statutory Pronunciation Engine, and English/European-Readable Phoneme Transliteration.
-- **Phase 1.5 [COMPLETE]**: Curriculum study text ingestion from `studytexts.js` (All 28 passages completed through `studytext162`; 0 curriculum gaps across entire corpus).
-- **Phase 2 [ACTIVE / UPCOMING]**: Interactive Study & Flashcard UI with real-time passage decomposition, toggleable LUT tokens, and multi-voice TTS audio playback.
-- **Phase 3 [FUTURE]**: Adaptive Quiz UI and pedagogical spaced-repetition trainer.
+## What it is
+A study aid for one learner of Korean. Static client-side SPA (`webapp/`, vanilla JS, no build, runs from `file://`, IndexedDB with
+LocalStorage/memory fallback) plus Node 22 CLI tooling. Every example sentence is generated from the lexicon, so generator
+correctness is the product. The owner cannot judge Korean himself: correctness comes from sentences he flags and an LLM triages
+(see "Flag-review loop" in `CLAUDE.md`), not from the generator validating itself.
+Target: desktop first, Android later (not iOS), GitHub Pages for testing once content is decoupled (see Priorities).
 
----
+## State
+**Works:** Unit Selector & Details (generated sentences with per-morpheme pills, literal and natural English, TTS), spreadsheet over
+2,045 language units with custom columns, saved practice sets, text importer + passage analyzer, Verified Sentences view
+(544 templates), Decks view, a basic Practice-tab flashcard flow.
+**New this session:** "⚐ Bad sentence" flag button, JSON export, `tools/triage_flags.js`, golden fixtures
+(`test/golden_sentences.json`), ESLint (flat config, `no-undef` on), jsdom browser load test, 13x faster generation
+(a per-call `require()` in `morphology.js` was the cause), dead code and obsolete audit artifacts purged.
+**Fixed this session (found by ESLint and jsdom, invisible to the old tests):** undefined `hasTag`/`getNounUnit` in
+`clausal_validation.js`; `select.js --strict` crash; in the browser, `spatial_concord`, `adverbial_concord`, `sentence_validator`
+failed to load (duplicate top-level `const`) and `mood_concord`, `clausal_generator`, `clausal_validation` were missing from
+`index.html`. The browser engine had been running without those concord modules.
+**Known gaps:**
+- Browser vs Node still differ on unit 400 (너무), ~2 of 39 sampled batches: the browser emits "너무 + action verb" sentences Node
+  avoids. Cause not found. Check InSet/tier state, then diff the generator inputs.
+- 178 ESLint `no-unused-vars` warnings = dead-code backlog (most in `test/collocation_test.js`, `test/grammar_mood_test.js`,
+  `morphology.js`, `unit_sentence_generator.js`).
+- String-level validators (`validateAdverbConcord` etc.) accept "너무 주문할 수 있습니다"; only unit-level checks catch it.
+- Tests that read `studytexts.js` need the local file (gitignored); a fresh clone skips Stage 5.
 
-## 2. System Architecture & Core Modules
-
+## Layout
 ```
-kongbuhey/
-├── data.js                     # Single point of truth: 12-element schema & 2,006 language units
-├── schema_summary.json         # High-speed cached taxonomies (POS, tags, domains, honorifics)
-├── schema_analysis.js          # Taxonomy extractor & smart draft unit scaffolder (stem deduction & deduplication)
-├── select.js                   # CLI/module: SQL-like query, update, insert & schema alteration
-├── homonyms.js                 # Surface token resolver: direct units, LUT trees & confusable pairs
-├── text_analyzer.js            # Passage analysis, morphological decomposition & curriculum gap detector
-├── ingest.js                   # Unified 1-command ingestion pipeline (decomposition, scaffold, insert, test)
-├── generator.js & exhaustive.js# Combinatorial phrase generators & Cartesian validator
-├── test.js                     # 7-stage unified fast-failing master test suite (Stage 0: Static Hygiene & Linter)
-├── webapp/
-│   ├── index.html              # Local-filesystem SPA entry point (Selector, Spreadsheet & Practice Set UI)
-│   ├── index.css               # Stylesheet with distinct Default (data.js) vs Additional (DB) palettes & HUD
-│   ├── db.js                   # Browser IndexedDB storage layer (+ LocalStorage/memory fallback)
-│   ├── spreadsheet.js          # Virtualized spreadsheet engine (overlapping sort, row/col reorder, resize, hide)
-│   ├── selector.js             # Streamlined Source/Unit Selector & Details view (Markdown, 3 sentences, HUD)
-│   └── app.js                  # SPA controller, column/view modals, and Flashcard queue evaluator
-├── tts_demo.html               # Interactive browser SpeechSynthesis testbed
-├── korean.js                   # Public facade re-exporting core modules
-├── korean/
-│   ├── analyzer/
-│   │   ├── indexer.js          # Fast in-memory indexing, semantic tag caching & stem classification
-│   │   ├── particles.js        # Declarative particle specs, compound cliticization & batchim rules
-│   │   ├── syntax_frame.js     # SyntaxFrame evaluator, ontology matching & pedagogical ambiguity
-│   │   ├── verb_morphology.js  # Verb conjugation, irregular stems (ㅂ, ㄷ, 르, ㅡ) & adnominal participles
-│   │   ├── token_analyzer.js   # Single-token morphological decomposition engine
-│   │   ├── sentence_analyzer.js # Multi-word auxiliary constructions & clause predicate detection
-│   │   ├── passage_analyzer.js # Pure JS passage decomposition & report formatting (browser-safe)
-│   │   └── index.js            # Barrel export for analyzer subsystem
-│   ├── core/
-│   │   ├── primitives.js       # Unicode Hangul math (compose, decompose, batchim, vowel harmony)
-│   │   ├── morphology.js       # Irregular verbs, particles, honorific infixes, copula sandhi
-│   │   └── numbers.js          # Sino-Korean and Native Korean counting systems
-│   ├── phonetics/
-│   │   ├── pronunciation.js    # Standard Korean Pronunciation engine with statutory exceptions
-│   │   └── english_phonemes.js # Latin phonetic transliteration engine for TTS voices
-│   └── specs/
-│       ├── verb_argument_specs.js # Declarative valency and case particles
-│       ├── pronunciation_rules.js # Statutory exception maps, saisori, Sino-Korean compounds
-│       └── honorific_specs.js  # Seniority, titles, suppletive verbs/nouns
-├── test/                       # 14 isolated test suites (concord, phonetics, clausal, analyzer)
-└── history/                    # Historical documentation, previous handoffs, migration scripts
+data.js                 2,045 units, 12 columns (Id, Korean, English, PartofSpeech, SemanticTags, Disambiguation, Conjugation,
+                        Source, PriorityScore, FormalityLevel, HonorificRules, SemanticData, SyntaxFrame). Source = class2011..class2202
+verified_sentences.js   544 sentence templates (OriginalKo + slots)        homonyms.js  surface-token resolver
+select.js               SQL-like CLI for units (SELECT/UPDATE/INSERT, --locate)   ingest.js  passage ingestion pipeline
+exhaustive.js           seeded generation sweep (smoke test, not an oracle)  text_analyzer.js / schema_analysis.js  analysis CLIs
+korean.js               Node facade over korean/ (the browser does not use it)
+korean/  core/ (primitives, morphology, stem_engine, numbers, lexicon_index)   concord/ (spatial, adverbial, mood, clausal,
+         classifier, argument)   generation/ (unit_sentence_generator, verified_sentence_generator, sentence_ast, validator)
+         analyzer/ (indexer, token/sentence/passage analyzers, SyntaxFrame, particles)   phonetics/  translation/  specs/  state.js
+webapp/  index.html (40 ordered <script> tags), db.js, spreadsheet.js, selector.js, text_importer.js, verified_sentences_view.js,
+         decks_view.js, app.js
+tools/triage_flags.js   flag inbox -> verdicts -> fixtures        test/  suites; golden_lib.js + golden_sentences.json
+.claude/                settings.json + hooks/guard-big-reads.js        docs/  translation_architecture.md, kor_sentences.tsv
 ```
 
-### Key Modules Summary
-1. **`data.js`**: 12-column schema array (`[Id, Korean, English, POS, SemanticTags, Disambiguation, ConjugationRules, Source, PriorityScore, FormalityLevel, HonorificRules, SemanticVector]`).
-   - 2,006 units sequentially indexed 0..2005 with zero TODOs.
-   - Houses all vocabulary, counting classifiers, honorific titles, origin/goal/static locatives, humble verbs, and clausal connectives.
-2. **`korean.js` & `korean/`**:
-   - `korean/phonetics/pronunciation.js`: Standard Korean Pronunciation (국립국어원 표준 발음법) implementing statutory exceptions (제10항/제11항 coda dissimilation, 제15항 substantive boundary liaison, 제16항 letter name liaison, 제20항 Sino-Korean non-lateralization, 제24항 passive/causative non-tensification, 제26항 reduplicated Hanja, 제28항 saisori, 제29항 compound [ㄴ] insertion).
-   - `korean/phonetics/english_phonemes.js`: Transliterates Korean text into Latin phonetic script optimized for browser speech synthesizers (English, French, Polish).
-   - `korean/core/morphology.js`: Robust agglutinative morphology engine resolving batchim allomorphs, vowel harmony, irregulars (ㄷ, ㅂ, ㅅ, 르, ㅡ, ㅎ, ㄹ), and copula contractions.
-3. **`select.js`**: Query, filter, update, and insert units using familiar SQL-like syntax without loading all 2,006 rows into LLM context.
-4. **`text_analyzer.js` & `korean/analyzer/`**: Decomposes natural Korean passages into constituent learning units, resolving homonyms and identifying curriculum gaps. Refactored into a modular, zero-dependency engine optimized for both Node CLI and interactive web browser execution (<5ms per passage).
-5. **`ingest.js`**: Unified CLI pipeline automating passage decomposition, stem deduction hints, draft filtering, unit insertion, homonym synchronization, and test verification in one command.
-6. **`tts_demo.html`**: Visual and auditory testbed for evaluating browser `window.speechSynthesis` voices with customizable styles (`natural`, `hyphenated`, `spaced`) and pitch/rate controls.
-7. **`webapp/` (`index.html`, `index.css`, `db.js`, `spreadsheet.js`, `selector.js`, `app.js`)**:
-   - Local-filesystem (`file://`) compatible Single-Page Application (SPA) with separate JS and CSS modules isolated in `webapp/`.
-   - **Streamlined Source/Unit Selector & Details View (`selector.js`)**:
-     - Collapsible Source groups with tri-state inclusion checkboxes (`✓` when all units included, empty when none included, `~` when partially included; clicking toggles all units in that Source).
-     - Expandable individual language unit rows with checkboxes (`InSet`) and click-to-inspect **Language Unit Details**.
-     - **Language Unit Details View**: Displays Korean text, Conjugation/Grammar rules (if available), English definition, Markdown Notes (supporting tiered/nested lists and inline HTML), in-place Edit mode (showing raw Markdown for Notes), 3 dynamically generated sentences/phrases with a Regenerate button, and a single-line minimalist videogame HUD for `RecognitionScore`, `LongTermRecognition`, `TimeStampLastCorrect`, and clickable `TimeStampLastSeen` (updates to current Unix time).
-   - **Virtualized Spreadsheet UI (`spreadsheet.js`)**: Displays all 2,006 language units across all 13 default `data.js` columns (`Id`..`SyntaxFrame`) plus Browser DB columns.
-   - Pre-initialized with 6 **permanent** Flashcard & Practice Set columns (`isPermanent: true, deletable: false`): `InSet` (`boolean`), `RecognitionScore` (`int`), `LongTermRecognition` (`enum{unknown, recognized, definitionKnown, knownByDefinition}`), `TimeStampLastCorrect` (`unixTime`), `TimeStampLastSeen` (`unixTime`), and `notes` (`string`). Users can still create, edit, and delete additional custom columns.
-   - Full persistence of additional column schemas, cell values, default column overrides, and view settings (`columnOrder`, `columnWidths`, `rowHandleWidth`, `columnVisibility`, `rowOrder`, `sortState`, `sortStack`) in `IndexedDB`.
-   - Supports overlapping multi-column sorting (`sortStack`), e.g. sorting by `English` and then sorting by `Source` groups primarily by `Source` while maintaining alphabetical `English` order within each source.
+## Constraints worth remembering
+- All linguistic knowledge lives in `data.js` tags/SemanticData; no Hangul literals or unit IDs in logic (a Stage 0 check enforces IDs).
+- `korean/analyzer/**` and `korean/core/**` are browser-safe and console-free (ESLint enforces).
+- Multi-word grammar is declared in `SyntaxFrame` as `/*js:matcher*/` closures, compiled by `analyzer/indexer.js` into `mweRules`
+  and `verbalEndingRules` (longest form first); `sentence_analyzer.js` consumes them.
+- TTS: native Korean voice only (multi-voice experiments shelved). English-readable transliteration rules: no doubled consonants,
+  no trailing `h` in closed syllables, join syllables into words, `ㄹ+ㄹ` becomes `ll`.
+- Gemini-era metric gaming: the old plan counted `].includes(` and Hangul `new Set([` literals; they moved rather than disappeared
+  (Hangul `new Set([` lines 12 to 265). Judge refactors by behaviour and fixtures, not by grep counts.
 
----
-
-## 3. Learnings & Architectural Constraints
-
-### A. Single Point of Truth
-- **Never hardcode Hangul strings** into JavaScript logic for semantic categorization, counting rules, honorific titles, or clausal relations. All linguistic knowledge lives in `data.js` expressed via `SemanticTags` or `SemanticVector`.
-
-### B. LLM Context Window Discipline
-- Never dump or read the full `data.js` array into context.
-- Use `node select.js SELECT ...` (which defaults to compact TSV/JSONL) or `select.js --summary [n]` to inspect subsets.
-- Use `node select.js UPDATE ... FROMFILE` or `node select.js INSERT FROMFILE` for data modifications.
-
-### C. Web Runtime Readiness (Passage Analyzer)
-- All modules under `korean/analyzer/` are pure JavaScript with zero Node dependencies (`fs`, `path`).
-- Fast in-memory memoization caches combined semantic tags for instant $O(1)$ lookups, allowing learners to analyze their own homework or K-pop lyrics interactively in real time.
-
-### D. Speech Synthesis (TTS) Transliteration Rules
-- **No Double Consonants**: Double consonants (ㄲ, ㅆ, ㄸ, ㅃ, ㅉ) MUST be transliterated as single consonants (`k`, `s`, `t`, `p`, `j`). Western speech synthesizers treat double initial consonants as stutter bursts.
-- **No Acronym Letter-Spelling**: Vowels in closed syllables must not include trailing `h` (`an` instead of `ahn`, `man` instead of `mahn`) to prevent synthesizers from spelling out syllables letter-by-letter.
-- **Natural Word Joining**: Syllables must be joined into natural whole words (e.g. `Annyeong haseyo`) by default, preserving natural rhythm and preventing isolated initialisms or misplaced long diphthongs (such as `ny-` being pronounced as `/naɪ/`).
-- **Liquid Gemination**: Consecutive liquids `ㄹ + ㄹ` (coda `ㄹ` + onset `ㄹ`) are pronounced as geminate lateral [lː] and must be transliterated as `ll` (e.g. `빨리` $\rightarrow$ `Palli`, `몰라` $\rightarrow$ `Molla`, `연락 [열락]` $\rightarrow$ `Yeollak`), avoiding the awkward cluster `lr`.
-- **TTS Strategy Decision**:
-  - Multi-voice non-Korean TTS experimentation is currently shelved. Non-Korean voices produce inconsistent phonological artifacts that are unsuitable for learner audio models without prohibitive per-voice tuning or external AI audio pipelines.
-  - The standard Korean speech synthesis voice is native and high quality, serving as the official voice for the application.
-  - The English/European Latin transliteration engine (`toEnglishPhonemes`, `transliterateSyllable`) remains active in the codebase to provide English-readable pronunciation guides and romanized reading aids.
-
-### E. Declarative MWE Parsing Engine (`/*js:matcher*/` in `SyntaxFrame`)
-- **Zero Hardcoded Grammatical Units in Code**: Analyzer modules must contain zero hardcoded grammar unit IDs. `unitById.get(\d+)` is enforced by Stage 0 linter via `MAGIC_GET_ALLOWLIST` (all analyzer files are guarded by default; only legacy `token_analyzer.js`, `verb_morphology.js`, and declarative `particles.js` are currently exempt pending upcoming refactors).
-- **`SyntaxFrame` Reverse Parsing Specification**: Multi-word expressions (auxiliaries, bound noun constructions, compound connectives) encapsulate their lexical match logic directly in their `SyntaxFrame` column via an embedded JavaScript closure starting with `/*js:matcher*/`.
-- **Dynamic Compilation & Fast Execution**:
-  - `korean/analyzer/indexer.js` scans language units at index initialization, compiles all `/*js:matcher*/` functions via `new Function('ctx', ...)`, and registers them in `index.mweRules`.
-  - Units tagged with `'verbal_ending'` (e.g. 49, 50, 336, 416, 459, 619, 645, 930, 1644, 1773) declare their surface forms in `SemanticVector.surface_forms` and are compiled into `index.verbalEndingRules` sorted by descending form length for greedy maximal munch matching.
-  - The match context passed to each rule: `{ w1, w2, w3, cleanW2, cleanW3, prevW1, isAdnominalN, isAdnominalL, isInformal, rawWords, i, sentenceContext, index, unit }`.
-  - The matcher returns an AST specification: `{ span, pattern, lexicalType, stemSuffix, grammar, extraParticle, parseTrailingParticle, parseW2Grammar, disambiguation, auxEndingTokenIndex }` or `null`.
-  - `sentence_analyzer.js` delegates to `buildMweToken()` and `resolveAuxiliaryEnding()` to dynamically construct AST tokens for both browser and Node runtime, seamlessly arbitrating between single-token morphology and `index.verbalEndingRules`.
-
-### F. Continuous Tooling & Process Evolution (Self-Improvement Imperative)
-- **Codify Repetitive Work into Automation**: On long projects involving iterative tasks (such as curriculum passage ingestion, morphology debugging, schema curation, and linter enforcement), any process improvements codified into automated tooling and linting directly amplify agentic performance and reduce the time required to complete future tasks.
-- **Task Meta-Awareness**: During every task, the working agent must maintain active awareness of the processing being done:
-  - *What manual steps, cognitive overhead, or repetitive patterns are currently being incurred?*
-  - *What information, CLI utility, scaffolder diagnostic, or static lint rule would make this processing easier, faster, and more robust?*
-- **Scaffolder Auto-Snippet Generator**: `schema_analysis.js` and `ingest.js` export `generateVerbSuffixSnippet(morph)`. When reverse-stem deduction identifies an unparsed surface inflection of an existing dictionary verb, the tool immediately outputs a ready-to-paste `VERB_SUFFIX_RULES` JavaScript snippet with canonical morpheme IDs and deduced stem type.
-- **Reflective Summary Considerations**: When summarizing completed work, proactively evaluate whether any improvements can be made to the process or tooling in the current environment (e.g., expanding magic number linters, creating whitelist mechanisms, adding diagnostic hints), and share those considerations with the developer.
-- **Immediate Action on Process Improvements**: Tooling and process improvements do not need to be added as additional work items to `handoff.md` unless they are large enough to warrant a multi-run workflow. They are considered valuable enough by the developer that they will be addressed immediately, even expanding them into larger features that require more than one run if it makes sense.
-- **Psychological Safety & Collaboration**: Striving for process improvements is not a high-pressure metric evaluating agent quality; rather, continuous self-improvement and iterative tooling refinement are valued as an essential, intrinsic part of our work together.
-
----
-
-## 4. Current Status & Verification
-- **Dataset**: 2,006 units (100% valid, 0 TODOs, sequential IDs 0..2005).
-- **Homonym Dictionary**: 3,539 tokens mapped, 0 broken links.
-- **Ingested Passages (Phase 1.5 - COMPLETE)**: `studytext12`, `studytext21`, `studytext22`, `studytext31`, `studytext41`, `studytext42`, `studytext51`, `studytext52`, `studytext61`, `studytext62`, `studytext71`, `studytext72`, `studytext81`, `studytext82`, `studytext101`, `studytext102`, `studytext111`, `studytext112`, `studytext121`, `studytext122`, `studytext131`, `studytext132`, `studytext141`, `studytext142`, `studytext151`, `studytext152`, `studytext161`, `studytext162` (100% recognized, 0 curriculum gaps across all 28 passages).
-- **Master Test Suite (`node test.js`)**:
-  - Stage 0: Code Quality & Static Hygiene [ PASS ] (Limits, browser purity, FK integrity, 0 magic IDs)
-  - Stage 1: Schema & Data Integrity [ PASS ] (2,006 units, sequential IDs 0..2005)
-  - Stage 2: Schema Taxonomy Sync [ PASS ] (9 POS, 667 tags, 128 domains)
-  - Stage 3: Homonym Dictionary Sync [ PASS ] (3,539 tokens)
-  - Stage 4: Exhaustive Sentence Generation [ PASS ] (3,403 sentences, 0 errors)
-  - Stage 5: Text Analyzer Passage Check [ PASS ] (28 passages: 0 gaps)
-  - Stage 6: Semantic & Honorific Concord [ PASS ] (14 suites, 6,223 assertions passed)
-- **Modular Analyzer Suite (`node test/analyzer_modular_test.js`)**: 14/14 tests passed, browser-clean (zero Node dependencies).
-- **Spreadsheet & Selector UI Suite (`node test/spreadsheet_ui_test.js`)**: 78/78 assertions passed (streamlined Source/Unit selector with tri-state `✓`/`~`/empty checkboxes, Language Unit Details view with Markdown + inline HTML & tiered lists, 3 generated sentences + regeneration, in-place editing, videogame HUD with clickable `TimeStampLastSeen`, permanent 6 flashcard columns, virtual scrolling, IndexedDB persistence, overlapping multi-column sorting).
-
----
-
-## 5. Next Steps
-
-### Interactive Study & Flashcard Web App (Phase 2)
-1. **Interactive Study Web Interface (`index.html`, `index.css`, `app.js`)**:
-   - Modern, aesthetic client-side single-page app (dark theme, glassmorphism, responsive).
-   - Real-time passage decomposition viewer showing sentence trees, vocabulary cards, grammar rules, and particle breakdowns.
-   - Flashcard study mode with confidence scoring, spaced repetition, and vocabulary search.
-   - Built-in Korean SpeechSynthesis (`window.speechSynthesis`) integration with audio playback.
-2. **Additional Curricula / Study Texts**:
-   - If further study texts (e.g. `studytext171`+) are introduced to `studytexts.js`, ingest via `node ingest.js <source>`.
-
+## Priorities (in order)
+1. **Use the flag loop.** Generate, flag, triage, promote, fix. Freeze generator scope once the loop works end to end.
+2. **Early-unit review mode.** Practice and audit class2011 to class2112 grammar and vocabulary over a few weeks (subway-friendly
+   quizzes with recall tracking). The next semester starts about 2026-11-28. Needs the app's flashcard/practice flow, so plan it
+   only after sentences are trusted.
+3. **Decouple content from code (copyright).** Textbook-derived text must not be committed. Plan: `local/` (gitignored) plus the
+   in-app importer for the learner's own material; commit only the lexicon and grammar knowledge. Open-licensed candidate sentences:
+   `docs/kor_sentences.tsv` (Tatoeba, CC BY, contains errors such as 올께요; filter through the passage analyzer for "i+0" sentences
+   and never treat as ground truth). Consider `git filter-repo` if textbook text is in history; make the repo private meanwhile.
+4. GitHub Pages deploy (after 3), then Android.
+5. Flashcard and quiz modes beyond the basic Practice tab: after sentence trust.
