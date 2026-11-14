@@ -1,0 +1,10 @@
+{
+  "model": "sonnet",
+  "permissions": {
+    "deny": [
+      "Read(./data.js)", "Read(./homonyms.js)", "Read(./schema_summary.json)",
+      "Read(./studytexts.js)", "Read(./scratch/**)", "Read(./audit/**)",
+      "Read(./history/**)", "Read(./exhaustive_output*.txt)", "Read(./output.txt)"
+    ]
+  }
+}
