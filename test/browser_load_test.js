@@ -48,6 +48,10 @@ function walk(dir) {
 	const dead = [...included].filter(f => !onDisk.includes(f));
 	assert(dead.length === 0, `index.html references no missing files${dead.length ? ' (' + dead.join(', ') + ')' : ''}`);
 
+	const credits = ['Gemini Flash 3.8', 'Gemini Argon', 'Claude Sonnet', 'Claude Opus', 'Yonsei', 'Tatoeba', 'btn-open-credits'];
+	const missingCredits = credits.filter(c => !html.includes(c));
+	assert(missingCredits.length === 0, `About & Credits modal names every attribution${missingCredits.length ? ' (missing: ' + missingCredits.join(', ') + ')' : ''}`);
+
 	if (process.argv.includes('--static')) {
 		// jsdom takes ~25s just to require() on a slow filesystem; the full run (node test.js --full) does it.
 		console.log('  [SKIP] jsdom load check (run with --full)');

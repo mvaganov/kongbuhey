@@ -55,6 +55,7 @@
 				<span id="db-status-text" class="stat-label">DB Synced</span>
 			</div>
 		</div>
+		<button type="button" id="btn-open-credits" class="btn btn-secondary" title="About, credits and attributions">About &amp; Credits</button>
 	</header>
 
 	<!-- ===================================================================== -->
@@ -324,10 +325,32 @@
 		</div>
 	</div>
 
+	<!-- ===================================================================== -->
+	<!-- MODAL: ABOUT & CREDITS (edit attribution text here, in one place)     -->
+	<!-- ===================================================================== -->
+	<div id="modal-credits" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-credits-title">
+		<div class="modal-card">
+			<div class="modal-header">
+				<h2 id="modal-credits-title">About &amp; Credits</h2>
+				<button type="button" id="btn-close-credits-modal" class="modal-close-btn" aria-label="Close">×</button>
+			</div>
+			<div class="modal-body credits-body">
+				<h3>Made with AI</h3>
+				<p>This app was generated with <strong>Gemini Flash 3.8</strong>, <strong>Gemini Argon</strong>, <strong>Claude Sonnet</strong> and <strong>Claude Opus</strong>, directed and reviewed by its author.</p>
+				<h3>Inspiration</h3>
+				<p>Inspired by, and derived in part from, the Korean language program of the Yonsei University Korean Language Institute (KLI). This project is an independent personal study tool and is not affiliated with or endorsed by Yonsei University.</p>
+				<h3>Example sentences</h3>
+				<p>Some example sentences come from <a href="https://tatoeba.org" target="_blank" rel="noopener noreferrer">Tatoeba</a>, contributed by its volunteer community and used under the <a href="https://creativecommons.org/licenses/by/2.0/fr/" target="_blank" rel="noopener noreferrer">CC BY 2.0 FR</a> license. Sentences are marked with the source tag <code>tatoeba</code>.</p>
+			</div>
+		</div>
+	</div>
+
 	<!-- Local File System Scripts (Standard script tags for file:// compatibility) -->
 	<script src="../constants.js"></script>
 	<script src="../data.js"></script>
 	<script src="../verified_sentences.js"></script>
+	<!-- Optional, gitignored: textbook-derived sentence text for the templates above (missing on a fresh clone) -->
+	<script src="../local/verified_originals.js"></script>
 	<script src="../korean/core/primitives.js"></script>
 	<script src="../korean/core/stem_engine.js"></script>
 	<script src="../korean/constants/error_codes.js"></script>
@@ -349,8 +372,6 @@
 	<script src="../korean/concord/clausal_validation.js"></script>
 	<script src="../korean/concord/clausal_generator.js"></script>
 	<script src="../korean/concord/argument_concord.js"></script>
-	<!-- Optional, gitignored: textbook-derived sentence text for the templates above (missing on a fresh clone) -->
-	<script src="../local/verified_originals.js"></script>
 	<script src="../korean/concord/index.js"></script>
 	<script src="../korean/generation/sentence_validator.js"></script>
 	<script src="../korean/generation/verified_originals.js"></script>

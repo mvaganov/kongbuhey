@@ -455,6 +455,11 @@ class KongbuheyApp {
 	}
 
 	_bindModalEvents() {
+		const creditsModal = document.getElementById('modal-credits');
+		document.getElementById('btn-open-credits')?.addEventListener('click', () => creditsModal?.classList.remove('hidden'));
+		document.getElementById('btn-close-credits-modal')?.addEventListener('click', () => creditsModal?.classList.add('hidden'));
+		creditsModal?.addEventListener('click', (e) => { if (e.target === creditsModal) creditsModal.classList.add('hidden'); });
+
 		const colModal = document.getElementById('modal-column-form');
 		const colForm = document.getElementById('form-custom-column');
 		const typeSelect = document.getElementById('col-input-type');
