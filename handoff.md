@@ -67,11 +67,17 @@ tools/triage_flags.js   flag inbox -> verdicts -> fixtures        test/  suites;
 4. GitHub Pages deploy (after 3), then Android.
 5. Flashcard and quiz modes beyond the basic Practice tab: after sentence trust.
 
-## Update: private text overlay, credits, Tatoeba plan
-- Textbook `OriginalKo`/Title text now lives in gitignored `local/verified_originals.js` (keyed by template id, `{ko,title}`); `verified_sentences.js` rows are blank/label-only. Loader: `korean/generation/verified_originals.js`. `Source: tatoeba` rows keep inline text (`OPEN_LICENSED_SOURCES`).
-- `text_analyzer.js` writer splits private text into the overlay on ingest, so ingest cannot re-leak it. First ingest will show one-time diff noise (K.* constants become literals).
-- Remaining exposure: slot `Surface` strings still encode textbook sentences eojeol by eojeol. Options: accept; replace textbook templates over time with Tatoeba/own sentences and publish only those (recommended); strip Surface (big refactor). Git history still contains the old text.
-- `test/verified_originals_test.js` (in test.js) guards this, with ceilings for known leaks.
-- About & Credits modal in `webapp/index.html` (button in header; text edited in one place).
-- Tatoeba selection plan: `docs/tatoeba_selection_plan.md`.
-- Uncommitted: all of the above. Ask before committing.
+## Stretch goal: Tatoeba example sentences (paused, not ingested)
+Decision 2026-11-15: Tatoeba sentence structures differ too much from what the class teaches; leave them out until the core study loop works.
+Work already done (all outputs in gitignored `local/`, nothing in data.js):
+- Plan: `docs/tatoeba_selection_plan.md`. Script: `tools/tatoeba_prefilter.js` (`--stage A|B|select|all`, deterministic, runs in seconds).
+- Stage A: 15,966 -> 11,328 (length, Latin/digits, final punctuation, spelling-error patterns, names, duplicates).
+- Stage B: analyzer bucketing; 2,613 sentences with 0 unknown units, 4,273 with 1 (some are analyzer gaps on inflected forms, e.g. 갔어, 있었죠, 문제). Diversity-capped to 700 candidates.
+- Stage C: Haiku reject screen (547 ok/49 fix/104 reject), then Sonnet confirmation of 596 survivors -> 573 kept. Spot-check sheet: `local/tatoeba_spotcheck.md`.
+- Not done: human spot check, export to `data/tatoeba_selected.tsv`, `ingest.js --source tatoeba --dry-run`, English via Tatoeba links/eng downloads.
+- If resumed: Tatoeba is CC BY (attribution already in the About & Credits modal). Open question: how the generator/translator renders these as English.
+
+## Next steps (agreed 2026-11-15)
+1. Rework the flashcard/practice flow (owner will give requirements), using generated sentences.
+2. Study with it, flag bad sentences (flag button, `tools/triage_flags.js`).
+3. Promote flags to golden fixtures and fix the generator against them.
