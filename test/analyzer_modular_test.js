@@ -329,7 +329,7 @@ check("detectProperNameCandidate identifies vocative and diminutive suffixes", (
 
 check("detectProperNameCandidate extracts dialogue speakers and event associations", () => {
 	const sampleDialogue = `
-
+내일 리타오 집들이가 있다고 들었어?
 오전9:47
 흐엉
 그럼 근데 뭘 사가지고 가지?
@@ -337,7 +337,7 @@ check("detectProperNameCandidate extracts dialogue speakers and event associatio
 글쎄...
 민준
 오전9:40
-
+그거 좋을 것 같아.
 	`;
 
 	// Associated celebration: "리타오 집들이"

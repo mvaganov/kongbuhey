@@ -65,7 +65,9 @@ function walk(dir) {
 	await new Promise(r => setTimeout(r, 1200));
 	const w = dom.window;
 
-	assert(errors.length === 0, `all <script> files load with no errors${errors.length ? ': ' + errors.slice(0, 3).join(' | ') : ''}`);
+	// local/verified_originals.js is optional and gitignored: its absence on a fresh clone is expected.
+	const realErrors = errors.filter(e => !/local[\\/]verified_originals/.test(e));
+	assert(realErrors.length === 0, `all <script> files load with no errors${realErrors.length ? ': ' + realErrors.slice(0, 3).join(' | ') : ''}`);
 	const absent = REQUIRED_GLOBALS.filter(n => typeof w[n] === 'undefined');
 	assert(absent.length === 0, `required globals reach window${absent.length ? ' (absent: ' + absent.join(', ') + ')' : ''}`);
 

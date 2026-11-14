@@ -1,6 +1,7 @@
 (function() {
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+const { getVerifiedOriginals } = (typeof require !== 'undefined') ? require('./verified_originals.js') : window;
 
 /**
  * korean/generation/verified_sentence_generator.js
@@ -214,9 +215,11 @@ function hydrateVerifiedSentence(raw) {
 	}
 
 	const id = raw[VERIFIED_TEMPLATE_SCHEMA.Id];
-	const title = raw[VERIFIED_TEMPLATE_SCHEMA.Title];
+	// Textbook-derived text lives in gitignored local/verified_originals.js (absent on a fresh clone).
+	const localText = getVerifiedOriginals()[id] || null;
+	const title = (localText && localText.title) || raw[VERIFIED_TEMPLATE_SCHEMA.Title];
 	const source = raw[VERIFIED_TEMPLATE_SCHEMA.Source];
-	const originalKo = raw[VERIFIED_TEMPLATE_SCHEMA.OriginalKo];
+	const originalKo = (localText && localText.ko) || raw[VERIFIED_TEMPLATE_SCHEMA.OriginalKo];
 	const punctuation = raw[VERIFIED_TEMPLATE_SCHEMA.Punctuation] || '';
 	const rawSlots = raw[VERIFIED_TEMPLATE_SCHEMA.Slots] || [];
 
