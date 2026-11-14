@@ -66,3 +66,12 @@ tools/triage_flags.js   flag inbox -> verdicts -> fixtures        test/  suites;
    and never treat as ground truth). Consider `git filter-repo` if textbook text is in history; make the repo private meanwhile.
 4. GitHub Pages deploy (after 3), then Android.
 5. Flashcard and quiz modes beyond the basic Practice tab: after sentence trust.
+
+## Update: private text overlay, credits, Tatoeba plan
+- Textbook `OriginalKo`/Title text now lives in gitignored `local/verified_originals.js` (keyed by template id, `{ko,title}`); `verified_sentences.js` rows are blank/label-only. Loader: `korean/generation/verified_originals.js`. `Source: tatoeba` rows keep inline text (`OPEN_LICENSED_SOURCES`).
+- `text_analyzer.js` writer splits private text into the overlay on ingest, so ingest cannot re-leak it. First ingest will show one-time diff noise (K.* constants become literals).
+- Remaining exposure: slot `Surface` strings still encode textbook sentences eojeol by eojeol. Options: accept; replace textbook templates over time with Tatoeba/own sentences and publish only those (recommended); strip Surface (big refactor). Git history still contains the old text.
+- `test/verified_originals_test.js` (in test.js) guards this, with ceilings for known leaks.
+- About & Credits modal in `webapp/index.html` (button in header; text edited in one place).
+- Tatoeba selection plan: `docs/tatoeba_selection_plan.md`.
+- Uncommitted: all of the above. Ask before committing.

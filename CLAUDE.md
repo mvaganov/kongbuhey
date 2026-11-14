@@ -16,7 +16,7 @@ Desktop first, Android later. Experiment in a small separate project, not in a b
 `data.js`, `homonyms.js`, `verified_sentences.js`, `studytexts.js`, `schema_summary.json`, `exhaustive_output*.txt`.
 A PreToolUse hook (`.claude/hooks/guard-big-reads.js`) rejects whole-file reads; ranged reads (`offset`/`limit` <= 120) are fine.
 - Look up units: `node select.js --help` (first ~100 lines), then `node select.js --locate <id|korean>`.
-- Change units through `select.js` UPDATE/INSERT (they validate). Never hand-edit rows.
+- Change units through `select.js` UPDATE/INSERT (they validate). Hand-edit rows when changes don't require schema validation.
 - Schema or column changes: write a short node codemod script, run it, show the diff stat. Ask before changing the 12-column layout.
 - Templates: `node verified_sentences.js --locate ...`, then Read a small range.
 
