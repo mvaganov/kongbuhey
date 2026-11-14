@@ -33,7 +33,7 @@ COMMANDS:
   AUDIT [SEMANTIC]                          Audit verbs for semantic rule coverage and starvation
 
 OPTIONS:
-  --source, -s <tag>   Curriculum source for inserted units (default: ::YYYYMMDD)
+  --source, -s <tag>   Curriculum source for inserted units (default: \`::YYYYMMDD\`)
   --format <fmt>       tsv, jsonl, json, table, raw
                        (Auto: TSV if complexity <= 8, else JSONL. JSON used only when explicitly requested.)
   --summary [n]        Truncate large results after n rows (default: 5) with a '... [{n} more rows truncated]' suffix
@@ -41,6 +41,7 @@ OPTIONS:
   --dry-run            Preview changes without modifying data.js
   -v, --verbose        Include detailed operation messages (quiet by default on mutations)
   --data <path>        Custom data file (default: ./data.js)
+  --locate [ids|ko..]  Line-range column (default ON) / lookup shortcut; disable with --locate=false or --locoff
 
 SCHEMA COLUMNS (aliases: id, ko, en, pos, tags, disambig, conj, src, score, formality, honorific, sd, sv):
   0. Id (int, PK)               6. Conjugation (str rule or array of formulas)
@@ -53,8 +54,18 @@ SCHEMA COLUMNS (aliases: id, ko, en, pos, tags, disambig, conj, src, score, form
 WHERE OPERATORS:
   =, !=, <, >, <=, >=, AND, OR, LIKE '%pat%', NOT LIKE, CONTAINS 'tag', NOT CONTAINS, IN ('a','b'), NOT IN
 
-KEY LLM WORKFLOW PATTERNS:
+LINE LOCATION (--locate, ON by default):
+  Every SELECT result gets a trailing virtual "Line" column: the 1-based line RANGE of that unit in data.js
+  (e.g. "578-578", or "578-583" if the entry is split across lines). LLM AGENTS: use it with your normal
+  read-file-by-line-number / edit-by-line-range tools instead of the SQL-like UPDATE interface.
+  Example to look up line numbers only: \`node select.js --locate 125 먹다\` (ids or Korean headwords)
+  Turn the column off: --locate=false | --locate false | --locoff | --noloc | --no-locate
+  Line numbers go stale after any edit that adds/removes lines; re-run select.js before the next edit.
+  After hand-editing data.js, run node test.js. UPDATE/DELETE via select.js collapse a split entry to one line.
+
+Examples:
   Find next ID:  node select.js "SELECT Id ORDER BY Id DESC LIMIT 1"
+  Line numbers:  node select.js "SELECT Line WHERE Korean = 먹다"
   Count rows:    node select.js "COUNT WHERE Source = 'class2012'"
   Query to TSV:  node select.js "SELECT Id, Korean, English WHERE Source = 'SUOBI01'"
   Export subset: node select.js "SELECT Id, Korean, SemanticData WHERE Id < 50" > output.txt
@@ -62,14 +73,6 @@ KEY LLM WORKFLOW PATTERNS:
   Insert batch:  node select.js INSERT FROMFILE new_units.json --source class2012 --dry-run
   Inspect tag:   node select.js "SELECT Id, Korean WHERE SemanticTags CONTAINS 'food' LIMIT 10"
   Query JSON:    node select.js "SELECT Id, Korean, sd.domain, sd.polarity WHERE sd.domain = 'age'"
-
-LEGACY WORKFLOW PATTERNS
-  Find next ID:  node select.js "SELECT Id ORDER BY Id DESC LIMIT 1"
-  Count rows:    node select.js "COUNT WHERE Source = 'class2012'"
-  Query to TSV:  node select.js "SELECT Id, Korean, English WHERE Source = 'SUOBI01'"
-  Export subset: node select.js "SELECT Id, Korean, SemanticData WHERE Id < 50" > output.txt
-  Update back:   node select.js UPDATE Korean, SemanticData FROMFILE output.txt
-  Insert batch:  node select.js INSERT FROMFILE new_units.json --source class2012 --dry-run
 `);
 }
 
@@ -144,8 +147,10 @@ const COLUMN_ALIASES = {
 	"honorificrules": "HonorificRules", "honorific": "HonorificRules", "honorific_rules": "HonorificRules",
 	"semanticdata": "SemanticData", "semantic_data": "SemanticData", "sd": "SemanticData",
 	"semanticvector": "SemanticData", "vector": "SemanticData", "semantic_vector": "SemanticData", "sv": "SemanticData",
-	"id": "Id", "index": "Id", "rowid": "Id", "id_num": "Id"
+	"id": "Id", "index": "Id", "rowid": "Id", "id_num": "Id",
+	"line": "Line", "lines": "Line", "_line": "Line", "loc": "Line"
 };
+const LINE_COLUMN = "Line"; // virtual column: "start-end" 1-based line range in data.js (not part of DATA_SCHEMA)
 // constants-enable
 
 function normalizeColumnName(col) {
@@ -1032,17 +1037,34 @@ function executeSelect(queryStr, options = {}) {
 	// Determine format: explicit takes priority; otherwise use column complexity
 	let format = explicitFormat;
 	if (!format) {
+		//const complexity = getColumnComplexity(selectedCols.filter(c => c !== LINE_COLUMN), DATA_SCHEMA);
 		const complexity = getColumnComplexity(selectedCols, DATA_SCHEMA);
 		format = complexity <= COMPLEXITY_THRESHOLD ? 'tsv' : 'jsonl';
 	}
 
-	// Filter rows
+	// Filter rows (keeping each unit's 1-based line range in data.js for the virtual Line column)
+	const lineRequested = selectedCols.some(c => c === LINE_COLUMN);
+	const wantLine = options.locate !== false || lineRequested;
+	const dataLines = wantLine ? fs.readFileSync(path.resolve(options.dataFile || DATA_FILE_PATH), 'utf8').split('\n') : null;
+	const lineRanges = wantLine ? getUnitLineRanges(dataLines) : [];
+	const dataCols = selectedCols.filter(c => c !== LINE_COLUMN);
+	const expandedCols = (dataCols.length === 0 || dataCols[0] === '*') ? SCHEMA_COLUMNS.map(c => c.name) : dataCols;
 	let results = [];
-	for (const unit of KR_EN_languageUnits) {
-		if (evaluateWhereClause(whereClause, unit, DATA_SCHEMA)) {
-			results.push(unitToRecord(unit, selectedCols, DATA_SCHEMA));
+	KR_EN_languageUnits.forEach((unit, idx) => {
+		if (!evaluateWhereClause(whereClause, unit, DATA_SCHEMA)) return;
+		const base = unitToRecord(unit, dataCols.length === 0 ? ['*'] : dataCols, DATA_SCHEMA);
+		const lineVal = formatLineRange(lineRanges[idx]);
+		if (!wantLine && !lineRequested) { results.push(base); return; }
+		// Preserve requested column order; Line defaults to the last column.
+		const ordered = {};
+		const order = lineRequested ? selectedCols.map(c => c === '*' ? '*' : c) : [...selectedCols, LINE_COLUMN];
+		for (const col of order) {
+			if (col === '*') { for (const k of expandedCols) ordered[k] = base[k]; }
+			else if (col === LINE_COLUMN) ordered[LINE_COLUMN] = lineVal;
+			else ordered[col] = base[col];
 		}
-	}
+		results.push(ordered);
+	});
 
 	// Order By
 	if (orderCol) {
@@ -1165,6 +1187,68 @@ function getUnitLineIndices(lines) {
 	}
 	return unitIndices;
 }
+
+/**
+ * Returns [{start, end}] (0-based, inclusive line indices) for every unit row in the
+ * KR_EN_languageUnits array. Unlike getUnitLineIndices this supports entries split over
+ * several lines by tracking bracket depth (string- and comment-aware).
+ */
+function getUnitLineRanges(lines) {
+	const ranges = [];
+	let inArray = false;
+	let start = -1;
+	let depth = 0;
+	let quote = null; // only template literals can legally span lines
+	for (let i = 0; i < lines.length; i++) {
+		const trimmed = lines[i].trim();
+		if (!inArray) {
+			if (trimmed.startsWith('const KR_EN_languageUnits = [')) inArray = true;
+			continue;
+		}
+		if (start === -1) {
+			if (trimmed.startsWith('];')) break;
+			if (!trimmed.startsWith('[')) continue;
+			start = i;
+			depth = 0;
+		}
+		const line = lines[i];
+		for (let c = 0; c < line.length; c++) {
+			const ch = line[c];
+			if (quote) {
+				if (ch === '\\') c++;
+				else if (ch === quote) quote = null;
+				continue;
+			}
+			if (ch === '"' || ch === "'" || ch === '`') { quote = ch; continue; }
+			if (ch === '/' && line[c + 1] === '/') break;
+			if (ch === '/' && line[c + 1] === '*') {
+				const close = line.indexOf('*/', c + 2);
+				if (close === -1) break;
+				c = close + 1;
+				continue;
+			}
+			if (ch === '[' || ch === '{' || ch === '(') depth++;
+			else if (ch === ']' || ch === '}' || ch === ')') depth--;
+		}
+		if (quote === '"' || quote === "'") quote = null; // unterminated plain string: reset per line
+		if (depth <= 0 && !quote) {
+			ranges.push({ start, end: i });
+			start = -1;
+		}
+	}
+	return ranges;
+}
+
+function formatLineRange(range) {
+	return range ? `${range.start + 1}-${range.end + 1}` : "";
+}
+
+/** Marks continuation lines (start+1..end) of a unit for removal after its first line is rewritten. */
+const COLLAPSED_LINE = '//__collapsed__';
+function collapseRange(lines, range) {
+	for (let i = range.start + 1; i <= range.end; i++) lines[i] = COLLAPSED_LINE;
+}
+
 
 function readTextFile(filePath) {
 	const buf = fs.readFileSync(filePath);
@@ -1291,6 +1375,7 @@ function parseInputFile(filePath, explicitCols = null) {
 }
 
 function writeDataFile(modifiedLines, filePath = DATA_FILE_PATH) {
+	modifiedLines = modifiedLines.filter(l => l !== COLLAPSED_LINE);
 	const tmpPath = filePath + '.tmp';
 	fs.writeFileSync(tmpPath, modifiedLines.join('\n'), 'utf8');
 
@@ -1366,6 +1451,7 @@ function executeUpdateFromFile(inputFile, explicitCols = null, options = {}) {
 			const lineIdx = unitIndices[targetId];
 			const isLast = (targetId === unitIndices.length - 1);
 			lines[lineIdx] = formatUnitLine(existing, isLast);
+			collapseRange(lines, getUnitLineRanges(lines)[targetId]);
 			updatedCount++;
 			updatedIds.push(targetId);
 		} else {
@@ -1396,7 +1482,7 @@ function executeUpdateFromFile(inputFile, explicitCols = null, options = {}) {
 
 			// Make sure previous line ends with comma
 			if (unitIndices.length > 0) {
-				const lastLineIdx = unitIndices[unitIndices.length - 1];
+				const lastLineIdx = getUnitLineRanges(lines)[unitIndices.length - 1].end;
 				if (!lines[lastLineIdx].trim().endsWith(',')) {
 					lines[lastLineIdx] = lines[lastLineIdx].replace(/([^,])\s*$/, '$1,');
 				}
@@ -1461,6 +1547,7 @@ function executeUpdateInline(setClause, whereClause, options = {}) {
 	const fileContent = fs.readFileSync(dataPath, 'utf8');
 	const lines = fileContent.split('\n');
 	const unitIndices = getUnitLineIndices(lines);
+	const inlineRanges = getUnitLineRanges(lines);
 
 	let updatedCount = 0;
 	const updatedIds = [];
@@ -1478,6 +1565,7 @@ function executeUpdateInline(setClause, whereClause, options = {}) {
 			const lineIdx = unitIndices[idx];
 			const isLast = (idx === unitIndices.length - 1);
 			lines[lineIdx] = formatUnitLine(unit, isLast);
+			collapseRange(lines, inlineRanges[idx]);
 			updatedCount++;
 			updatedIds.push(idx);
 		}
@@ -1555,7 +1643,7 @@ function executeInsert(insertStr, options = {}) {
 	if (closeIdx === -1) closeIdx = lines.length;
 
 	if (unitIndices.length > 0) {
-		const lastLineIdx = unitIndices[unitIndices.length - 1];
+		const lastLineIdx = getUnitLineRanges(lines)[unitIndices.length - 1].end;
 		if (!lines[lastLineIdx].trim().endsWith(',')) {
 			lines[lastLineIdx] = lines[lastLineIdx].replace(/([^,])\s*$/, '$1,');
 		}
@@ -1597,6 +1685,7 @@ function executeDelete(deleteStr, options = {}) {
 	const fileContent = fs.readFileSync(dataPath, 'utf8');
 	const lines = fileContent.split('\n');
 	const unitIndices = getUnitLineIndices(lines);
+	const deleteRanges = getUnitLineRanges(lines);
 
 	const lineIndicesToRemove = new Set();
 	let deletedCount = 0;
@@ -1604,6 +1693,7 @@ function executeDelete(deleteStr, options = {}) {
 	KR_EN_languageUnits.forEach((unit, idx) => {
 		if (evaluateWhereClause(whereClause, unit, DATA_SCHEMA)) {
 			lineIndicesToRemove.add(unitIndices[idx]);
+			for (let li = deleteRanges[idx].start; li <= deleteRanges[idx].end; li++) lineIndicesToRemove.add(li);
 			deletedCount++;
 		}
 	});
@@ -1885,11 +1975,33 @@ function runCli() {
 	let source = null;
 	let summary = null;
 	let verbose = false;
+	let locate = true;
+	const locateTargets = [];
+	const SQL_START = /^(SELECT|COUNT|UPDATE|INSERT|DELETE|ADD|AUDIT)\b/i;
 
 	const filteredArgs = [];
 	for (let i = 0; i < rawArgs.length; i++) {
 		const arg = rawArgs[i];
-		if (arg === '--format' && i + 1 < rawArgs.length) {
+		if (arg === '--locoff' || arg === '--noloc' || arg === '--no-locate') {
+			locate = false;
+		} else if (arg.startsWith('--locate=')) {
+			locate = !/^(false|off|0|no)$/i.test(arg.substring(9));
+		} else if (arg === '--locate') {
+			const next = rawArgs[i + 1];
+			if (next !== undefined && /^(false|off|0|no)$/i.test(next)) {
+				locate = false;
+				i++;
+			} else if (next !== undefined && /^(true|on|1|yes)$/i.test(next)) {
+				locate = true;
+				i++;
+			} else {
+				// Bare --locate keeps the (default-on) column; trailing ids / Korean words form a lookup.
+				while (i + 1 < rawArgs.length && !rawArgs[i + 1].startsWith('-') && !SQL_START.test(rawArgs[i + 1])) {
+					locateTargets.push(rawArgs[++i]);
+				}
+				locate = true;
+			}
+		} else if (arg === '--format' && i + 1 < rawArgs.length) {
 			format = rawArgs[++i];
 		} else if (arg === '--dry-run') {
 			dryRun = true;
@@ -1919,6 +2031,11 @@ function runCli() {
 		}
 	}
 
+	if (locateTargets.length > 0) {
+		const conds = locateTargets.map(t => /^\d+$/.test(t) ? `Id = ${t}` : `Korean = '${t.replace(/'/g, "")}'`);
+		filteredArgs.push(`SELECT Id, Korean, English, PartofSpeech WHERE ${conds.join(' OR ')}`);
+	}
+
 	const commandStr = filteredArgs.join(' ').trim();
 	if (!commandStr) {
 		printHelp();
@@ -1926,7 +2043,7 @@ function runCli() {
 	}
 
 	try {
-		const result = execute(commandStr, { format, dryRun, dataFile, source, summary, verbose });
+		const result = execute(commandStr, { format, dryRun, dataFile, source, summary, verbose, locate });
 		if (result.results !== undefined) {
 			// SELECT output
 			console.log(formatResults(result.results, result.format, summary));

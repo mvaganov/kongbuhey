@@ -341,7 +341,7 @@ function selectArgumentForActionVerb(verbUnit, options = {}, targetId = null) {
 
 	if (isLocativeStatic) {
 		let places;
-		if (verbKo === "살다") {
+		if (verbKo === "살다") { // TODO could there be a function in a language unit's semantic data for a function like this, to generate paired nouns? that could eliminate a lot of logic in this file, and would bring functionality and data closer together.
 			places = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n =>
 				RESIDENTIAL_LIVING_PLACES.has(n[DATA_SCHEMA.Korean])
 				|| (hasTag(n, "housing", "residence", "city", K.COUNTRY) && n[DATA_SCHEMA.Korean] !== "곳" && n[DATA_SCHEMA.Korean] !== "회사" && !BROAD_WORLD_REGIONS.has(n[DATA_SCHEMA.Korean]))

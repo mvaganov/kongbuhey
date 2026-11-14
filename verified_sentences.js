@@ -22,15 +22,23 @@ OPTIONS:
   --status            Display repository statistics and verification testing progress
   --list [N]          List verified sentence templates (default: 20)
   --find <query>      Search verified sentences by Korean text, ID, or study text source
+  --locate [ids]      Line-range column (default ON in --list/--find); with ids, print where each is defined
+                      (vs_id -> its lines; unit id -> every template using that unit). Turn off: --locate=false,
+                      --locate false, --locoff, --noloc, --no-locate
   --verify [args]     Run the interactive verification testing tool (verify_sentences_cli.js)
   <unitId> <seed>     Deterministically regenerate a specific sentence for a unit
   -h, --help          Display this help message and exit
+
+LLM AGENTS: --locate prints "L<start>-<end>" line ranges in THIS file, so you can read/edit a template with your
+normal file tools by line number instead of loading the whole file. Line numbers go stale after edits that
+add/remove lines; re-run --locate before the next edit. Entries may span several lines.
 
 EXAMPLES:
   node verified_sentences.js --help
   node verified_sentences.js --status
   node verified_sentences.js --list 10
   node verified_sentences.js --find "친구"
+  node verified_sentences.js --locate vs_363 152
   node verified_sentences.js 0 1007
   node verified_sentences.js --verify
 `);
@@ -619,12 +627,88 @@ const VERIFIED_SENTENCES = [
 	["vs_362","[studytext162 #17] ","studytext162","",".",[[1618,"이",K.EXACT_LEXICAL,K.NOMINAL,"","",[],null,""],[701,"약은",K.NOUN_PARTICLE,K.NOMINAL,"은/는","",[[36,"은","Particle"]],null,""],[2002,"바닥에",K.NOUN_PARTICLE,K.NOMINAL,"에","",[[200,"에","Particle"]],null,""],[82,"있는",K.ADNOMINAL_MODIFIER,"conj","는","",[[645,"-는","Adnominal Ending"]],null,""],[701,"약을",K.NOUN_PARTICLE,K.NOMINAL,"을/를","",[[173,"을","Particle"]],null,""],[1613,"잘",K.EXACT_LEXICAL,K.NOMINAL,"","",[],null,""],[944,"섞어야 하기",K.AUXILIARY_CONSTRUCTION,"exact","섞어야 하기","",[[574,"-아/어야 하다","Grammar Pattern"],[1815,"-기","Nominalizing Suffix"]],null,""],[1837,"때문에",K.NOUN_PARTICLE,K.NOMINAL,"에","",[[132,"에","Particle"]],null,""],[2003,"흔들어서",K.CONJUGATED_VERB,"ao","서","",[[459,"-아/어서","Verb Ending"]],null,""],[40,"먹지 않으면",K.AUXILIARY_CONSTRUCTION,"exact","먹지 않으면","",[[274,"-지 않다","Grammar Pattern"],[619,"-(으)면","Verb Ending"]],null,""],[251,"안",K.EXACT_LEXICAL,"exact","안","",[],null,""],[1615,"됩니다",K.CONJUGATED_VERB,"conj","습니다/ㅂ니다","",[[50,"-ㅂ니다","Verb Ending"]],null,""]]]
 ];
 
+/**
+ * Returns Map<templateId, {start, end}> of 1-based inclusive line numbers for each VERIFIED_SENTENCES
+ * entry in this file. Tracks bracket depth (string-aware), so entries split over several lines work.
+ * Node-only (reads this source file); returns an empty map in browsers.
+ */
+function getTemplateLineRanges() {
+	const ranges = new Map();
+	if (typeof require === 'undefined') return ranges;
+	const lines = require('fs').readFileSync(__filename, 'utf8').split('\n');
+	let inArray = false, start = -1, depth = 0, quote = null, id = null;
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+		if (!inArray) {
+			if (/^const VERIFIED_SENTENCES = \[/.test(line)) inArray = true;
+			continue;
+		}
+		if (start === -1) {
+			if (/^\];/.test(line)) break;
+			const m = line.match(/^\s*\["(vs_[^"]+)"/);
+			if (!m) continue;
+			start = i; depth = 0; id = m[1];
+		}
+		for (let c = 0; c < line.length; c++) {
+			const ch = line[c];
+			if (quote) {
+				if (ch === '\\') c++;
+				else if (ch === quote) quote = null;
+				continue;
+			}
+			if (ch === '"' || ch === "'" || ch === '`') { quote = ch; continue; }
+			if (ch === '[' || ch === '{' || ch === '(') depth++;
+			else if (ch === ']' || ch === '}' || ch === ')') depth--;
+		}
+		if (depth <= 0 && !quote) {
+			ranges.set(id, { start: start + 1, end: i + 1 });
+			start = -1;
+		}
+	}
+	return ranges;
+}
+
 function runCli() {
 	const args = process.argv.slice(2);
 
 	if (args.includes('-h') || args.includes('--help')) {
 		printHelp();
 		process.exit(0);
+	}
+
+	// --locate handling: default ON; --locate=false | --locate false | --locoff | --noloc | --no-locate turn it off.
+	let locate = true;
+	const locateTargets = [];
+	const isOff = v => /^(false|off|0|no)$/i.test(v);
+	for (let i = 0; i < args.length; i++) {
+		const a = args[i];
+		if (a === '--locoff' || a === '--noloc' || a === '--no-locate') locate = false;
+		else if (a.startsWith('--locate=')) locate = !isOff(a.substring(9));
+		else if (a === '--locate') {
+			if (args[i + 1] !== undefined && isOff(args[i + 1])) { locate = false; i++; }
+			else while (i + 1 < args.length && !args[i + 1].startsWith('-')) locateTargets.push(args[++i]);
+		}
+	}
+	const lineRanges = locate || locateTargets.length > 0 ? getTemplateLineRanges() : new Map();
+	const lineTag = id => {
+		const r = lineRanges.get(id);
+		return locate && r ? ` L${r.start}-${r.end}` : '';
+	};
+
+	if (locateTargets.length > 0) {
+		let found = 0;
+		for (const t of locateTargets) {
+			const matches = /^\d+$/.test(t)
+				? VERIFIED_SENTENCES.filter(s => (s[5] || []).some(slot => slot[0] === parseInt(t, 10)))
+				: VERIFIED_SENTENCES.filter(s => s[0] === t);
+			for (const s of matches) {
+				const r = lineRanges.get(s[0]);
+				console.log(`${s[0]}\t${r ? `L${r.start}-${r.end}` : '?'}\t${s[3]}`);
+				found++;
+			}
+			if (matches.length === 0) console.log(`${t}\tnot found`);
+		}
+		process.exit(found > 0 ? 0 : 1);
 	}
 
 	if (args.includes('--status')) {
@@ -667,7 +751,7 @@ function runCli() {
 		console.log(`\n--- Verified Sentence Templates (Showing ${Math.min(limit, VERIFIED_SENTENCES.length)} of ${VERIFIED_SENTENCES.length}) ---`);
 		for (let i = 0; i < Math.min(limit, VERIFIED_SENTENCES.length); i++) {
 			const s = VERIFIED_SENTENCES[i];
-			console.log(`[${s[0]}] (${s[2]}) ${s[3]}`);
+			console.log(`[${s[0]}]${lineTag(s[0])} (${s[2]}) ${s[3]}`);
 		}
 		console.log(``);
 		process.exit(0);
@@ -687,7 +771,7 @@ function runCli() {
 		);
 		console.log(`\n--- Search Results for "${query}" (${matches.length} matches) ---`);
 		for (const m of matches.slice(0, 30)) {
-			console.log(`[${m[0]}] (${m[2]}) ${m[3]}`);
+			console.log(`[${m[0]}]${lineTag(m[0])} (${m[2]}) ${m[3]}`);
 		}
 		if (matches.length > 30) {
 			console.log(`... and ${matches.length - 30} more.`);

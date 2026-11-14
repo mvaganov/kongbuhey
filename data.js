@@ -295,7 +295,12 @@ const KR_EN_languageUnits = [
 	// Extra Vocabulary from SUOBI00 to make interesting sentences
 	[38, "밥", "rice/meal", N, [FOOD, "koreanRoot", DEVTEST, "food_bowl"], "", "", "SUOBI00", 0.5, "", "", {"domain":"food","honorific_suppletion":"진지","en":{"lit":"rice","nat":"rice","count":"c"}}, ""],
 	[39, "물", "water", N, [K.DRINK, "koreanRoot", DEVTEST], "", "", "SUOBI00", 0.5, "", "", {"domain":"drink","en":{"lit":"water","nat":"water","count":"u"}}, ""],
-	[40, "먹다", "to eat", K.AV, [], "", K.REGULAR_EO, "SUOBI00", 0.5, "", "Replace with 드시다 for respected subjects", {"domain":"consume","req":"food","prod":"satiety","polarity":1,"collocation_filter":{"anyTag":["food","medicine"],"notTags":["place","facility","measureWord"]},"honorific_suppletion":"드시다","en":{"lit":"eat","base":"eat","past":"ate","part":"eaten","s":"eats","ing":"eating"}}, ""],
+	[40, "먹다", "to eat", K.AV, [], "", K.REGULAR_EO, "SUOBI00", 0.5, "", "Replace with 드시다 for respected subjects",
+		{"domain":"consume","req":"food","prod":"satiety","polarity":1,
+			"collocation_filter":{"anyTag":["food","medicine"],"notTags":["place","facility","measureWord"]},
+			"honorific_suppletion":"드시다",
+			"en":{"lit":"eat","base":"eat","past":"ate","part":"eaten","s":"eats","ing":"eating"}
+		}, ""],
 	[41, "마시다", "to drink", K.AV, [], "", "i_irregular", "SUOBI00", 0.5, "", "Replace with 드시다 for respected subjects", {"domain":"consume","req":"drink","prod":"satiety","polarity":1,"collocation_filter":{"anyTag":["drink"],"notTags":["place","facility","measureWord","medicine"]},"honorific_suppletion":"드시다","en":{"lit":"drink","base":"drink","past":"drank","part":"drunk","s":"drinks","ing":"drinking"}}, ""],
 	[42, "크다", "to be big", K.DV, [K.DESCRIPTIVE_GENERAL, "koreanRoot", K.DEVTEST, "descriptive_dimension_scale", K.GRADABLE], "", K.EU_IRREGULAR, "SUOBI00", 0.5, "", "", {"domain":"state","req":"any","polarity":1,"collocation_filter":{"anyTag":["room","clothing","object","building"],"notTags":["measureWord"]},"en":{"lit":"big","adj":"big","copula":true}}, ""],
 	[43, "맛있다", "to be delicious", K.DV, ["descriptive_food", "food_adjective", "descriptive_taste", K.GRADABLE], "", K.REGULAR, "SUOBI00", 0.5, "", "", {"domain":"state","req":"food","polarity":1,"collocation_filter":{"anyTag":["food","drink"],"notTags":["place","facility","measureWord"]},"en":{"lit":"delicious","adj":"delicious","copula":true}}, ""],
