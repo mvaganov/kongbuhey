@@ -60,10 +60,7 @@ tools/triage_flags.js   flag inbox -> verdicts -> fixtures        test/  suites;
 2. **Early-unit review mode.** Practice and audit class2011 to class2112 grammar and vocabulary over a few weeks (subway-friendly
    quizzes with recall tracking). The next semester starts about 2026-11-28. Needs the app's flashcard/practice flow, so plan it
    only after sentences are trusted.
-3. **Decouple content from code (copyright).** Textbook-derived text must not be committed. Plan: `local/` (gitignored) plus the
-   in-app importer for the learner's own material; commit only the lexicon and grammar knowledge. Open-licensed candidate sentences:
-   `docs/kor_sentences.tsv` (Tatoeba, CC BY, contains errors such as 올께요; filter through the passage analyzer for "i+0" sentences
-   and never treat as ground truth). Consider `git filter-repo` if textbook text is in history; make the repo private meanwhile.
+3. Content decoupling is done (textbook text lives in gitignored `local/`; history rewritten, see CLAUDE.md). Slot `Surface` strings remain a small exposure.
 4. GitHub Pages deploy (after 3), then Android.
 5. Flashcard and quiz modes beyond the basic Practice tab: after sentence trust.
 
