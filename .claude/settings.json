@@ -6,7 +6,7 @@
       "Bash(node test.js:*)",
       "Bash(node test/*)",
       "Bash(node select.js:*)",
-      "Bash(node exhaustive.js:*)",
+      "Bash(node tools/exhaustive.js:*)",
       "Bash(node tools/triage_flags.js:*)",
       "Bash(npm test)",
       "Bash(npm run lint)",

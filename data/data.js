@@ -4,9 +4,9 @@
  * ============================================================================
  * 
  * NOTE FOR AI AGENTS & LLMs:
- * This dataset is 170+ KB and contains 2,045+ units. Do NOT read the entire file at once!
- * Instead, use `select.js` (which includes 1-based `Line` numbers in `data.js` by default)
- * to locate target units, and then use your standard `read_file` / `edit_file` tools by line number:
+ * This dataset is ~600 KB and holds 2,000+ units. Do NOT read the entire file at once
+ * (a Claude Code hook blocks whole-file reads). Use `select.js` (it reports 1-based `Line` numbers
+ * in data/data.js by default) to locate units, then read or edit small line ranges:
  *   - Locate line nums  : node select.js --locate 146,152,읽다
  *   - Query with Line   : node select.js "SELECT Id, Korean, English WHERE Source = '...'"
  *   - Omit Line column  : node select.js --noloc "SELECT Id, Korean WHERE Id < 10"

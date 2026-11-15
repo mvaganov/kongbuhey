@@ -1,6 +1,6 @@
 (function() {
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
 /**
  * Dynamic Collocation Filter Evaluator & Header Parser

@@ -1,6 +1,6 @@
 (function() {
 // Universal Constants
-var { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+var { K } = (typeof require !== 'undefined') ? require('../../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
 /**
  * Feature 11: Clausal Connective Distractor & Quiz Item Generation
@@ -20,7 +20,7 @@ var { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (
 let dataModule;
 if (typeof require !== 'undefined') {
 	try {
-		dataModule = require('../../data.js');
+		dataModule = require('../../data/data.js');
 	} catch (e) {
 		dataModule = typeof window !== 'undefined' ? window : {};
 	}

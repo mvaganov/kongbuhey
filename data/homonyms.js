@@ -20,7 +20,7 @@ function printHelp() {
     console.log(`homonyms.js - Korean Homonym, Allomorph & Phonetic Confusables Engine
 
 USAGE:
-  node homonyms.js <command> [options]
+  node data/homonyms.js <command> [options]
 
 COMMANDS:
   update                 Incrementally ingest language units from data.js
@@ -36,17 +36,17 @@ COMMANDS:
   stats                  Print dataset metrics (totalTokens, entries, direct, LUTs, phonetics)
 
 LLM WORKFLOW PATTERNS:
-  Inspect token:      node homonyms.js lookup 간
-  Update after batch: node homonyms.js update --source class2111
-  Verify integrity:   node homonyms.js stats
-  Confusability:      node homonyms.js top 10
+  Inspect token:      node data/homonyms.js lookup 간
+  Update after batch: node data/homonyms.js update --source class2111
+  Verify integrity:   node data/homonyms.js stats
+  Confusability:      node data/homonyms.js top 10
 `);
 }
 
 const fs = require('fs');
 const path = require('path');
 const { KR_EN_languageUnits, DATA_SCHEMA } = require('./data.js');
-const { getStem, applyMorphology, decomposeHangul, composeHangul } = require('./korean.js');
+const { getStem, applyMorphology, decomposeHangul, composeHangul } = require('../korean/index.js');
 
 // =========================================================================
 // Phonetic Minimal Pairs & Acoustic Confusability Engine
@@ -377,7 +377,7 @@ function updateHomonyms(options = {}) {
 
         // Automatically update schema analysis if schema_analysis.js is present
         try {
-            const schemaAnalysisPath = path.resolve(__dirname, 'schema_analysis.js');
+            const schemaAnalysisPath = path.resolve(__dirname, '../schema_analysis.js');
             if (fs.existsSync(schemaAnalysisPath)) {
                 delete require.cache[schemaAnalysisPath];
                 const schemaAnalysis = require(schemaAnalysisPath);
@@ -557,7 +557,7 @@ function runCli() {
     } else if (command === 'lookup') {
         const token = args[1];
         if (!token) {
-            console.error("Error: Please specify a token to look up (e.g. node homonyms.js lookup 간)");
+            console.error("Error: Please specify a token to look up (e.g. node data/homonyms.js lookup 간)");
             process.exit(1);
         }
         const entries = lookupToken(token);

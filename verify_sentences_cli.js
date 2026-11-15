@@ -8,8 +8,8 @@
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
-const { K } = require('./constants.js');
-const { KR_EN_languageUnits, DATA_SCHEMA } = require('./data.js');
+const { K } = require('./data/constants.js');
+const { KR_EN_languageUnits, DATA_SCHEMA } = require('./data/data.js');
 const state = require('./korean/state.js');
 const { generateVerifiedSentencesForUnit } = require('./korean/generation/verified_sentence_generator.js');
 

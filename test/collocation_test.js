@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * collocation_test.js - Feature 1: Selectional Restriction & Verb-Noun Collocation Matrix Test Suite
  *
@@ -21,7 +21,7 @@ const {
 	DATA_SCHEMA,
 	getWords,
 	hasTag
-} = require('../data.js');
+} = require('../data/data.js');
 
 const {
 	getNounCandidatesForVerb,
@@ -36,7 +36,7 @@ const {
 	parseAndValidateCollocationFilter,
 	DESCRIPTIVE_VERB_SPECS,
 	ACTION_VERB_SPECS
-} = require('../korean.js');
+} = require('../korean/index.js');
 
 const KoreanWord = DATA_SCHEMA.Korean;
 const EnglishDef = DATA_SCHEMA.English;

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-var { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+var { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/dynamic_semantic_sets_test.js
  *
@@ -21,8 +21,8 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const korean = require('../korean.js');
-const { KR_EN_languageUnits, DATA_SCHEMA, hasTag } = require('../data.js');
+const korean = require('../korean/index.js');
+const { KR_EN_languageUnits, DATA_SCHEMA, hasTag } = require('../data/data.js');
 
 let totalTests = 0;
 let passedTests = 0;
@@ -180,7 +180,7 @@ check("PARTICLE_PAIRS and PRONOUN_REPLACEMENTS are recovered dynamically from da
 
 // 6. Source Code Verification: Absence of Hardcoded Sets
 check("korean.js contains no hardcoded array literals for ELDER_NOUN_TITLES or INANIMATE_INSTITUTION_NAMES", () => {
-	const code = fs.readFileSync(path.resolve(__dirname, '../korean.js'), 'utf8');
+	const code = fs.readFileSync(path.resolve(__dirname, '../korean/index.js'), 'utf8');
 
 	// Must NOT contain hardcoded new Set([...]) with Hangul for ELDER_NOUN_TITLES
 	assert.ok(!code.includes("const ELDER_NOUN_TITLES = new Set(["), "ELDER_NOUN_TITLES must not be hardcoded Set literal");

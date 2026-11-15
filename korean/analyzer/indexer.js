@@ -1,6 +1,6 @@
 (function() {
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
 /**
  * korean/analyzer/indexer.js
@@ -14,7 +14,7 @@ const { K } = (typeof require !== 'undefined') ? require('../../constants.js') :
 let dataModule;
 if (typeof require !== 'undefined') {
 	try {
-		dataModule = require('../../data.js');
+		dataModule = require('../../data/data.js');
 	} catch (e) {
 		dataModule = typeof window !== 'undefined' ? window : {};
 	}

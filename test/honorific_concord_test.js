@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/honorific_concord_test.js - Feature 4: Speech Register & Honorific Concord Test Suite
  *
@@ -55,9 +55,9 @@ const {
 	DATA_SCHEMA,
 	getWords,
 	hasTag
-} = require('../data.js');
+} = require('../data/data.js');
 
-const korean = require('../korean.js');
+const korean = require('../korean/index.js');
 const {
 	attachParticle,
 	hasBatchim,
@@ -434,7 +434,7 @@ assert(HUMBLE_PRONOUN_SUPPLETIONS instanceof Map, "HUMBLE_PRONOUN_SUPPLETIONS is
 assert(HUMBLE_PRONOUN_SUPPLETIONS.size >= 2, `HUMBLE_PRONOUN_SUPPLETIONS has at least 2 entries, found ${HUMBLE_PRONOUN_SUPPLETIONS.size}`);
 
 // Verify zero hardcoded literal declarations in korean.js for suppletion maps
-const koreanCode = fs.readFileSync(path.join(__dirname, '../korean.js'), 'utf8');
+const koreanCode = fs.readFileSync(path.join(__dirname, '../korean/index.js'), 'utf8');
 assert(!koreanCode.includes("const HONORIFIC_VERB_SUPPLETIONS = new Map(["), "HONORIFIC_VERB_SUPPLETIONS is not hardcoded map literal");
 assert(!koreanCode.includes("const HUMBLE_VERB_SUPPLETIONS = new Map(["), "HUMBLE_VERB_SUPPLETIONS is not hardcoded map literal");
 assert(!koreanCode.includes("const HONORIFIC_NOUN_SUPPLETIONS = new Map(["), "HONORIFIC_NOUN_SUPPLETIONS is not hardcoded map literal");

@@ -16,7 +16,7 @@
 'use strict';
 
 const path = require('path');
-const korean = require('../korean.js');
+const korean = require('../korean/index.js');
 const { generateSentencesForUnit } = require('../webapp/selector.js');
 
 const FIXTURE_PATH = path.resolve(__dirname, 'golden_sentences.json');

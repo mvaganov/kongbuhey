@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('./data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * ingest.js - Unified Curriculum Ingestion Pipeline for Kongbuhey
  *
@@ -26,12 +26,12 @@ const path = require('path');
 const readline = require('readline');
 const child_process = require('child_process');
 
-const DATA_PATH = path.resolve(__dirname, 'data.js');
+const DATA_PATH = path.resolve(__dirname, 'data/data.js');
 const TEST_PATH = path.resolve(__dirname, 'test.js');
-const STUDYTEXTS_PATH = path.resolve(__dirname, 'studytexts.js');
-const HOMONYMS_PATH = path.resolve(__dirname, 'homonyms.js');
+const STUDYTEXTS_PATH = path.resolve(__dirname, 'local/studytexts.js');
+const HOMONYMS_PATH = path.resolve(__dirname, 'data/homonyms.js');
 const SCHEMA_ANALYSIS_PATH = path.resolve(__dirname, 'schema_analysis.js');
-const TEXT_ANALYZER_PATH = path.resolve(__dirname, 'text_analyzer.js');
+const TEXT_ANALYZER_PATH = path.resolve(__dirname, 'tools/text_analyzer.js');
 
 const SCAFFOLD_PRIORITY_INSTRUCTION = "TODO: PriorityScore [0.5=ultra-simple, 1=top essential ~200, 2=beginner ~1k, 3=elementary ~2.5k, 4=intermediate ~5k, 5=niche]";
 

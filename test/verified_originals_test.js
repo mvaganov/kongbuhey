@@ -13,8 +13,8 @@ const cp = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const { isOpenLicensedSource } = require('../korean/generation/verified_originals.js');
-const { VERIFIED_SENTENCES, VERIFIED_TEMPLATE_SCHEMA: T } = require('../verified_sentences.js');
-const textAnalyzer = require('../text_analyzer.js');
+const { VERIFIED_SENTENCES, VERIFIED_TEMPLATE_SCHEMA: T } = require('../data/verified_sentences.js');
+const textAnalyzer = require('../tools/text_analyzer.js');
 
 let passed = 0;
 let failed = 0;
@@ -37,9 +37,9 @@ assert(privateRows.every(r => /^\[[^\]]*\]$/.test(r[T.Title]) || r[T.Title] === 
 const realOverlay = path.join(ROOT, 'local', 'verified_originals.js');
 const overlayBefore = fs.existsSync(realOverlay) ? fs.statSync(realOverlay).mtimeMs : null;
 const tmpDir = null;
-const tmpFile = path.join(ROOT, '_hygiene_tmp_verified_sentences.js'); // inside ROOT so relative requires resolve
+const tmpFile = path.join(ROOT, 'data', '_hygiene_tmp_verified_sentences.js'); // beside the original so relative requires resolve
 try {
-	fs.copyFileSync(path.join(ROOT, 'verified_sentences.js'), tmpFile);
+	fs.copyFileSync(path.join(ROOT, 'data/verified_sentences.js'), tmpFile);
 	const templates = textAnalyzer.loadVerifiedSentencesFromFile(tmpFile);
 	textAnalyzer.writeVerifiedSentencesToFile(templates, tmpFile);
 	const out = fs.readFileSync(tmpFile, 'utf8');
@@ -64,9 +64,9 @@ function VERIFIED_VALID_COUNT(t) { return t.length; }
 // Known leaks with a ceiling: the count may shrink, never grow.
 const KNOWN_LEAKS = {
 	'korean/generation/verified_sentence_generator.js': 99, // one textbook phrase in a literal; see handoff.md
-	'verified_sentences.js': 1 // vs_231 slot Surface holds one multi-word clause fragment
+	'data/verified_sentences.js': 1 // vs_231 slot Surface holds one multi-word clause fragment
 };
-const studyPath = path.join(ROOT, 'studytexts.js');
+const studyPath = path.join(ROOT, 'local/studytexts.js');
 let tracked = null;
 try { tracked = cp.execSync('git ls-files', { cwd: ROOT, encoding: 'utf8' }).split('\n').filter(Boolean); } catch (_) { tracked = null; }
 if (!fs.existsSync(studyPath) || !tracked) {

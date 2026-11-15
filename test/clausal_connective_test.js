@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-var { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+var { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/clausal_connective_test.js - Feature 11: Clausal Connectives & Causal Harmony
  *
@@ -34,9 +34,9 @@ var { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typ
 const {
 	KR_EN_languageUnits,
 	DATA_SCHEMA
-} = require('../data.js');
+} = require('../data/data.js');
 
-const korean = require('../korean.js');
+const korean = require('../korean/index.js');
 const {
 	CLAUSAL_CONNECTIVES,
 	CAUSAL_CONNECTIVES,

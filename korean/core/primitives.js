@@ -9,7 +9,7 @@
 let dataModule;
 if (typeof require !== 'undefined') {
 	try {
-		dataModule = require('../../data.js');
+		dataModule = require('../../data/data.js');
 	} catch (e) {
 		try {
 			dataModule = require('../data.js');

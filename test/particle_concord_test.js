@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * particle_concord_test.js - Feature 3: Case Particle Semantic Specialization Test Suite
  *
@@ -35,7 +35,7 @@ const {
 	DATA_SCHEMA,
 	getWords,
 	hasTag
-} = require('../data.js');
+} = require('../data/data.js');
 
 const {
 	attachParticle,
@@ -44,7 +44,7 @@ const {
 	buildActionVerbPhrase,
 	getTokenOptions,
 	getStem
-} = require('../korean.js');
+} = require('../korean/index.js');
 
 const KoreanWord = DATA_SCHEMA.Korean;
 

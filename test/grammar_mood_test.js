@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/grammar_mood_test.js - Feature 8: Predicate Mood, Speech Act & Negation Restrictions
  *
@@ -52,9 +52,9 @@ const {
 	getWords,
 	getFilteredWords,
 	hasTag
-} = require('../data.js');
+} = require('../data/data.js');
 
-const korean = require('../korean.js');
+const korean = require('../korean/index.js');
 const {
 	IMPERATIVE_GRAMMAR_IDS,
 	PROPOSITIVE_GRAMMAR_IDS,

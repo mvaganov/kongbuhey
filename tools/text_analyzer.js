@@ -1,5 +1,5 @@
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
 /**
  * text_analyzer.js
@@ -19,15 +19,15 @@ const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (ty
 
 const fs = require('fs');
 const path = require('path');
-const analyzer = require('./korean/analyzer/index.js');
-const verifiedGenerator = require('./korean/generation/verified_sentence_generator.js');
+const analyzer = require('../korean/analyzer/index.js');
+const verifiedGenerator = require('../korean/generation/verified_sentence_generator.js');
 
-const { DATA_SCHEMA } = (typeof require !== 'undefined') ? require('./data.js') : (typeof window !== 'undefined' ? window : {});
+const { DATA_SCHEMA } = (typeof require !== 'undefined') ? require('../data/data.js') : (typeof window !== 'undefined' ? window : {});
 
-const verifiedOriginals = require('./korean/generation/verified_originals.js');
+const verifiedOriginals = require('../korean/generation/verified_originals.js');
 
-const VERIFIED_SENTENCES_PATH = path.resolve(__dirname, 'verified_sentences.js');
-const LOCAL_ORIGINALS_PATH = path.resolve(__dirname, 'local', 'verified_originals.js');
+const VERIFIED_SENTENCES_PATH = path.resolve(__dirname, '../data/verified_sentences.js');
+const LOCAL_ORIGINALS_PATH = path.resolve(__dirname, '../local', 'verified_originals.js');
 const SCAFFOLD_PRIORITY_INSTRUCTION = "TODO: PriorityScore [0.5=ultra-simple, 1=top essential ~200, 2=beginner ~1k, 3=elementary ~2.5k, 4=intermediate ~5k, 5=niche]";
 
 /**
@@ -206,7 +206,7 @@ function addVerifiedSentencesToFile(newTemplates, filePath = VERIFIED_SENTENCES_
 
 		// AST Recomposition Validation Gate: Verify grammatical & syntactic integrity
 		if (typeof verifiedGenerator !== 'undefined' && typeof verifiedGenerator.recomposeASTFromVerifiedSentence === 'function') {
-			const units = require('./data.js').KR_EN_languageUnits;
+			const units = require('../data/data.js').KR_EN_languageUnits;
 			const slotChoices = (cleanCopy.slots || []).map(s => {
 				const u = s.originalUnitId != null ? units[s.originalUnitId] : null;
 				return {
@@ -262,8 +262,8 @@ function addVerifiedSentencesToFile(newTemplates, filePath = VERIFIED_SENTENCES_
  * @returns {{ totalPassages: number, totalTemplates: number }}
  */
 function syncAllStudyTextsVerifiedSentences(filePath = VERIFIED_SENTENCES_PATH) {
-	const studytexts = require('./studytexts.js');
-	const testPath = path.resolve(__dirname, 'test.js');
+	const studytexts = require('../local/studytexts.js');
+	const testPath = path.resolve(__dirname, '../test.js');
 	let passages = Object.keys(studytexts).filter(k => k.startsWith('studytext'));
 
 	if (fs.existsSync(testPath)) {
@@ -329,12 +329,12 @@ function analyzePassage(passageText, passageName = "Passage", options = {}) {
 	// Automatically generate pre-populated draft file of missing words using schema_analysis.js
 	if (result.missingVocab.length > 0 || result.missingGrammar.length > 0) {
 		try {
-			const scratchDir = path.resolve(__dirname, 'scratch');
+			const scratchDir = path.resolve(__dirname, '../scratch');
 			if (!fs.existsSync(scratchDir)) fs.mkdirSync(scratchDir, { recursive: true });
 			const draftFile = path.join('scratch', `new_units_${passageName}.json`);
-			const fullDraftPath = path.resolve(__dirname, draftFile);
+			const fullDraftPath = path.resolve(__dirname, '..', draftFile);
 
-			const schemaAnalysisPath = path.resolve(__dirname, 'schema_analysis.js');
+			const schemaAnalysisPath = path.resolve(__dirname, '../schema_analysis.js');
 			let scaffoldFn = null;
 			let schemaTax = null;
 			if (fs.existsSync(schemaAnalysisPath)) {
@@ -408,7 +408,7 @@ function analyzePassage(passageText, passageName = "Passage", options = {}) {
 // =========================================================================
 
 function runCli() {
-	const studytexts = require('./studytexts.js');
+	const studytexts = require('../local/studytexts.js');
 	const args = process.argv.slice(2);
 
 	if (args.includes('--sync-verified')) {

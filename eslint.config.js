@@ -9,7 +9,7 @@ module.exports = [
 		ignores: [
 			'node_modules/**',
 			// Big generated/data files: validated by test.js stages 1-3, not worth linting.
-			'data.js', 'homonyms.js', 'verified_sentences.js', 'studytexts.js',
+			'data/data.js', 'data/homonyms.js', 'data/verified_sentences.js',
 			// Local-only, never committed
 			'local/**', 'flagged/**', 'scratch/**'
 		]

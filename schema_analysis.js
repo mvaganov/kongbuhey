@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('./data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * schema_analysis.js - Curriculum schema and metadata taxonomy engine for data.js
  *
@@ -20,8 +20,8 @@ const path = require('path');
 const { decomposeHangul, composeHangul, setFinal, hasBatchim } = require('./korean/core/primitives.js');
 const { recognizeCompoundParticle, decomposeCompoundParticle } = require('./korean/analyzer/particles.js');
 
-const DEFAULT_DATA_PATH = path.resolve(__dirname, 'data.js');
-const DEFAULT_SUMMARY_PATH = path.resolve(__dirname, 'schema_summary.json');
+const DEFAULT_DATA_PATH = path.resolve(__dirname, 'data/data.js');
+const DEFAULT_SUMMARY_PATH = path.resolve(__dirname, 'data/schema_summary.json');
 
 /**
  * Analyzes data.js to extract all permissible schema values and taxonomy mappings.

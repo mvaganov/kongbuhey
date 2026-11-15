@@ -11,12 +11,12 @@ function printHelp() {
 	console.log(`verified_sentences.js - Verified Sentence Templates Repository & CLI
 
 USAGE:
-  node verified_sentences.js [options]
-  node verified_sentences.js <unitId> <seed>
-  node verified_sentences.js --status
-  node verified_sentences.js --list [limit]
-  node verified_sentences.js --find <query>
-  node verified_sentences.js --verify [args]
+  node data/verified_sentences.js [options]
+  node data/verified_sentences.js <unitId> <seed>
+  node data/verified_sentences.js --status
+  node data/verified_sentences.js --list [limit]
+  node data/verified_sentences.js --find <query>
+  node data/verified_sentences.js --verify [args]
 
 OPTIONS:
   --status            Display repository statistics and verification testing progress
@@ -34,13 +34,13 @@ normal file tools by line number instead of loading the whole file. Line numbers
 add/remove lines; re-run --locate before the next edit. Entries may span several lines.
 
 EXAMPLES:
-  node verified_sentences.js --help
-  node verified_sentences.js --status
-  node verified_sentences.js --list 10
-  node verified_sentences.js --find "친구"
-  node verified_sentences.js --locate vs_363 152
-  node verified_sentences.js 0 1007
-  node verified_sentences.js --verify
+  node data/verified_sentences.js --help
+  node data/verified_sentences.js --status
+  node data/verified_sentences.js --list 10
+  node data/verified_sentences.js --find "친구"
+  node data/verified_sentences.js --locate vs_363 152
+  node data/verified_sentences.js 0 1007
+  node data/verified_sentences.js --verify
 `);
 }
 
@@ -725,7 +725,7 @@ function runCli() {
 
 		const path = require('path');
 		const fs = require('fs');
-		const progPath = path.resolve(__dirname, 'scratch', 'sentence_verification_progress.json');
+		const progPath = path.resolve(__dirname, '../scratch', 'sentence_verification_progress.json');
 		if (fs.existsSync(progPath)) {
 			try {
 				const prog = JSON.parse(fs.readFileSync(progPath, 'utf8'));
@@ -738,9 +738,9 @@ function runCli() {
 		}
 
 		console.log(`\nNext Actions:`);
-		console.log(`  Run 'node verify_sentences_cli.js' or 'node verified_sentences.js --verify' to test sentence generation.`);
-		console.log(`  Run 'node verified_sentences.js --list' to browse templates.`);
-		console.log(`  Run 'node verified_sentences.js --help' for all options.`);
+		console.log(`  Run 'node verify_sentences_cli.js' or 'node data/verified_sentences.js --verify' to test sentence generation.`);
+		console.log(`  Run 'node data/verified_sentences.js --list' to browse templates.`);
+		console.log(`  Run 'node data/verified_sentences.js --help' for all options.`);
 		console.log(`================================================================================\n`);
 		process.exit(0);
 	}
@@ -761,7 +761,7 @@ function runCli() {
 		const queryIdx = args.indexOf('--find') + 1;
 		const query = (queryIdx < args.length) ? args[queryIdx] : '';
 		if (!query) {
-			console.log(`[ERROR] Please specify a search query: node verified_sentences.js --find <query>`);
+			console.log(`[ERROR] Please specify a search query: node data/verified_sentences.js --find <query>`);
 			process.exit(1);
 		}
 		const matches = VERIFIED_SENTENCES.filter(s =>
@@ -782,14 +782,14 @@ function runCli() {
 
 	// Two numeric arguments: <unitId> <seed>
 	if (args.length >= 2 && !args[0].startsWith('-') && !args[1].startsWith('-') && !isNaN(parseInt(args[0], 10)) && !isNaN(parseInt(args[1], 10))) {
-		const cli = require('./verify_sentences_cli.js');
+		const cli = require('../verify_sentences_cli.js');
 		return cli.runCli();
 	}
 
 	if (args.includes('--verify')) {
 		const cliArgs = args.filter(a => a !== '--verify');
 		process.argv = [process.argv[0], process.argv[1], ...cliArgs];
-		const cli = require('./verify_sentences_cli.js');
+		const cli = require('../verify_sentences_cli.js');
 		return cli.runCli();
 	}
 

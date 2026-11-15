@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('./data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test.js - Unified Test Runner for Kongbuhey
  *
@@ -51,12 +51,12 @@ KEY LLM WORKFLOW PATTERNS:
 const path = require('path');
 const fs = require('fs');
 
-const DATA_PATH = path.resolve(__dirname, 'data.js');
-const HOMONYMS_PATH = path.resolve(__dirname, 'homonyms.js');
+const DATA_PATH = path.resolve(__dirname, 'data/data.js');
+const HOMONYMS_PATH = path.resolve(__dirname, 'data/homonyms.js');
 const SCHEMA_ANALYSIS_PATH = path.resolve(__dirname, 'schema_analysis.js');
-const EXHAUSTIVE_PATH = path.resolve(__dirname, 'exhaustive.js');
-const TEXT_ANALYZER_PATH = path.resolve(__dirname, 'text_analyzer.js');
-const STUDYTEXTS_PATH = path.resolve(__dirname, 'studytexts.js');
+const EXHAUSTIVE_PATH = path.resolve(__dirname, 'tools/exhaustive.js');
+const TEXT_ANALYZER_PATH = path.resolve(__dirname, 'tools/text_analyzer.js');
+const STUDYTEXTS_PATH = path.resolve(__dirname, 'local/studytexts.js');
 const { validateLanguageUnitSemanticSelection } = require('./select.js');
 
 // Known fully-ingested passages that must ALWAYS have 0 gaps (regression tests)

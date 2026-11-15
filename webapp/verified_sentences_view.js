@@ -1,5 +1,5 @@
 // Universal Constants
-var { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+var { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
 /**
  * webapp/verified_sentences_view.js

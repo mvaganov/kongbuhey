@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('./data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * select.js - SQL-like query and data manipulation CLI tool for kongbuhey's data.js.
  *
@@ -86,9 +86,9 @@ const {
 	getSubjectCandidatesForDescriptiveVerb,
 	parseAndValidateCollocationFilter,
 	hasTag
-} = require('./korean.js');
+} = require('./korean/index.js');
 
-const DATA_FILE_PATH = path.resolve(__dirname, 'data.js');
+const DATA_FILE_PATH = path.resolve(__dirname, 'data/data.js');
 
 // --- Schema Definitions ---
 let SCHEMA_COLUMNS = [

@@ -19,7 +19,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { KR_EN_languageUnits: UNITS } = require('../data.js');
+const { KR_EN_languageUnits: UNITS } = require('../data/data.js');
 const { FIXTURE_PATH, sampleSentences, findViolations, loadFixtures } = require('../test/golden_lib.js');
 
 const FLAG_DIR = path.resolve(__dirname, '..', 'flagged');

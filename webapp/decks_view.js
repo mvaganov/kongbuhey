@@ -1,6 +1,6 @@
 (function() {
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
 /**
  * webapp/decks_view.js
@@ -22,7 +22,7 @@ const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (t
 let dataModule;
 if (typeof require !== 'undefined') {
 	try {
-		dataModule = require('../data.js');
+		dataModule = require('../data/data.js');
 	} catch (_) {
 		dataModule = typeof window !== 'undefined' ? window : {};
 	}

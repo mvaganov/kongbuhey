@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/analyzer_modular_test.js
  *
@@ -20,7 +20,7 @@ const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (t
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const korean = require('../korean.js');
+const korean = require('../korean/index.js');
 const analyzer = korean.analyzer;
 
 let totalTests = 0;

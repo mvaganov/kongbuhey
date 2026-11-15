@@ -50,47 +50,47 @@
  */
 
 // 1. Core Primitives & State
-const primitives = require('./korean/core/primitives.js');
-const state = require('./korean/state.js');
-const errorCodes = require('./korean/constants/error_codes.js');
-const grammarTags = require('./korean/constants/tags.js');
+const primitives = require('./core/primitives.js');
+const state = require('./state.js');
+const errorCodes = require('./constants/error_codes.js');
+const grammarTags = require('./constants/tags.js');
 
 // 2. Core Engines
-const stemEngine = require('./korean/core/stem_engine.js');
-const lexiconIndex = require('./korean/core/lexicon_index.js');
-const numbers = require('./korean/core/numbers.js');
-const morphology = require('./korean/core/morphology.js');
-const phonetics = require('./korean/phonetics/pronunciation.js');
-const englishPhonemes = require('./korean/phonetics/english_phonemes.js');
+const stemEngine = require('./core/stem_engine.js');
+const lexiconIndex = require('./core/lexicon_index.js');
+const numbers = require('./core/numbers.js');
+const morphology = require('./core/morphology.js');
+const phonetics = require('./phonetics/pronunciation.js');
+const englishPhonemes = require('./phonetics/english_phonemes.js');
 
 // 3. Declarative Specs & Evaluators
-const verbSpecs = require('./korean/specs/verb_argument_specs.js');
-const pronunciationSpecs = require('./korean/specs/pronunciation_rules.js');
-const filterEvaluator = require('./korean/utils/filter_evaluator.js');
-const lutSerializer = require('./korean/utils/lut_serializer.js');
+const verbSpecs = require('./specs/verb_argument_specs.js');
+const pronunciationSpecs = require('./specs/pronunciation_rules.js');
+const filterEvaluator = require('./utils/filter_evaluator.js');
+const lutSerializer = require('./utils/lut_serializer.js');
 
 // 4. Concord Engines (Features 6 - 11 & Argument Concord)
-const classifierConcord = require('./korean/concord/classifier_concord.js');
-const spatialConcord = require('./korean/concord/spatial_concord.js');
-const moodConcord = require('./korean/concord/mood_concord.js');
-const adverbialConcord = require('./korean/concord/adverbial_concord.js');
-const argumentConcord = require('./korean/concord/argument_concord.js');
-const concordIndex = require('./korean/concord/index.js');
-const clausalValidation = require('./korean/concord/clausal_validation.js');
-const clausalGenerator = require('./korean/concord/clausal_generator.js');
+const classifierConcord = require('./concord/classifier_concord.js');
+const spatialConcord = require('./concord/spatial_concord.js');
+const moodConcord = require('./concord/mood_concord.js');
+const adverbialConcord = require('./concord/adverbial_concord.js');
+const argumentConcord = require('./concord/argument_concord.js');
+const concordIndex = require('./concord/index.js');
+const clausalValidation = require('./concord/clausal_validation.js');
+const clausalGenerator = require('./concord/clausal_generator.js');
 
 // 5. Generation & Translation Engines
-const literalRealizer = require('./korean/translation/literal_realizer.js');
-const naturalRealizer = require('./korean/translation/natural_realizer.js');
-const templateEngine = require('./korean/generation/template_engine.js');
-const semanticGenerator = require('./korean/generation/semantic_generator.js');
-const sentenceAst = require('./korean/generation/sentence_ast.js');
-const unitGenerator = require('./korean/generation/unit_sentence_generator.js');
-const verifiedSentenceGenerator = require('./korean/generation/verified_sentence_generator.js');
-const sentenceValidator = require('./korean/generation/sentence_validator.js');
+const literalRealizer = require('./translation/literal_realizer.js');
+const naturalRealizer = require('./translation/natural_realizer.js');
+const templateEngine = require('./generation/template_engine.js');
+const semanticGenerator = require('./generation/semantic_generator.js');
+const sentenceAst = require('./generation/sentence_ast.js');
+const unitGenerator = require('./generation/unit_sentence_generator.js');
+const verifiedSentenceGenerator = require('./generation/verified_sentence_generator.js');
+const sentenceValidator = require('./generation/sentence_validator.js');
 
 // 6. Text Analyzer Subsystem
-const analyzer = require('./korean/analyzer/index.js');
+const analyzer = require('./analyzer/index.js');
 
 // Helper functions for options tracking and usage filters
 function setCurrentUsageFilter(filter) {

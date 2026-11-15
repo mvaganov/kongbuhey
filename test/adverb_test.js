@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/adverb_test.js - Feature 9: Adverbial Sub-Typing & Syntactic Placement
  *
@@ -47,9 +47,9 @@ const {
 	getWords,
 	getFilteredWords,
 	hasTag
-} = require('../data.js');
+} = require('../data/data.js');
 
-const korean = require('../korean.js');
+const korean = require('../korean/index.js');
 const {
 	DEGREE_ADVERBS,
 	MANNER_ADVERBS,

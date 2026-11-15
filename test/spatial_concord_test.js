@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/spatial_concord_test.js - Feature 7: Deictic Demonstratives & Spatial Relational Test Suite
  *
@@ -47,9 +47,9 @@ const {
 	getWords,
 	getFilteredWords,
 	hasTag
-} = require('../data.js');
+} = require('../data/data.js');
 
-const korean = require('../korean.js');
+const korean = require('../korean/index.js');
 const {
 	SPATIAL_POSITIONS,
 	DEICTIC_DETERMINERS,
@@ -108,7 +108,7 @@ for (const pos of expectedCanonicalPositions) {
 }
 
 // Zero hardcoded Hangul arrays in korean.js
-const koreanCode = fs.readFileSync(path.resolve(__dirname, '../korean.js'), 'utf8');
+const koreanCode = fs.readFileSync(path.resolve(__dirname, '../korean/index.js'), 'utf8');
 assert(!koreanCode.includes('const SPATIAL_POSITIONS = new Map([["위"'), "SPATIAL_POSITIONS is not hardcoded Map literal");
 assert(!koreanCode.includes('const SPATIAL_POSITIONS = ["위"'), "SPATIAL_POSITIONS is not hardcoded array literal");
 assert(!koreanCode.includes('const DEICTIC_DETERMINERS = new Map([["이"'), "DEICTIC_DETERMINERS is not hardcoded Map literal");

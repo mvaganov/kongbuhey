@@ -1,6 +1,6 @@
 (function() {
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('../../constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 const { getVerifiedOriginals } = (typeof require !== 'undefined') ? require('./verified_originals.js') : window;
 
 /**
@@ -30,7 +30,7 @@ const { getVerifiedOriginals } = (typeof require !== 'undefined') ? require('./v
 let dataModule;
 if (typeof require !== 'undefined') {
 	try {
-		dataModule = require('../../data.js');
+		dataModule = require('../../data/data.js');
 	} catch (_) {
 		dataModule = typeof window !== 'undefined' ? window : {};
 	}
@@ -41,7 +41,7 @@ if (typeof require !== 'undefined') {
 let verifiedDataModule;
 if (typeof require !== 'undefined') {
 	try {
-		verifiedDataModule = require('../../verified_sentences.js');
+		verifiedDataModule = require('../../data/verified_sentences.js');
 	} catch (_) {
 		verifiedDataModule = typeof window !== 'undefined' ? window : {};
 	}
@@ -376,8 +376,8 @@ function getHardcodedVerifiedArray() {
 		raw = verifiedDataModule.VERIFIED_SENTENCES;
 	} else if (typeof require !== 'undefined') {
 		try {
-			delete require.cache[require.resolve('../../verified_sentences.js')];
-			verifiedDataModule = require('../../verified_sentences.js');
+			delete require.cache[require.resolve('../../data/verified_sentences.js')];
+			verifiedDataModule = require('../../data/verified_sentences.js');
 			if (verifiedDataModule && Array.isArray(verifiedDataModule.VERIFIED_SENTENCES)) {
 				raw = verifiedDataModule.VERIFIED_SENTENCES;
 			}

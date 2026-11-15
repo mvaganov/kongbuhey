@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/temporal_concord_test.js - Feature 5: Temporal Tense Concord Test Suite
  *
@@ -46,9 +46,9 @@ const {
 	getWords,
 	getFilteredWords,
 	hasTag
-} = require('../data.js');
+} = require('../data/data.js');
 
-const korean = require('../korean.js');
+const korean = require('../korean/index.js');
 const {
 	attachParticle,
 	applyMorphology,
@@ -128,7 +128,7 @@ assert(FUTURE_GRAMMAR_IDS instanceof Set && FUTURE_GRAMMAR_IDS.size >= 4, `FUTUR
 assert(PRESENT_GRAMMAR_IDS instanceof Set && PRESENT_GRAMMAR_IDS.size >= 3, `PRESENT_GRAMMAR_IDS is Set with >= 3 entries (found ${PRESENT_GRAMMAR_IDS.size})`);
 
 // Verify absence of hardcoded Hangul Set literals in korean.js
-const koreanCode = fs.readFileSync(path.join(__dirname, '../korean.js'), 'utf8');
+const koreanCode = fs.readFileSync(path.join(__dirname, '../korean/index.js'), 'utf8');
 assert(!koreanCode.includes('const PAST_TIME_WORDS = new Set(["어제"'), "PAST_TIME_WORDS is not hardcoded literal");
 assert(!koreanCode.includes('const FUTURE_TIME_WORDS = new Set(["내일"'), "FUTURE_TIME_WORDS is not hardcoded literal");
 assert(!koreanCode.includes('const BARE_TIME_WORDS_NO_PARTICLE = new Set(["어제"'), "BARE_TIME_WORDS_NO_PARTICLE is not hardcoded literal");

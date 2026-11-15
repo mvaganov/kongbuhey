@@ -24,7 +24,7 @@
  */
 
 const assert = require('assert');
-const korean = require('../korean.js');
+const korean = require('../korean/index.js');
 
 let totalTests = 0;
 let passedTests = 0;

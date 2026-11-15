@@ -1,5 +1,5 @@
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
 /**
  * exhaustive.js - Comprehensive Sentence Generation Engine & Linguistic Triage Dashboard
@@ -21,11 +21,11 @@ const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (ty
  * any suspicious sentences in an LLM Agent Triage Queue for rapid review.
  *
  * USAGE:
- *   node exhaustive.js [OPTIONS] [TAGS/SOURCES...]
+ *   node tools/exhaustive.js [OPTIONS] [TAGS/SOURCES...]
  */
 
 const fs = require('fs');
-const { getPartOfSpeechCached, DATA_SCHEMA, cache, KR_EN_languageUnits, hasTag } = require('./data.js');
+const { getPartOfSpeechCached, DATA_SCHEMA, cache, KR_EN_languageUnits, hasTag } = require('../data/data.js');
 const {
 	applyMorphology,
 	getFilteredWords,
@@ -47,13 +47,13 @@ const {
 	validateSentenceString,
 	setRandomSeed,
 	getRandomSeed
-} = require('./korean.js');
+} = require('../korean/index.js');
 
 function printHelp() {
 	console.log(`exhaustive.js - Exhaustive Korean sentence generator & linguistic validation dashboard
 
 USAGE:
-  node exhaustive.js [OPTIONS] [TAGS/SOURCES...]
+  node tools/exhaustive.js [OPTIONS] [TAGS/SOURCES...]
 
 OPTIONS:
   --id <id|id1,id2,...>  Filter testing to specific language unit ID(s)
@@ -70,11 +70,11 @@ OPTIONS:
   -h, --help             Show this help message
 
 EXAMPLES:
-  node exhaustive.js                     # Test full curriculum (both engines)
-  node exhaustive.js SUOBI01             # Scope to source SUOBI01
-  node exhaustive.js --id 361            # Test unit ID 361 (이, teeth)
-  node exhaustive.js --pos Adverb        # Test all Adverb units
-  node exhaustive.js --range 0-40        # Test units in ID range 0..40
+  node tools/exhaustive.js                     # Test full curriculum (both engines)
+  node tools/exhaustive.js SUOBI01             # Scope to source SUOBI01
+  node tools/exhaustive.js --id 361            # Test unit ID 361 (이, teeth)
+  node tools/exhaustive.js --pos Adverb        # Test all Adverb units
+  node tools/exhaustive.js --range 0-40        # Test units in ID range 0..40
 `);
 }
 
@@ -564,7 +564,7 @@ function generateCoverageReport(filter) {
 const coverage = generateCoverageReport(requestedTags);
 
 function reproduceThisRunInTerminal() {
-	let command = "node exhaustive.js";
+	let command = "node tools/exhaustive.js";
 	let explicitSeedSet = false;
 	for (let i = 2; i < process.argv.length; ++i) {
 		let arg = process.argv[i];
@@ -686,6 +686,6 @@ if (validationErrors === 0) {
 	process.exit(0);
 } else {
 	console.error(`Validation: FAILED - ${validationErrors} syntax/morphology errors detected across ${validatedSentencesCount} sentences.`);
-	console.error(`Run Seed: ${runSeed} - Re-run with: node exhaustive.js --seed ${runSeed}`);
+	console.error(`Run Seed: ${runSeed} - Re-run with: node tools/exhaustive.js --seed ${runSeed}`);
 	process.exit(1);
 }

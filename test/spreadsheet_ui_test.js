@@ -19,9 +19,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const { K } = require('../constants.js');
+const { K } = require('../data/constants.js');
 
-const { KR_EN_languageUnits, DATA_SCHEMA } = require('../data.js');
+const { KR_EN_languageUnits, DATA_SCHEMA } = require('../data/data.js');
 const { DEFAULT_COLUMNS_SPEC, INITIAL_ADDITIONAL_COLUMNS, KongbuheyDB } = require('../webapp/db.js');
 const { SpreadsheetEngine } = require('../webapp/spreadsheet.js');
 const {
@@ -34,7 +34,7 @@ const {
 } = require('../webapp/selector.js');
 const { TextImporterView } = require('../webapp/text_importer.js');
 const { VerifiedSentencesView } = require('../webapp/verified_sentences_view.js');
-const { VERIFIED_SENTENCES, VERIFIED_TEMPLATE_SCHEMA, VERIFIED_SLOT_SCHEMA } = require('../verified_sentences.js');
+const { VERIFIED_SENTENCES, VERIFIED_TEMPLATE_SCHEMA, VERIFIED_SLOT_SCHEMA } = require('../data/verified_sentences.js');
 const verifiedGen = require('../korean/generation/verified_sentence_generator.js');
 const { sortPracticeSetUnits, evaluateFlashcardAttempt } = require('../webapp/app.js');
 
@@ -85,7 +85,7 @@ async function runSuite() {
 	assert(!htmlContent.includes('type="module"'), 'webapp/index.html avoids ES module scripts that fail under file:// CORS');
 	assert(htmlContent.includes('<link rel="stylesheet" href="index.css">'), 'webapp/index.html links separate index.css');
 	assert(
-		htmlContent.includes('<script src="../data.js"></script>') &&
+		htmlContent.includes('<script src="../data/data.js"></script>') &&
 		htmlContent.includes('<script src="db.js"></script>') &&
 		htmlContent.includes('<script src="spreadsheet.js"></script>') &&
 		htmlContent.includes('<script src="app.js"></script>'),

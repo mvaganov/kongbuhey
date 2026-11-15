@@ -14,8 +14,9 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-// Loaded by the Node facade (korean.js) only; intentionally absent from the browser.
+// Node-only: the facade itself (korean/index.js) and modules only it loads; intentionally absent from the browser.
 const NODE_ONLY = new Set([
+	'korean/index.js',
 	'korean/types.js', 'korean/utils/lut_serializer.js', 'korean/generation/semantic_generator.js',
 	'korean/generation/template_engine.js', 'korean/phonetics/english_phonemes.js'
 ]);

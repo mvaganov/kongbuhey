@@ -1,5 +1,5 @@
 // Universal Constants
-var { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+var { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
 /**
  * webapp/text_importer.js
@@ -314,7 +314,7 @@ class TextImporterView {
 						<strong>🏛️ Verified Sentence Structures Discovered (${verifiedSentences.length})</strong>
 						<p class="tooling-desc">
 							Cleanly decomposed sentences have been extracted as reusable Verified Sentence templates
-							(${addedVerified.length} added to runtime templates; CLI: <code>node text_analyzer.js ${this.sourceName} --add-verified</code>).
+							(${addedVerified.length} added to runtime templates; CLI: <code>node tools/text_analyzer.js ${this.sourceName} --add-verified</code>).
 						</p>
 					</div>
 					<button type="button" id="btn-importer-open-verified" class="btn btn-primary btn-sm">

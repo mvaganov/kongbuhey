@@ -13,7 +13,7 @@
 let dataModule;
 if (typeof require !== 'undefined') {
 	try {
-		dataModule = require('../../data.js');
+		dataModule = require('../../data/data.js');
 	} catch (e) {
 		dataModule = typeof window !== 'undefined' ? window : {};
 	}

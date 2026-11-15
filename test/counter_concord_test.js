@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 /**
  * test/counter_concord_test.js
  *
@@ -20,7 +20,7 @@ const { K } = (typeof require !== 'undefined') ? require('../constants.js') : (t
 
 const fs = require('fs');
 const path = require('path');
-const korean = require('../korean.js');
+const korean = require('../korean/index.js');
 const {
 	KOREAN_CLASSIFIERS,
 	SINO_CLASSIFIERS,
@@ -42,7 +42,7 @@ const {
 	getKoreanNumber,
 	getSinoNumber
 } = korean;
-const { KR_EN_languageUnits, DATA_SCHEMA } = require('../data.js');
+const { KR_EN_languageUnits, DATA_SCHEMA } = require('../data/data.js');
 
 let totalTests = 0;
 let passedTests = 0;
@@ -84,7 +84,7 @@ for (const cls of expectedSinoClassifiers) {
 }
 
 // Verify absence of hardcoded Hangul Set/Array literals for classifiers in korean.js
-const koreanCode = fs.readFileSync(path.join(__dirname, '../korean.js'), 'utf8');
+const koreanCode = fs.readFileSync(path.join(__dirname, '../korean/index.js'), 'utf8');
 assert(!koreanCode.includes('const KOREAN_CLASSIFIERS = new Set(["개"'), "KOREAN_CLASSIFIERS is not hardcoded literal");
 assert(!koreanCode.includes('const SINO_CLASSIFIERS = new Set(["년"'), "SINO_CLASSIFIERS is not hardcoded literal");
 assert(!koreanCode.includes('const CLASSIFIER_NOUN_SPECS = ['), "CLASSIFIER_NOUN_SPECS is not a hardcoded array literal");
