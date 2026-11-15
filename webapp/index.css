@@ -4098,3 +4098,7 @@ body {
 
 .credits-body h3 { margin: 12px 0 4px; font-size: 0.95rem; }
 .credits-body p { margin: 0 0 8px; line-height: 1.5; }
+
+/* Clickable unit names (opens the unit details popup) */
+a.unit-link { color: var(--accent, #4aa3ff); font-weight: 700; text-decoration: underline dotted; cursor: pointer; }
+.unit-popup .modal-card { max-width: 480px; }

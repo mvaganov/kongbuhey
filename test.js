@@ -468,6 +468,7 @@ function runTests(options = {}) {
 			{ name: "Browser Load (index.html)", path: path.resolve(__dirname, 'test', 'browser_load_test.js'), args: full ? [] : ['--static'] },
 			{ name: "Golden Sentences (flag fixtures)", path: path.resolve(__dirname, 'test', 'golden_sentences_test.js') },
 			{ name: "Content Hygiene (textbook text stays local)", path: path.resolve(__dirname, 'test', 'verified_originals_test.js') },
+			{ name: "Flashcard Deck Logic", path: path.resolve(__dirname, 'test', 'flashcard_deck_test.js') },
 			{ name: "Spreadsheet UI & Database", path: path.resolve(__dirname, 'test', 'spreadsheet_ui_test.js') }
 		];
 

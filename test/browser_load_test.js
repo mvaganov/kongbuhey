@@ -19,7 +19,7 @@ const NODE_ONLY = new Set([
 	'korean/types.js', 'korean/utils/lut_serializer.js', 'korean/generation/semantic_generator.js',
 	'korean/generation/template_engine.js', 'korean/phonetics/english_phonemes.js'
 ]);
-const REQUIRED_GLOBALS = [
+const REQUIRED_GLOBALS = ['openUnitPopup', 'renderMarkdownWithHtml', 'speakKorean', 
 	'KongbuheyApp', 'KongbuheyDB', 'UnitSelectorView', 'generateSentencesForUnit', 'verifiedSentenceGenerator',
 	'validateSpatialConcord', 'applySpatialConcord', 'validateAdverbConcord', 'canAdverbPrecede', 'applyAdverbConcord',
 	'applyMoodConcord', 'applyClausalConcord', 'validateClausalConcord', 'applyCounterConcord',
@@ -52,6 +52,14 @@ function walk(dir) {
 	const missingCredits = credits.filter(c => !html.includes(c));
 	assert(missingCredits.length === 0, `About & Credits modal names every attribution${missingCredits.length ? ' (missing: ' + missingCredits.join(', ') + ')' : ''}`);
 
+	// Standalone flashcard page: every script exists and the engine list mirrors webapp/index.html.
+	const fcHtml = fs.readFileSync(path.join(ROOT, 'flashcards', 'index.html'), 'utf8');
+	const fcSrcs = [...fcHtml.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]);
+	const fcMissing = fcSrcs.filter(src => !fs.existsSync(path.join(ROOT, 'flashcards', src)));
+	assert(fcMissing.length === 0, `flashcards/index.html references no missing files${fcMissing.length ? ' (' + fcMissing.join(', ') + ')' : ''}`);
+	const fcKorean = fcSrcs.filter(src => src.startsWith('../korean/'));
+	assert(JSON.stringify(fcKorean) === JSON.stringify([...included].map(f => '../' + f)), 'flashcards/index.html loads the same korean/ engine modules in the same order as the webapp');
+
 	if (process.argv.includes('--static')) {
 		// jsdom takes ~25s just to require() on a slow filesystem; the full run (node test.js --full) does it.
 		console.log('  [SKIP] jsdom load check (run with --full)');
@@ -81,7 +89,77 @@ function walk(dir) {
 		produced = w.generateSentencesForUnit(5, 3, { seedOffset: 1 }).length;
 	} catch (e) { errors.push(e.message); }
 	assert(produced > 0, 'browser-side generator produces sentences');
+	// Unit Selector: keyboard navigation, in-place selection (no list rebuild), Space/Enter toggles InSet.
+	try {
+		const sv = w.kongbuheyApp.selectorView;
+		sv.render();
+		sv.expandedSources.add(sv.getSourceGroups()[0].source);
+		sv.renderSourcesList();
+		const firstRow = w.document.querySelector('.selector-unit-row');
+		const firstId = Number(firstRow.dataset.unitId);
+		sv.selectUnitForDetails(firstId);
+		assert(w.document.querySelector('.selector-unit-row') === firstRow && firstRow.classList.contains('is-active-detail'),
+			'selecting a unit highlights it in place without rebuilding the list (scroll position is kept)');
+		const order = sv.getNavigableUnitIds();
+		const key = k => { const ev = new w.KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }); w.document.body.dispatchEvent(ev); return ev; };
+		w.document.getElementById('view-selector').classList.add('active');
+		key('ArrowDown');
+		assert(sv.selectedUnitId === order[order.indexOf(firstId) + 1], 'Down arrow selects the next unit in the list');
+		const lastOfGroup = sv.getSourceGroups()[0].unitIds.slice(-1)[0];
+		sv.selectUnitForDetails(lastOfGroup);
+		key('ArrowDown');
+		const nextGroup = sv.getSourceGroups()[1];
+		assert(sv.selectedUnitId === nextGroup.unitIds[0] && sv.expandedSources.has(nextGroup.source), 'Down arrow from the last unit of a source opens the next source and selects its first unit');
+		key('ArrowUp');
+		assert(sv.selectedUnitId === lastOfGroup, 'Up arrow walks back');
+		const before = Boolean(sv.engine.getCellValue(sv.selectedUnitId, 'InSet'));
+		key(' ');
+		await new Promise(r => setTimeout(r, 50));
+		assert(Boolean(sv.engine.getCellValue(lastOfGroup, 'InSet')) === !before, 'Space toggles the selected unit In Set');
+		key('Enter');
+		await new Promise(r => setTimeout(r, 50));
+		assert(Boolean(sv.engine.getCellValue(lastOfGroup, 'InSet')) === before, 'Enter toggles it back');
+	} catch (e) { assert(false, 'selector keyboard tests ran: ' + e.message); }
+
+	// Verified Sentences: unit links open a details popup, single-choice slots no longer print #undefined.
+	try {
+		const vv = w.kongbuheyApp.verifiedView;
+		vv.render();
+		const singles = vv.getAllEntries().filter(e => vv._getGenerator().analyzeTemplateStructure(e.template || e).singleChoiceCount > 0);
+		assert(singles.length > 0, 'found a verified template with a single-choice slot');
+		vv.selectedTemplateId = singles[0].id;
+		vv.render();
+		const html = vv.container.innerHTML;
+		assert(!/#undefined/.test(html), 'single-choice slot banner never shows #undefined');
+		const link = vv.container.querySelector('a[data-unit-link]');
+		assert(!!link, 'valid matching units are rendered as links');
+		link.click();
+		const pop = w.document.querySelector('.unit-popup');
+		assert(pop && pop.querySelector('.details-korean-heading') && pop.querySelector('.details-english-definition'), 'clicking a unit link opens a popup with the unit details');
+		pop.querySelector('.modal-close-btn').click();
+		assert(!w.document.querySelector('.unit-popup'), 'popup closes');
+	} catch (e) { assert(false, 'verified view tests ran: ' + e.message); }
+
 	w.close();
+
+	// Flashcard page: renders a card, flips on a tap, scores, undoes (jsdom has no canvas: ignore that one error).
+	const fcErrors = [];
+	const fvc = new VirtualConsole();
+	fvc.on('jsdomError', e => { const m = (e.detail && e.detail.message) || e.message; if (!/getContext/.test(m)) fcErrors.push(m); });
+	const fdom = await JSDOM.fromFile(path.join(ROOT, 'flashcards', 'index.html'), { runScripts: 'dangerously', resources: 'usable', pretendToBeVisual: true, virtualConsole: fvc });
+	await new Promise(r => fdom.window.addEventListener('load', r));
+	await new Promise(r => setTimeout(r, 800));
+	const fd = fdom.window.document, app = fdom.window.flashcardApp;
+	assert(fcErrors.length === 0, `flashcard page loads with no errors${fcErrors.length ? ': ' + fcErrors.slice(0, 2).join(' | ') : ''}`);
+	assert(app && fd.querySelectorAll('.sentence').length > 0 && fd.querySelector('.unit-main'), 'flashcard front shows the unit and example sentences');
+	fd.querySelector('#card').click();
+	assert(fd.querySelectorAll('.score').length === 5 && fd.querySelector('.s-en'), 'tapping empty space reveals the back with 5 score buttons and English');
+	const first = app.deck.frontId;
+	fd.querySelector('.score[data-v="1"]').click();
+	assert(app.deck.frontId !== first && app.deck.scoreOf(first) === 1, 'scoring moves to the next card and records the score');
+	fd.querySelector('[data-act="undo"]').click();
+	assert(app.deck.frontId === first && app.deck.scoreOf(first) === 0, 'Back undoes the last score');
+	fdom.window.close();
 
 	console.log(`\nTOTAL: ${passed + failed}  PASSED: ${passed}  FAILED: ${failed}`);
 	// jsdom leaves timers/handles alive for ~20s after window.close(); exit explicitly.

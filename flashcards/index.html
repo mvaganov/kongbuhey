@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<meta name="theme-color" content="#14161a">
+	<title>공부해 Flashcards</title>
+	<link rel="stylesheet" href="flashcards.css">
+</head>
+<body>
+	<div id="app">
+		<div id="top"></div>
+		<div id="vizwrap"><canvas id="viz" aria-label="Deck: tap a card to jump to it"></canvas>
+			<button type="button" class="viz-toggle" data-act="toggle-viz" aria-label="Expand or collapse deck view">⤢</button></div>
+		<main id="card"></main>
+		<div id="modal" class="hidden"></div>
+	</div>
+	<!-- Standalone page: serves from the repo root (GitHub Pages) and file://. Engine scripts mirror webapp/index.html. -->
+	<script src="../constants.js"></script>
+	<script src="../data.js"></script>
+	<script src="../verified_sentences.js"></script>
+	<script src="../korean/core/primitives.js"></script>
+	<script src="../korean/core/stem_engine.js"></script>
+	<script src="../korean/constants/error_codes.js"></script>
+	<script src="../korean/constants/tags.js"></script>
+	<script src="../korean/specs/verb_argument_specs.js"></script>
+	<script src="../korean/specs/pronunciation_rules.js"></script>
+	<script src="../korean/utils/filter_evaluator.js"></script>
+	<script src="../korean/state.js"></script>
+	<script src="../korean/core/lexicon_index.js"></script>
+	<script src="../korean/core/numbers.js"></script>
+	<script src="../korean/phonetics/pronunciation.js"></script>
+	<script src="../korean/core/morphology.js"></script>
+	<script src="../korean/concord/classifier_concord.js"></script>
+	<script src="../korean/translation/literal_realizer.js"></script>
+	<script src="../korean/translation/natural_realizer.js"></script>
+	<script src="../korean/concord/spatial_concord.js"></script>
+	<script src="../korean/concord/adverbial_concord.js"></script>
+	<script src="../korean/concord/mood_concord.js"></script>
+	<script src="../korean/concord/clausal_validation.js"></script>
+	<script src="../korean/concord/clausal_generator.js"></script>
+	<script src="../korean/concord/argument_concord.js"></script>
+	<script src="../korean/concord/index.js"></script>
+	<script src="../korean/generation/sentence_validator.js"></script>
+	<script src="../korean/generation/verified_originals.js"></script>
+	<script src="../korean/generation/sentence_ast.js"></script>
+	<script src="../korean/generation/unit_sentence_generator.js"></script>
+	<script src="../korean/analyzer/indexer.js"></script>
+	<script src="../korean/analyzer/particles.js"></script>
+	<script src="../korean/analyzer/syntax_frame.js"></script>
+	<script src="../korean/analyzer/verb_suffix_rules.js"></script>
+	<script src="../korean/analyzer/verb_morphology.js"></script>
+	<script src="../korean/analyzer/token_analyzer.js"></script>
+	<script src="../korean/analyzer/sentence_analyzer.js"></script>
+	<script src="../korean/analyzer/passage_analyzer.js"></script>
+	<script src="../korean/analyzer/index.js"></script>
+	<script src="../korean/generation/verified_sentence_generator.js"></script>
+	<script src="../shared/markdown.js"></script>
+	<script src="../shared/speech.js"></script>
+	<script src="../shared/sentence_adapter.js"></script>
+	<script src="deck.js"></script>
+	<script src="render.js"></script>
+	<script src="app.js"></script>
+</body>
+</html>

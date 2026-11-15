@@ -1,6 +1,6 @@
 # Kongbuhey (공부해): Handoff
 
-Updated 2026-11-14. Working rules and commands live in `CLAUDE.md`; this file is state, architecture and priorities.
+Updated 2026-11-15. Working rules and commands live in `CLAUDE.md`; this file is state, architecture and priorities.
 
 ## What it is
 A study aid for one learner of Korean. Static client-side SPA (`webapp/`, vanilla JS, no build, runs from `file://`, IndexedDB with
@@ -12,7 +12,11 @@ Target: desktop first, Android later (not iOS), GitHub Pages for testing once co
 ## State
 **Works:** Unit Selector & Details (generated sentences with per-morpheme pills, literal and natural English, TTS), spreadsheet over
 2,045 language units with custom columns, saved practice sets, text importer + passage analyzer, Verified Sentences view
-(544 templates), Decks view, a basic Practice-tab flashcard flow.
+(544 templates), Decks view, a basic Practice-tab flashcard flow (Gemini-built, legacy; superseded by `flashcards/`).
+**Flashcard app (new, standalone):** `flashcards/index.html` is separate from the webapp: no IndexedDB, state in localStorage (`kb.fc.v1.*`), same engine scripts plus `shared/`. Front/back cycle (tap empty space to reveal), 5 self-scores (-2..+2) that reposition the card, deck visualization canvas (tap a card to jump), markdown notes, reverse mode (English on the front), speak options, flag list with copy/download (same JSON as the webapp export; save into `flagged/` for `tools/triage_flags.js`), backup/restore, deck contents by Source. Pure deck rules: `flashcards/deck.js` (`test/flashcard_deck_test.js`); UI `app.js`; helpers `render.js`. Scores clamp to -6..+6. Not yet tried on a phone.
+**Deploy to GitHub Pages:** repo Settings > Pages > Deploy from branch `main`, folder `/ (root)`; open `https://mvaganov.github.io/kongbuhey/flashcards/`. Scores live per browser; use Backup/restore to move them.
+**Refactor:** shared browser/Node modules in `shared/` (`markdown.js`, `speech.js`, `sentence_adapter.js`, `unit_card.js`) back both the webapp and the flashcards; `webapp/selector.js` delegates to them.
+**Webapp fixes:** Verified Sentences unit names are links opening a details popup; the single-choice slot banner no longer prints `#undefined`; Unit Selector keeps scroll, selects rows in place, Down/Up arrows walk all units (opening the next source), Space/Enter toggles In Set.
 **New this session:** "⚐ Bad sentence" flag button, JSON export, `tools/triage_flags.js`, golden fixtures
 (`test/golden_sentences.json`), ESLint (flat config, `no-undef` on), jsdom browser load test, 13x faster generation
 (a per-call `require()` in `morphology.js` was the cause), dead code and obsolete audit artifacts purged.
@@ -41,6 +45,7 @@ korean/  core/ (primitives, morphology, stem_engine, numbers, lexicon_index)   c
          analyzer/ (indexer, token/sentence/passage analyzers, SyntaxFrame, particles)   phonetics/  translation/  specs/  state.js
 webapp/  index.html (40 ordered <script> tags), db.js, spreadsheet.js, selector.js, text_importer.js, verified_sentences_view.js,
          decks_view.js, app.js
+shared/  markdown, speech, sentence_adapter, unit_card (webapp + flashcards)    flashcards/  standalone mobile app (index.html, app.js, deck.js, render.js, flashcards.css)
 tools/triage_flags.js   flag inbox -> verdicts -> fixtures        test/  suites; golden_lib.js + golden_sentences.json
 .claude/                settings.json + hooks/guard-big-reads.js        docs/  translation_architecture.md, kor_sentences.tsv
 ```
@@ -56,13 +61,11 @@ tools/triage_flags.js   flag inbox -> verdicts -> fixtures        test/  suites;
   (Hangul `new Set([` lines 12 to 265). Judge refactors by behaviour and fixtures, not by grep counts.
 
 ## Priorities (in order)
-1. **Use the flag loop.** Generate, flag, triage, promote, fix. Freeze generator scope once the loop works end to end.
-2. **Early-unit review mode.** Practice and audit class2011 to class2112 grammar and vocabulary over a few weeks (subway-friendly
-   quizzes with recall tracking). The next semester starts about 2026-11-28. Needs the app's flashcard/practice flow, so plan it
-   only after sentences are trusted.
-3. Content decoupling is done (textbook text lives in gitignored `local/`; history rewritten, see CLAUDE.md). Slot `Surface` strings remain a small exposure.
-4. GitHub Pages deploy (after 3), then Android.
-5. Flashcard and quiz modes beyond the basic Practice tab: after sentence trust.
+1. Try `flashcards/` on the phone (GitHub Pages) and send requirement changes. Next semester starts about 2026-11-28; early-unit review (class2011 to class2112) needs it.
+2. Planned study modes: reverse sound board (hear Korean, pick the match from a button matrix) and multiple-choice comprehension quizzes, built as separate modes on top of `shared/`.
+3. Study, flag bad sentences, promote flags to golden fixtures (`tools/triage_flags.js`), fix the generator against them. Freeze generator scope once the loop works.
+4. Android packaging later.
+5. Stretch: Tatoeba sentences (below).
 
 ## Stretch goal: Tatoeba example sentences (paused, not ingested)
 Decision 2026-11-15: Tatoeba sentence structures differ too much from what the class teaches; leave them out until the core study loop works.
@@ -74,7 +77,3 @@ Work already done (all outputs in gitignored `local/`, nothing in data.js):
 - Not done: human spot check, export to `data/tatoeba_selected.tsv`, `ingest.js --source tatoeba --dry-run`, English via Tatoeba links/eng downloads.
 - If resumed: Tatoeba is CC BY (attribution already in the About & Credits modal). Open question: how the generator/translator renders these as English.
 
-## Next steps (agreed 2026-11-15)
-1. Rework the flashcard/practice flow (owner will give requirements), using generated sentences.
-2. Study with it, flag bad sentences (flag button, `tools/triage_flags.js`).
-3. Promote flags to golden fixtures and fix the generator against them.

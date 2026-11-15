@@ -24,110 +24,11 @@
  *        Regenerate button
  */
 
-// 1. Markdown + Inline HTML Renderer (with Tiered Lists Support)
-function formatInlineMarkdown(text) {
-	if (!text) return '';
-	let out = String(text).replace(/<\s*\/?\s*script[^>]*>/gi, '');
-	const codeTokens = [];
-	out = out.replace(/`([^`]+)`/g, (_, code) => {
-		const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-		return `\u0000CODE_${codeTokens.push(`<code>${escaped}</code>`) - 1}\u0000`;
-	});
-	out = out
-		.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-		.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-		.replace(/__([^_]+)__/g, '<strong>$1</strong>')
-		.replace(/~~([^~]+)~~/g, '<del>$1</del>')
-		.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>')
-		.replace(/(^|[^_])_([^_\n]+)_(?!_)/g, '$1<em>$2</em>');
-	return out.replace(/\u0000CODE_(\d+)\u0000/g, (_, idx) => codeTokens[Number(idx)] || '');
-}
-
-function renderMarkdownWithHtml(markdownStr) {
-	if (!markdownStr || !String(markdownStr).trim()) return '';
-	const lines = String(markdownStr).replace(/\r\n/g, '\n').split('\n');
-	const htmlParts = [], listStack = [];
-	let inCodeBlock = false, codeBuffer = [];
-
-	const closeListsTo = (targetIndent) => {
-		while (listStack.length > 0 && listStack[listStack.length - 1].indent > targetIndent) {
-			htmlParts.push(`</li></${listStack.pop().type}>`);
-		}
-	};
-	const closeAllLists = () => closeListsTo(-1);
-
-	for (let i = 0; i < lines.length; i++) {
-		const rawLine = lines[i];
-		if (rawLine.trim().startsWith('```')) {
-			closeAllLists();
-			if (!inCodeBlock) { inCodeBlock = true; codeBuffer = []; }
-			else {
-				inCodeBlock = false;
-				const esc = codeBuffer.join('\n').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-				htmlParts.push(`<pre><code>${esc}</code></pre>`);
-			}
-			continue;
-		}
-		if (inCodeBlock) { codeBuffer.push(rawLine); continue; }
-
-		const listMatch = rawLine.match(/^([ \t]*)(?:([-*+])|(\d+|[a-zA-Z])[.)])\s+(.*)$/);
-		if (listMatch) {
-			const indent = listMatch[1].replace(/\t/g, '  ').length;
-			const listType = listMatch[2] ? 'ul' : 'ol';
-			const itemContent = formatInlineMarkdown(listMatch[4]);
-			const top = listStack[listStack.length - 1];
-
-			if (!top || indent > top.indent) {
-				listStack.push({ type: listType, indent });
-				htmlParts.push(`<${listType}><li>${itemContent}`);
-			} else if (indent === top.indent) {
-				if (top.type !== listType) {
-					htmlParts.push(`</li></${listStack.pop().type}>`);
-					listStack.push({ type: listType, indent });
-					htmlParts.push(`<${listType}><li>${itemContent}`);
-				} else {
-					htmlParts.push(`</li><li>${itemContent}`);
-				}
-			} else {
-				closeListsTo(indent);
-				const curTop = listStack[listStack.length - 1];
-				if (!curTop || curTop.indent < indent) {
-					listStack.push({ type: listType, indent });
-					htmlParts.push(`<${listType}><li>${itemContent}`);
-				} else if (curTop.type !== listType) {
-					htmlParts.push(`</li></${listStack.pop().type}>`);
-					listStack.push({ type: listType, indent });
-					htmlParts.push(`<${listType}><li>${itemContent}`);
-				} else {
-					htmlParts.push(`</li><li>${itemContent}`);
-				}
-			}
-			continue;
-		}
-
-		closeAllLists();
-		const trimmed = rawLine.trim();
-		if (!trimmed) continue;
-
-		const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
-		if (headingMatch) {
-			htmlParts.push(`<h${headingMatch[1].length}>${formatInlineMarkdown(headingMatch[2])}</h${headingMatch[1].length}>`);
-			continue;
-		}
-		if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) { htmlParts.push('<hr>'); continue; }
-		if (trimmed.startsWith('>')) {
-			htmlParts.push(`<blockquote>${formatInlineMarkdown(trimmed.replace(/^>\s?/, ''))}</blockquote>`);
-			continue;
-		}
-		htmlParts.push(`<p>${formatInlineMarkdown(rawLine)}</p>`);
-	}
-	closeAllLists();
-	if (inCodeBlock && codeBuffer.length > 0) {
-		const esc = codeBuffer.join('\n').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-		htmlParts.push(`<pre><code>${esc}</code></pre>`);
-	}
-	return htmlParts.join('\n');
-}
+// Markdown, sentence generation and flag records live in shared/ (loaded as globals in the browser).
+const { renderMarkdownWithHtml } = (typeof require === 'function') ? require('../shared/markdown.js') : window;
+const { unitCoreViewHtml } = (typeof require === 'function') ? require('../shared/unit_card.js') : window;
+const { speakKorean } = (typeof require === 'function') ? require('../shared/speech.js') : window;
+const { generateSentencesForUnit, buildFlagEntry } = (typeof require === 'function') ? require('../shared/sentence_adapter.js') : window;
 
 // 2. Minimalist Videogame HUD Formatter
 const LTR_HUD_SPECS = {
@@ -176,111 +77,6 @@ function formatHudTelemetry(scoreOrObj, ltr, lastCorrect, lastSeen, nowSeconds =
 		lastSeenText: seenText,
 		seenPill: `👁 ${seenText}`,
 		summaryLine: `⚡ ${scoreText} · ${ltrSpec.icon} ${ltrSpec.code} · 🎯 ${correctText} · 👁 ${seenText}`
-	};
-}
-
-// 3. Unified AST Sentence Generator & Dual English Translation Adapter
-const _unitGeneratorEngine = (() => {
-	if (typeof require === 'function') {
-		try { return require('../korean/generation/unit_sentence_generator.js'); } catch (_) {}
-	}
-	if (typeof window !== 'undefined') {
-		const batchFn = window.generateUnitSentencesAST || window.generateSentencesForUnit;
-		const singleFn = window.generateSingleUnitSentenceAST || window.generateSentenceForUnit;
-		if (typeof batchFn === 'function') {
-			return { generateSentenceForUnit: singleFn, generateSentencesForUnit: batchFn, generateUnitSentencesAST: batchFn };
-		}
-	}
-	return null;
-})();
-
-const _verifiedGeneratorEngine = (() => {
-	if (typeof require === 'function') {
-		try { return require('../korean/generation/verified_sentence_generator.js'); } catch (_) {}
-	}
-	if (typeof window !== 'undefined') {
-		if (window.verifiedSentenceGenerator) return window.verifiedSentenceGenerator;
-		if (typeof window.generateVerifiedSentencesForUnit === 'function') return window;
-	}
-	return null;
-})();
-
-function generateSentencesForUnit(unitId, count = 3, optionsOrRawUnits = null, dataSchema = null) {
-	const options = (optionsOrRawUnits && typeof optionsOrRawUnits === 'object' && !Array.isArray(optionsOrRawUnits))
-		? { ...optionsOrRawUnits } : {};
-	const activeVerifiedEngine = (typeof window !== 'undefined' && window.verifiedSentenceGenerator) || _verifiedGeneratorEngine;
-	const verifiedBatchFn = (!options.useAstOnly && activeVerifiedEngine) ? activeVerifiedEngine.generateVerifiedSentencesForUnit : null;
-	const astBatchFn = _unitGeneratorEngine && (_unitGeneratorEngine.generateUnitSentencesAST || _unitGeneratorEngine.generateSentencesForUnit);
-	const engineBatchFn = typeof verifiedBatchFn === 'function' ? verifiedBatchFn : astBatchFn;
-
-	if (typeof engineBatchFn === 'function' && engineBatchFn !== generateSentencesForUnit) {
-		const res = engineBatchFn(unitId, count, options);
-		const list = (res && Array.isArray(res.sentences) ? res.sentences : []).map(s => ({
-			ko: s.ko || '',
-			enLiteral: s.enLiteral || '',
-			enNatural: s.enNatural || '',
-			en: s.enLiteral || s.enNatural || '',
-			pronunciation: s.pronunciation || s.ko || '',
-			isVerifiedStructure: Boolean(s.isVerifiedStructure),
-			verifiedTemplateId: s.verifiedTemplateId || null,
-			verifiedTemplateTitle: s.verifiedTemplateTitle || null,
-			difficultyTier: s.difficultyTier || null,
-			difficultyLabel: s.difficultyLabel || null,
-			templateDifficulty: (typeof s.templateDifficulty === 'number') ? s.templateDifficulty : null,
-			eojeols: Array.isArray(s.eojeols) ? s.eojeols.map(ej => ({
-				surfaceKo: ej.surfaceKo,
-				surfaceEnLit: ej.surfaceEnLit || '',
-				role: ej.role || '',
-				headUnitId: ej.headUnitId ?? null,
-				particleUnitId: ej.particleUnitId ?? null,
-				endingUnitId: ej.endingUnitId ?? null,
-				segments: Array.isArray(ej.segments) ? ej.segments.map(seg => ({
-					textKo: seg.textKo || '',
-					textEn: seg.textEn || '',
-					unitId: typeof seg.unitId === 'number' ? seg.unitId : null,
-					kind: seg.kind || 'stem',
-					pos: seg.pos || null,
-					role: seg.role || null
-				})) : []
-			})) : [],
-			unitsUsed: Array.isArray(s.unitsUsed) ? s.unitsUsed : [],
-			unitIds: Array.isArray(s.unitIds) ? s.unitIds : []
-		}));
-
-		Object.defineProperties(list, {
-			ok: { value: Boolean(res && res.ok), enumerable: false, configurable: true },
-			insufficientSet: { value: Boolean(res && res.insufficientSet), enumerable: false, configurable: true },
-			missingRoles: { value: (res && res.missingRoles) || [], enumerable: false, configurable: true },
-			message: { value: (res && res.message) || null, enumerable: false, configurable: true }
-		});
-		return list;
-	}
-	return [];
-}
-
-/**
- * Builds the JSON record stored when the user flags a generated sentence as bad.
- * Everything the triage agent needs to reproduce and judge it is captured here:
- * surface forms, the target unit, the template, and every unit used (per-morpheme).
- */
-function buildFlagEntry(item, targetUnitId, mode = 'all') {
-	const segments = [];
-	for (const ej of (item && Array.isArray(item.eojeols)) ? item.eojeols : []) {
-		for (const seg of Array.isArray(ej.segments) ? ej.segments : []) {
-			segments.push({ ko: seg.textKo || '', unitId: typeof seg.unitId === 'number' ? seg.unitId : null, kind: seg.kind || 'stem' });
-		}
-	}
-	return {
-		ko: String((item && item.ko) || ''),
-		enLiteral: (item && item.enLiteral) || '',
-		enNatural: (item && item.enNatural) || '',
-		targetUnitId: (typeof targetUnitId === 'number') ? targetUnitId : null,
-		mode,
-		origin: item && item.isVerifiedStructure ? 'verified' : 'ast',
-		templateId: (item && item.verifiedTemplateId) || null,
-		tier: (item && item.difficultyTier) || null,
-		unitIds: Array.from(new Set([...(item && item.unitIds) || [], ...(item && item.unitsUsed) || []].filter(n => typeof n === 'number'))),
-		segments
 	};
 }
 
@@ -571,36 +367,7 @@ class UnitSelectorView {
 	}
 
 	speakKoreanSentence(text, buttonEl = null) {
-		if (!text) return;
-		if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-			return;
-		}
-		try {
-			window.speechSynthesis.cancel();
-			const cleanText = String(text).replace(/\[.*?\]/g, '').trim();
-			const utterance = new SpeechSynthesisUtterance(cleanText);
-			utterance.lang = 'ko-KR';
-			utterance.rate = 0.9;
-
-			const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
-			if (Array.isArray(voices) && voices.length > 0) {
-				const koVoice = voices.find(v => v.lang === 'ko-KR' || v.lang.startsWith('ko'));
-				if (koVoice) {
-					utterance.voice = koVoice;
-				}
-			}
-
-			if (buttonEl) {
-				buttonEl.classList.add('is-speaking');
-				const cleanup = () => buttonEl.classList.remove('is-speaking');
-				utterance.onend = cleanup;
-				utterance.onerror = cleanup;
-			}
-
-			window.speechSynthesis.speak(utterance);
-		} catch (err) {
-			if (buttonEl) buttonEl.classList.remove('is-speaking');
-		}
+		return speakKorean(text, buttonEl);
 	}
 
 	selectUnitForDetails(unitId) {
@@ -609,8 +376,61 @@ class UnitSelectorView {
 		this.lastGenerationError = null;
 		this.lastGenerationMode = 'all';
 		this.regenerateSentences(unitId);
-		this.renderSourcesList();
+		if (!this._markActiveRow(unitId)) this.renderSourcesList();
 		this.renderDetailsPane();
+	}
+
+	/** Moves the active-row highlight without rebuilding the list. Returns false when the row is not rendered. */
+	_markActiveRow(unitId) {
+		if (!this.sourcesListEl) return false;
+		const prev = this.sourcesListEl.querySelector('.selector-unit-row.is-active-detail');
+		if (prev) prev.classList.remove('is-active-detail');
+		const row = this.sourcesListEl.querySelector(`.selector-unit-row[data-unit-id="${unitId}"]`);
+		if (!row) return false;
+		row.classList.add('is-active-detail');
+		return true;
+	}
+
+	/** Unit ids in on-screen order across all source groups (collapsed groups included, so arrows can walk everything). */
+	getNavigableUnitIds() {
+		return this.getSourceGroups().flatMap(g => g.unitIds);
+	}
+
+	/** Select the next/previous unit in list order (expanding its group). delta is +1 or -1. */
+	moveSelection(delta) {
+		const order = this.getNavigableUnitIds();
+		if (!order.length) return null;
+		const at = this.selectedUnitId === null ? -1 : order.indexOf(this.selectedUnitId);
+		const next = order[Math.max(0, Math.min(order.length - 1, at < 0 ? (delta > 0 ? 0 : order.length - 1) : at + delta))];
+		const group = this.getSourceGroups().find(g => g.unitIds.includes(next));
+		const wasCollapsed = group && !this.expandedSources.has(group.source);
+		if (wasCollapsed) this.expandedSources.add(group.source);
+		this.selectUnitForDetails(next);
+		if (wasCollapsed) this.renderSourcesList();
+		const row = this.sourcesListEl && this.sourcesListEl.querySelector(`.selector-unit-row[data-unit-id="${next}"]`);
+		if (row && row.scrollIntoView) row.scrollIntoView({ block: 'nearest' });
+		return next;
+	}
+
+	/** Keyboard: Down/Up move the selection, Space/Enter toggle the selected unit in the Practice Set. */
+	handleKeyDown(e) {
+		if (!this.container || !this.container.isConnected) return false;
+		const viewEl = this.container.closest('[id^="view-"]');
+		if (viewEl && !viewEl.classList.contains('active')) return false;
+		if (document.querySelector('.modal-backdrop:not(.hidden)')) return false;
+		const t = e.target;
+		if (t && t.closest && t.closest('input, textarea, select, button, a, [contenteditable]')) return false;
+		if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+			e.preventDefault();
+			this.moveSelection(e.key === 'ArrowDown' ? 1 : -1);
+			return true;
+		}
+		if ((e.key === ' ' || e.key === 'Enter') && this.selectedUnitId !== null) {
+			e.preventDefault();
+			this.toggleUnitInclusion(this.selectedUnitId);
+			return true;
+		}
+		return false;
 	}
 
 	selectUnit(unitId) {
@@ -835,6 +655,10 @@ class UnitSelectorView {
 		layout.appendChild(leftCol);
 		layout.appendChild(this.detailsPaneEl);
 		this.container.appendChild(layout);
+		if (!this._keyHandler && typeof document !== 'undefined') {
+			this._keyHandler = (e) => this.handleKeyDown(e);
+			document.addEventListener('keydown', this._keyHandler);
+		}
 
 		// Bind quick filter & expand/collapse all
 		const searchInput = treeHeader.querySelector('#selector-quick-search');
@@ -882,6 +706,13 @@ class UnitSelectorView {
 
 	renderSourcesList() {
 		if (!this.sourcesListEl) return;
+		const scrollers = [this.sourcesListEl, this.sourcesListEl.parentElement].filter(Boolean);
+		const saved = scrollers.map(el => el.scrollTop);
+		this._buildSourcesList();
+		scrollers.forEach((el, i) => { el.scrollTop = saved[i]; }); // rebuilding the rows must not reset the list scroll
+	}
+
+	_buildSourcesList() {
 		this.sourcesListEl.innerHTML = '';
 
 		const groups = this.getSourceGroups();
@@ -1109,54 +940,8 @@ class UnitSelectorView {
 		coreSection.className = 'unit-core-section';
 
 		if (!this.isEditingDetails) {
-			// VIEW MODE
-			const metaRow = document.createElement('div');
-			metaRow.className = 'details-meta-pills';
-			metaRow.innerHTML = `
-				<span class="details-pill">ID #${unitId}</span>
-				<span class="details-pill">${pos}</span>
-				<span class="details-pill">${src}</span>
-			`;
-			coreSection.appendChild(metaRow);
-
-			const koHeading = document.createElement('h2');
-			koHeading.className = 'details-korean-heading';
-			koHeading.textContent = ko;
-			coreSection.appendChild(koHeading);
-
-			const enHeading = document.createElement('div');
-			enHeading.className = 'details-english-definition';
-			enHeading.textContent = en;
-			coreSection.appendChild(enHeading);
-
-			if (conjStr.trim() || honorific.trim()) {
-				const rulesBox = document.createElement('div');
-				rulesBox.className = 'details-grammar-box';
-				let rulesHtml = '';
-				if (conjStr.trim()) {
-					rulesHtml += `<div><span class="details-field-label">Conjugation / Grammar Rules:</span> <code>${conjStr}</code></div>`;
-				}
-				if (honorific.trim()) {
-					rulesHtml += `<div><span class="details-field-label">Honorifics:</span> ${honorific}</div>`;
-				}
-				rulesBox.innerHTML = rulesHtml;
-				coreSection.appendChild(rulesBox);
-			}
-
-			if (notesRaw.trim()) {
-				const notesBox = document.createElement('div');
-				notesBox.className = 'details-notes-box';
-				const notesLabel = document.createElement('div');
-				notesLabel.className = 'details-field-label';
-				notesLabel.textContent = 'Notes';
-				notesBox.appendChild(notesLabel);
-
-				const mdContainer = document.createElement('div');
-				mdContainer.className = 'details-markdown-body';
-				mdContainer.innerHTML = renderMarkdownWithHtml(notesRaw);
-				notesBox.appendChild(mdContainer);
-				coreSection.appendChild(notesBox);
-			}
+			// VIEW MODE (the same card the Verified Sentences view shows in its unit popup)
+			coreSection.insertAdjacentHTML('beforeend', unitCoreViewHtml({ id: unitId, ko, en, pos, src, conj: conjStr, honorific, notes: notesRaw }));
 		} else {
 			// IN-PLACE EDIT MODE (Roughly where each element appears in the view)
 			const form = document.createElement('form');

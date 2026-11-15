@@ -31,6 +31,7 @@ Do not fix a flagged bug without a fixture. Do not mark a flag confirmed from me
 ## Rules
 - No Hangul literals in generator/concord logic: put linguistic knowledge in `data.js` tags/SemanticData.
 - `korean/` and `webapp/` are browser-safe: no `fs`, `path`, `child_process`, `process.env`, console output (ESLint enforces).
+- `shared/` holds browser+Node modules used by both `webapp/` and `flashcards/` (markdown, speech, sentence adapter, unit card). `flashcards/index.html` is a standalone page (own localStorage state) whose `korean/` script list must match `webapp/index.html` (browser_load_test checks it).
 - `webapp/index.html` loads `korean/` as classic scripts. A new module must be wrapped in an IIFE `(function() { ... })();`
   (top-level `const` collides across scripts) and added to index.html in dependency order. `test/browser_load_test.js` checks both.
 - Work on `main` with small commits; ask before `git push`. No branches or worktrees unless asked.

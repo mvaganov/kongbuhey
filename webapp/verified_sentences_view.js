@@ -952,6 +952,27 @@ class VerifiedSentencesView {
 		`;
 	}
 
+	/** A clickable unit name: opens the language-unit details popup. */
+	_unitLinkHtml(unitId, ko) {
+		if (typeof unitId !== 'number') return `<strong>${this._escapeHtml(ko)}</strong>`;
+		return `<a href="#" class="unit-link" data-unit-link="${unitId}" title="Show unit details">${this._escapeHtml(ko)}</a> <small>(#${unitId})</small>`;
+	}
+
+	_unitInfo(unitId) {
+		const e = this.engine;
+		if (e && typeof e.getCellValue === 'function' && e.rawUnits && e.rawUnits[unitId]) {
+			return { id: unitId, ko: e.getCellValue(unitId, 'Korean'), en: e.getCellValue(unitId, 'English'), pos: e.getCellValue(unitId, 'PartofSpeech'),
+				src: e.getCellValue(unitId, 'Source'), conj: e.getCellValue(unitId, 'Conjugation'), honorific: e.getCellValue(unitId, 'HonorificRules'), notes: e.getCellValue(unitId, 'notes') };
+		}
+		const u = (typeof KR_EN_languageUnits !== 'undefined' ? KR_EN_languageUnits : []).find(r => r[0] === unitId);
+		return u ? { id: unitId, ko: u[1], en: u[2], pos: u[3], src: u[7], conj: u[6], honorific: u[10], notes: '' } : null;
+	}
+
+	_openUnitPopup(unitId) {
+		const info = this._unitInfo(unitId);
+		if (info && typeof window !== 'undefined' && typeof window.openUnitPopup === 'function') window.openUnitPopup(info);
+	}
+
 	_renderSlotCardHtml(tpl, slot, idx, stat) {
 		const tags = Array.isArray(slot.tags) ? slot.tags : [];
 		const grammarList = Array.isArray(slot.grammar) ? slot.grammar : [];
@@ -970,7 +991,7 @@ class VerifiedSentencesView {
 					</div>
 					<div class="pool-banner-detail">
 						Current tag requirements restrict this <strong>${this._escapeHtml(slot.pos)}</strong> slot to a single unit:
-						<strong>${this._escapeHtml(singleKo)}</strong> (#${singleId} — "${this._escapeHtml(singleEn)}").
+						${this._unitLinkHtml(singleId, singleKo)} (#${singleId} — "${this._escapeHtml(singleEn)}").
 						${!isFixedGrammar && tags.length > 0 ? 'Remove a tag below to allow more vocabulary choices.' : ''}
 					</div>
 				</div>
@@ -979,17 +1000,17 @@ class VerifiedSentencesView {
 			poolBannerHtml = `
 				<div class="slot-pool-banner slot-pool-zero">
 					⚠️ <strong>0 Matching Units</strong> for this tag combination (falls back to original unit
-					<strong>${this._escapeHtml(slot.originalKo)}</strong> #${slot.originalUnitId}). Remove restrictive tags below.
+					${this._unitLinkHtml(slot.originalUnitId, slot.originalKo)} (#${slot.originalUnitId}). Remove restrictive tags below.
 				</div>
 			`;
 		} else {
-			const samples = (stat.sampleUnits || []).map(u => `${u.ko} (#${u.id})`).join(', ');
+			const samples = (stat.sampleUnits || []).map(u => this._unitLinkHtml(u.id, u.ko)).join(', ');
 			poolBannerHtml = `
 				<div class="slot-pool-banner slot-pool-multi">
 					<div class="pool-banner-title">
 						✓ <strong>${stat.count.toLocaleString()} Matching ${this._escapeHtml(slot.pos)} Units</strong> available in pool
 					</div>
-					${samples ? `<div class="pool-banner-detail">Examples: ${this._escapeHtml(samples)}${stat.count > 8 ? ', ...' : ''}</div>` : ''}
+					${samples ? `<div class="pool-banner-detail">Examples: ${samples}${stat.count > 8 ? ', ...' : ''}</div>` : ''}
 				</div>
 			`;
 		}
@@ -1075,6 +1096,14 @@ class VerifiedSentencesView {
 
 	_bindEvents() {
 		if (!this.container) return;
+
+		this.container.querySelectorAll('[data-unit-link]').forEach(a => {
+			a.addEventListener('click', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				this._openUnitPopup(Number(a.dataset.unitLink));
+			});
+		});
 
 		const searchInput = this.container.querySelector('#verified-search-input');
 		if (searchInput) {

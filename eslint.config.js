@@ -34,7 +34,7 @@ module.exports = [
 	},
 	{
 		// Classes/data defined by other <script> tags; they are plain globals in the browser (no bundler).
-		files: ['webapp/**/*.js'],
+		files: ['webapp/**/*.js', 'shared/**/*.js', 'flashcards/**/*.js'],
 		languageOptions: {
 			globals: {
 				KongbuheyDB: 'readonly', SpreadsheetEngine: 'readonly', UnitSelectorView: 'readonly',
@@ -45,7 +45,7 @@ module.exports = [
 		}
 	},
 	{
-		files: ['webapp/selector.js'],
+		files: ['shared/markdown.js'],
 		rules: { 'no-control-regex': 'off' } // intentional control-character sanitizer
 	},
 	{

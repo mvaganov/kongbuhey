@@ -1181,7 +1181,11 @@ function analyzeTemplateStructure(template, options = {}) {
 			count: pool.count,
 			isSingleChoice: pool.isSingleChoice,
 			isZeroChoice: pool.isZeroChoice,
-			singleChoiceUnit: pool.singleChoiceUnit,
+			singleChoiceUnit: pool.singleChoiceUnit ? {
+				id: pool.singleChoiceUnit[DATA_SCHEMA.Id],
+				ko: pool.singleChoiceUnit[DATA_SCHEMA.Korean],
+				en: pool.singleChoiceUnit[DATA_SCHEMA.English]
+			} : null,
 			sampleUnits: pool.candidates.slice(0, 8).map(u => ({
 				id: u[DATA_SCHEMA.Id],
 				ko: u[DATA_SCHEMA.Korean],
