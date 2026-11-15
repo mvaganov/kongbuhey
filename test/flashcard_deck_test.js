@@ -88,11 +88,29 @@ for (const [value, lo, hi, label] of [[-2, 3, 5, '-2 returns 3-5 cards later'], 
 	assert(copy.order.join() === d.order.join() && copy.scoreOf(1) === 2, 'deck survives JSON round trip');
 }
 
+// Membership: add / remove / moveTo / sortBy
+{
+	const d = new Deck(ids(30), {}, lcg(11));
+	d.scores.set(99, 3);
+	assert(d.add(99) && d.has(99) && d.frontId === 0, 'add puts a card into the deck without replacing the current card');
+	assert(!d.add(99), 'adding a card twice is a no-op');
+	assert(d.remove(99) && !d.has(99) && d.scoreOf(99) === 3, 'remove takes the card out but remembers its score');
+	d.add(99);
+	const sc = d.order.map(id => d.scoreOf(id)), at = d.order.indexOf(99);
+	assert(sc.slice(at).every(x => x >= 3), 're-added card with a positive score rejoins its tier at the back');
+	assert(d.moveTo(5, 1) && d.order[1] === 5 && d.frontId === 0, 'moveTo(id, 1) queues a card right after the current one');
+	const seen = { 3: 50, 7: 10 };
+	d.sortBy(id => seen[id] || 0);
+	assert(d.order.indexOf(7) < d.order.indexOf(3) && d.order.indexOf(3) === d.size - 1 && new Set(d.order).size === d.size, 'sortBy orders by key ascending (never-seen first) and keeps every card');
+	const empty = new Deck([], {}, lcg(1));
+	assert(empty.add(4) && empty.frontId === 4, 'add works on an empty deck');
+}
+
 // Visualization helpers
 assert(scoreColor(-6) !== scoreColor(6) && scoreColor(-6).startsWith('hsl(0,') && scoreColor(6).startsWith('hsl(120,'), 'score colors run red to green');
 {
 	const g = gridLayout(2045, 340, 90);
-	assert(g.cell >= 3 && g.rows * g.cols >= 2045, `grid lays out all 2045 cards (cell ${g.cell}px, ${g.cols}x${g.rows})`);
+	assert(g.cell >= 2 && g.height <= 90 && g.rows * g.cols >= 2045, `grid lays out all 2045 cards (cell ${g.cell}px, ${g.cols}x${g.rows})`);
 	const small = gridLayout(60, 340, 90);
 	assert(small.cell > g.cell, 'small decks get bigger cells');
 }

@@ -6,6 +6,7 @@
  *    -2  3..5 cards ahead              -1  5..10 ahead (front half if the deck is < 20 cards)
  *     0  middle 50% of the deck        +1/+2  back of the deck, kept sorted by score so equal scores
  *                                      form a "tier" band; a new arrival lands at a random spot in its tier.
+ * Scores are remembered for cards removed from the deck, so re-adding a card keeps its history.
  * Browser global (window.Deck) or CommonJS.
  */
 (function() {
@@ -25,17 +26,22 @@ const HISTORY_LIMIT = 100;
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 const randInt = (rng, lo, hi) => lo + Math.floor(rng() * (hi - lo + 1)); // inclusive
 
+/** Start index of the sorted run of positive-score cards at the back of `list` (list.length when there is none). */
+function tailStart(list, score) {
+	const n = list.length;
+	let tail = n;
+	while (tail > 0 && score(list[tail - 1]) > 0 && (tail === n || score(list[tail - 1]) <= score(list[tail]))) tail--;
+	return tail;
+}
+
 /**
- * Where the scored card is inserted into the remaining deck (the cards after it was taken off the front).
- * `remaining` is an array of ids, `scores` a Map id -> score, `newScore` the card's score after this answer.
+ * Where a scored card is inserted into the remaining deck (the cards after it was taken off the front).
  * Returns an insertion index 0..remaining.length.
  */
 function placementIndex(remaining, scores, value, newScore, rng) {
 	const n = remaining.length;
 	const score = id => scores.get(id) || 0;
-	// Start of the sorted back-of-deck run of positive-score cards (n when there is none yet).
-	let tail = n;
-	while (tail > 0 && score(remaining[tail - 1]) > 0 && (tail === n || score(remaining[tail - 1]) <= score(remaining[tail]))) tail--;
+	const tail = tailStart(remaining, score);
 	if (value > 0) {
 		let lo = tail;
 		while (lo < n && score(remaining[lo]) < newScore) lo++;
@@ -54,15 +60,18 @@ class Deck {
 	constructor(ids = [], scores = {}, rng = Math.random) {
 		this.rng = rng;
 		this.order = ids.slice();
-		this.scores = new Map(ids.map(id => [id, clamp(Number(scores[id]) || 0, MIN_SCORE, MAX_SCORE)]));
+		this.scores = new Map();
+		for (const [k, v] of Object.entries(scores || {})) this.scores.set(Number(k), clamp(Number(v) || 0, MIN_SCORE, MAX_SCORE));
+		for (const id of this.order) if (!this.scores.has(id)) this.scores.set(id, 0);
 		this.history = []; // [{ id, prevScore }]
 	}
 
 	get size() { return this.order.length; }
 	get frontId() { return this.order.length ? this.order[0] : null; }
 	scoreOf(id) { return this.scores.get(id) || 0; }
+	has(id) { return this.order.includes(id); }
 
-	/** Apply a self-score to the front card. Returns { id, from, to } or null when the deck is empty. */
+	/** Apply a self-score to the front card. Returns { id, from, to, at } or null when the deck is empty. */
 	score(value) {
 		if (!this.order.length) return null;
 		const id = this.order.shift();
@@ -85,11 +94,33 @@ class Deck {
 		return h.id;
 	}
 
-	toFront(id) {
+	moveTo(id, index) {
 		const i = this.order.indexOf(id);
 		if (i < 0) return false;
 		this.order.splice(i, 1);
-		this.order.unshift(id);
+		this.order.splice(clamp(index, 0, this.order.length), 0, id);
+		return true;
+	}
+
+	toFront(id) { return this.moveTo(id, 0); }
+
+	/** Add a card behind the current one: a scored-positive card joins its tier, others land in the middle. */
+	add(id) {
+		if (this.has(id)) return false;
+		if (!this.scores.has(id)) this.scores.set(id, 0);
+		if (!this.order.length) { this.order.push(id); return true; }
+		const s = this.scoreOf(id);
+		const at = placementIndex(this.order.slice(1), this.scores, s > 0 ? 1 : 0, s, this.rng);
+		this.order.splice(1 + at, 0, id);
+		return true;
+	}
+
+	/** Remove a card from the deck (its score is kept in case it comes back). */
+	remove(id) {
+		const i = this.order.indexOf(id);
+		if (i < 0) return false;
+		this.order.splice(i, 1);
+		this.history = this.history.filter(h => h.id !== id);
 		return true;
 	}
 
@@ -101,20 +132,26 @@ class Deck {
 		this.history = [];
 	}
 
-	resetScores() {
-		for (const id of this.order) this.scores.set(id, 0);
+	/** Stable sort by a numeric key (ascending). */
+	sortBy(keyFn) {
+		this.order = this.order.map((id, i) => ({ id, i, k: Number(keyFn(id)) || 0 }))
+			.sort((a, b) => a.k - b.k || a.i - b.i).map(x => x.id);
 		this.history = [];
 	}
 
-	/** Keep the order and scores of cards that remain, drop the rest, append newcomers at the back. */
+	resetScores() {
+		for (const id of Array.from(this.scores.keys())) this.scores.set(id, 0);
+		this.history = [];
+	}
+
+	/** Keep the order of cards that remain, drop the rest, append newcomers at the back. */
 	setMembers(ids) {
 		const want = new Set(ids);
 		const kept = this.order.filter(id => want.has(id));
 		const have = new Set(kept);
 		const added = ids.filter(id => !have.has(id));
 		this.order = kept.concat(added);
-		for (const id of Array.from(this.scores.keys())) if (!want.has(id)) this.scores.delete(id);
-		for (const id of added) this.scores.set(id, 0);
+		for (const id of added) if (!this.scores.has(id)) this.scores.set(id, 0);
 		this.history = this.history.filter(h => want.has(h.id));
 	}
 
@@ -123,8 +160,7 @@ class Deck {
 	}
 
 	static fromJSON(data, rng = Math.random) {
-		const d = new Deck(Array.isArray(data && data.order) ? data.order : [], (data && data.scores) || {}, rng);
-		return d;
+		return new Deck(Array.isArray(data && data.order) ? data.order : [], (data && data.scores) || {}, rng);
 	}
 }
 
@@ -135,7 +171,7 @@ function scoreColor(score) {
 }
 
 /** Grid layout for the deck visualization: the biggest square cell that fits n cards in width x height. */
-function gridLayout(n, width, height, minCell = 3, maxCell = 18, gap = 1) {
+function gridLayout(n, width, height, minCell = 2, maxCell = 18, gap = 1) {
 	if (n <= 0) return { cell: maxCell, cols: 1, rows: 0, height: 0 };
 	let cell = maxCell;
 	for (; cell > minCell; cell--) {
