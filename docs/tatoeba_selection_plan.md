@@ -15,7 +15,7 @@ Selection is a deterministic script. Only *validity* judgment needs a model, and
 - Drop sentences containing words absent from data.js unless the lexicon gap is deliberate (report them separately: they are vocabulary candidates).
 - Write `local/tatoeba_stageA.tsv` plus a drop-reason report.
 
-**B. Usefulness bucketing** (script). Run each survivor through the passage analyzer (`text_analyzer.js`).
+**B. Usefulness bucketing** (script). Run each survivor through the passage analyzer (`tools/text_analyzer.js`).
 - i+0: fully covered by existing units (good review material).
 - i+1: exactly one unknown unit (best learning value).
 - Discard 2+ unknown; cap per-grammar-pattern so 300 near-identical "~해요" sentences do not dominate.
@@ -41,3 +41,11 @@ The TSV has none. You would download Tatoeba's `links.csv` and `eng_sentences.ts
 - A, B, E: no model, plain Node. Cheap and reproducible.
 - C pass 1: Haiku. C pass 2: Sonnet. Opus not needed.
 - Haiku alone for validity is not recommended; it is fine as a first filter.
+
+## Status (paused 2026-11-15, nothing ingested)
+Paused: Tatoeba sentence structures differ too much from what the class teaches. All outputs are in gitignored `local/`.
+- Stage A: 15,966 -> 11,328 (length, Latin/digits, final punctuation, spelling-error patterns, names, duplicates).
+- Stage B: analyzer bucketing; 2,613 with 0 unknown units, 4,273 with 1 (some are analyzer gaps on inflected forms, e.g. 갔어, 있었죠, 문제). Diversity-capped to 700.
+- Stage C: Haiku reject screen (547 ok / 49 fix / 104 reject), Sonnet confirmation of 596 -> 573 kept. Spot-check sheet: `local/tatoeba_spotcheck.md`.
+- Not done: human spot check, export to `data/tatoeba_selected.tsv`, `ingest.js --source tatoeba --dry-run`, English via Tatoeba links.
+- License: CC BY; attribution is already in the About & Credits modal.
