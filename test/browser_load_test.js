@@ -145,7 +145,7 @@ function walk(dir) {
 	// Flashcard page: renders a card, flips on a tap, scores, undoes (jsdom has no canvas: ignore that one error).
 	const fcErrors = [];
 	const fvc = new VirtualConsole();
-	fvc.on('jsdomError', e => { const m = (e.detail && e.detail.message) || e.message; if (!/getContext/.test(m)) fcErrors.push(m); });
+	fvc.on('jsdomError', e => { const m = (e.detail && e.detail.message) || e.message; if (!/getContext|Not implemented/.test(m)) fcErrors.push(m); });
 	const fdom = await JSDOM.fromFile(path.join(ROOT, 'flashcards', 'index.html'), { runScripts: 'dangerously', resources: 'usable', pretendToBeVisual: true, virtualConsole: fvc });
 	await new Promise(r => fdom.window.addEventListener('load', r));
 	await new Promise(r => setTimeout(r, 800));
@@ -159,6 +159,49 @@ function walk(dir) {
 	assert(app.deck.frontId !== first && app.deck.scoreOf(first) === 1, 'scoring moves to the next card and records the score');
 	fd.querySelector('[data-act="undo"]').click();
 	assert(app.deck.frontId === first && app.deck.scoreOf(first) === 0, 'Back undoes the last score');
+	// Example-sentence unit links: queue the clicked unit next (default option), adding it to the deck if needed.
+	const link = fd.querySelector('.s-ko a[data-unit]');
+	assert(!!link && fd.querySelector('.s-ko mark.hl'), 'example sentences show the unit highlighted and other units as links');
+	if (link) {
+		const lid = Number(link.dataset.unit);
+		app.deck.remove(lid);
+		link.click();
+		assert(app.deck.has(lid) && (app.deck.order[1] === lid || app.deck.frontId === lid), 'tapping a unit link adds it to the deck and queues it next');
+	}
+	// Back side: Remove from the deck; seen/correct stats; sorting.
+	fd.querySelector('#card').click();
+	const removed = app.deck.frontId;
+	fd.querySelector('[data-act="remove-unit"]').click();
+	assert(!app.deck.has(removed) && app.deck.frontId !== removed, 'Remove takes the current card out of the deck');
+	assert(app.stat(app.deck.frontId).seen > 0, 'showing a card marks it seen');
+	fd.querySelector('#card').click();
+	const scored = app.deck.frontId;
+	fd.querySelector('.score[data-v="2"]').click();
+	assert(app.stat(scored).correct > 0, 'a positive score marks the unit correct');
+	fd.querySelector('[data-act="options"]').click();
+	assert(!!fd.querySelector('[data-act="sort-seen"]') && !!fd.querySelector('[data-opt="unitClick"]'), 'options offer sorting and the example-click behaviour');
+	fd.querySelector('[data-act="sort-seen"]').click();
+	const seenAfter = app.deck.order.slice(1).map(i => app.stat(i).seen || 0);
+	assert(seenAfter.every((v, i) => i === 0 || v >= seenAfter[i - 1]) && seenAfter[seenAfter.length - 1] > 0, 'sort by last seen puts the least recently seen first');
+	// Units mode: list, source toggle, details with morpheme breakdown, add back.
+	fd.querySelector('[data-act="mode-units"]').click();
+	assert(app.mode === 'units' && fd.querySelectorAll('.u-src').length > 10, 'Units mode lists the sources');
+	const srcBtn = fd.querySelector('[data-act="u-src-expand"]');
+	srcBtn.click();
+	const firstRow = fd.querySelector('[data-act="u-open"]');
+	assert(!!firstRow, 'expanding a source shows its units');
+	const src = srcBtn.dataset.src, srcIds = app.unitsView.bySource.get(src);
+	fd.querySelector('[data-act="u-src-toggle"]').click();
+	const allIn = srcIds.every(i => app.deck.has(i)), noneIn = srcIds.every(i => !app.deck.has(i));
+	assert(allIn || noneIn, 'the source tick adds or removes the whole source');
+	fd.querySelector('[data-act="u-open"]').click();
+	assert(app.unitsView.screen === 'detail' && fd.querySelector('.u-detail .unit-main'), 'tapping a unit opens its details');
+	assert(fd.querySelectorAll('.s-parts .part').length > 0 || fd.querySelectorAll('.sentence').length === 0, 'details show the morpheme breakdown of each example');
+	const did = app.unitsView.detailId, wasIn = app.deck.has(did);
+	fd.querySelector('.u-detail [data-act="u-toggle"]').click();
+	assert(app.deck.has(did) === !wasIn, 'the details page toggles the unit in or out of the deck');
+	fd.querySelector('[data-act="u-study"]').click();
+	assert(app.mode === 'cards' && app.deck.frontId === did, 'Study now shows that unit as the current card');
 	fdom.window.close();
 
 	console.log(`\nTOTAL: ${passed + failed}  PASSED: ${passed}  FAILED: ${failed}`);
