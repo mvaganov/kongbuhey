@@ -8,8 +8,6 @@ scratch/
 flagged/
 
 # local-only curriculum content (textbook-derived; never commit)
-scripts/justKorean.txt
-scripts/koreanExamples.txt
 local/
 
 # one-off local scripts

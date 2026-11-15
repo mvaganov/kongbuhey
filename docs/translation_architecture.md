@@ -343,7 +343,7 @@ In [`webapp/selector.js`](file:///d:/Users/mvaga/Developer/agentic/antigravity/k
 To keep every change verifiable and safe, we will execute this in 5 modular phases:
 
 1. **Phase 1 — Metadata Enrichment in `data.js`**:
-   - Create `scripts/enrich_language_metadata.js` to populate `en` (clean literal/natural glosses, irregular English verb forms, particle/ending literal & natural frames) and `valency` (verb argument specs) in `SemanticVector` across all 2,006 language units in `data.js`.
+   - Create a one-off script (`scripts/` has since been deleted) to populate `en` (clean literal/natural glosses, irregular English verb forms, particle/ending literal & natural frames) and `valency` (verb argument specs) in `SemanticVector` across all 2,006 language units in `data.js`.
 2. **Phase 2 — Unified Lexicon Index & Stem Engine (`korean/core/`)**:
    - Implement memoized `parseSemanticVector` and $O(1)$ inverted POS/Tag indexes in `korean/core/lexicon_index.js`.
    - Extract `korean/core/stem_engine.js` and replace `basicConjugate` in `korean/state.js` and duplicate stem conjugators.
