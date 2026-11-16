@@ -1,0 +1,227 @@
+/**
+ * fc2/game.js - pure game rules for the fc2 study game (no DOM, no storage). Browser global (window.FC2Game) or CommonJS.
+ *
+ * Every unit carries the four spreadsheet values: score (RecognitionScore), tier (index into LongTermRecognition),
+ * lastCorrect / lastSeen (unix seconds). Everything else is derived from them and the clock:
+ *   new       owned, never answered
+ *   learning  score < ESTABLISHED: recycles inside the session a few cards later, no time gate
+ *   growing   established and inside its interval: produces idle currency
+ *   ripe      interval elapsed: a harvest (the spaced-repetition review) pays out and counts toward the next tier
+ *   wilted    WILT_AFTER intervals elapsed: produces nothing; failing its review can cost a tier (capped, see classify)
+ *   dormant   wilted beyond WILT_CAP: same as wilted, but without the tier risk
+ * RecognitionScore decays one point per extra interval while a unit waits (derived, applied when it is next answered);
+ * LongTermRecognition is durable and gives back up to 2 points per tier on a correct recovery.
+ * Coins are paid per attempt and never depend on which self-score was picked.
+ */
+(function() {
+'use strict';
+
+const HOUR = 3600;
+const T = {
+	MIN_SCORE: -6, MAX_SCORE: 10, ESTABLISHED: 3,
+	TIERS: ['unknown', 'recognized', 'definitionKnown', 'knownByDefinition'],
+	INTERVAL: [4 * HOUR, 20 * HOUR, 72 * HOUR, 168 * HOUR],
+	HARVESTS_TO_PROMOTE: [1, 2, 3],
+	WILT_AFTER: 3, WILT_CAP: 20,
+	IDLE_RATE: [2, 5, 12, 30],            // coins per hour while growing, by tier
+	HARVEST_PAY: [8, 16, 32, 64], LEARN_PAY: 2, PRACTICE_PAY: 1,
+	XP: { answer: 5, harvest: 10, establish: 15, promote: 40 },
+	LEARN_GAP: { '-2': 3, '-1': 5, 0: 8, 1: 12, 2: 20 },   // cards until a learning card returns
+	NURSERY_CAP: 15, PULL_SIZE: 5, PULL_BASE: 40, PULL_STEP: 10, PULL_WINDOW: 8,
+	ROUND: 10, SWIFT_SEC: 6, SWIFT_BONUS: 0.2, COMBO_STEP: 0.02, COMBO_CAP: 25,
+	CRIT_BASE: 0.05, CRIT_MULT: 3, STREAK_STEP: 0.05, STREAK_CAP: 10, OFFLINE_CAP_H: 8,
+	LEVEL_BASE: 40, LEVEL_STEP: 20, LEVEL_COINS: 10,
+	UPGRADES: {
+		yield: { name: 'Sharper sickle', desc: '+10% harvest pay', per: 0.1, base: 60, growth: 1.6, max: 20 },
+		rate: { name: 'Busy hive', desc: '+15% idle income', per: 0.15, base: 80, growth: 1.6, max: 20 },
+		cap: { name: 'Bigger store', desc: '+2h offline storage', per: 2, base: 100, growth: 1.8, max: 8 },
+		luck: { name: 'Lucky charm', desc: '+2% critical harvest', per: 0.02, base: 120, growth: 1.7, max: 10 },
+		combo: { name: 'Long breath', desc: '+5 combo cap', per: 5, base: 150, growth: 1.9, max: 5 },
+		pull: { name: 'Wider net', desc: '+1 unit per pull', per: 1, base: 200, growth: 2.2, max: 5 },
+		nursery: { name: 'Bigger nursery', desc: '+3 learning slots', per: 3, base: 150, growth: 1.9, max: 5 }
+	}
+};
+
+const clamp = (n, lo = T.MIN_SCORE, hi = T.MAX_SCORE) => Math.max(lo, Math.min(hi, n));
+const tierIndex = name => Math.max(0, T.TIERS.indexOf(name));
+const blankUnit = () => ({ score: 0, tier: 0, lastCorrect: 0, lastSeen: 0 });
+const blankGame = now => ({
+	v: 1, coins: 0, xp: 0, level: 1, owned: [], h: {}, up: {}, pulls: 0, lastCollect: now,
+	streak: { day: '', n: 0 }, cos: { owned: ['midnight', 'sparks'], theme: 'midnight', particle: 'sparks' },
+	totals: { answers: 0, harvests: 0, rounds: 0, earned: 0 }
+});
+
+function status(u, now) {
+	if (!u.lastSeen && !u.lastCorrect && !u.score) return 'new';
+	if (u.score < T.ESTABLISHED) return 'learning';
+	const el = now - u.lastCorrect, I = T.INTERVAL[u.tier];
+	if (el < I) return 'growing';
+	return el < I * T.WILT_AFTER ? 'ripe' : 'wilted';
+}
+
+/** Points RecognitionScore has lost to waiting (0 until a full interval past ripe). */
+function decay(u, now) {
+	if (u.score < T.ESTABLISHED) return 0;
+	const I = T.INTERVAL[u.tier];
+	return Math.max(0, Math.floor((now - u.lastCorrect - I) / I));
+}
+const effectiveScore = (u, now) => clamp(u.score - decay(u, now));
+/** 0..1 progress of a growing unit toward ripe. */
+const ripeness = (u, now) => u.score < T.ESTABLISHED ? 0 : Math.max(0, Math.min(1, (now - u.lastCorrect) / T.INTERVAL[u.tier]));
+
+/** units: Map id -> unit. Returns Map id -> status, with wilted units past WILT_CAP (oldest first keep the risk) marked dormant. */
+function classify(units, ownedIds, now) {
+	const out = new Map(), wilted = [];
+	for (const id of ownedIds) {
+		const u = units.get(id) || blankUnit(), s = status(u, now);
+		out.set(id, s);
+		if (s === 'wilted') wilted.push([id, u.lastCorrect]);
+	}
+	wilted.sort((a, b) => a[1] - b[1]).slice(T.WILT_CAP).forEach(([id]) => out.set(id, 'dormant'));
+	return out;
+}
+
+/**
+ * Apply a self-score v (-2..+2). st is the unit's status from classify(). h = harvests banked toward the next tier.
+ * Returns { unit, h, ev } where ev = { kind: learn|harvest|practice, established, harvested, promoted, demoted, lapsed, recovered }.
+ */
+function answer(u, h, v, now, st) {
+	const r = { ...u, lastSeen: now };
+	const ev = { kind: 'learn', established: false, harvested: false, promoted: false, demoted: false, lapsed: false, recovered: 0 };
+	if (st === 'new' || st === 'learning') {
+		r.score = clamp(u.score + v);
+		if (v > 0) r.lastCorrect = now;
+		ev.established = r.score >= T.ESTABLISHED;
+		return { unit: r, h, ev };
+	}
+	if (st === 'growing') { // early review: only an honest miss changes anything
+		ev.kind = 'practice';
+		if (v < 0) { r.score = T.ESTABLISHED + v; h = 0; ev.lapsed = true; }
+		return { unit: r, h, ev };
+	}
+	ev.kind = 'harvest';
+	const d = decay(u, now);
+	if (v > 0) {
+		ev.recovered = Math.min(d, 2 * u.tier);
+		r.score = clamp(u.score - d + ev.recovered + v);
+		r.lastCorrect = now;
+		if (r.score >= T.ESTABLISHED) {
+			ev.harvested = true;
+			h += 1;
+			if (u.tier < T.TIERS.length - 1 && h >= T.HARVESTS_TO_PROMOTE[u.tier]) { r.tier = u.tier + 1; h = 0; ev.promoted = true; }
+		} else ev.lapsed = true; // faded too far: correct, but it has to be re-established
+		return { unit: r, h, ev };
+	}
+	r.score = clamp(Math.min(u.score - d + v, T.ESTABLISHED - 1));
+	ev.lapsed = true;
+	if (v < 0 && st === 'wilted' && u.tier > 0) { r.tier = u.tier - 1; ev.demoted = true; }
+	return { unit: r, h: 0, ev };
+}
+
+const upLevel = (g, key) => (g.up && g.up[key]) || 0;
+const upCost = (g, key) => { const s = T.UPGRADES[key]; return Math.round(s.base * Math.pow(s.growth, upLevel(g, key))); };
+const comboCap = g => T.COMBO_CAP + upLevel(g, 'combo') * T.UPGRADES.combo.per;
+const critChance = g => T.CRIT_BASE + upLevel(g, 'luck') * T.UPGRADES.luck.per;
+const pullSize = g => T.PULL_SIZE + upLevel(g, 'pull');
+const pullCost = g => g.pulls === 0 ? 0 : T.PULL_BASE + T.PULL_STEP * (g.pulls - 1);
+const nurseryCap = g => T.NURSERY_CAP + upLevel(g, 'nursery') * T.UPGRADES.nursery.per;
+const offlineCapH = g => T.OFFLINE_CAP_H + upLevel(g, 'cap') * T.UPGRADES.cap.per;
+const streakMult = g => 1 + Math.min(Math.max(0, g.streak.n - 1), T.STREAK_CAP) * T.STREAK_STEP;
+const xpToNext = level => T.LEVEL_BASE + T.LEVEL_STEP * level;
+
+/** Coins for one attempt. tier = the unit's tier before the answer. m = { combo, swift, crit }. */
+function payout(g, ev, tier, m) {
+	const base = ev.kind === 'harvest' ? T.HARVEST_PAY[tier] : (ev.kind === 'practice' ? T.PRACTICE_PAY : T.LEARN_PAY);
+	let mult = streakMult(g) * (1 + Math.min(m.combo, comboCap(g)) * T.COMBO_STEP);
+	if (ev.kind === 'harvest') mult *= (1 + upLevel(g, 'yield') * T.UPGRADES.yield.per) * (m.crit ? T.CRIT_MULT : 1);
+	if (m.swift) mult *= 1 + T.SWIFT_BONUS;
+	return Math.max(1, Math.round(base * mult));
+}
+const xpFor = ev => T.XP.answer + (ev.harvested ? T.XP.harvest : 0) + (ev.established ? T.XP.establish : 0) + (ev.promoted ? T.XP.promote : 0);
+
+/** Adds xp, returns the number of levels gained (g is mutated). */
+function addXp(g, xp) {
+	g.xp += xp;
+	let ups = 0;
+	while (g.xp >= xpToNext(g.level)) { g.xp -= xpToNext(g.level); g.level++; ups++; g.coins += T.LEVEL_COINS * g.level; }
+	return ups;
+}
+
+/** Idle coins produced by growing units since g.lastCollect (each unit stops when it turns ripe; capped by offline storage). */
+function idleEarned(g, units, now) {
+	const end = Math.min(now, g.lastCollect + offlineCapH(g) * HOUR);
+	let sum = 0;
+	for (const id of g.owned) {
+		const u = units.get(id);
+		if (!u || u.score < T.ESTABLISHED || !u.lastCorrect) continue;
+		const a = Math.max(g.lastCollect, u.lastCorrect), b = Math.min(end, u.lastCorrect + T.INTERVAL[u.tier]);
+		if (b > a) sum += T.IDLE_RATE[u.tier] * (b - a) / HOUR;
+	}
+	return Math.floor(sum * (1 + upLevel(g, 'rate') * T.UPGRADES.rate.per));
+}
+function idleRate(g, units, now) {
+	let r = 0;
+	for (const id of g.owned) { const u = units.get(id); if (u && status(u, now) === 'growing') r += T.IDLE_RATE[u.tier]; }
+	return r * (1 + upLevel(g, 'rate') * T.UPGRADES.rate.per);
+}
+
+/** Day streak: call on the first answer of a session. dayKey = local YYYY-MM-DD, prevKey = the day before. Returns 'kept'|'same'|'reset'. */
+function touchStreak(g, dayKey, prevKey) {
+	if (g.streak.day === dayKey) return 'same';
+	const kept = g.streak.day === prevKey;
+	g.streak = { day: dayKey, n: kept ? g.streak.n + 1 : 1 };
+	return kept ? 'kept' : 'reset';
+}
+
+/** Pack order: this semester's class packs first (numeric), then study texts, then everything else in data order. */
+function packRank(source) {
+	const s = String(source), m = /(\d+)/.exec(s), n = m ? Number(m[1]) : 0;
+	if (s.startsWith('class')) return n;
+	if (s.startsWith('studytext')) return 1e6 + n;
+	return 2e6 + (s.startsWith('SUOBI') ? n : 1e5);
+}
+const rarity = priority => priority >= 5 ? 3 : priority >= 4 ? 2 : priority >= 3 ? 1 : 0; // PriorityScore 5 / 4 / 3 / lower
+
+/**
+ * Choose the next units to unlock. cands: [{ id, pack, priority }] not yet owned. Works through packs in packRank order
+ * (or `pack` first when given); inside a pack, highest PriorityScore then lowest id, picking randomly within a small window.
+ */
+function pickPull(cands, n, rng = Math.random, pack = null) {
+	const sorted = cands.slice().sort((a, b) => ((a.pack === pack ? -1 : packRank(a.pack)) - (b.pack === pack ? -1 : packRank(b.pack)))
+		|| (b.priority - a.priority) || (a.id - b.id));
+	const out = [];
+	while (out.length < n && sorted.length) {
+		const first = sorted[0].pack;
+		let w = 0;
+		while (w < sorted.length && w < T.PULL_WINDOW && sorted[w].pack === first) w++;
+		out.push(sorted.splice(Math.floor(rng() * w), 1)[0].id);
+	}
+	return out;
+}
+
+/**
+ * Next card for the session. st: Map id -> status (classify). s = { n: cards answered, due: Map id -> n at which a learning
+ * card returns, last: id just shown, front: [ids queued by the player] }. Returns { id, mode } or null.
+ */
+function nextCard(g, units, st, s) {
+	const not = id => id !== s.last || g.owned.length === 1;
+	while (s.front && s.front.length) { const id = s.front.shift(); if (st.has(id)) return { id, mode: modeOf(st.get(id)) }; }
+	const by = (want, key) => g.owned.filter(id => want.includes(st.get(id)) && not(id)).sort((a, b) => key(a) - key(b));
+	const dueAt = id => s.due.has(id) ? s.due.get(id) : 0, lc = id => (units.get(id) || {}).lastCorrect || 0, ls = id => (units.get(id) || {}).lastSeen || 0;
+	const learning = by(['learning'], dueAt);
+	if (learning.length && dueAt(learning[0]) <= s.n) return { id: learning[0], mode: 'learn' };
+	for (const group of [['wilted'], ['ripe'], ['dormant']]) { const l = by(group, lc); if (l.length) return { id: l[0], mode: 'harvest' }; }
+	const fresh = g.owned.filter(id => st.get(id) === 'new' && not(id));
+	if (fresh.length) return { id: fresh[0], mode: 'learn' };
+	if (learning.length) return { id: learning[0], mode: 'learn' };
+	const practice = by(['growing'], ls);
+	return practice.length ? { id: practice[0], mode: 'practice' } : null;
+}
+const modeOf = st => (st === 'new' || st === 'learning') ? 'learn' : (st === 'growing' ? 'practice' : 'harvest');
+
+const api = { T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
+	idleEarned, idleRate, touchStreak, packRank, rarity, pickPull, nextCard, modeOf, upLevel, upCost, comboCap, critChance, pullSize, pullCost,
+	nurseryCap, offlineCapH, streakMult };
+if (typeof window !== 'undefined') window.FC2Game = api;
+if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})();
