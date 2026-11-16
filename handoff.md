@@ -11,16 +11,21 @@ Updated 2026-11-16. Rules, commands and the flag-review loop are in `CLAUDE.md`;
 - Deck rules: `deck.js` (`test/flashcard_deck_test.js`). UI flows: `test/browser_load_test.js`. The deck canvas animation is untested (jsdom).
 - Deploy: repo Settings > Pages > branch `main`, `/ (root)`; open `https://mvaganov.github.io/kongbuhey/flashcards/`. Scores are per browser.
 
-**fc2 (`fc2/`, the study game, slice 1 built 2026-11-16, untested on a phone):** keeps `flashcards/` as the comparison.
-- Rules: `fc2/game.js` (pure; `test/fc2_game_test.js`, 31 checks, run directly: not yet a `test.js` stage). Effects: `fx.js`. UI: `app.js`.
+**fc2 (`fc2/`, the study game, slices 1-2 built 2026-11-16; slice 2 untested on a phone):** keeps `flashcards/` as the comparison.
+- Rules: `fc2/game.js` (pure; `test/fc2_game_test.js`, 45 checks, run directly: not yet a `test.js` stage). Effects: `fx.js`. UI: `app.js`.
   All tuning numbers are the `T` table at the top of `game.js`.
 - Loop: Shop pull unlocks units in course order (class packs first, PriorityScore high to low) -> learn in-session until
   RecognitionScore 3 -> the unit "grows" and earns idle coins -> ripe after an interval set by LongTermRecognition
   (4h / 20h / 3d / 7d) -> harvest (the spaced review) banks progress to the next tier -> wilts after 3 intervals (miss = lose a tier,
   capped at 20 at-risk units, the rest are dormant). Coins never depend on the self-score picked.
+- Trials: the harvest that would promote a unit is an objective question, not a self-scored card. By tier: Korean -> meaning (4 choices),
+  listening -> meaning (6, falls back to reading without speech synthesis), meaning -> Korean (6). Pass promotes and pays a bonus; fail sends
+  the unit back to learning and the trial returns when it is next ripe. Distractors: unlocked units of the same part of speech first.
+- Daily quests (3 per local day plus a chest) and Ascend (bank 10+ new stars as seals: +2% coins each, resets coins and upgrades).
 - Data: unit progress and notes go to the webapp unit store (`KongbuheyAppDB`, via `webapp/db.js`), so the spreadsheet shows them.
   Game state (coins, xp, owned, upgrades, cosmetics, flags) is localStorage `kb.fc2.v1.*`. First launch imports `kb.fc.v1.*`.
-- Not built (slice 2): objective trials (multiple choice / sound board) gating promotions, prestige, daily quests, undo, Units picker.
+- Not built: sentence-level trials (trials test single units only), a free-play sound board, undo, Units picker.
+- Unchecked: the listening-trial screen was never rendered in a real browser test (the other two trial types were).
 - Deploy: same Pages site, `https://mvaganov.github.io/kongbuhey/fc2/`.
 
 **Webapp (`webapp/`):** Unit Selector & Details, spreadsheet over all units, practice sets, text importer, Verified Sentences (544
@@ -52,7 +57,7 @@ ingest.js, schema_analysis.js, verify_sentences_cli.js   still at root, not yet 
 ```
 
 ## Priorities (in order)
-1. Play `fc2/` on the phone (and `flashcards/` to compare) and send requirement changes; then fc2 slice 2. Semester starts ~2026-12-01; early units (class2011 to class2112) first.
+1. Play `fc2/` on the phone (and `flashcards/` to compare) and send balance and pacing notes. Semester starts ~2026-12-01; early units (class2011 to class2112) first.
 2. New study modes on top of `shared/`: reverse sound board (hear Korean, pick from a button matrix) and multiple-choice comprehension.
 3. Study, flag, triage, fix (CLAUDE.md loop). Freeze generator scope once the loop works.
 4. Android packaging.

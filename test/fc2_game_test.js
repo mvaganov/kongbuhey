@@ -84,6 +84,36 @@ assert(G.decay(est(0, 5 * HOUR), NOW) === 0 && G.decay(est(0, 13 * HOUR), NOW) =
 	s.front = [4];
 	assert(G.nextCard(g, units, st, s).mode === 'practice', 'a queued card jumps the line');
 }
+{ // trials: the promoting harvest is objective
+	assert(G.isTrial(est(0, 5 * HOUR), 0, 'ripe') && !G.isTrial(est(1, 30 * HOUR), 0, 'ripe') && G.isTrial(est(1, 30 * HOUR), 1, 'ripe') && !G.isTrial(est(0, HOUR), 0, 'growing') && !G.isTrial(est(3, 999 * HOUR), 9, 'wilted'), 'only the promoting review of a ripe unit is a trial');
+	let r = G.answerTrial(est(1, 30 * HOUR), 1, true, NOW, 'ripe');
+	assert(r.ev.promoted && r.unit.tier === 2 && r.h === 0 && r.unit.lastCorrect === NOW, 'passing a trial promotes');
+	r = G.answerTrial(est(0, 4 * HOUR * 2.5, 3), 0, true, NOW, 'ripe');
+	assert(r.unit.score >= T.ESTABLISHED, 'a passed trial leaves the unit established even after decay');
+	r = G.answerTrial(est(1, 30 * HOUR), 1, false, NOW, 'ripe');
+	assert(r.ev.lapsed && r.unit.tier === 1 && r.unit.score === T.ESTABLISHED - 1 && r.h === 1 && G.isTrial({ ...r.unit, score: 4 }, r.h, 'ripe'), 'failing keeps the tier, goes back to learning, and the trial returns');
+	assert(G.answerTrial(est(1, 999 * HOUR), 1, false, NOW, 'wilted').ev.demoted, 'failing a wilted trial costs a tier');
+	const g = G.blankGame(NOW), m = { combo: 0, swift: false, crit: false };
+	assert(G.payout(g, G.answerTrial(est(0, 5 * HOUR), 0, true, NOW, 'ripe').ev, 0, m) === T.HARVEST_PAY[0] + T.PROMOTE_PAY[0] && G.payout(g, G.answerTrial(est(0, 5 * HOUR), 0, false, NOW, 'ripe').ev, 0, m) === T.HARVEST_PAY[0], 'a passed trial pays the promotion bonus');
+}
+{ // quests and ascension
+	const g = G.blankGame(NOW);
+	assert(G.ensureQuests(g, 'd1', false) && g.quests.list.length === 3 && g.quests.list.every(q => !T.QUESTS[q.k].needsRipe) && !G.ensureQuests(g, 'd1', true), 'three daily quests, feasible ones only, stable for the day');
+	const again = G.blankGame(NOW); G.ensureQuests(again, 'd1', false);
+	assert(JSON.stringify(again.quests) === JSON.stringify(g.quests), 'quests are deterministic per day');
+	const q = g.quests.list[0];
+	assert(G.claimQuest(g, 0) === 0, 'an unfinished quest cannot be claimed');
+	G.questEvent(g, { [q.k]: 999, combo: 999, answers: 999, established: 999, rounds: 999 });
+	assert(q.have === q.need && G.claimQuest(g, 0) === q.coins && G.claimQuest(g, 0) === 0 && G.claimQuest(g, -1) === 0, 'a finished quest pays once; the bonus waits for all three');
+	G.claimQuest(g, 1); G.claimQuest(g, 2);
+	assert(G.claimQuest(g, -1) > 0 && G.claimQuest(g, -1) === 0 && G.ensureQuests(g, 'd2', true), 'bonus pays once; a new day rolls new quests');
+	const a = G.blankGame(NOW); a.owned = [1, 2, 3, 4]; a.coins = 500; a.up = { yield: 3 };
+	const units = new Map([1, 2, 3, 4].map(id => [id, est(3, HOUR)]));
+	assert(G.sealsAvailable(a, units) === 12 && G.ascend(a, units) === 12 && a.seals === 12 && a.coins === 0 && !a.up.yield && G.ascend(a, units) === 0, 'ascending banks new stars as seals and resets coins and upgrades');
+	assert(Math.abs(G.sealMult(a) - (1 + 12 * T.SEAL_BONUS)) < 1e-9 && G.payout(a, { kind: 'learn' }, 0, { combo: 0 }) === Math.round(T.LEARN_PAY * G.sealMult(a)), 'seals multiply coins');
+	a.seals = 0; units.set(1, est(0, HOUR));
+	assert(G.sealsAvailable(a, units) === 0, 'stars lost below the banked count give no seals');
+}
 { // fc2/index.html loads the same engine scripts as flashcards/index.html, and every file it names exists
 	const srcs = dir => [...fs.readFileSync(path.join(__dirname, '..', dir, 'index.html'), 'utf8').matchAll(/<script src="([^"]+)"/g)].map(m => m[1]);
 	const eng = l => l.filter(s => s.startsWith('../data/') || s.startsWith('../korean/'));

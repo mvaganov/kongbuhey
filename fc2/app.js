@@ -19,7 +19,7 @@ const STATUS_LABEL = { new: '✨ New', learning: '🌱 Learning', growing: '🌿
 const THEMES = { midnight: ['Midnight', 0], jade: ['Jade', 300], sunset: ['Sunset', 800], neon: ['Neon', 2000] };
 const PARTICLES = { sparks: ['Sparks', 0], stars: ['Stars', 250], petals: ['Petals', 600], hangul: ['Hangul burst', 1200] };
 const SPEAK_MODES = [['none', "Don't speak"], ['front', 'When the front is shown'], ['back', 'When the back is shown'], ['both', 'Front and back']];
-const DEFAULT_OPTS = { reverse: false, speak: 'front', count: 3, onlyOwned: false, sound: true, haptics: true };
+const DEFAULT_OPTS = { reverse: false, speak: 'front', count: 3, onlyOwned: false, sound: true, haptics: true, audioTrials: true };
 const nowSec = () => Math.floor(Date.now() / 1000);
 const dayKey = (offset = 0) => { const d = new Date(Date.now() + offset * 864e5); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 const fmt = n => Math.round(n).toLocaleString();
@@ -49,7 +49,7 @@ class FC2App {
 	}
 
 	newSession() { return { n: 0, due: new Map(), last: null, front: [], combo: 0, round: this.newRound() }; }
-	newRound() { return { n: 0, coins: 0, xp: 0, est: 0, promo: 0, harvest: 0, lapsed: 0 }; }
+	newRound() { return { n: 0, coins: 0, xp: 0, est: 0, promo: 0, harvest: 0, lapsed: 0, trials: 0 }; }
 
 	// ---------- storage ----------
 	async init() {
@@ -141,14 +141,16 @@ class FC2App {
 	}
 
 	renderTabs() {
-		const c = this.counts(), due = c.ripe + c.wilted;
+		const c = this.counts(), due = c.ripe + c.wilted, qs = this.g.quests;
+		const claim = qs ? qs.list.filter(q => !q.claimed && q.have >= q.need).length + (!qs.bonus && qs.list.every(q => q.claimed) ? 1 : 0) : 0;
 		const tab = (id, icon, label, badge = '') => `<button type="button" class="tab${this.tab === id ? ' on' : ''}" data-act="tab" data-tab="${id}"><span>${icon}</span>${label}${badge}</button>`;
-		this.$('#tabs').innerHTML = tab('map', '🗺', 'Map') + tab('play', '▶', 'Play', due ? `<em>${due}</em>` : '') + tab('shop', '🛒', 'Shop') + tab('menu', '☰', 'Menu');
+		this.$('#tabs').innerHTML = tab('map', '🗺', 'Map', claim ? `<em>${claim}</em>` : '') + tab('play', '▶', 'Play', due ? `<em>${due}</em>` : '') + tab('shop', '🛒', 'Shop') + tab('menu', '☰', 'Menu');
 	}
 
 	go(tab) {
 		if (tab !== 'play' && this.tab === 'play') this.session.combo = 0;
 		this.tab = tab;
+		this.ensureQuests();
 		if (tab === 'play' && !this.card) this.pickCard();
 		this.renderTabs();
 		this.renderScreen(true);
@@ -204,16 +206,18 @@ class FC2App {
 	}
 
 	mapHtml() {
+		this.ensureQuests();
 		const g = this.g, now = nowSec(), st = this.classify(), c = this.counts(st);
+		const trials = g.owned.filter(id => G.isTrial(this.unitOf(id), g.h[id] || 0, st.get(id))).length;
 		const idle = G.idleEarned(g, this.prog, now), rate = G.idleRate(g, this.prog, now);
 		const full = now >= g.lastCollect + G.offlineCapH(g) * G.HOUR;
-		const waiting = [[c.ripe, '🌾 ripe'], [c.wilted, '🥀 wilted'], [c.dormant, '💤 dormant'], [c.learning, '🌱 learning'], [c.new, '✨ new']].filter(x => x[0]).map(x => `${x[0]} ${x[1]}`).join(' · ');
+		const waiting = [[trials, '⚔ trials'], [c.ripe, '🌾 ripe'], [c.wilted, '🥀 wilted'], [c.dormant, '💤 dormant'], [c.learning, '🌱 learning'], [c.new, '✨ new']].filter(x => x[0]).map(x => `${x[0]} ${x[1]}`).join(' · ');
 		const { shown } = this.packsShown(), owned = new Set(g.owned);
 		const tile = id => {
 			if (!owned.has(id)) return `<button type="button" class="tile locked" data-act="tile" data-id="${id}">·</button>`;
 			const u = this.units.get(id), ko = escapeHtml(Array.from(hangulOf(u[C.Korean]) || String(u[C.Korean])).slice(0, 2).join(''));
 			const p = this.unitOf(id), s = st.get(id), fill = s === 'growing' ? Math.round(G.ripeness(p, now) * 100) : (s === 'learning' ? Math.round(100 * Math.max(0, p.score) / T.ESTABLISHED) : 0);
-			return `<button type="button" class="tile s-${s} r${G.rarity(u[C.PriorityScore])}" data-act="tile" data-id="${id}"><i style="height:${fill}%"></i><span>${ko}</span>${p.tier ? `<em>${STARS[p.tier]}</em>` : ''}</button>`;
+			return `<button type="button" class="tile s-${s} r${G.rarity(u[C.PriorityScore])}${G.isTrial(p, g.h[id] || 0, s) ? ' trial' : ''}" data-act="tile" data-id="${id}"><i style="height:${fill}%"></i><span>${ko}</span>${p.tier ? `<em>${STARS[p.tier]}</em>` : ''}</button>`;
 		};
 		const packs = shown.map(p => {
 			const stars = p.ids.reduce((n, id) => n + (owned.has(id) ? this.unitOf(id).tier : 0), 0), max = p.ids.length * 3;
@@ -224,6 +228,7 @@ class FC2App {
 				<button type="button" class="btn gold" data-act="collect" ${idle ? '' : 'disabled'}>Collect <span id="idle">${fmt(idle)}</span></button></section>
 			<button type="button" class="play-big${c.ripe + c.wilted ? ' due' : ''}" data-act="tab" data-tab="play"><b>▶ Play</b><small>${waiting || (g.owned.length ? 'Practice, or pull new units' : 'Start with a free pull in the Shop')}</small></button>
 			${this.goalsHtml(c)}
+			${g.owned.length ? this.questsHtml() : ''}
 			${g.owned.length ? '' : '<p class="muted center">Your map is empty. The first pull is free.</p><button type="button" class="btn primary wide" data-act="tab" data-tab="shop">🛒 Open the Shop</button>'}
 			${packs}<p class="legend">${Object.values(STATUS_LABEL).join(' · ')}</p>`;
 	}
@@ -257,7 +262,9 @@ class FC2App {
 	pickCard() {
 		const st = this.classify(), pick = G.nextCard(this.g, this.prog, st, this.session);
 		this.editingNotes = false;
-		this.card = pick ? { id: pick.id, mode: pick.mode, st: st.get(pick.id), side: 'front', shownAt: Date.now(), ...this.generateFor(pick.id) } : null;
+		if (!pick) { this.card = null; return; }
+		const s = st.get(pick.id), u = this.unitOf(pick.id), trial = G.isTrial(u, this.g.h[pick.id] || 0, s);
+		this.card = { id: pick.id, mode: trial ? 'trial' : pick.mode, st: s, side: 'front', shownAt: Date.now(), trial: trial ? this.buildTrial(pick.id, u.tier) : null, ...this.generateFor(pick.id) };
 	}
 
 	generateFor(id) {
@@ -270,8 +277,10 @@ class FC2App {
 	}
 
 	maybeSpeak(side) {
-		const m = this.opts.speak;
-		if (!this.card || this.card.side !== side || m === 'none' || (m !== 'both' && m !== side) || (side === 'front' && this.opts.reverse)) return;
+		const m = this.opts.speak, k = this.card;
+		if (!k || k.side !== side) return;
+		const t = k.mode === 'trial' && !k.done ? k.trial.type : '';   // a listening trial always speaks; a recall trial never gives the Korean away
+		if (t === 'recall' || (t !== 'listen' && (m === 'none' || (m !== 'both' && m !== side) || (side === 'front' && this.opts.reverse && !t)))) return;
 		window.speakKorean(this.units.get(this.card.id)[C.Korean]);
 	}
 
@@ -299,12 +308,15 @@ class FC2App {
 		const k = this.card, u = this.units.get(k.id), p = this.unitOf(k.id), rev = this.opts.reverse, rar = G.rarity(u[C.PriorityScore]);
 		const head = `<div class="card-tags"><span class="pill r${rar}">${RARITY[rar]}</span><span class="pill">${STARS[p.tier]}</span><span class="pill">${escapeHtml(u[C.Source])}</span></div>`;
 		const regen = '<button type="button" class="btn ghost" data-act="regen">↻ New examples</button>';
+		if (k.mode === 'trial' && k.side === 'front') return this.trialHtml();
+		const verdict = k.mode !== 'trial' ? '' : k.passed ? `<div class="verdict pass">⚔ Trial passed: ${STARS[p.tier]} ${TIER_LABEL[p.tier]}</div>`
+			: '<div class="verdict fail">⚔ Not yet. Relearn it now; the trial returns the next time it is ripe.</div>';
 		if (k.side === 'front') {
 			const main = rev ? `<h1 class="unit-main english">${escapeHtml(u[C.English])}</h1>${u[C.Disambiguation] ? `<div class="gloss">${escapeHtml(u[C.Disambiguation])}</div>` : ''}`
 				: `<div class="unit-row"><h1 class="unit-main">${escapeHtml(u[C.Korean])}</h1>${this.speakBtn('speak-unit')}</div>`;
 			return `${head}${main}${this.sentencesHtml({ hideKo: rev })}${regen}<p class="hint">Tap the card to reveal</p>`;
 		}
-		return `${head}<div class="unit-row"><h1 class="unit-main">${escapeHtml(u[C.Korean])}</h1>${this.speakBtn('speak-unit')}</div>
+		return `${verdict}${head}<div class="unit-row"><h1 class="unit-main">${escapeHtml(u[C.Korean])}</h1>${this.speakBtn('speak-unit')}</div>
 			<div class="unit-en">${escapeHtml(u[C.English])}</div>
 			<div class="gloss">${escapeHtml(u[C.PartofSpeech] || '')}${u[C.Disambiguation] ? ' · ' + escapeHtml(u[C.Disambiguation]) : ''}</div>
 			${this.sentencesHtml({ english: true })}${regen}${this.notesHtml(k.id)}`;
@@ -314,16 +326,16 @@ class FC2App {
 		const s = this.session, k = this.card;
 		if (!k) return '<div class="empty"><h2>Nothing to study yet</h2><p class="muted">Pull your first units in the Shop. The first pull is free.</p><button type="button" class="btn primary wide" data-act="tab" data-tab="shop">🛒 Open the Shop</button></div>';
 		const p = this.unitOf(k.id), cap = G.comboCap(this.g), combo = Math.min(s.combo, cap);
-		const mode = k.mode === 'harvest' ? `<span class="mode m-harvest">${STATUS_LABEL[k.st]} · ${T.HARVEST_PAY[p.tier]} 냥</span>`
+		const mode = k.mode === 'trial' ? '<span class="mode m-trial">⚔ Trial</span>' : k.mode === 'harvest' ? `<span class="mode m-harvest">${STATUS_LABEL[k.st]} · ${T.HARVEST_PAY[p.tier]} 냥</span>`
 			: k.mode === 'learn' ? `<span class="mode m-learn">🌱 Learning ${Math.max(0, p.score)}/${T.ESTABLISHED}</span>` : '<span class="mode m-practice">Practice · nothing ripe</span>';
 		const pips = Array.from({ length: T.ROUND }, (_, i) => `<i class="${i < s.round.n ? 'on' : ''}"></i>`).join('');
-		const scorebar = k.side === 'back' ? `<nav class="scorebar">${SCORES.map(([v, label]) => `<button type="button" class="score" data-act="score" data-v="${v}" style="--h:${SCORE_HUE[v]}"><b>${v > 0 ? '+' : ''}${v}</b>${label}</button>`).join('')}</nav>` : '';
+		const scorebar = k.mode === 'trial' ? (k.side === 'back' ? '<nav class="scorebar one"><button type="button" class="btn primary wide" data-act="continue">Continue ▶</button></nav>' : '') : k.side === 'back' ? `<nav class="scorebar">${SCORES.map(([v, label]) => `<button type="button" class="score" data-act="score" data-v="${v}" style="--h:${SCORE_HUE[v]}"><b>${v > 0 ? '+' : ''}${v}</b>${label}</button>`).join('')}</nav>` : '';
 		return `<div class="playbar">${mode}<div class="pips">${pips}</div><span class="combo${combo >= cap ? ' max' : ''}" id="combo">x${combo}<small>+${Math.round(combo * T.COMBO_STEP * 100)}%</small></span></div>
 			<article class="card ${k.side} k-${k.mode}" id="card">${this.cardHtml()}</article>${scorebar}`;
 	}
 
 	flip() {
-		if (!this.card || this.card.side !== 'front') return;
+		if (!this.card || this.card.side !== 'front' || this.card.mode === 'trial') return;
 		this.card.side = 'back';
 		this.renderScreen(false);
 		this.$('#card').classList.add('flip');
@@ -347,10 +359,37 @@ class FC2App {
 
 	score(v, el) {
 		const k = this.card;
-		if (!k || k.side !== 'back' || k.done) return;
+		if (!k || k.mode === 'trial' || k.side !== 'back' || k.done) return;
 		k.done = true;
-		const g = this.g, s = this.session, id = k.id, now = nowSec(), u = this.unitOf(id), tierBefore = u.tier;
-		const res = G.answer(u, g.h[id] || 0, v, now, k.st), ev = res.ev;
+		const u = this.unitOf(k.id);
+		this.advance(this.settle(G.answer(u, this.g.h[k.id] || 0, v, nowSec(), k.st), v, el, u.tier));
+	}
+
+	/** A trial choice was tapped: objective pass or fail, then the back of the card stays up until Continue. */
+	choose(i, el) {
+		const k = this.card;
+		if (!k || k.mode !== 'trial' || k.done) return;
+		k.done = true;
+		k.passed = k.trial.choices[i].id === k.id;
+		this.root.querySelectorAll('.choice').forEach((b, j) => { b.disabled = true; if (k.trial.choices[j].id === k.id) b.classList.add('right'); else if (j === i) b.classList.add('wrong'); });
+		const u = this.unitOf(k.id);
+		this.settle(G.answerTrial(u, this.g.h[k.id] || 0, k.passed, nowSec(), k.st), k.passed ? 1 : -1, el, u.tier);
+		k.side = 'back';
+		setTimeout(() => { if (this.card !== k) return; this.renderScreen(false); const c = this.$('#card'); if (c) c.classList.add('flip'); this.$('#screen').scrollTop = 0; this.maybeSpeak('back'); }, k.passed ? 650 : 900);
+	}
+
+	advance(delay) {
+		if (this.session.round.n >= T.ROUND) setTimeout(() => this.roundResults(), delay + 350);
+		else setTimeout(() => this.showNextCard(), delay || 120);
+	}
+
+	ensureQuests() {
+		if (G.ensureQuests(this.g, dayKey(), this.g.owned.some(id => this.unitOf(id).score >= T.ESTABLISHED))) this.save();
+	}
+
+	/** Book an answer: unit progress, coins, xp, quests, effects. Returns the ms to wait before moving on. */
+	settle(res, v, el, tierBefore) {
+		const k = this.card, g = this.g, s = this.session, id = k.id, ev = res.ev, passed = ev.kind === 'trial' && ev.promoted;
 		this.prog.set(id, res.unit);
 		if (res.h) g.h[id] = res.h; else delete g.h[id];
 		this.saveUnit(id);
@@ -360,43 +399,112 @@ class FC2App {
 		const coins = G.payout(g, ev, tierBefore, { combo: s.combo, swift, crit }), xp = G.xpFor(ev);
 		g.coins += coins; g.totals.earned += coins; g.totals.answers++;
 		if (ev.harvested) g.totals.harvests++;
+		if (passed) g.totals.trials = (g.totals.trials || 0) + 1;
 		const ups = G.addXp(g, xp);
 		if (res.unit.score < T.ESTABLISHED) s.due.set(id, s.n + 1 + T.LEARN_GAP[v]); else s.due.delete(id);
 		s.n++; s.last = id;
 		const r = s.round;
-		r.n++; r.coins += coins; r.xp += xp; r.est += ev.established ? 1 : 0; r.promo += ev.promoted ? 1 : 0; r.harvest += ev.harvested ? 1 : 0; r.lapsed += ev.lapsed ? 1 : 0;
+		r.n++; r.coins += coins; r.xp += xp; r.est += ev.established ? 1 : 0; r.promo += ev.promoted ? 1 : 0; r.harvest += ev.harvested ? 1 : 0; r.lapsed += ev.lapsed ? 1 : 0; r.trials += passed ? 1 : 0;
+		this.ensureQuests();
+		G.questEvent(g, { answers: 1, established: ev.established ? 1 : 0, harvests: ev.harvested ? 1 : 0, trials: passed ? 1 : 0, combo: s.combo });
 		this.save();
 
-		// feedback
 		const ko = this.units.get(id)[C.Korean], glyphs = this.glyphsFor(id);
-		FX.floatText(el, `+${fmt(coins)}${crit ? ' CRIT!' : swift ? ' swift' : ''}`, crit ? 'gold big' : 'gold');
-		FX.fly(el, this.$('#coins'), crit ? 12 : Math.min(8, 2 + Math.floor(coins / 6)));
+		FX.floatText(el, `+${fmt(coins)}${crit ? ' CRIT!' : swift ? ' swift' : ''}`, crit || passed ? 'gold big' : 'gold');
+		FX.fly(el, this.$('#coins'), crit || passed ? 12 : Math.min(8, 2 + Math.floor(coins / 6)));
 		if (crit) { FX.sfx('crit'); FX.buzz([30, 40, 60]); FX.burstAt(el, { count: 70, power: 12, glyphs }); FX.flash('gold'); }
 		else if (ev.harvested) { FX.sfx('harvest', s.combo); FX.buzz(25); FX.burstAt(el, { count: 30, power: 8, glyphs }); }
-		else if (v < 0) { FX.sfx('miss'); FX.buzz(15); }
+		else if (v < 0) { FX.sfx('miss'); FX.buzz(ev.kind === 'trial' ? [40, 50, 40] : 15); }
 		else { FX.sfx('answer', s.combo); FX.burstAt(el, { count: 8 + Math.min(s.combo, 20), power: 5, glyphs }); }
 		let delay = 0;
-		if (ev.promoted) { FX.sfx('promote'); FX.banner(`${ko} ${STARS[res.unit.tier]}`, `Promoted to ${TIER_LABEL[res.unit.tier]}`, 'promo'); delay = 900; }
+		if (ev.promoted) { FX.sfx('promote'); FX.flash('gold'); FX.banner(`${ko} ${STARS[res.unit.tier]}`, `${passed ? 'Trial passed' : 'Promoted'}: ${TIER_LABEL[res.unit.tier]}`, 'promo'); delay = 900; }
 		else if (ev.established) { FX.sfx('establish'); FX.banner(ko, 'Established: now growing in your hive', 'est'); delay = 700; }
 		else if (ev.demoted) { FX.flash('bad'); this.toast(`${ko} wilted and lost a star`); }
+		else if (ev.kind === 'trial') FX.flash('bad');
 		else if (ev.kind === 'harvest' && ev.lapsed) this.toast(v > 0 ? `${ko} had faded: re-establish it` : `${ko} goes back to learning`);
 		if (streak === 'kept') this.toast(`🔥 ${g.streak.n}-day streak: +${Math.round((G.streakMult(g) - 1) * 100)}% coins`);
-		if (ups) setTimeout(() => { FX.sfx('level'); FX.buzz([40, 60, 40, 60, 120]); FX.banner(`Level ${g.level}`, `+${fmt(T.LEVEL_COINS * g.level)} 냥`, 'level'); this.updateHud(); }, delay + 200);
+		if (ups) setTimeout(() => this.levelUp(), delay + 200);
 		this.updateHud();
-		if (r.n >= T.ROUND) setTimeout(() => this.roundResults(), delay + (ups ? 1300 : 350));
-		else setTimeout(() => this.showNextCard(), delay || 120);
+		return delay + (ups ? 1300 : 0);
+	}
+
+	levelUp() {
+		const g = this.g;
+		FX.sfx('level'); FX.buzz([40, 60, 40, 60, 120]); FX.banner(`Level ${g.level}`, `+${fmt(T.LEVEL_COINS * g.level)} 냥`, 'level');
+		this.updateHud();
+	}
+
+	buildTrial(id, tier) {
+		let type = T.TRIAL_TYPES[tier];
+		if (type === 'listen' && !(this.opts.audioTrials && 'speechSynthesis' in window)) type = 'meaning';
+		const u = this.units.get(id), n = T.TRIAL_CHOICES[tier], label = x => String(type === 'recall' ? x[C.Korean] : x[C.English]);
+		const owned = new Set(this.g.owned), seen = new Set([label(u)]), picks = [], all = [...this.units.values()];
+		const pos = x => x[C.PartofSpeech] === u[C.PartofSpeech];
+		const ok = x => x[C.Id] !== id && x[C.Korean] !== u[C.Korean] && x[C.English] !== u[C.English] && !seen.has(label(x));
+		// Distractors: unlocked units of the same part of speech first, then the same pack, then anything.
+		for (const pool of [all.filter(x => owned.has(x[C.Id]) && pos(x)), all.filter(x => pos(x) && x[C.Source] === u[C.Source]), all.filter(pos), all]) {
+			for (const x of pool.sort(() => Math.random() - 0.5)) {
+				if (picks.length >= n - 1) break;
+				if (ok(x)) { seen.add(label(x)); picks.push(x); }
+			}
+		}
+		return { type, tier, choices: [u, ...picks].map(x => ({ id: x[C.Id], label: label(x) })).sort(() => Math.random() - 0.5) };
+	}
+
+	trialHtml() {
+		const k = this.card, u = this.units.get(k.id), t = k.trial;
+		const prompt = t.type === 'listen' ? '<button type="button" class="listen" data-act="speak-unit" aria-label="Play again">🔊</button><p class="ask">Listen, then pick the meaning</p>'
+			: t.type === 'recall' ? `<h1 class="unit-main english">${escapeHtml(u[C.English])}</h1>${u[C.Disambiguation] ? `<div class="gloss">${escapeHtml(u[C.Disambiguation])}</div>` : ''}<p class="ask">Which Korean is this?</p>`
+			: `<div class="unit-row"><h1 class="unit-main">${escapeHtml(u[C.Korean])}</h1>${this.speakBtn('speak-unit')}</div><p class="ask">What does it mean?</p>`;
+		return `<div class="card-tags"><span class="pill trial">⚔ Trial</span><span class="pill">${STARS[t.tier]} → ${STARS[t.tier + 1]}</span><span class="pill">+${fmt(T.PROMOTE_PAY[t.tier])} 냥</span></div>${prompt}
+			<div class="choices${t.type === 'recall' ? ' ko' : ''}">${t.choices.map((c, i) => `<button type="button" class="choice" data-act="choose" data-i="${i}">${escapeHtml(c.label)}</button>`).join('')}</div>`;
+	}
+
+	questsHtml() {
+		const qs = this.g.quests;
+		if (!qs) return '';
+		const all = qs.list.every(q => q.claimed);
+		const rows = qs.list.map((q, i) => {
+			const done = q.have >= q.need;
+			return `<li class="${q.claimed ? 'claimed' : ''}"><div><span>${T.QUESTS[q.k].name.replace('{n}', q.need)} <small>${q.have}/${q.need}</small></span><div class="bar thin"><i style="width:${Math.round(100 * q.have / q.need)}%"></i></div></div>
+				${q.claimed ? '<b>✓</b>' : `<button type="button" class="btn gold small" data-act="claim" data-i="${i}" ${done ? '' : 'disabled'}>${done ? 'Claim ' : ''}${fmt(q.coins)}</button>`}</li>`;
+		}).join('');
+		return `<section class="panel quests"><h2>Today</h2><ul>${rows}</ul>${qs.bonus ? '<p class="muted center">All done. New quests tomorrow.</p>'
+			: `<button type="button" class="btn ${all ? 'primary' : ''} wide" data-act="claim" data-i="-1" ${all ? '' : 'disabled'}>🎁 Daily chest${all ? '' : ' · finish all three'}</button>`}</section>`;
+	}
+
+	claim(i, el) {
+		const coins = G.claimQuest(this.g, i);
+		if (!coins) { FX.sfx('deny'); return; }
+		this.save();
+		FX.sfx(i === -1 ? 'crit' : 'coin'); FX.buzz(i === -1 ? [30, 40, 60] : 20); FX.floatText(el, `+${fmt(coins)}`, 'gold big'); FX.fly(el, this.$('#coins'), 10); FX.burstAt(el, { count: i === -1 ? 80 : 30, power: i === -1 ? 12 : 7 });
+		if (this.g.lastLevelUps) setTimeout(() => this.levelUp(), 300);
+		this.updateHud();
+		this.renderTabs();
+		this.renderScreen(false);
+	}
+
+	ascend() {
+		const n = G.sealsAvailable(this.g, this.prog);
+		if (n < T.SEAL_MIN || !window.confirm(`Ascend for ${n} seals? Coins and upgrades reset. Units, stars, levels and cosmetics stay.`)) return;
+		G.ascend(this.g, this.prog);
+		this.save();
+		FX.sfx('level'); FX.buzz([60, 60, 60, 60, 160]); FX.flash('gold'); FX.banner('Ascended', `+${n} seals · +${Math.round((G.sealMult(this.g) - 1) * 100)}% coins forever`, 'level');
+		this.updateHud();
+		this.renderScreen(false);
 	}
 
 	roundResults() {
 		const g = this.g, r = this.session.round, c = this.counts(), need = G.xpToNext(g.level), cost = G.pullCost(g), combo = Math.min(this.session.combo, G.comboCap(g));
 		g.totals.rounds++;
+		G.questEvent(g, { rounds: 1 });
 		this.save();
 		const line = (label, n, cls = '') => n ? `<li class="${cls}"><span>${label}</span><b>${n}</b></li>` : '';
 		const tease = [c.ripe + c.wilted ? `${c.ripe + c.wilted} harvests waiting` : '', `${need - g.xp} XP to Lv ${g.level + 1}`,
 			cost <= g.coins ? 'A pull is ready in the Shop' : `${fmt(cost - g.coins)} 냥 to the next pull`, c.learning ? `${c.learning} still learning` : ''].filter(Boolean);
 		this.openModal(`Round ${g.totals.rounds} complete`, `<div class="result-coins"><i class="coin"></i><span id="res-coins" data-n="0">0</span> 냥</div>
 			<div class="lvl wide"><b>Lv ${g.level}</b><div class="bar"><i style="width:${Math.round(100 * g.xp / need)}%"></i></div><small>+${r.xp} XP</small></div>
-			<ul class="result-list">${line('🌾 Harvests', r.harvest)}${line('🌿 Established', r.est, 'good')}${line('★ Promotions', r.promo, 'good')}${line('🌱 Back to learning', r.lapsed, 'warn')}${line(`Combo x${combo}`, `+${Math.round(combo * T.COMBO_STEP * 100)}%`)}</ul>
+			<ul class="result-list">${line('🌾 Harvests', r.harvest)}${line('🌿 Established', r.est, 'good')}${line('⚔ Trials passed', r.trials, 'good')}${line('★ Promotions', r.promo - r.trials, 'good')}${line('🌱 Back to learning', r.lapsed, 'warn')}${line(`Combo x${combo}`, `+${Math.round(combo * T.COMBO_STEP * 100)}%`)}</ul>
 			<p class="tease">${tease.join(' · ')}</p>
 			<div class="btn-row"><button type="button" class="btn primary wide" data-act="next-round">▶ Next round</button></div>
 			<div class="btn-row"><button type="button" class="btn" data-act="tab" data-tab="shop">🛒 Shop</button><button type="button" class="btn" data-act="tab" data-tab="map">🗺 Map</button></div>`, 'result');
@@ -454,6 +562,8 @@ class FC2App {
 				<button type="button" class="btn primary wide pull-btn" data-act="pull" ${blocked ? 'disabled' : ''}>✨ Pull ×${G.pullSize(g)} <small>${cost ? fmt(cost) + ' 냥' : 'FREE'}</small></button>
 				${blocked ? `<p class="muted center">${blocked}</p>` : ''}</section>
 			<section class="panel"><h2>Upgrades</h2><ul class="ups">${ups}</ul></section>
+			<section class="panel"><h2>Ascend</h2><p class="muted">Seals: <b>${g.seals || 0}</b> (+${Math.round((G.sealMult(g) - 1) * 100)}% all coins, permanent). Ascending banks your ${G.sealsAvailable(g, this.prog)} new ★ as seals and resets coins and upgrades. Units, stars, levels and cosmetics stay.</p>
+				<button type="button" class="btn wide${G.sealsAvailable(g, this.prog) >= T.SEAL_MIN ? ' primary' : ''}" data-act="ascend" ${G.sealsAvailable(g, this.prog) >= T.SEAL_MIN ? '' : 'disabled'}>⛩ Ascend${G.sealsAvailable(g, this.prog) >= T.SEAL_MIN ? ` for +${G.sealsAvailable(g, this.prog)} seals` : ` · needs ${T.SEAL_MIN} new ★`}</button></section>
 			<section class="panel"><h2>Themes</h2><div class="cos-row">${cos('theme', THEMES, g.cos.theme)}</div><h2>Particles</h2><div class="cos-row">${cos('particle', PARTICLES, g.cos.particle)}</div></section>`;
 	}
 
@@ -513,13 +623,13 @@ class FC2App {
 		const select = (key, list, cur) => `<select data-opt="${key}">${list.map(([v, l]) => `<option value="${v}" ${String(cur) === String(v) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
 		const check = (key, label) => `<label class="row"><input type="checkbox" data-opt="${key}" ${o[key] ? 'checked' : ''}> ${label}</label>`;
 		const stars = g.owned.reduce((n, id) => n + this.unitOf(id).tier, 0);
-		return `<section class="panel"><h2>Progress</h2><table class="kv"><tr><th>Units unlocked</th><td>${g.owned.length} / ${this.units.size}</td></tr><tr><th>Stars</th><td>${stars} ★</td></tr>
+		return `<section class="panel"><h2>Progress</h2><table class="kv"><tr><th>Units unlocked</th><td>${g.owned.length} / ${this.units.size}</td></tr><tr><th>Stars · trials passed</th><td>${stars} ★ · ${fmt(t.trials || 0)}</td></tr><tr><th>Seals</th><td>${g.seals || 0} (+${Math.round((G.sealMult(g) - 1) * 100)}% coins)</td></tr>
 				<tr><th>Growing / ripe / wilted</th><td>${c.growing} / ${c.ripe} / ${c.wilted + c.dormant}</td></tr><tr><th>Answers · harvests · rounds</th><td>${fmt(t.answers)} · ${fmt(t.harvests)} · ${fmt(t.rounds)}</td></tr>
 				<tr><th>Coins earned</th><td>${fmt(t.earned)} 냥</td></tr><tr><th>Day streak</th><td>${g.streak.n} (+${Math.round((G.streakMult(g) - 1) * 100)}% coins)</td></tr></table></section>
 			<section class="panel"><h2>Options</h2>${check('reverse', 'Test the Korean: show English on the front')}
 				<label class="row">Speak the Korean unit ${select('speak', SPEAK_MODES, o.speak)}</label>
 				<label class="row">Example sentences per card ${select('count', [1, 2, 3, 4, 5, 6].map(n => [n, n]), o.count)}</label>
-				${check('onlyOwned', 'Build examples only from unlocked units')}${check('sound', 'Sound effects')}${check('haptics', 'Vibration')}</section>
+				${check('onlyOwned', 'Build examples only from unlocked units')}${check('audioTrials', 'Listening trials (hear the Korean, pick the meaning)')}${check('sound', 'Sound effects')}${check('haptics', 'Vibration')}</section>
 			<section class="panel"><h2>Data</h2><div class="btn-row"><button type="button" class="btn" data-act="flags-open">Flagged sentences (${this.flags.length})</button>
 				<button type="button" class="btn" data-act="backup-open">Backup / restore</button></div>
 				<div class="btn-row"><a class="btn" href="../webapp/index.html">Spreadsheet (webapp)</a><a class="btn" href="../flashcards/index.html">Old flashcards</a></div>
@@ -618,6 +728,10 @@ class FC2App {
 			case 'tile': this.tileModal(Number(el.dataset.id)); break;
 			case 'review': this.session.front.unshift(Number(el.dataset.id)); this.card = null; this.closeModal(); this.go('play'); break;
 			case 'score': this.score(Number(el.dataset.v), el); break;
+			case 'choose': this.choose(Number(el.dataset.i), el); break;
+			case 'continue': if (this.card && this.card.done && !this.card.left) { this.card.left = true; this.advance(0); } break;
+			case 'claim': this.claim(Number(el.dataset.i), el); break;
+			case 'ascend': this.ascend(); break;
 			case 'next-round': this.closeModal(); if (this.tab !== 'play') this.go('play'); else this.maybeSpeak('front'); break;
 			case 'speak-unit': if (this.card) window.speakKorean(this.units.get(this.card.id)[C.Korean], el); break;
 			case 'speak-sent': { const s = this.card && this.card.sentences[Number(el.dataset.i)]; if (s) { window.speakKorean(s.ko, el); this.markSeen(R.unitIdsOf(s)); } break; }

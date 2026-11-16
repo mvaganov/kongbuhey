@@ -126,6 +126,31 @@ a.ul { color: inherit; text-decoration: underline; text-decoration-thickness: 1p
 .score b { font-size: 19px; }
 .empty { margin: auto; text-align: center; display: flex; flex-direction: column; gap: 8px; }
 
+/* trials */
+.m-trial, .pill.trial { background: linear-gradient(135deg, #ff7a7a, #b48cff); color: #14061f; font-weight: 800; }
+.card.k-trial { border-color: rgba(180, 140, 255, .7); box-shadow: 0 0 30px rgba(180, 140, 255, .14) inset; }
+.ask { color: var(--muted); margin: 0; font-size: 14px; }
+.listen { align-self: center; width: 120px; height: 120px; border-radius: 50%; border: 0; font-size: 52px; cursor: pointer; background: linear-gradient(135deg, var(--accent), var(--accent2)); box-shadow: 0 6px 26px var(--glow); animation: breathe 2s infinite; }
+.listen.is-speaking { filter: brightness(1.25); transform: scale(1.06); }
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
+.choice { min-height: 64px; padding: 10px 8px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--panel2); color: var(--text); font-size: 15px; line-height: 1.25; cursor: pointer; transition: transform .08s, background .2s, border-color .2s; animation: rise .3s both; }
+.choices.ko .choice { font-size: 22px; }
+.choice:nth-child(2) { animation-delay: .04s; } .choice:nth-child(3) { animation-delay: .08s; } .choice:nth-child(4) { animation-delay: .12s; } .choice:nth-child(n+5) { animation-delay: .16s; }
+.choice:active:not(:disabled) { transform: scale(.95); }
+.choice.right { background: #1d5a38; border-color: var(--good); color: #fff; animation: pop .4s; }
+.choice.wrong { background: #5a2320; border-color: var(--bad); color: #ffd6d2; animation: shake .35s; }
+@keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.verdict { border-radius: 12px; padding: 10px 12px; font-weight: 700; font-size: 14px; }
+.verdict.pass { background: rgba(95, 208, 138, .16); color: var(--good); } .verdict.fail { background: rgba(239, 106, 98, .14); color: #ffb4ae; }
+.scorebar.one { grid-template-columns: 1fr; }
+.tile.trial::after { content: '⚔'; position: absolute; z-index: 2; top: -1px; right: 1px; font-size: 9px; }
+
+/* quests */
+.quests ul { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.quests li { display: flex; align-items: center; gap: 10px; } .quests li > div { flex: 1; font-size: 14px; } .quests li small { color: var(--muted); }
+.quests li > b { color: var(--good); width: 44px; text-align: center; } .quests li.claimed { opacity: .55; }
+.quests .btn.gold:not(:disabled) { animation: pulse 1.6s infinite; }
+
 /* shop & menu */
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
 .panel h2:not(:first-child) { margin-top: 16px; }
