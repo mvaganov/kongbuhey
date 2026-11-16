@@ -61,10 +61,24 @@ const clamp = (n, lo = T.MIN_SCORE, hi = T.MAX_SCORE) => Math.max(lo, Math.min(h
 const tierIndex = name => Math.max(0, T.TIERS.indexOf(name));
 const blankUnit = () => ({ score: 0, tier: 0, lastCorrect: 0, lastSeen: 0 });
 const blankGame = now => ({
-	v: 1, coins: 0, xp: 0, level: 1, owned: [], h: {}, up: {}, pulls: 0, lastCollect: now,
+	v: 1, games: {}, coins: 0, xp: 0, level: 1, owned: [], h: {}, up: {}, pulls: 0, lastCollect: now,
 	streak: { day: '', n: 0 }, cos: { owned: ['midnight', 'sparks'], theme: 'midnight', particle: 'sparks' },
 	totals: { answers: 0, harvests: 0, rounds: 0, earned: 0, trials: 0 }, seals: 0, starsBanked: 0, ascensions: 0, quests: null
 });
+
+const NUMBER_COST = 10;
+const NUMBER_WORDS = {
+	native: ['', '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉', '열', '열하나', '열둘'],
+	sino: ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구', '십', '십일', '십이']
+};
+/** One number sound-board question. mode: 'both' | 'native' | 'sino'. Native Korean has no zero, so native draws 1-12. */
+function numberQuestion(mode, rnd, prev) {
+	const sys = mode === 'native' || mode === 'sino' ? mode : (rnd() < 0.5 ? 'native' : 'sino');
+	const lo = sys === 'native' ? 1 : 0;
+	let n;
+	do { n = lo + Math.floor(rnd() * (13 - lo)); } while (prev && prev.sys === sys && prev.n === n);
+	return { sys, n, ko: NUMBER_WORDS[sys][n] };
+}
 
 function status(u, now) {
 	if (!u.lastSeen && !u.lastCorrect && !u.score) return 'new';
@@ -310,7 +324,7 @@ function nextCard(g, units, st, s) {
 }
 const modeOf = st => (st === 'new' || st === 'learning') ? 'learn' : (st === 'growing' ? 'practice' : 'harvest');
 
-const api = { T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
+const api = { NUMBER_COST, NUMBER_WORDS, numberQuestion, T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
 	idleEarned, idleRate, touchStreak, isTrial, answerTrial, sealMult, totalStars, sealsAvailable, ascend, ensureQuests, questEvent, claimQuest, packRank, rarity, pickPull, nextCard, modeOf, upLevel, upCost, comboCap, critChance, pullSize, pullCost,
 	nurseryCap, offlineCapH, streakMult };
 if (typeof window !== 'undefined') window.FC2Game = api;

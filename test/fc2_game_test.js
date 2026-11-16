@@ -114,6 +114,18 @@ assert(G.decay(est(0, 5 * HOUR), NOW) === 0 && G.decay(est(0, 13 * HOUR), NOW) =
 	a.seals = 0; units.set(1, est(0, HOUR));
 	assert(G.sealsAvailable(a, units) === 0, 'stars lost below the banked count give no seals');
 }
+{ // number sound board
+	assert(G.NUMBER_COST === 10 && G.blankGame(NOW).games && !G.blankGame(NOW).games.numbers, 'the number board costs 10 and starts locked');
+	assert(G.NUMBER_WORDS.native.length === 13 && G.NUMBER_WORDS.sino.length === 13, 'both systems cover 0-12');
+	let seq = 0, prev = null, ok = true; const seen = { native: new Set(), sino: new Set() };
+	for (let i = 0; i < 400; i++) {
+		const q = G.numberQuestion(i % 3 === 0 ? 'native' : i % 3 === 1 ? 'sino' : 'both', () => (seq = (seq * 9301 + 49297) % 233280) / 233280, prev);
+		if (!q.ko || q.n > 12 || (q.sys === 'native' && q.n < 1) || (prev && prev.sys === q.sys && prev.n === q.n)) ok = false;
+		seen[q.sys].add(q.n); prev = q;
+	}
+	assert(ok && seen.native.size === 12 && seen.sino.size === 13, 'questions stay in range, native has no zero, no immediate repeats, every number comes up');
+	assert(G.numberQuestion('native', () => 0.999).n === 12 && G.numberQuestion('sino', () => 0).n === 0, 'range ends are reachable');
+}
 { // fc2/index.html loads the same engine scripts as flashcards/index.html, and every file it names exists
 	const srcs = dir => [...fs.readFileSync(path.join(__dirname, '..', dir, 'index.html'), 'utf8').matchAll(/<script src="([^"]+)"/g)].map(m => m[1]);
 	const eng = l => l.filter(s => s.startsWith('../data/') || s.startsWith('../korean/'));

@@ -203,3 +203,10 @@ code { background: var(--panel2); border-radius: 4px; padding: 1px 5px; }
 #toast.show { opacity: 1; transform: translate(-50%, 0); }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* number sound board */
+.nb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.nb-grid .choice, .nb-zero .choice { font-size: 26px; min-height: 60px; }
+.nb-zero { margin-top: 8px; } .nb-zero .choice { width: 100%; min-height: 48px; }
+.modal-body .listen { width: 76px; height: 76px; font-size: 34px; display: block; margin: 10px auto 4px; }
+.modal-body .ask { text-align: center; margin-bottom: 4px; }

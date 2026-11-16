@@ -228,6 +228,7 @@ class FC2App {
 				<button type="button" class="btn gold" data-act="collect" ${idle ? '' : 'disabled'}>Collect <span id="idle">${fmt(idle)}</span></button></section>
 			<button type="button" class="play-big${c.ripe + c.wilted ? ' due' : ''}" data-act="tab" data-tab="play"><b>▶ Play</b><small>${waiting || (g.owned.length ? 'Practice, or pull new units' : 'Start with a free pull in the Shop')}</small></button>
 			${this.goalsHtml(c)}
+			${(g.games || {}).numbers ? '<button type="button" class="btn wide" data-act="nb-open">🔊 Number sound board</button>' : ''}
 			${g.owned.length ? this.questsHtml() : ''}
 			${g.owned.length ? '' : '<p class="muted center">Your map is empty. The first pull is free.</p><button type="button" class="btn primary wide" data-act="tab" data-tab="shop">🛒 Open the Shop</button>'}
 			${packs}<p class="legend">${Object.values(STATUS_LABEL).join(' · ')}</p>`;
@@ -547,6 +548,7 @@ class FC2App {
 		const blocked = !left ? 'Everything is unlocked' : nursery >= cap ? 'Nursery full: establish some units first' : cost > g.coins ? `Need ${fmt(cost - g.coins)} more 냥` : '';
 		const packOpts = ['<option value="">Next in course order' + (next ? ` (${escapeHtml(next.name)})` : '') + '</option>']
 			.concat(all.filter(p => p.owned < p.ids.length).map(p => `<option value="${escapeHtml(p.name)}" ${this.pullPack === p.name ? 'selected' : ''}>${escapeHtml(p.name)} (${p.ids.length - p.owned} left)</option>`)).join('');
+		const nbLv = (g.games || {}).numbers ? 1 : 0;
 		const ups = Object.entries(T.UPGRADES).map(([key, s]) => {
 			const lv = G.upLevel(g, key), max = lv >= s.max, price = G.upCost(g, key);
 			return `<li class="up"><div><b>${s.name}</b> <span class="pill">Lv ${lv}${max ? ' MAX' : ''}</span><small>${s.desc}</small></div>
@@ -561,6 +563,8 @@ class FC2App {
 				<label class="row">From <select data-pack>${packOpts}</select></label>
 				<button type="button" class="btn primary wide pull-btn" data-act="pull" ${blocked ? 'disabled' : ''}>✨ Pull ×${G.pullSize(g)} <small>${cost ? fmt(cost) + ' 냥' : 'FREE'}</small></button>
 				${blocked ? `<p class="muted center">${blocked}</p>` : ''}</section>
+			<section class="panel"><h2>Games</h2><ul class="ups"><li class="up"><div><b>Number sound board</b> <span class="pill">Lv ${nbLv}</span><small>Hear 0-12 in native and Sino-Korean, tap the number you heard.</small></div>
+				<button type="button" class="btn gold" data-act="${nbLv ? 'nb-open' : 'nb-buy'}" ${!nbLv && G.NUMBER_COST > g.coins ? 'disabled' : ''}>${nbLv ? 'Open' : fmt(G.NUMBER_COST)}</button></li></ul></section>
 			<section class="panel"><h2>Upgrades</h2><ul class="ups">${ups}</ul></section>
 			<section class="panel"><h2>Ascend</h2><p class="muted">Seals: <b>${g.seals || 0}</b> (+${Math.round((G.sealMult(g) - 1) * 100)}% all coins, permanent). Ascending banks your ${G.sealsAvailable(g, this.prog)} new ★ as seals and resets coins and upgrades. Units, stars, levels and cosmetics stay.</p>
 				<button type="button" class="btn wide${G.sealsAvailable(g, this.prog) >= T.SEAL_MIN ? ' primary' : ''}" data-act="ascend" ${G.sealsAvailable(g, this.prog) >= T.SEAL_MIN ? '' : 'disabled'}>⛩ Ascend${G.sealsAvailable(g, this.prog) >= T.SEAL_MIN ? ` for +${G.sealsAvailable(g, this.prog)} seals` : ` · needs ${T.SEAL_MIN} new ★`}</button></section>
@@ -615,6 +619,56 @@ class FC2App {
 		FX.burstAt(el, { count: 30, glyphs: kind === 'particle' && key === 'hangul' ? ['공', '부', '해'] : undefined });
 		this.updateHud();
 		this.renderScreen(false);
+	}
+
+	// ---------- number sound board (shop unlock) ----------
+	nbBuy(el) {
+		const g = this.g;
+		if ((g.games || {}).numbers || G.NUMBER_COST > g.coins) { FX.sfx('deny'); return; }
+		g.coins -= G.NUMBER_COST; g.games = { ...g.games, numbers: 1 };
+		this.save(); FX.sfx('buy'); FX.buzz(20); FX.burstAt(el, { count: 30 });
+		this.updateHud(); this.renderScreen(false); this.nbOpen();
+	}
+
+	nbOpen() {
+		const prev = this.nb;
+		this.nb = { mode: prev ? prev.mode : 'both', q: null, streak: 0, right: 0, total: 0, done: false, picked: -1 };
+		this.nbNext();
+	}
+
+	nbNext() {
+		const n = this.nb;
+		n.q = G.numberQuestion(n.mode, Math.random, n.q); n.done = false; n.picked = -1;
+		this.nbRender();
+		window.speakKorean(n.q.ko);
+	}
+
+	nbRender() {
+		const n = this.nb, g = this.g, best = (g.games || {}).numbersBest || 0;
+		const btn = v => {
+			const cls = !n.done ? '' : v === n.q.n ? ' right' : v === n.picked ? ' wrong' : '';
+			return `<button type="button" class="choice${cls}" data-act="nb-pick" data-v="${v}" ${n.done ? 'disabled' : ''}>${v}</button>`;
+		};
+		const chip = (m, label) => `<button type="button" class="btn${n.mode === m ? ' primary' : ''}" data-act="nb-mode" data-m="${m}">${label}</button>`;
+		const reveal = n.done ? `<p class="ask"><b>${n.q.ko}</b> · ${n.q.sys === 'native' ? 'native' : 'Sino-Korean'} ${n.q.n}</p>` : '<p class="ask">Which number did you hear?</p>';
+		this.openModal('Number sound board', `<div class="btn-row">${chip('both', 'Both')}${chip('native', 'Native')}${chip('sino', 'Sino')}</div>
+			<button type="button" class="listen" data-act="nb-say" aria-label="Play again">🔊</button>${reveal}
+			<div class="nb-grid">${Array.from({ length: 12 }, (_, i) => btn(i + 1)).join('')}</div>
+			<div class="nb-zero">${btn(0)}</div>
+			<p class="muted center">🔥 ${n.streak} · best ${best} · ${n.right}/${n.total} right · native has no zero</p>`);
+	}
+
+	nbPick(v, el) {
+		const n = this.nb, g = this.g;
+		if (!n || n.done || this.modalHidden()) return;
+		n.done = true; n.picked = v; n.total++;
+		if (v === n.q.n) {
+			n.right++; n.streak++;
+			if (n.streak > ((g.games || {}).numbersBest || 0)) { g.games = { ...g.games, numbersBest: n.streak }; this.save(); }
+			FX.sfx('answer', n.streak); FX.buzz(15); FX.burstAt(el, { count: 8 + Math.min(n.streak, 20), power: 5 });
+		} else { n.streak = 0; FX.sfx('miss'); FX.buzz([20, 30, 20]); }
+		this.nbRender();
+		setTimeout(() => { if (this.nb === n && n.done && !this.modalHidden()) this.nbNext(); }, v === n.q.n ? 900 : 1700);
 	}
 
 	// ---------- menu ----------
@@ -725,6 +779,11 @@ class FC2App {
 		switch (name) {
 			case 'tab': this.closeModal(); this.go(el.dataset.tab); break;
 			case 'collect': this.collect(el); break;
+			case 'nb-buy': this.nbBuy(el); break;
+			case 'nb-open': this.closeModal(); this.nbOpen(); break;
+			case 'nb-pick': this.nbPick(Number(el.dataset.v), el); break;
+			case 'nb-say': if (this.nb && this.nb.q) window.speakKorean(this.nb.q.ko, el); break;
+			case 'nb-mode': if (this.nb) { this.nb.mode = el.dataset.m; this.nbNext(); } break;
 			case 'tile': this.tileModal(Number(el.dataset.id)); break;
 			case 'review': this.session.front.unshift(Number(el.dataset.id)); this.card = null; this.closeModal(); this.go('play'); break;
 			case 'score': this.score(Number(el.dataset.v), el); break;
