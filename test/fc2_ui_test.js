@@ -4,7 +4,7 @@
  * Node tests of game.js cannot see wiring bugs (a renamed data-act, a missing export, a handler that throws).
  * Covers: first free pull, one learning card, a promotion trial, the number sound board unlock and quiz.
  * Layout and animation are not checked (no canvas or real speech in jsdom): look at those on the phone.
- * `--static` skips the jsdom run (jsdom is slow to load on some disks); node test.js --full runs it.
+ * Runs in the default suite (about 30 s on a slow disk, almost all of it jsdom loading). `--static` skips the jsdom run.
  */
 'use strict';
 
@@ -14,6 +14,7 @@ const ROOT = path.resolve(__dirname, '..');
 let passed = 0, failed = 0;
 const assert = (c, m) => { if (c) { passed++; console.log(`  [PASS] ${m}`); } else { failed++; console.error(`  [FAIL] ${m}`); } };
 const wait = ms => new Promise(r => setTimeout(r, ms));
+const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now() - t < ms) { if (fn()) return true; await wait(50); } return false; };
 
 (async () => {
 	console.log('======================================================');
@@ -57,8 +58,50 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 		assert(app.card && app.card.mode !== 'trial', 'Play shows a learning card');
 		app.flip();
 		click('[data-act="score"]');
-		await wait(50);
 		assert(app.g.totals.answers === 1 && app.g.coins > 0, 'scoring a card is recorded and pays coins');
+		await until(() => app.card && !app.card.done);   // let the card swap finish
+	});
+
+	await step('sentence test', async () => {
+		app.session = app.newSession(); app.card = null; app.go('map'); app.go('play');
+		assert(app.opts.onlyOwned === true, 'examples default to unlocked units only');
+		// some units have no example from a 5-unit pack (that is expected): show a card that does
+		const showTestable = () => {
+			const id = app.g.owned.find(i => { const c = app.generateFor(i); if (!c.sentences.length) return false; app.card = { id: i }; return Boolean(app.buildSentenceTest(c.sentences[0])); });
+			if (id === undefined) return false;
+			app.card = { id, mode: 'learn', st: 'new', side: 'front', shownAt: Date.now(), trial: null, ...app.generateFor(id) };
+			app.renderScreen(false);
+			return true;
+		};
+		assert(showTestable(), 'a fresh pack has at least one unit with a testable example');
+		const id = app.card.id, answers = app.g.totals.answers;
+		click('[data-act="sent-test"]');
+		assert(app.stest && app.stest.choices.length === 4 && app.stest.choices.filter(c => c.ok).length === 1 && d.querySelectorAll('.sent-test .choice').length === 4, 'the test offers 4 translations, one right');
+		click(`[data-act="stest-pick"][data-i="${app.stest.choices.findIndex(c => c.ok)}"]`);
+		const moved = await until(() => app.card && app.card.id !== id && !app.card.done);
+		assert(moved && app.g.totals.answers > answers, 'a right answer credits the units and moves on');
+		showTestable();
+		const id2 = app.card.id, p2 = app.unitOf(id2).score;
+		click('[data-act="sent-test"]');
+		click(`[data-act="stest-pick"][data-i="${app.stest.choices.findIndex(c => !c.ok)}"]`);
+		const a2 = app.g.totals.answers;
+		await until(() => app.g.totals.answers > a2);
+		assert(app.unitOf(id2).score < p2 || app.unitOf(id2).score === 0, 'a wrong answer counts as Missed it for the card');
+		await until(() => app.card && !app.card.done);
+	});
+
+	await step('reverse sentence test', async () => {
+		app.opts.reverse = true;
+		const id = app.g.owned.find(i => { const c = app.generateFor(i); if (!c.sentences.length) return false; app.card = { id: i }; return Boolean(app.buildSentenceTest(c.sentences[0], true)); });
+		app.card = { id, mode: 'learn', st: 'new', side: 'front', shownAt: Date.now(), trial: null, ...app.generateFor(id) };
+		app.renderScreen(false);
+		click('[data-act="sent-test"]');
+		const t = app.stest, hangul = /[\uAC00-\uD7A3]/;
+		assert(t && t.rev && t.choices.length === 4 && t.choices.every(c => hangul.test(c.text)) && !hangul.test(d.querySelector('.s-big').textContent), 'in reverse mode the English is shown with 4 Korean sentences to choose from');
+		click(`[data-act="stest-pick"][data-i="${t.choices.findIndex(c => c.ok)}"]`);
+		await until(() => app.card && app.card.id !== id && !app.card.done);
+		app.opts.reverse = false;
+		await until(() => app.card && !app.card.done);
 	});
 
 	await step('trial', async () => {

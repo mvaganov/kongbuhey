@@ -210,3 +210,13 @@ code { background: var(--panel2); border-radius: 4px; padding: 1px 5px; }
 .nb-zero { margin-top: 8px; } .nb-zero .choice { width: 100%; min-height: 48px; }
 .modal-body .listen { width: 76px; height: 76px; font-size: 34px; display: block; margin: 10px auto 4px; }
 .modal-body .ask { text-align: center; margin-bottom: 4px; }
+
+/* sentence comprehension test */
+.icon-btn.test { color: var(--accent); }
+.sent-test .s-big { font-size: 30px; line-height: 1.45; text-align: center; padding: 14px 4px 6px; word-break: keep-all; }
+.sent-test .icon-btn.speak { display: block; margin: 0 auto; }
+.sent-test .ask { text-align: center; margin: 4px 0 8px; }
+.sent-test .choices { grid-template-columns: 1fr; margin-top: 0; }
+.sent-test .choice { min-height: 56px; text-align: left; font-size: 16px; }
+.sent-test .s-big.en { font-size: 24px; }
+.sent-test .choices.ko .choice { font-size: 20px; }

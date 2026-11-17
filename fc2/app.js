@@ -19,7 +19,7 @@ const STATUS_LABEL = { new: '✨ New', learning: '🌱 Learning', growing: '🌿
 const THEMES = { midnight: ['Midnight', 0], jade: ['Jade', 300], sunset: ['Sunset', 800], neon: ['Neon', 2000] };
 const PARTICLES = { sparks: ['Sparks', 0], stars: ['Stars', 250], petals: ['Petals', 600], hangul: ['Hangul burst', 1200] };
 const SPEAK_MODES = [['none', "Don't speak"], ['front', 'When the front is shown'], ['back', 'When the back is shown'], ['both', 'Front and back']];
-const DEFAULT_OPTS = { reverse: false, speak: 'front', count: 3, onlyOwned: false, sound: true, haptics: true, audioTrials: true };
+const DEFAULT_OPTS = { reverse: false, speak: 'front', count: 3, onlyOwned: true, v: 2, sound: true, haptics: true, audioTrials: true };
 const nowSec = () => Math.floor(Date.now() / 1000);
 const dayKey = (offset = 0) => { const d = new Date(Date.now() + offset * 864e5); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 const fmt = n => Math.round(n).toLocaleString();
@@ -37,7 +37,9 @@ class FC2App {
 		this.units = new Map(window.KR_EN_languageUnits.map(u => [u[C.Id], u]));
 		this.prog = new Map();   // id -> { score, tier, lastCorrect, lastSeen }
 		this.notes = {};
-		this.opts = { ...DEFAULT_OPTS, ...ls.get(LS + 'opts', {}) };
+		const savedOpts = ls.get(LS + 'opts', {});
+		if (savedOpts.v !== 2) { savedOpts.onlyOwned = true; savedOpts.v = 2; }   // v2: examples from unlocked units only is the default
+		this.opts = { ...DEFAULT_OPTS, ...savedOpts };
 		this.flags = ls.get(LS + 'flags', []);
 		this.tab = 'map';
 		this.card = null;
@@ -268,12 +270,16 @@ class FC2App {
 		this.card = { id: pick.id, mode: trial ? 'trial' : pick.mode, st: s, side: 'front', shownAt: Date.now(), trial: trial ? this.buildTrial(pick.id, u.tier) : null, ...this.generateFor(pick.id) };
 	}
 
+	genOptions() {
+		const options = { seedOffset: Math.floor(Math.random() * 997) };
+		if (this.opts.onlyOwned) { options.onlyFromSet = true; options.allowedUnitIds = new Set(this.g.owned); }
+		return options;
+	}
+
 	generateFor(id) {
 		try {
-			const options = { seedOffset: Math.floor(Math.random() * 997) };
-			if (this.opts.onlyOwned) { options.onlyFromSet = true; options.allowedUnitIds = new Set(this.g.owned); }
-			const list = window.generateSentencesForUnit(id, this.opts.count, options), sentences = Array.from(list);
-			return { sentences, msg: sentences.length ? '' : (list.message || 'No example sentences are available for this unit yet.') };
+			const list = window.generateSentencesForUnit(id, this.opts.count, this.genOptions()), sentences = Array.from(list);
+			return { sentences, msg: sentences.length ? '' : this.opts.onlyOwned ? 'No examples from your unlocked units yet. They appear as you unlock more, or allow all units in the Menu.' : (list.message || 'No example sentences are available for this unit yet.') };
 		} catch (_) { return { sentences: [], msg: 'Could not generate sentences for this unit.' }; }
 	}
 
@@ -295,6 +301,7 @@ class FC2App {
 			${o.hideKo ? '' : `<div class="s-ko">${R.sentenceHtml(s, k.id)}</div>`}
 			${o.english || o.hideKo ? `<div class="s-en-lit">${escapeHtml(s.enLiteral)}</div><div class="s-en">${escapeHtml(s.enNatural || s.en)}</div>` : ''}</div>
 			<div class="s-actions">${o.hideKo ? '' : this.speakBtn('speak-sent', `data-i="${i}"`)}
+			${o.test ? `<button type="button" class="icon-btn test" data-act="sent-test" data-i="${i}" aria-label="Test my comprehension of this sentence">🎯</button>` : ''}
 			<button type="button" class="icon-btn flag${this.isFlagged(s.ko) ? ' flagged' : ''}" data-act="flag" data-i="${i}" aria-label="Flag bad sentence">⚑</button></div></li>`).join('') + '</ul>';
 	}
 
@@ -315,7 +322,7 @@ class FC2App {
 		if (k.side === 'front') {
 			const main = rev ? `<h1 class="unit-main english">${escapeHtml(u[C.English])}</h1>${u[C.Disambiguation] ? `<div class="gloss">${escapeHtml(u[C.Disambiguation])}</div>` : ''}`
 				: `<div class="unit-row"><h1 class="unit-main">${escapeHtml(u[C.Korean])}</h1>${this.speakBtn('speak-unit')}</div>`;
-			return `${head}${main}${this.sentencesHtml({ hideKo: rev })}${regen}<p class="hint">Tap the card to reveal</p>`;
+			return `${head}${main}${this.sentencesHtml({ hideKo: rev, test: true })}${regen}<p class="hint">Tap the card to reveal · 🎯 tests a sentence</p>`;
 		}
 		return `${verdict}${head}<div class="unit-row"><h1 class="unit-main">${escapeHtml(u[C.Korean])}</h1>${this.speakBtn('speak-unit')}</div>
 			<div class="unit-en">${escapeHtml(u[C.English])}</div>
@@ -372,7 +379,7 @@ class FC2App {
 		if (!k || k.mode !== 'trial' || k.done) return;
 		k.done = true;
 		k.passed = k.trial.choices[i].id === k.id;
-		this.root.querySelectorAll('.choice').forEach((b, j) => { b.disabled = true; if (k.trial.choices[j].id === k.id) b.classList.add('right'); else if (j === i) b.classList.add('wrong'); });
+		this.root.querySelectorAll('#card .choice').forEach((b, j) => { b.disabled = true; if (k.trial.choices[j].id === k.id) b.classList.add('right'); else if (j === i) b.classList.add('wrong'); });
 		const u = this.unitOf(k.id);
 		this.settle(G.answerTrial(u, this.g.h[k.id] || 0, k.passed, nowSec(), k.st), k.passed ? 1 : -1, el, u.tier);
 		k.side = 'back';
@@ -621,6 +628,92 @@ class FC2App {
 		this.renderScreen(false);
 	}
 
+	// ---------- sentence comprehension test ----------
+	enOf(s) { return String(s.enNatural || s.en || '').trim(); }
+
+	/** The sentence's translation (or, when rev, its Korean) plus 3 close wrong ones: translations of other sentences built from the same units, most shared units first. */
+	buildSentenceTest(s, rev = false) {
+		const k = this.card, mine = new Set(R.unitIdsOf(s)), right = this.enOf(s);
+		const norm = t => t.toLowerCase().replace(/[^\p{L}\p{N} ]/gu, '').replace(/\s+/g, ' ').trim();
+		const seen = new Set([norm(right), norm(String(s.enLiteral || ''))]), pool = [];
+		const shuffle = a => a.sort(() => Math.random() - 0.5), owned = this.g.owned, inIt = [...mine].filter(id => id !== k.id && owned.includes(id));
+		const sources = [k.id, ...shuffle(inIt), ...shuffle(owned.filter(id => id !== k.id && !mine.has(id)))].slice(0, 8);   // units in the sentence first, then other unlocked ones
+		for (const id of sources) {
+			let list = [];
+			try { list = Array.from(window.generateSentencesForUnit(id, 6, this.genOptions())); } catch (_) { /* fewer candidates */ }
+			for (const c of list) {
+				const en = this.enOf(c), key = norm(en);
+				if (!en || c.ko === s.ko || seen.has(key)) continue;
+				seen.add(key);
+				pool.push({ text: rev ? String(c.ko) : en, shared: R.unitIdsOf(c).filter(x => mine.has(x)).length, r: Math.random() });
+			}
+		}
+		if (!right || pool.length < 3) return null;
+		pool.sort((a, b) => b.shared - a.shared || a.r - b.r);
+		return [{ text: rev ? String(s.ko) : right, ok: true }, ...pool.slice(0, 3).map(p => ({ text: p.text, ok: false }))].sort(() => Math.random() - 0.5);
+	}
+
+	sentenceTest(i) {
+		const k = this.card, s = k && k.sentences[i];
+		if (!s || k.done || k.side !== 'front') return;
+		const rev = this.opts.reverse, choices = this.buildSentenceTest(s, rev);
+		if (!choices) { this.toast('No quick test for this sentence. Try ↻ New examples'); FX.sfx('deny'); return; }
+		this.stest = { k, s, choices, rev, done: false, picked: -1 };
+		FX.sfx('tap');
+		this.stestRender();
+	}
+
+	stestRender() {
+		const t = this.stest, ko = this.units.get(t.k.id)[C.Korean];
+		const btns = t.choices.map((c, j) => `<button type="button" class="choice${!t.done ? '' : c.ok ? ' right' : j === t.picked ? ' wrong' : ''}" data-act="stest-pick" data-i="${j}" ${t.done ? 'disabled' : ''}>${escapeHtml(c.text)}</button>`).join('');
+		this.openModal('Sentence test', `<div class="sent-test"><div class="s-big${t.rev ? ' en' : ''}">${escapeHtml(t.rev ? this.enOf(t.s) : t.s.ko)}</div>${t.rev ? '' : this.speakBtn('stest-say')}
+			<p class="ask">${t.rev ? 'Which Korean sentence says this?' : 'What does it mean?'}</p><div class="choices${t.rev ? ' ko' : ''}">${btns}</div>
+			<p class="muted center">Right: a correct answer for every unit in it. Wrong: Missed it for ${escapeHtml(ko)}.</p></div>`);
+	}
+
+	stestPick(j, el) {
+		const t = this.stest;
+		if (!t || t.done || this.card !== t.k || t.k.done) return;
+		t.done = true; t.picked = j;
+		const ok = t.choices[j].ok;
+		if (ok) { FX.sfx('answer', this.session.combo + 1); FX.buzz(15); FX.burstAt(el, { count: 20, power: 6 }); } else { FX.sfx('miss'); FX.buzz([20, 30, 20]); }
+		this.stestRender();
+		setTimeout(() => {
+			if (this.stest !== t || this.card !== t.k || t.k.done) return;
+			this.stest = null; this.closeModal();
+			this.sentenceSettle(t.s, ok);
+		}, ok ? 800 : 1800);
+	}
+
+	/** Right: every unlocked unit in the sentence gets a "Correct" (units whose next step is a promotion trial are left for the trial). Wrong: "Missed it" for the card. */
+	sentenceSettle(s, ok) {
+		const k = this.card, g = this.g, ss = this.session, now = nowSec(), el = this.$('#card'), u = this.unitOf(k.id);
+		k.done = true;
+		if (!ok) { this.advance(this.settle(G.answer(u, g.h[k.id] || 0, -1, now, k.st), -1, el, u.tier)); return; }
+		const st = this.classify(), tot = { n: 0, coins: 0, ups: 0 };
+		for (const id of R.unitIdsOf(s)) {
+			if (id === k.id || !g.owned.includes(id)) continue;
+			const cu = this.unitOf(id), cs = st.get(id), h = g.h[id] || 0;
+			if (G.isTrial(cu, h, cs)) continue;
+			const res = G.answer(cu, h, 1, now, cs), ev = res.ev;
+			this.prog.set(id, res.unit);
+			if (res.h) g.h[id] = res.h; else delete g.h[id];
+			this.saveUnit(id);
+			const coins = G.payout(g, ev, cu.tier, { combo: ss.combo + 1, swift: false, crit: false }), xp = G.xpFor(ev);
+			g.coins += coins; g.totals.earned += coins; g.totals.answers++;
+			if (ev.harvested) g.totals.harvests++;
+			tot.ups += G.addXp(g, xp); tot.n++; tot.coins += coins;
+			if (res.unit.score < T.ESTABLISHED) ss.due.set(id, ss.n + 1 + T.LEARN_GAP[1]); else ss.due.delete(id);
+			const r = ss.round;
+			r.coins += coins; r.xp += xp; r.est += ev.established ? 1 : 0; r.harvest += ev.harvested ? 1 : 0; r.lapsed += ev.lapsed ? 1 : 0;
+			G.questEvent(g, { answers: 1, established: ev.established ? 1 : 0, harvests: ev.harvested ? 1 : 0 });
+		}
+		if (tot.n) this.toast(`📖 ${tot.n} more unit${tot.n > 1 ? 's' : ''} credited · +${fmt(tot.coins)} 냥`);
+		const delay = this.settle(G.answer(u, g.h[k.id] || 0, 1, now, k.st), 1, el, u.tier);
+		if (tot.ups) setTimeout(() => this.levelUp(), delay + 400);
+		this.advance(delay);
+	}
+
 	// ---------- number sound board (shop unlock) ----------
 	nbBuy(el) {
 		const g = this.g;
@@ -720,7 +813,7 @@ class FC2App {
 			<button type="button" class="icon-btn" data-act="close-modal" aria-label="Close">✕</button></header><div class="modal-body">${html}</div></div>`;
 		m.classList.remove('hidden');
 	}
-	closeModal() { this.$('#modal').classList.add('hidden'); }
+	closeModal() { const m = this.$('#modal'); m.classList.add('hidden'); m.innerHTML = ''; }
 
 	flagsHtml() {
 		return `<p class="muted">${this.flags.length} flagged. Copy this and save it as a file in the project's <code>flagged/</code> folder.</p>
@@ -779,6 +872,9 @@ class FC2App {
 		switch (name) {
 			case 'tab': this.closeModal(); this.go(el.dataset.tab); break;
 			case 'collect': this.collect(el); break;
+			case 'sent-test': this.sentenceTest(Number(el.dataset.i)); break;
+			case 'stest-pick': this.stestPick(Number(el.dataset.i), el); break;
+			case 'stest-say': if (this.stest) window.speakKorean(this.stest.s.ko, el); break;
 			case 'nb-buy': this.nbBuy(el); break;
 			case 'nb-open': this.closeModal(); this.nbOpen(); break;
 			case 'nb-pick': this.nbPick(Number(el.dataset.v), el); break;

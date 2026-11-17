@@ -7,8 +7,8 @@ Phone-first: study happens in `flashcards/` (GitHub Pages); `webapp/` is the des
 Experiment in a small separate project, not in a branch.
 
 ## Commands
-- `node test.js`: default suite, ~30 s (ESLint, data integrity, smoke generation, all test/ suites). Run before every commit.
-- `node test.js --full`: adds the every-unit generation sweep (~20 s) the jsdom browser load test and the fc2 UI playthrough (jsdom, slow on some disks).
+- `node test.js`: default suite, ~70 s (ESLint, data integrity, smoke generation, all test/ suites). Run before every commit.
+- `node test.js --full`: adds the every-unit generation sweep (~20 s) and the jsdom browser load test (slow on some disks); the fc2 UI playthrough already runs by default.
 - `npm run lint`: ESLint only. 0 errors required; `no-unused-vars` warnings are a dead-code cleanup backlog.
 - `node test/<name>_test.js`: one suite, 1-3 s. `node test/browser_load_test.js`: jsdom check of `webapp/index.html`.
 - State what you ran. Done means named tests pass and lint is clean.

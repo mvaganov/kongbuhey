@@ -70,7 +70,7 @@ function runEslint() {
 	const eslintBin = path.resolve(__dirname, 'node_modules', 'eslint', 'bin', 'eslint.js');
 	if (!fs.existsSync(eslintBin)) return { skipped: true };
 	const child_process = require('child_process');
-	const res = child_process.spawnSync(process.execPath, [eslintBin, '.', '--format', 'json'], {
+	const res = child_process.spawnSync(process.execPath, [eslintBin, '.', '--format', 'json', '--cache', '--cache-location', path.resolve(__dirname, 'node_modules', '.cache', 'eslint', '.eslintcache')], {
 		cwd: __dirname, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024
 	});
 	let report;
@@ -467,7 +467,7 @@ function runTests(options = {}) {
 			{ name: "Text Analyzer Modular Subsystem", path: path.resolve(__dirname, 'test', 'analyzer_modular_test.js') },
 			{ name: "Browser Load (index.html)", path: path.resolve(__dirname, 'test', 'browser_load_test.js'), args: full ? [] : ['--static'] },
 			{ name: "fc2 Game Rules", path: path.resolve(__dirname, 'test', 'fc2_game_test.js') },
-			{ name: "fc2 UI (jsdom playthrough)", path: path.resolve(__dirname, 'test', 'fc2_ui_test.js'), args: full ? [] : ['--static'] },
+			{ name: "fc2 UI (jsdom playthrough)", path: path.resolve(__dirname, 'test', 'fc2_ui_test.js') },
 			{ name: "Golden Sentences (flag fixtures)", path: path.resolve(__dirname, 'test', 'golden_sentences_test.js') },
 			{ name: "Content Hygiene (textbook text stays local)", path: path.resolve(__dirname, 'test', 'verified_originals_test.js') },
 			{ name: "Flashcard Deck Logic", path: path.resolve(__dirname, 'test', 'flashcard_deck_test.js') },

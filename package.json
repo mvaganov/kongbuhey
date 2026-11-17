@@ -7,7 +7,7 @@
     "test": "node test.js",
     "test:full": "node test.js --full",
     "test:browser": "node test/browser_load_test.js",
-    "lint": "eslint ."
+    "lint": "eslint . --cache --cache-location node_modules/.cache/eslint/.eslintcache"
   },
   "engines": {
     "node": ">=20"
