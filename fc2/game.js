@@ -71,6 +71,8 @@ const NUMBER_WORDS = {
 	native: ['', '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉', '열', '열하나', '열둘'],
 	sino: ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구', '십', '십일', '십이']
 };
+/** What the board says for a tapped button: the system of the question asked. Native Korean has no zero, so 공 stands in. */
+function numberWord(sys, n) { return sys === 'native' ? (n === 0 ? '공' : NUMBER_WORDS.native[n]) : NUMBER_WORDS.sino[n]; }
 /** One number sound-board question. mode: 'both' | 'native' | 'sino'. Native Korean has no zero, so native draws 1-12. */
 function numberQuestion(mode, rnd, prev) {
 	const sys = mode === 'native' || mode === 'sino' ? mode : (rnd() < 0.5 ? 'native' : 'sino');
@@ -324,7 +326,7 @@ function nextCard(g, units, st, s) {
 }
 const modeOf = st => (st === 'new' || st === 'learning') ? 'learn' : (st === 'growing' ? 'practice' : 'harvest');
 
-const api = { NUMBER_COST, NUMBER_WORDS, numberQuestion, T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
+const api = { NUMBER_COST, NUMBER_WORDS, numberWord, numberQuestion, T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
 	idleEarned, idleRate, touchStreak, isTrial, answerTrial, sealMult, totalStars, sealsAvailable, ascend, ensureQuests, questEvent, claimQuest, packRank, rarity, pickPull, nextCard, modeOf, upLevel, upCost, comboCap, critChance, pullSize, pullCost,
 	nurseryCap, offlineCapH, streakMult };
 if (typeof window !== 'undefined') window.FC2Game = api;

@@ -10,7 +10,9 @@
 const G = window.FC2Game, FX = window.FC2Fx, R = window.FlashcardRender, T = G.T;
 const { escapeHtml } = R;
 const C = window.DATA_SCHEMA;
-const LS = 'kb.fc2.v1.', OLD = 'kb.fc.v1.';
+// ?debug[=scene]: see fc2/debug.js. Debug mode keeps its own localStorage namespace and skips the unit database.
+const DEBUG = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('debug');
+const LS = DEBUG === null ? 'kb.fc2.v1.' : 'kb.fc2.dbg.', OLD = 'kb.fc.v1.';
 const SCORES = [[-2, 'Very hard'], [-1, 'Missed it'], [0, 'Needs practice'], [1, 'Correct'], [2, 'Easy']];
 const SCORE_HUE = { '-2': 0, '-1': 22, 0: 48, 1: 95, 2: 135 };
 const STARS = ['☆', '★', '★★', '★★★'], RARITY = ['N', 'R', 'SR', 'SSR'];
@@ -56,7 +58,7 @@ class FC2App {
 	// ---------- storage ----------
 	async init() {
 		let records = [];
-		try { this.db = new window.KongbuheyDB(); await this.db.open(); records = await this.db.loadAllUnitDataIncremental(); } catch (_) { this.db = null; }
+		if (DEBUG === null) { try { this.db = new window.KongbuheyDB(); await this.db.open(); records = await this.db.loadAllUnitDataIncremental(); } catch (_) { this.db = null; } }
 		for (const rec of records) {
 			const c = rec.custom || {};
 			if (!this.units.has(rec.unitId)) continue;
@@ -65,12 +67,13 @@ class FC2App {
 			if (c.notes) this.notes[rec.unitId] = String(c.notes);
 		}
 		let g = ls.get(LS + 'game', null);
-		if (!g || g.v !== 1) g = this.migrate();
+		if (!g || g.v !== 1) g = DEBUG === null ? this.migrate() : G.blankGame(nowSec());
 		const blank = G.blankGame(nowSec());
 		this.g = { ...blank, ...g, cos: { ...blank.cos, ...g.cos }, totals: { ...blank.totals, ...g.totals } };
 		this.g.owned = this.g.owned.filter(id => this.units.has(id));
 		this.applyCosmetics();
 		this.render();
+		if (DEBUG !== null) this.debugScene(DEBUG);
 		setInterval(() => { if (this.tab === 'map' && this.modalHidden()) this.renderScreen(false); }, 15000);
 	}
 
@@ -101,6 +104,7 @@ class FC2App {
 	}
 
 	save() { ls.set(LS + 'game', this.g); }
+	debugScene(name) { if (DEBUG === null) throw new Error('debug scenes need ?debug in the URL'); this.debug = name; window.FC2Debug.apply(this, name); }
 	unitOf(id) { return this.prog.get(id) || G.blankUnit(); }
 	saveCell(id, colKey, value) { if (this.db) this.db.saveBulkUnitCellValues([{ unitId: id, colKey, value }]).catch(() => {}); }
 	saveUnit(id) {
@@ -755,13 +759,14 @@ class FC2App {
 		const n = this.nb, g = this.g;
 		if (!n || n.done || this.modalHidden()) return;
 		n.done = true; n.picked = v; n.total++;
+		window.speakKorean(G.numberWord(n.q.sys, v));   // say the tapped number in the question's own system
 		if (v === n.q.n) {
 			n.right++; n.streak++;
 			if (n.streak > ((g.games || {}).numbersBest || 0)) { g.games = { ...g.games, numbersBest: n.streak }; this.save(); }
 			FX.sfx('answer', n.streak); FX.buzz(15); FX.burstAt(el, { count: 8 + Math.min(n.streak, 20), power: 5 });
 		} else { n.streak = 0; FX.sfx('miss'); FX.buzz([20, 30, 20]); }
 		this.nbRender();
-		setTimeout(() => { if (this.nb === n && n.done && !this.modalHidden()) this.nbNext(); }, v === n.q.n ? 900 : 1700);
+		setTimeout(() => { if (this.nb === n && n.done && !this.modalHidden()) this.nbNext(); }, v === n.q.n ? 1100 : 1900);
 	}
 
 	// ---------- menu ----------

@@ -220,3 +220,4 @@ code { background: var(--panel2); border-radius: 4px; padding: 1px 5px; }
 .sent-test .choice { min-height: 56px; text-align: left; font-size: 16px; }
 .sent-test .s-big.en { font-size: 24px; }
 .sent-test .choices.ko .choice { font-size: 20px; }
+.dbg-list { list-style: none; padding: 0; margin: 8px 0 0; } .dbg-list li { padding: 6px 0; border-bottom: 1px solid var(--line); } .dbg-list a { color: var(--accent); }

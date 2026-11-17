@@ -124,6 +124,7 @@ assert(G.decay(est(0, 5 * HOUR), NOW) === 0 && G.decay(est(0, 13 * HOUR), NOW) =
 		seen[q.sys].add(q.n); prev = q;
 	}
 	assert(ok && seen.native.size === 12 && seen.sino.size === 13, 'questions stay in range, native has no zero, no immediate repeats, every number comes up');
+	assert(G.numberWord('native', 3) === G.NUMBER_WORDS.native[3] && G.numberWord('native', 0) === '공' && G.numberWord('sino', 0) === '영' && G.numberWord('sino', 12) === '십이', 'a tapped number is spoken in the question\'s system; native zero is 공');
 	assert(G.numberQuestion('native', () => 0.999).n === 12 && G.numberQuestion('sino', () => 0).n === 0, 'range ends are reachable');
 }
 { // fc2/index.html loads the same engine scripts as flashcards/index.html, and every file it names exists

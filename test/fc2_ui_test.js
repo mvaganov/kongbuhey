@@ -27,7 +27,9 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 	const vc = new VirtualConsole();
 	vc.on('jsdomError', e => errors.push(((e.detail && e.detail.message) || e.message) + (e.type ? ` [${e.type}]` : '')));
 	const said = [];
-	const dom = await JSDOM.fromFile(path.join(ROOT, 'fc2', 'index.html'), {
+	const page = path.join(ROOT, 'fc2', 'index.html');
+	const dom = await JSDOM.fromFile(page, {
+		url: require('url').pathToFileURL(page).href + '?debug',   // debug mode: its own storage namespace, and the scene list
 		runScripts: 'dangerously', resources: 'usable', pretendToBeVisual: true, virtualConsole: vc,
 		beforeParse(w) {
 			w.HTMLCanvasElement.prototype.getContext = () => new Proxy({}, { get: () => () => {}, set: () => true });
@@ -43,13 +45,16 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 	const step = async (name, fn) => { try { await fn(); } catch (e) { assert(false, `${name}: ${e.message}`); } };
 
 	await step('boot', async () => {
+		assert(app.debug === '' && !d.querySelector('#modal').classList.contains('hidden'), '?debug opens the scene list');
+		app.closeModal();
 		assert(d.querySelectorAll('#tabs .tab').length === 4 && d.querySelector('#screen .play-big, #screen [data-act="tab"]'), 'boots to a Map with four tabs and an empty-state call to action');
 	});
 
 	await step('pull', async () => {
 		app.go('shop');
+		const coins0 = app.g.coins;
 		click('[data-act="pull"]');
-		assert(app.g.owned.length === G.pullSize(app.g) && app.g.pulls === 1 && app.g.coins === 0, 'the first pull is free and unlocks a pack of units');
+		assert(app.g.owned.length === G.pullSize(app.g) && app.g.pulls === 1 && app.g.coins === coins0, 'the first pull is free and unlocks a pack of units');
 		app.closeModal();
 	});
 
@@ -126,12 +131,24 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(d.querySelectorAll('[data-act="nb-pick"]').length === 13 && said.at(-1) === app.nb.q.ko, 'the board shows 12 buttons plus 0 and speaks the number');
 		const q = app.nb.q;
 		click(`[data-act="nb-pick"][data-v="${q.n}"]`);
+		assert(said.at(-1) === G.numberWord(q.sys, q.n), 'tapping a number speaks it');
 		assert(app.nb.streak === 1 && app.nb.right === 1, 'a correct tap starts a streak');
-		await wait(1000);
+		assert(await until(() => app.nb.done === false), 'the next number follows automatically');
 		const q2 = app.nb.q;
-		assert(q2 !== q && app.nb.done === false, 'the next number follows automatically');
 		click(`[data-act="nb-pick"][data-v="${q2.n === 1 ? 2 : 1}"]`);
 		assert(app.nb.streak === 0 && app.nb.total === 2 && app.g.games.numbersBest === 1, 'a wrong tap resets the streak and keeps the best');
+	});
+
+	await step('debug scenes', async () => {
+		const F = w.FC2Debug;
+		for (const name of F.names) {
+			said.length = 0;
+			try { app.debugScene(name); } catch (e) { assert(false, `scene ${name}: threw ${e.message}`); continue; }
+			assert(d.querySelector(F.scenes[name].expect), `scene ${name} renders (${F.scenes[name].expect})`);
+			if (name === 'trial-listen') assert(app.card.trial.type === 'listen' && app.card.trial.choices.length === 6 && said.at(-1) === app.units.get(app.card.id)[w.DATA_SCHEMA.Korean], 'the listening trial has 6 choices and speaks the unit on its own');
+			if (name === 'trial-meaning') assert(app.card.trial.choices.length === 4, 'the meaning trial has 4 choices');
+			if (name === 'trial-recall') assert(app.card.trial.type === 'recall' && app.card.trial.choices.length === 6, 'the recall trial has 6 choices');
+		}
 	});
 
 	const real = errors.filter(e => !/concord|Cannot set property window|local[\\/]verified_originals/.test(e));
