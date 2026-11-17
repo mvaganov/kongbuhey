@@ -80,6 +80,179 @@ const VERIFIED_SLOT_SCHEMA = {
 	8: 'TrailingPunct'
 };
 
+
+/**
+ * Returns Map<templateId, {start, end}> of 1-based inclusive line numbers for each VERIFIED_SENTENCES
+ * entry in this file. Tracks bracket depth (string-aware), so entries split over several lines work.
+ * Node-only (reads this source file); returns an empty map in browsers.
+ */
+function getTemplateLineRanges() {
+	const ranges = new Map();
+	if (typeof require === 'undefined') return ranges;
+	const lines = require('fs').readFileSync(__filename, 'utf8').split('\n');
+	let inArray = false, start = -1, depth = 0, quote = null, id = null;
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+		if (!inArray) {
+			if (/^const VERIFIED_SENTENCES = \[/.test(line)) inArray = true;
+			continue;
+		}
+		if (start === -1) {
+			if (/^\];/.test(line)) break;
+			const m = line.match(/^\s*\["(vs_[^"]+)"/);
+			if (!m) continue;
+			start = i; depth = 0; id = m[1];
+		}
+		for (let c = 0; c < line.length; c++) {
+			const ch = line[c];
+			if (quote) {
+				if (ch === '\\') c++;
+				else if (ch === quote) quote = null;
+				continue;
+			}
+			if (ch === '"' || ch === "'" || ch === '`') { quote = ch; continue; }
+			if (ch === '[' || ch === '{' || ch === '(') depth++;
+			else if (ch === ']' || ch === '}' || ch === ')') depth--;
+		}
+		if (depth <= 0 && !quote) {
+			ranges.set(id, { start: start + 1, end: i + 1 });
+			start = -1;
+		}
+	}
+	return ranges;
+}
+
+function runCli() {
+	const args = process.argv.slice(2);
+
+	if (args.includes('-h') || args.includes('--help')) {
+		printHelp();
+		process.exit(0);
+	}
+
+	// --locate handling: default ON; --locate=false | --locate false | --locoff | --noloc | --no-locate turn it off.
+	let locate = true;
+	const locateTargets = [];
+	const isOff = v => /^(false|off|0|no)$/i.test(v);
+	for (let i = 0; i < args.length; i++) {
+		const a = args[i];
+		if (a === '--locoff' || a === '--noloc' || a === '--no-locate') locate = false;
+		else if (a.startsWith('--locate=')) locate = !isOff(a.substring(9));
+		else if (a === '--locate') {
+			if (args[i + 1] !== undefined && isOff(args[i + 1])) { locate = false; i++; }
+			else while (i + 1 < args.length && !args[i + 1].startsWith('-')) locateTargets.push(args[++i]);
+		}
+	}
+	const lineRanges = locate || locateTargets.length > 0 ? getTemplateLineRanges() : new Map();
+	const lineTag = id => {
+		const r = lineRanges.get(id);
+		return locate && r ? ` L${r.start}-${r.end}` : '';
+	};
+
+	if (locateTargets.length > 0) {
+		let found = 0;
+		for (const t of locateTargets) {
+			const matches = /^\d+$/.test(t)
+				? VERIFIED_SENTENCES.filter(s => (s[5] || []).some(slot => slot[0] === parseInt(t, 10)))
+				: VERIFIED_SENTENCES.filter(s => s[0] === t);
+			for (const s of matches) {
+				const r = lineRanges.get(s[0]);
+				console.log(`${s[0]}\t${r ? `L${r.start}-${r.end}` : '?'}\t${s[3]}`);
+				found++;
+			}
+			if (matches.length === 0) console.log(`${t}\tnot found`);
+		}
+		process.exit(found > 0 ? 0 : 1);
+	}
+
+	if (args.includes('--status')) {
+		const sources = new Set(VERIFIED_SENTENCES.map(s => s[2]));
+		const totalSlots = VERIFIED_SENTENCES.reduce((acc, s) => acc + (s[5] ? s[5].length : 0), 0);
+		const avgSlots = (totalSlots / VERIFIED_SENTENCES.length).toFixed(1);
+
+		console.log(`\n================================================================================`);
+		console.log(`                    VERIFIED SENTENCES REPOSITORY & STATUS                      `);
+		console.log(`================================================================================`);
+		console.log(`Repository Templates:     ${VERIFIED_SENTENCES.length} verified sentence templates`);
+		console.log(`Study Text Sources:       ${sources.size} unique study texts`);
+		console.log(`Total Lexical Slots:      ${totalSlots} slots (average ${avgSlots} slots/template)`);
+
+		const path = require('path');
+		const fs = require('fs');
+		const progPath = path.resolve(__dirname, '../scratch', 'sentence_verification_progress.json');
+		if (fs.existsSync(progPath)) {
+			try {
+				const prog = JSON.parse(fs.readFileSync(progPath, 'utf8'));
+				console.log(`\n--- Sentence Verification Testing Progress ---`);
+				console.log(`Current Unit ID:          ${prog.currentUnitId}`);
+				console.log(`Last Verified ID:         ${prog.lastVerifiedUnitId !== null ? prog.lastVerifiedUnitId : 'None'}`);
+				console.log(`Total Units Verified:     ${prog.totalVerified || 0} / 2045`);
+				console.log(`Last Updated:             ${prog.lastUpdated || 'Never'}`);
+			} catch (_) {}
+		}
+
+		console.log(`\nNext Actions:`);
+		console.log(`  Run 'node verify_sentences_cli.js' or 'node data/verified_sentences.js --verify' to test sentence generation.`);
+		console.log(`  Run 'node data/verified_sentences.js --list' to browse templates.`);
+		console.log(`  Run 'node data/verified_sentences.js --help' for all options.`);
+		console.log(`================================================================================\n`);
+		process.exit(0);
+	}
+
+	if (args.includes('--list')) {
+		const limitIdx = args.indexOf('--list') + 1;
+		const limit = (limitIdx < args.length && !args[limitIdx].startsWith('-')) ? parseInt(args[limitIdx], 10) : 20;
+		console.log(`\n--- Verified Sentence Templates (Showing ${Math.min(limit, VERIFIED_SENTENCES.length)} of ${VERIFIED_SENTENCES.length}) ---`);
+		for (let i = 0; i < Math.min(limit, VERIFIED_SENTENCES.length); i++) {
+			const s = VERIFIED_SENTENCES[i];
+			console.log(`[${s[0]}]${lineTag(s[0])} (${s[2]}) ${s[3]}`);
+		}
+		console.log(``);
+		process.exit(0);
+	}
+
+	if (args.includes('--find')) {
+		const queryIdx = args.indexOf('--find') + 1;
+		const query = (queryIdx < args.length) ? args[queryIdx] : '';
+		if (!query) {
+			console.log(`[ERROR] Please specify a search query: node data/verified_sentences.js --find <query>`);
+			process.exit(1);
+		}
+		const matches = VERIFIED_SENTENCES.filter(s =>
+			s[0].toLowerCase().includes(query.toLowerCase()) ||
+			s[2].toLowerCase().includes(query.toLowerCase()) ||
+			s[3].includes(query)
+		);
+		console.log(`\n--- Search Results for "${query}" (${matches.length} matches) ---`);
+		for (const m of matches.slice(0, 30)) {
+			console.log(`[${m[0]}]${lineTag(m[0])} (${m[2]}) ${m[3]}`);
+		}
+		if (matches.length > 30) {
+			console.log(`... and ${matches.length - 30} more.`);
+		}
+		console.log(``);
+		process.exit(0);
+	}
+
+	// Two numeric arguments: <unitId> <seed>
+	if (args.length >= 2 && !args[0].startsWith('-') && !args[1].startsWith('-') && !isNaN(parseInt(args[0], 10)) && !isNaN(parseInt(args[1], 10))) {
+		const cli = require('../verify_sentences_cli.js');
+		return cli.runCli();
+	}
+
+	if (args.includes('--verify')) {
+		const cliArgs = args.filter(a => a !== '--verify');
+		process.argv = [process.argv[0], process.argv[1], ...cliArgs];
+		const cli = require('../verify_sentences_cli.js');
+		return cli.runCli();
+	}
+
+	// No arguments or unhandled arguments: display banner and help
+	console.log(`verified_sentences.js: Contains ${VERIFIED_SENTENCES.length} verified Korean sentence templates across 28 study texts.\n`);
+	printHelp();
+	process.exit(0);
+}
+
 const VERIFIED_SENTENCES = [
 	["vs_363","[krx1 #1]","krx1","",".",[[502,"형이",K.NOUN_PARTICLE,K.NOMINAL,"이/가","",[[96,"이","Particle"]],null,""],[80,"책을",K.NOUN_PARTICLE,K.NOMINAL,"을/를","",[[173,"을","Particle"]],null,""],[152,"읽다가",K.CONJUGATED_VERB,"raw","다가","",[[1239,"-다가","Verb Ending"]],null,""],[1640,"전화를",K.NOUN_PARTICLE,K.NOMINAL,"을/를","",[[173,"를","Particle"]],null,""],[365,"받았습니다",K.CONJUGATED_VERB,K.PAST,"습니다","",[[335,"-았/었-","Tense Infix"],[50,"-습니다","Verb Ending"]],null,""]]],
 	["vs_364","[krx1 #2]","krx1","",".",[[2,"저는",K.NOUN_PARTICLE,K.NOMINAL,"은/는","",[[36,"는","Particle"]],null,""],[103,"기숙사에",K.NOUN_PARTICLE,"exact","기숙사에","",[[132,"에","Particle"]],null,""],[316,"살다가",K.CONJUGATED_VERB,"raw","다가","",[[1239,"-다가","Verb Ending"]],null,""],[1761,"하숙집으로",K.NOUN_PARTICLE,"exact","하숙집으로","",[[1240,"으로","Particle"]],null,""],[904,"이사했어요",K.CONJUGATED_VERB,"exact","어요","",[[335,"-았/었-","Tense Infix"],[49,"-아요/어요","Verb Ending"]],null,""]]],
@@ -626,178 +799,6 @@ const VERIFIED_SENTENCES = [
 	["vs_361","[studytext162 #16]","studytext162","",".",[[1069,"그럴 때",K.AUXILIARY_CONSTRUCTION,"conj","으/ㄹ 때","",[[646,"-(으)ㄹ","Adnominal Ending"],[855,"-(으)ㄹ 때","Grammar Pattern"]],null,""],[1618,"이",K.EXACT_LEXICAL,K.NOMINAL,"","",[],null,""],[701,"약을",K.NOUN_PARTICLE,K.NOMINAL,"을/를","",[[173,"을","Particle"]],null,""],[40,"먹으면",K.CONJUGATED_VERB,"conj","으/면","",[[619,"-(으)면","Verb Ending"]],null,""],[121,"좋습니다",K.CONJUGATED_VERB,"conj","습니다/ㅂ니다","",[[50,"-습니다","Verb Ending"]],null,""]]],
 	["vs_362","[studytext162 #17]","studytext162","",".",[[1618,"이",K.EXACT_LEXICAL,K.NOMINAL,"","",[],null,""],[701,"약은",K.NOUN_PARTICLE,K.NOMINAL,"은/는","",[[36,"은","Particle"]],null,""],[2002,"바닥에",K.NOUN_PARTICLE,K.NOMINAL,"에","",[[200,"에","Particle"]],null,""],[82,"있는",K.ADNOMINAL_MODIFIER,"conj","는","",[[645,"-는","Adnominal Ending"]],null,""],[701,"약을",K.NOUN_PARTICLE,K.NOMINAL,"을/를","",[[173,"을","Particle"]],null,""],[1613,"잘",K.EXACT_LEXICAL,K.NOMINAL,"","",[],null,""],[944,"섞어야 하기",K.AUXILIARY_CONSTRUCTION,"exact","섞어야 하기","",[[574,"-아/어야 하다","Grammar Pattern"],[1815,"-기","Nominalizing Suffix"]],null,""],[1837,"때문에",K.NOUN_PARTICLE,K.NOMINAL,"에","",[[132,"에","Particle"]],null,""],[2003,"흔들어서",K.CONJUGATED_VERB,"ao","서","",[[459,"-아/어서","Verb Ending"]],null,""],[40,"먹지 않으면",K.AUXILIARY_CONSTRUCTION,"exact","먹지 않으면","",[[274,"-지 않다","Grammar Pattern"],[619,"-(으)면","Verb Ending"]],null,""],[251,"안",K.EXACT_LEXICAL,"exact","안","",[],null,""],[1615,"됩니다",K.CONJUGATED_VERB,"conj","습니다/ㅂ니다","",[[50,"-ㅂ니다","Verb Ending"]],null,""]]]
 ];
-
-/**
- * Returns Map<templateId, {start, end}> of 1-based inclusive line numbers for each VERIFIED_SENTENCES
- * entry in this file. Tracks bracket depth (string-aware), so entries split over several lines work.
- * Node-only (reads this source file); returns an empty map in browsers.
- */
-function getTemplateLineRanges() {
-	const ranges = new Map();
-	if (typeof require === 'undefined') return ranges;
-	const lines = require('fs').readFileSync(__filename, 'utf8').split('\n');
-	let inArray = false, start = -1, depth = 0, quote = null, id = null;
-	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i];
-		if (!inArray) {
-			if (/^const VERIFIED_SENTENCES = \[/.test(line)) inArray = true;
-			continue;
-		}
-		if (start === -1) {
-			if (/^\];/.test(line)) break;
-			const m = line.match(/^\s*\["(vs_[^"]+)"/);
-			if (!m) continue;
-			start = i; depth = 0; id = m[1];
-		}
-		for (let c = 0; c < line.length; c++) {
-			const ch = line[c];
-			if (quote) {
-				if (ch === '\\') c++;
-				else if (ch === quote) quote = null;
-				continue;
-			}
-			if (ch === '"' || ch === "'" || ch === '`') { quote = ch; continue; }
-			if (ch === '[' || ch === '{' || ch === '(') depth++;
-			else if (ch === ']' || ch === '}' || ch === ')') depth--;
-		}
-		if (depth <= 0 && !quote) {
-			ranges.set(id, { start: start + 1, end: i + 1 });
-			start = -1;
-		}
-	}
-	return ranges;
-}
-
-function runCli() {
-	const args = process.argv.slice(2);
-
-	if (args.includes('-h') || args.includes('--help')) {
-		printHelp();
-		process.exit(0);
-	}
-
-	// --locate handling: default ON; --locate=false | --locate false | --locoff | --noloc | --no-locate turn it off.
-	let locate = true;
-	const locateTargets = [];
-	const isOff = v => /^(false|off|0|no)$/i.test(v);
-	for (let i = 0; i < args.length; i++) {
-		const a = args[i];
-		if (a === '--locoff' || a === '--noloc' || a === '--no-locate') locate = false;
-		else if (a.startsWith('--locate=')) locate = !isOff(a.substring(9));
-		else if (a === '--locate') {
-			if (args[i + 1] !== undefined && isOff(args[i + 1])) { locate = false; i++; }
-			else while (i + 1 < args.length && !args[i + 1].startsWith('-')) locateTargets.push(args[++i]);
-		}
-	}
-	const lineRanges = locate || locateTargets.length > 0 ? getTemplateLineRanges() : new Map();
-	const lineTag = id => {
-		const r = lineRanges.get(id);
-		return locate && r ? ` L${r.start}-${r.end}` : '';
-	};
-
-	if (locateTargets.length > 0) {
-		let found = 0;
-		for (const t of locateTargets) {
-			const matches = /^\d+$/.test(t)
-				? VERIFIED_SENTENCES.filter(s => (s[5] || []).some(slot => slot[0] === parseInt(t, 10)))
-				: VERIFIED_SENTENCES.filter(s => s[0] === t);
-			for (const s of matches) {
-				const r = lineRanges.get(s[0]);
-				console.log(`${s[0]}\t${r ? `L${r.start}-${r.end}` : '?'}\t${s[3]}`);
-				found++;
-			}
-			if (matches.length === 0) console.log(`${t}\tnot found`);
-		}
-		process.exit(found > 0 ? 0 : 1);
-	}
-
-	if (args.includes('--status')) {
-		const sources = new Set(VERIFIED_SENTENCES.map(s => s[2]));
-		const totalSlots = VERIFIED_SENTENCES.reduce((acc, s) => acc + (s[5] ? s[5].length : 0), 0);
-		const avgSlots = (totalSlots / VERIFIED_SENTENCES.length).toFixed(1);
-
-		console.log(`\n================================================================================`);
-		console.log(`                    VERIFIED SENTENCES REPOSITORY & STATUS                      `);
-		console.log(`================================================================================`);
-		console.log(`Repository Templates:     ${VERIFIED_SENTENCES.length} verified sentence templates`);
-		console.log(`Study Text Sources:       ${sources.size} unique study texts`);
-		console.log(`Total Lexical Slots:      ${totalSlots} slots (average ${avgSlots} slots/template)`);
-
-		const path = require('path');
-		const fs = require('fs');
-		const progPath = path.resolve(__dirname, '../scratch', 'sentence_verification_progress.json');
-		if (fs.existsSync(progPath)) {
-			try {
-				const prog = JSON.parse(fs.readFileSync(progPath, 'utf8'));
-				console.log(`\n--- Sentence Verification Testing Progress ---`);
-				console.log(`Current Unit ID:          ${prog.currentUnitId}`);
-				console.log(`Last Verified ID:         ${prog.lastVerifiedUnitId !== null ? prog.lastVerifiedUnitId : 'None'}`);
-				console.log(`Total Units Verified:     ${prog.totalVerified || 0} / 2045`);
-				console.log(`Last Updated:             ${prog.lastUpdated || 'Never'}`);
-			} catch (_) {}
-		}
-
-		console.log(`\nNext Actions:`);
-		console.log(`  Run 'node verify_sentences_cli.js' or 'node data/verified_sentences.js --verify' to test sentence generation.`);
-		console.log(`  Run 'node data/verified_sentences.js --list' to browse templates.`);
-		console.log(`  Run 'node data/verified_sentences.js --help' for all options.`);
-		console.log(`================================================================================\n`);
-		process.exit(0);
-	}
-
-	if (args.includes('--list')) {
-		const limitIdx = args.indexOf('--list') + 1;
-		const limit = (limitIdx < args.length && !args[limitIdx].startsWith('-')) ? parseInt(args[limitIdx], 10) : 20;
-		console.log(`\n--- Verified Sentence Templates (Showing ${Math.min(limit, VERIFIED_SENTENCES.length)} of ${VERIFIED_SENTENCES.length}) ---`);
-		for (let i = 0; i < Math.min(limit, VERIFIED_SENTENCES.length); i++) {
-			const s = VERIFIED_SENTENCES[i];
-			console.log(`[${s[0]}]${lineTag(s[0])} (${s[2]}) ${s[3]}`);
-		}
-		console.log(``);
-		process.exit(0);
-	}
-
-	if (args.includes('--find')) {
-		const queryIdx = args.indexOf('--find') + 1;
-		const query = (queryIdx < args.length) ? args[queryIdx] : '';
-		if (!query) {
-			console.log(`[ERROR] Please specify a search query: node data/verified_sentences.js --find <query>`);
-			process.exit(1);
-		}
-		const matches = VERIFIED_SENTENCES.filter(s =>
-			s[0].toLowerCase().includes(query.toLowerCase()) ||
-			s[2].toLowerCase().includes(query.toLowerCase()) ||
-			s[3].includes(query)
-		);
-		console.log(`\n--- Search Results for "${query}" (${matches.length} matches) ---`);
-		for (const m of matches.slice(0, 30)) {
-			console.log(`[${m[0]}]${lineTag(m[0])} (${m[2]}) ${m[3]}`);
-		}
-		if (matches.length > 30) {
-			console.log(`... and ${matches.length - 30} more.`);
-		}
-		console.log(``);
-		process.exit(0);
-	}
-
-	// Two numeric arguments: <unitId> <seed>
-	if (args.length >= 2 && !args[0].startsWith('-') && !args[1].startsWith('-') && !isNaN(parseInt(args[0], 10)) && !isNaN(parseInt(args[1], 10))) {
-		const cli = require('../verify_sentences_cli.js');
-		return cli.runCli();
-	}
-
-	if (args.includes('--verify')) {
-		const cliArgs = args.filter(a => a !== '--verify');
-		process.argv = [process.argv[0], process.argv[1], ...cliArgs];
-		const cli = require('../verify_sentences_cli.js');
-		return cli.runCli();
-	}
-
-	// No arguments or unhandled arguments: display banner and help
-	console.log(`verified_sentences.js: Contains ${VERIFIED_SENTENCES.length} verified Korean sentence templates across 28 study texts.\n`);
-	printHelp();
-	process.exit(0);
-}
 
 if (typeof window !== 'undefined') {
 	window.VERIFIED_TEMPLATE_SCHEMA = VERIFIED_TEMPLATE_SCHEMA;
