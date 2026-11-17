@@ -221,3 +221,15 @@ code { background: var(--panel2); border-radius: 4px; padding: 1px 5px; }
 .sent-test .s-big.en { font-size: 24px; }
 .sent-test .choices.ko .choice { font-size: 20px; }
 .dbg-list { list-style: none; padding: 0; margin: 8px 0 0; } .dbg-list li { padding: 6px 0; border-bottom: 1px solid var(--line); } .dbg-list a { color: var(--accent); }
+
+/* sentence-clear show */
+.fly-coin.xp { color: #8fd3ff; text-shadow: 0 0 8px rgba(111, 190, 255, .9); font-size: 16px; }
+.float-text.xp { color: #8fd3ff; }
+#bonus { position: fixed; right: 8px; top: 24%; z-index: 62; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; pointer-events: none; max-width: 78vw; }
+.bchip { display: grid; gap: 1px; background: var(--panel); border: 1.5px solid var(--gold); border-radius: 12px; padding: 6px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, .5); animation: chip-in .32s cubic-bezier(.2, .9, .3, 1.2) both; }
+.bchip b { font-size: 16px; } .bchip span { color: var(--muted); } .bchip em { font-style: normal; color: var(--gold); font-weight: 700; }
+.bchip.own { background: linear-gradient(135deg, #3a2f10, var(--panel)); }
+.bchip.out { animation: chip-out .38s ease-in both; }
+@keyframes chip-in { from { transform: translateX(120%); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes chip-out { to { transform: translateX(120%); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .bchip, .bchip.out { animation: none; } }

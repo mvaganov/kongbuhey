@@ -25,8 +25,9 @@ Updated 2026-11-16. Rules, commands and the flag-review loop are in `CLAUDE.md`;
 - Data: unit progress and notes go to the webapp unit store (`KongbuheyAppDB`, via `webapp/db.js`), so the spreadsheet shows them.
   Game state (coins, xp, owned, upgrades, cosmetics, flags) is localStorage `kb.fc2.v1.*`. First launch imports `kb.fc.v1.*`.
 - Sentence test: examples are built from unlocked units only by default (Menu option). Each example has a 🎯 test: forward = Korean enlarged + 4
-  English choices, reverse = English + 4 Korean sentences; distractors are other sentences from the same units. Right = a "Correct" for every unlocked
-  unit in the sentence (units waiting on a promotion trial are skipped); wrong = "Missed it" for the card.
+  English choices, reverse = English + 4 Korean sentences; distractors are other sentences from the same units. Right = 2 "Correct" answers for every unlocked
+  unit in the sentence and 3 for the card's unit (units waiting on a promotion trial are skipped; a second answer on a ripe unit pays as practice), with a
+  sentence-clear show (coin and XP particles, learning pill counting up, a sliding chip per unit; `bonusShow` in `app.js`); wrong = "Missed it" for the card.
 - Number sound board: Lv 0 shop unlock (10 냥), hear 0-12 native or Sino-Korean, tap it; a tapped number is spoken in the question's system (native 0 = 공).
 - **Checking screens fast:** `fc2/index.html?debug` lists scenes, `?debug=trial-listen` etc. opens a ready-made state (separate storage `kb.fc2.dbg.*`, real
   save untouched). Scenes are in `fc2/debug.js`; `test/fc2_ui_test.js` (jsdom, runs in the default `node test.js`) renders every scene. New screen = new scene.

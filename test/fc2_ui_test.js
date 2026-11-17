@@ -82,9 +82,13 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		const id = app.card.id, answers = app.g.totals.answers;
 		click('[data-act="sent-test"]');
 		assert(app.stest && app.stest.choices.length === 4 && app.stest.choices.filter(c => c.ok).length === 1 && d.querySelectorAll('.sent-test .choice').length === 4, 'the test offers 4 translations, one right');
+		const others = w.FlashcardRender.unitIdsOf(app.stest.s).filter(u => u !== id && app.g.owned.includes(u)).length;
+		const coins0 = app.g.coins, xp0 = app.g.xp + app.g.level * 1000;
 		click(`[data-act="stest-pick"][data-i="${app.stest.choices.findIndex(c => c.ok)}"]`);
+		const chips = await until(() => d.querySelectorAll('.bchip').length >= 1);
+		assert(chips, 'a right answer shows the sentence-clear chips');
 		const moved = await until(() => app.card && app.card.id !== id && !app.card.done);
-		assert(moved && app.g.totals.answers > answers, 'a right answer credits the units and moves on');
+		assert(moved && app.g.totals.answers - answers === 3 + 2 * others && app.g.coins > coins0 && app.g.xp + app.g.level * 1000 > xp0, 'a right answer gives the card unit 3 correct answers and every other unit 2, then moves on');
 		showTestable();
 		const id2 = app.card.id, p2 = app.unitOf(id2).score;
 		click('[data-act="sent-test"]');

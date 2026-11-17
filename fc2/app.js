@@ -672,7 +672,7 @@ class FC2App {
 		const btns = t.choices.map((c, j) => `<button type="button" class="choice${!t.done ? '' : c.ok ? ' right' : j === t.picked ? ' wrong' : ''}" data-act="stest-pick" data-i="${j}" ${t.done ? 'disabled' : ''}>${escapeHtml(c.text)}</button>`).join('');
 		this.openModal('Sentence test', `<div class="sent-test"><div class="s-big${t.rev ? ' en' : ''}">${escapeHtml(t.rev ? this.enOf(t.s) : t.s.ko)}</div>${t.rev ? '' : this.speakBtn('stest-say')}
 			<p class="ask">${t.rev ? 'Which Korean sentence says this?' : 'What does it mean?'}</p><div class="choices${t.rev ? ' ko' : ''}">${btns}</div>
-			<p class="muted center">Right: a correct answer for every unit in it. Wrong: Missed it for ${escapeHtml(ko)}.</p></div>`);
+			<p class="muted center">Right: 2 correct answers for every unit in it, 3 for ${escapeHtml(ko)}. Wrong: Missed it for ${escapeHtml(ko)}.</p></div>`);
 	}
 
 	stestPick(j, el) {
@@ -689,33 +689,97 @@ class FC2App {
 		}, ok ? 800 : 1800);
 	}
 
-	/** Right: every unlocked unit in the sentence gets a "Correct" (units whose next step is a promotion trial are left for the trial). Wrong: "Missed it" for the card. */
+	/**
+	 * Right: a big bonus. Every unlocked unit in the sentence gets 2 "Correct" answers and the card's own unit gets 3 (2 + 1 for spawning the
+	 * test), each paying everything an answer pays (score, coins, XP, combo, quests). Units waiting on a promotion trial are skipped, and a
+	 * second answer on a ripe unit pays as practice (one harvest per review). Wrong: "Missed it" for the card.
+	 */
 	sentenceSettle(s, ok) {
-		const k = this.card, g = this.g, ss = this.session, now = nowSec(), el = this.$('#card'), u = this.unitOf(k.id);
+		const k = this.card, g = this.g, now = nowSec(), el = this.$('#card'), u = this.unitOf(k.id);
 		k.done = true;
 		if (!ok) { this.advance(this.settle(G.answer(u, g.h[k.id] || 0, -1, now, k.st), -1, el, u.tier)); return; }
-		const st = this.classify(), tot = { n: 0, coins: 0, ups: 0 };
+		const st = this.classify(), rows = [], before = { ...u };
+		let xp = 0, coins = 0, ups = 0;
+		const credit = (id, row) => {
+			const r = this.creditAnswer(id, row.n ? G.status(this.unitOf(id), nowSec()) : st.get(id));
+			row.n++; row.coins += r.coins; row.xp += r.xp; row.harvested = row.harvested || r.ev.harvested; row.established = row.established || r.ev.established; row.promoted = row.promoted || r.ev.promoted;
+			coins += r.coins; xp += r.xp; ups += r.ups;
+		};
 		for (const id of R.unitIdsOf(s)) {
-			if (id === k.id || !g.owned.includes(id)) continue;
-			const cu = this.unitOf(id), cs = st.get(id), h = g.h[id] || 0;
-			if (G.isTrial(cu, h, cs)) continue;
-			const res = G.answer(cu, h, 1, now, cs), ev = res.ev;
-			this.prog.set(id, res.unit);
-			if (res.h) g.h[id] = res.h; else delete g.h[id];
-			this.saveUnit(id);
-			const coins = G.payout(g, ev, cu.tier, { combo: ss.combo + 1, swift: false, crit: false }), xp = G.xpFor(ev);
-			g.coins += coins; g.totals.earned += coins; g.totals.answers++;
-			if (ev.harvested) g.totals.harvests++;
-			tot.ups += G.addXp(g, xp); tot.n++; tot.coins += coins;
-			if (res.unit.score < T.ESTABLISHED) ss.due.set(id, ss.n + 1 + T.LEARN_GAP[1]); else ss.due.delete(id);
-			const r = ss.round;
-			r.coins += coins; r.xp += xp; r.est += ev.established ? 1 : 0; r.harvest += ev.harvested ? 1 : 0; r.lapsed += ev.lapsed ? 1 : 0;
-			G.questEvent(g, { answers: 1, established: ev.established ? 1 : 0, harvests: ev.harvested ? 1 : 0 });
+			if (id === k.id || !g.owned.includes(id) || G.isTrial(this.unitOf(id), g.h[id] || 0, st.get(id))) continue;
+			const row = { id, n: 0, coins: 0, xp: 0, before: { ...this.unitOf(id) } };
+			credit(id, row); credit(id, row);
+			row.after = { ...this.unitOf(id) }; rows.push(row);
 		}
-		if (tot.n) this.toast(`📖 ${tot.n} more unit${tot.n > 1 ? 's' : ''} credited · +${fmt(tot.coins)} 냥`);
+		// The card's own unit: its normal answer (all the usual effects), then 2 more.
 		const delay = this.settle(G.answer(u, g.h[k.id] || 0, 1, now, k.st), 1, el, u.tier);
-		if (tot.ups) setTimeout(() => this.levelUp(), delay + 400);
-		this.advance(delay);
+		const own = { id: k.id, n: 1, coins: 0, xp: 0, before, own: true };
+		credit(k.id, own); credit(k.id, own);
+		own.after = { ...this.unitOf(k.id) };
+		this.save();
+		const total = this.bonusShow(el, [own, ...rows], coins, xp);
+		if (ups) setTimeout(() => this.levelUp(), delay + 500);
+		this.updateHud();
+		this.advance(Math.max(delay, total));
+	}
+
+	/** One right answer for a unit that is not the card being settled: everything an answer pays, without per-answer effects. */
+	creditAnswer(id, st) {
+		const g = this.g, ss = this.session, now = nowSec(), u = this.unitOf(id), h = g.h[id] || 0;
+		const res = G.answer(u, h, 1, now, st), ev = res.ev;
+		this.prog.set(id, res.unit);
+		if (res.h) g.h[id] = res.h; else delete g.h[id];
+		this.saveUnit(id);
+		ss.combo++;
+		const coins = G.payout(g, ev, u.tier, { combo: ss.combo, swift: false, crit: false }), xp = G.xpFor(ev);
+		g.coins += coins; g.totals.earned += coins; g.totals.answers++;
+		if (ev.harvested) g.totals.harvests++;
+		const ups = G.addXp(g, xp);
+		if (res.unit.score < T.ESTABLISHED) ss.due.set(id, ss.n + 1 + T.LEARN_GAP[1]); else ss.due.delete(id);
+		const r = ss.round;
+		r.coins += coins; r.xp += xp; r.est += ev.established ? 1 : 0; r.harvest += ev.harvested ? 1 : 0; r.lapsed += ev.lapsed ? 1 : 0;
+		G.questEvent(g, { answers: 1, established: ev.established ? 1 : 0, harvests: ev.harvested ? 1 : 0, combo: ss.combo });
+		return { coins, xp, ups, ev };
+	}
+
+	/** The sentence-clear show: coin and XP particles into the HUD, the card's learning pill counting up, a sliding chip per unit. Returns ms until the next card. */
+	bonusShow(el, rows, coins, xp) {
+		const STEP = 260, coinEl = this.$('#coins'), xpEl = this.$('#xpbar'), ko = id => this.units.get(id)[C.Korean];
+		FX.sfx('crit'); FX.buzz([30, 40, 60]); FX.flash('gold');
+		FX.burstAt(el, { count: 90, power: 12 });
+		FX.floatText(el, `🎯 CLEAR +${fmt(coins)}`, 'gold big');
+		for (let i = 0; i < 4; i++) {
+			setTimeout(() => { FX.fly(el, coinEl, 12); FX.fly(el, xpEl, 8, '✦', 'xp'); FX.sfx('coin'); }, i * 180);
+		}
+		setTimeout(() => FX.floatText(xpEl, `+${xp} XP`, 'xp'), 500);
+		// The learning pill on the card counts up to the new score.
+		const own = rows[0], pill = this.$('.playbar .mode');
+		if (pill && own.before.score < T.ESTABLISHED) {
+			const to = Math.min(T.ESTABLISHED, own.after.score);
+			for (let sc = own.before.score + 1; sc <= to; sc++) {
+				setTimeout(() => { pill.textContent = sc >= T.ESTABLISHED ? '✨ Established!' : `🌱 Learning ${sc}/${T.ESTABLISHED}`; pill.classList.remove('pop'); void pill.offsetWidth; pill.classList.add('pop'); FX.sfx('answer', sc + 6); }, 350 * (sc - own.before.score));
+			}
+		}
+		// One chip per unit slides in from the right.
+		let box = this.$('#bonus');
+		if (!box) { box = document.createElement('div'); box.id = 'bonus'; this.root.appendChild(box); }
+		const shown = rows.slice(0, 7);
+		shown.forEach((r, i) => {
+			setTimeout(() => {
+				const learning = r.before.score < T.ESTABLISHED;
+				const state = r.promoted ? `★ promoted` : r.established ? '✨ established' : learning ? `🌱 ${Math.max(0, r.before.score)}/${T.ESTABLISHED} → ${Math.min(T.ESTABLISHED, r.after.score)}/${T.ESTABLISHED}` : r.harvested ? '🌾 harvested' : '🌿 practiced';
+				const chip = document.createElement('div');
+				chip.className = 'bchip' + (r.own ? ' own' : '');
+				chip.innerHTML = `<b>${escapeHtml(ko(r.id))}</b><span>${r.own ? '🎯 ×3 · ' : '×2 · '}${state}</span><em>+${fmt(r.coins)} 냥 · +${r.xp} XP</em>`;
+				box.appendChild(chip);
+				FX.sfx('answer', 3 + i * 2); FX.buzz(10);
+				FX.fly(chip, coinEl, 4); FX.burstAt(chip, { count: 14, power: 6 });
+				setTimeout(() => chip.classList.add('out'), 1500);
+				setTimeout(() => chip.remove(), 1900);
+			}, 500 + i * STEP);
+		});
+		if (rows.length > shown.length) setTimeout(() => { const c = document.createElement('div'); c.className = 'bchip'; c.innerHTML = `<span>+${rows.length - shown.length} more units</span>`; box.appendChild(c); setTimeout(() => c.remove(), 1900); }, 500 + shown.length * STEP);
+		return Math.min(3600, 500 + shown.length * STEP + 1100);
 	}
 
 	// ---------- number sound board (shop unlock) ----------

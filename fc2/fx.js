@@ -74,12 +74,12 @@ function floatText(el, text, cls = '') {
 }
 
 /** Small dots that fly from one element to another (coins into the counter). */
-function fly(fromEl, toEl, n = 6, glyph = '●') {
+function fly(fromEl, toEl, n = 6, glyph = '●', cls = '') {
 	if (reduce() || !fromEl || !toEl) return;
 	const a = center(fromEl), b = center(toEl);
 	for (let i = 0; i < Math.min(n, 12); i++) {
 		const d = document.createElement('div');
-		d.className = 'fly-coin';
+		d.className = 'fly-coin' + (cls ? ' ' + cls : '');
 		d.textContent = glyph;
 		d.style.left = (a.x + (Math.random() - 0.5) * 60) + 'px'; d.style.top = (a.y + (Math.random() - 0.5) * 40) + 'px';
 		document.body.appendChild(d);
