@@ -77,3 +77,9 @@ ingest.js, schema_analysis.js, verify_sentences_cli.js   still at root, not yet 
 - Keep the free AST generator (`korean/generation/unit_sentence_generator.js`); its large functions may be replaced, refactored or deleted
   later, decided once verified-sentence generation is strong. Do not refactor it before then.
 - `data/verified_sentences.js` drives generation today; its data will improve as sentences are tested and semantic tag constraints relax.
+
+## fc2 reload safety, error panel, sentence steering (2026-11-19)
+- `fc2/store.js` (pure, tested in `test/fc2_game_test.js`): unit progress is mirrored to localStorage (`kb.fc2.v1.prog`) and merged with the IndexedDB copy on load (newer timestamp wins, DB healed). The session (combo, round, learning queue) is saved and restored if under 3 h old. `save()` is debounced for the mirror; `flush()` runs on pagehide/visibilitychange.
+- Errors from storage/DB/global handlers show a copyable `#errbox` (`window.fc2ReportError`); corrupt saves are kept under `<key>.corrupt`. Debug scene `error-box`.
+- Sentence generation options: `preferUnitIds` (Set) and `slotBias {retries, reject(unit)}`. Honored by the verified generator (`pickCandidateFromPool`) and the AST generator (`setPickSteering` in `argument_concord.js`, applied to unit-row picks only). fc2 passes a bias that redraws a slot up to twice when the unit is stronger than the owned-set mean.
+- Sentence-test distractors share the sentence's nouns (Noun/Pronoun units) where possible; opening a test marks lastSeen for every unit in the target and choices.

@@ -32,6 +32,8 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		url: require('url').pathToFileURL(page).href + '?debug',   // debug mode: its own storage namespace, and the scene list
 		runScripts: 'dangerously', resources: 'usable', pretendToBeVisual: true, virtualConsole: vc,
 		beforeParse(w) {
+			const mem = new Map();   // file:// pages have no localStorage in jsdom: give it one so a reload can be simulated
+			Object.defineProperty(w, 'localStorage', { value: { getItem: k => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => { mem.set(k, String(v)); }, removeItem: k => mem.delete(k) }, configurable: true, writable: true });
 			w.HTMLCanvasElement.prototype.getContext = () => new Proxy({}, { get: () => () => {}, set: () => true });
 			w.SpeechSynthesisUtterance = function(t) { this.text = t; };
 			Object.defineProperty(w, 'speechSynthesis', { value: { speak: u => said.push(u.text), cancel() {}, getVoices: () => [] }, configurable: true });
@@ -81,6 +83,8 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(showTestable(), 'a fresh pack has at least one unit with a testable example');
 		const id = app.card.id, answers = app.g.totals.answers;
 		click('[data-act="sent-test"]');
+		const seenIds = [...new Set(app.stest.choices.flatMap(c => c.ids))].filter(u => app.g.owned.includes(u));
+		assert(seenIds.length > 0 && seenIds.every(u => app.unitOf(u).lastSeen > 0), 'opening a test marks every unit in the sentence and its choices as seen');
 		assert(app.stest && app.stest.choices.length === 4 && app.stest.choices.filter(c => c.ok).length === 1 && d.querySelectorAll('.sent-test .choice').length === 4, 'the test offers 4 translations, one right');
 		const others = w.FlashcardRender.unitIdsOf(app.stest.s).filter(u => u !== id && app.g.owned.includes(u)).length;
 		const coins0 = app.g.coins, xp0 = app.g.xp + app.g.level * 1000;
@@ -143,6 +147,28 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(app.nb.streak === 0 && app.nb.total === 2 && app.g.games.numbersBest === 1, 'a wrong tap resets the streak and keeps the best');
 	});
 
+	await step('reload', async () => {
+		// Simulate closing and reopening the page: flush as pagehide would, then start a second app over the same storage.
+		app.g.coins += 7; app.save(); app.flush();
+		const root2 = d.querySelector('#app').cloneNode(true); root2.id = 'app2'; d.body.appendChild(root2);
+		const applyScene = w.FC2Debug.apply; w.FC2Debug.apply = () => {};   // a real reload has no scene to apply
+		const app2 = new w.FC2App(root2);
+		await app2.ready;
+		assert(app2.g.coins === app.g.coins && app2.g.level === app.g.level && app2.g.owned.join() === app.g.owned.join(), 'after a reload the coins, level and unlocked units are all still there');
+		const same = [...app.prog].every(([id, u]) => { const v = app2.prog.get(id); return v && v.score === u.score && v.tier === u.tier && v.lastCorrect === u.lastCorrect && v.lastSeen === u.lastSeen; });
+		assert(same && app.prog.size > 0, 'after a reload every unit keeps its score, tier, last correct and last seen');
+		assert(app2.session.combo === app.session.combo && app2.session.round.n === app.session.round.n, 'after a reload the combo and round progress are still there');
+		assert(app2.g.games.numbers === 1 && app2.g.games.numbersBest === app.g.games.numbersBest, 'after a reload the number board unlock and best streak are still there');
+		w.localStorage.setItem('kb.fc2.dbg.game', '{not json');
+		const before = d.querySelectorAll('#errbox').length;
+		new w.FC2App(d.querySelector('#app').cloneNode(true));
+		await wait(50);
+		w.FC2Debug.apply = applyScene;
+		assert(d.querySelectorAll('#errbox').length === 1 && before === 0 && w.localStorage.getItem('kb.fc2.dbg.game.corrupt') === '{not json', 'a corrupt save shows the error panel and keeps a copy of the raw text');
+		d.querySelector('#errbox [data-err="dismiss"]').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+		assert(!d.querySelector('#errbox'), 'the error panel can be dismissed');
+	});
+
 	await step('debug scenes', async () => {
 		const F = w.FC2Debug;
 		for (const name of F.names) {
@@ -153,6 +179,28 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 			if (name === 'trial-meaning') assert(app.card.trial.choices.length === 4, 'the meaning trial has 4 choices');
 			if (name === 'trial-recall') assert(app.card.trial.type === 'recall' && app.card.trial.choices.length === 6, 'the recall trial has 6 choices');
 		}
+	});
+
+	await step('generator steering', async () => {
+		let rejects = 0, made = 0;
+		const bias = { retries: 2, reject: () => { rejects++; return true; } };
+		for (let id = 0; id < 40 && !rejects; id++) made += Array.from(w.generateSentencesForUnit(id, 3, { seedOffset: 3, slotBias: bias })).length;
+		assert(rejects > 0 && made > 0, 'the slot bias is consulted by the generator and never blocks it');
+		let astRejects = 0, astMade = 0;
+		const astBias = { retries: 2, reject: () => { astRejects++; return true; } };
+		for (let id = 0; id < 40 && !astRejects; id++) { const r = w.generateSentenceForUnit(id, { slotBias: astBias }); if (r) astMade++; }
+		assert(astRejects > 0 && astMade > 0, 'the slot bias also steers the fallback (AST) generator without blocking it');
+		let preferred = 0, total = 0;
+		for (let id = 0; id < 60 && !preferred; id++) {
+			const base = Array.from(w.generateSentencesForUnit(id, 1, { seedOffset: 5 }))[0];
+			if (!base) continue;
+			const ids = w.FlashcardRender.unitIdsOf(base).filter(u => u !== id);
+			if (!ids.length) continue;
+			const want = new Set([ids[0]]);
+			const steered = Array.from(w.generateSentencesForUnit(id, 3, { seedOffset: 11, preferUnitIds: want }));
+			total += steered.length; preferred += steered.filter(x => w.FlashcardRender.unitIdsOf(x).includes(ids[0])).length;
+		}
+		assert(total > 0 && preferred > 0, 'preferred units show up in generated sentences when they fit a slot');
 	});
 
 	const real = errors.filter(e => !/concord|Cannot set property window|local[\\/]verified_originals/.test(e));

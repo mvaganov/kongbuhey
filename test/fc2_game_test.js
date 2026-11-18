@@ -127,6 +127,20 @@ assert(G.decay(est(0, 5 * HOUR), NOW) === 0 && G.decay(est(0, 13 * HOUR), NOW) =
 	assert(G.numberWord('native', 3) === G.NUMBER_WORDS.native[3] && G.numberWord('native', 0) === '공' && G.numberWord('sino', 0) === '영' && G.numberWord('sino', 12) === '십이', 'a tapped number is spoken in the question\'s system; native zero is 공');
 	assert(G.numberQuestion('native', () => 0.999).n === 12 && G.numberQuestion('sino', () => 0).n === 0, 'range ends are reachable');
 }
+{ // reload safety: the progress mirror, the session snapshot
+	const S = require('../fc2/store.js');
+	const mk = (score, tier, lc, ls) => ({ score, tier, lastCorrect: lc, lastSeen: ls });
+	const db = new Map([[1, mk(2, 0, 100, 100)], [2, mk(3, 1, 500, 500)]]);
+	const mirror = { 1: [3, 0, 200, 200], 2: [0, 0, 500, 500], 3: [1, 0, 50, 60], 9: [1, 0, 1, 1] };
+	const m = S.mergeProg(db, mirror, id => id !== 9);
+	assert(m.prog.get(1).score === 3 && m.prog.get(2).score === 3 && m.prog.get(2).tier === 1, 'the mirror wins a unit only when strictly newer (equal stamps keep the database copy)');
+	assert(m.prog.get(3).score === 1 && !m.prog.has(9) && m.healed.sort().join() === '1,3', 'units missing from the database come back from the mirror; unknown ids are ignored; healed lists what to rewrite');
+	assert(JSON.stringify(S.packProg(new Map([[5, mk(1, 2, 3, 4)]]))) === '{"5":[1,2,3,4]}', 'progress packs compactly');
+	const sess = { n: 4, combo: 7, round: { n: 4, coins: 9 }, due: new Map([[3, 8]]), last: 3 };
+	const back = S.unpackSession(JSON.parse(JSON.stringify(S.packSession(sess, 1000))), 1100, 3600);
+	assert(back.combo === 7 && back.n === 4 && back.round.coins === 9 && back.due.get(3) === 8 && back.last === 3, 'the session (combo, round, learning queue) survives a reload');
+	assert(S.unpackSession(S.packSession(sess, 1000), 1000 + 3601, 3600) === null && S.unpackSession(null, 1, 1) === null, 'a stale or missing session is dropped');
+}
 { // fc2/index.html loads the same engine scripts as flashcards/index.html, and every file it names exists
 	const srcs = dir => [...fs.readFileSync(path.join(__dirname, '..', dir, 'index.html'), 'utf8').matchAll(/<script src="([^"]+)"/g)].map(m => m[1]);
 	const eng = l => l.filter(s => s.startsWith('../data/') || s.startsWith('../korean/'));

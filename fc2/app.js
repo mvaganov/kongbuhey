@@ -28,9 +28,47 @@ const fmt = n => Math.round(n).toLocaleString();
 const dur = s => s < 90 ? `${Math.max(1, Math.round(s))}s` : s < 5400 ? `${Math.round(s / 60)}m` : s < 129600 ? `${Math.round(s / 3600)}h` : `${Math.round(s / 86400)}d`;
 const hangulOf = text => String(text).replace(/[^가-힣]/g, '');
 
+// A big error panel with copyable text: storage and load problems must never be silent.
+const errorLog = [];
+function reportError(where, err) {
+	const text = `${where}: ${err && err.stack ? err.stack : (err && err.message) || String(err)}`;
+	if (errorLog.some(e => e.text === text)) { errorLog.find(e => e.text === text).n++; } else errorLog.push({ text, at: new Date().toISOString(), n: 1 });
+	if (typeof document === 'undefined' || !document.body) return;
+	let box = document.getElementById('errbox');
+	if (!box) {
+		box = document.createElement('div');
+		box.id = 'errbox';
+		box.innerHTML = '<h2>⚠ Something went wrong</h2><p>Your progress may not be saved. Copy this text and send it along:</p><textarea readonly rows="9"></textarea><div class="btn-row"><button type="button" class="btn primary" data-err="copy">Copy</button><button type="button" class="btn" data-err="dismiss">Dismiss</button></div><small id="errmsg"></small>';
+		box.addEventListener('click', ev => {
+			const act = ev.target.getAttribute && ev.target.getAttribute('data-err'), ta = box.querySelector('textarea');
+			if (act === 'dismiss') { errorLog.length = 0; box.remove(); } else if (act === 'copy') {
+				ta.focus(); ta.select();
+				const done = ok => { box.querySelector('#errmsg').textContent = ok ? 'Copied.' : 'Select the text and copy it by hand.'; };
+				if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(() => done(true), () => done(document.execCommand && document.execCommand('copy')));
+				else done(document.execCommand && document.execCommand('copy'));
+			}
+		});
+		document.body.appendChild(box);
+	}
+	box.querySelector('textarea').value = errorLog.map(e => `[${e.at}]${e.n > 1 ? ' x' + e.n : ''} ${e.text}`).join('\n\n') + `\n\n${navigator.userAgent}\n${location.href}`;
+}
+window.fc2ReportError = reportError;
+window.addEventListener('error', ev => { if (!/Cannot set property window/.test(ev.message || '')) reportError('Uncaught error', ev.error || ev.message); });
+window.addEventListener('unhandledrejection', ev => reportError('Unhandled promise rejection', ev.reason));
+
 const ls = {
-	get(key, fallback) { try { const raw = window.localStorage.getItem(key); return raw == null ? fallback : JSON.parse(raw); } catch (_) { return fallback; } },
-	set(key, value) { try { window.localStorage.setItem(key, JSON.stringify(value)); } catch (_) { /* quota: keep playing */ } }
+	get(key, fallback) {
+		let raw = null;
+		try { raw = window.localStorage.getItem(key); } catch (e) { reportError(`Reading saved data (${key}) failed`, e); return fallback; }
+		if (raw == null) return fallback;
+		try { return JSON.parse(raw); } catch (e) {
+			// Never let a corrupt save be silently replaced by a fresh game: keep the raw text and say so.
+			try { window.localStorage.setItem(key + '.corrupt', raw); } catch (_) { /* nothing more to do */ }
+			reportError(`Saved data (${key}) is unreadable; a copy was kept as ${key}.corrupt`, e);
+			return fallback;
+		}
+	},
+	set(key, value) { try { window.localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { reportError(`Saving (${key}) failed`, e); return false; } }
 };
 
 class FC2App {
@@ -58,7 +96,12 @@ class FC2App {
 	// ---------- storage ----------
 	async init() {
 		let records = [];
-		if (DEBUG === null) { try { this.db = new window.KongbuheyDB(); await this.db.open(); records = await this.db.loadAllUnitDataIncremental(); } catch (_) { this.db = null; } }
+		if (DEBUG === null) {
+			try {
+				this.db = new window.KongbuheyDB(); await this.db.open(); records = await this.db.loadAllUnitDataIncremental();
+				if (this.db.useMemoryFallback) reportError('Unit database unavailable', new Error('IndexedDB is not available in this browser: unit progress is kept in this browser\'s local storage only and will not show in the spreadsheet.'));
+			} catch (e) { this.db = null; reportError('Unit database failed to open', e); }
+		}
 		for (const rec of records) {
 			const c = rec.custom || {};
 			if (!this.units.has(rec.unitId)) continue;
@@ -66,11 +109,17 @@ class FC2App {
 				lastCorrect: Number(c.TimeStampLastCorrect) || 0, lastSeen: Number(c.TimeStampLastSeen) || 0 });
 			if (c.notes) this.notes[rec.unitId] = String(c.notes);
 		}
+		// The localStorage mirror wins a unit only when strictly newer than the database copy.
+		const merged = window.FC2Store.mergeProg(this.prog, ls.get(LS + 'prog', {}), id => this.units.has(id));
+		this.prog = merged.prog;
 		let g = ls.get(LS + 'game', null);
 		if (!g || g.v !== 1) g = DEBUG === null ? this.migrate() : G.blankGame(nowSec());
 		const blank = G.blankGame(nowSec());
 		this.g = { ...blank, ...g, cos: { ...blank.cos, ...g.cos }, totals: { ...blank.totals, ...g.totals } };
 		this.g.owned = this.g.owned.filter(id => this.units.has(id));
+		for (const id of merged.healed) this.saveUnit(id);
+		const sess = window.FC2Store.unpackSession(ls.get(LS + 'session', null), nowSec(), 3 * 3600);
+		if (sess) this.session = { ...this.newSession(), ...sess, round: sess.round || this.newRound() };
 		this.applyCosmetics();
 		this.render();
 		if (DEBUG !== null) this.debugScene(DEBUG);
@@ -103,15 +152,23 @@ class FC2App {
 		return g;
 	}
 
-	save() { ls.set(LS + 'game', this.g); }
+	save() { ls.set(LS + 'game', this.g); ls.set(LS + 'session', window.FC2Store.packSession(this.session, nowSec())); this.queueMirror(); }
+	/** Write the progress mirror soon (debounced); flush() writes everything now (page hide, tab switch). */
+	queueMirror() { if (this.mirrorTimer) return; this.mirrorTimer = setTimeout(() => { this.mirrorTimer = null; ls.set(LS + 'prog', window.FC2Store.packProg(this.prog)); }, 250); }
+	flush() {
+		if (!this.g) return;
+		if (this.mirrorTimer) { clearTimeout(this.mirrorTimer); this.mirrorTimer = null; }
+		ls.set(LS + 'prog', window.FC2Store.packProg(this.prog)); ls.set(LS + 'game', this.g); ls.set(LS + 'session', window.FC2Store.packSession(this.session, nowSec()));
+	}
 	debugScene(name) { if (DEBUG === null) throw new Error('debug scenes need ?debug in the URL'); this.debug = name; window.FC2Debug.apply(this, name); }
 	unitOf(id) { return this.prog.get(id) || G.blankUnit(); }
-	saveCell(id, colKey, value) { if (this.db) this.db.saveBulkUnitCellValues([{ unitId: id, colKey, value }]).catch(() => {}); }
+	saveCell(id, colKey, value) { this.queueMirror(); if (this.db) this.db.saveBulkUnitCellValues([{ unitId: id, colKey, value }]).catch(e => reportError('Saving unit data failed', e)); }
 	saveUnit(id) {
+		this.queueMirror();
 		if (!this.db) return;
 		const u = this.unitOf(id);
 		this.db.saveBulkUnitCellValues([['RecognitionScore', u.score], ['LongTermRecognition', T.TIERS[u.tier]], ['TimeStampLastCorrect', u.lastCorrect],
-			['TimeStampLastSeen', u.lastSeen]].map(([colKey, value]) => ({ unitId: id, colKey, value }))).catch(() => {});
+			['TimeStampLastSeen', u.lastSeen]].map(([colKey, value]) => ({ unitId: id, colKey, value }))).catch(e => reportError('Saving unit progress failed', e));
 	}
 	markSeen(ids) {
 		const t = nowSec();
@@ -277,6 +334,10 @@ class FC2App {
 	genOptions() {
 		const options = { seedOffset: Math.floor(Math.random() * 997) };
 		if (this.opts.onlyOwned) { options.onlyFromSet = true; options.allowedUnitIds = new Set(this.g.owned); }
+		// Lean toward the units you know least: a slot filler stronger than the owned average is redrawn up to twice. Every unit stays possible.
+		const now = nowSec(), strength = id => { const u = this.unitOf(id); if (!u) return 0; return G.effectiveScore(u, now) + u.tier; };
+		const owned = this.g.owned, mean = owned.length ? owned.reduce((n, id) => n + strength(id), 0) / owned.length : 0;
+		options.slotBias = { retries: 2, reject: unit => strength(unit[C.Id]) > mean };
 		return options;
 	}
 
@@ -635,26 +696,38 @@ class FC2App {
 	// ---------- sentence comprehension test ----------
 	enOf(s) { return String(s.enNatural || s.en || '').trim(); }
 
-	/** The sentence's translation (or, when rev, its Korean) plus 3 close wrong ones: translations of other sentences built from the same units, most shared units first. */
+	/**
+	 * The sentence's translation (or, when rev, its Korean) plus 3 close wrong ones. Close = the same nouns: candidates are generated with those
+	 * nouns preferred, then ranked by how many of the sentence's nouns they share (and how few extra nouns they bring), so only the verb,
+	 * tense or other details differ. Each choice carries the unit ids of its sentence.
+	 */
 	buildSentenceTest(s, rev = false) {
 		const k = this.card, mine = new Set(R.unitIdsOf(s)), right = this.enOf(s);
 		const norm = t => t.toLowerCase().replace(/[^\p{L}\p{N} ]/gu, '').replace(/\s+/g, ' ').trim();
+		const isNoun = id => { const p = (this.units.get(id) || [])[C.PartofSpeech]; return p === 'Noun' || p === 'Pronoun'; };
+		const nounsOf = ids => new Set(ids.filter(isNoun));
+		const nouns = nounsOf([...mine]);
 		const seen = new Set([norm(right), norm(String(s.enLiteral || ''))]), pool = [];
-		const shuffle = a => a.sort(() => Math.random() - 0.5), owned = this.g.owned, inIt = [...mine].filter(id => id !== k.id && owned.includes(id));
-		const sources = [k.id, ...shuffle(inIt), ...shuffle(owned.filter(id => id !== k.id && !mine.has(id)))].slice(0, 8);   // units in the sentence first, then other unlocked ones
-		for (const id of sources) {
+		const shuffle = a => a.sort(() => Math.random() - 0.5), owned = this.g.owned;
+		const inIt = [...mine].filter(id => id !== k.id && owned.includes(id));
+		const sources = [k.id, ...shuffle(inIt.filter(id => !isNoun(id))), ...shuffle(owned.filter(id => id !== k.id && !mine.has(id) && !isNoun(id))).slice(0, 5), ...shuffle(inIt.filter(isNoun))].slice(0, 10);
+		let perfect = 0;   // candidates with exactly the sentence's nouns: enough of them and we stop generating
+		for (const [si, id] of sources.entries()) {
+			if (perfect >= 6) break;
 			let list = [];
-			try { list = Array.from(window.generateSentencesForUnit(id, 6, this.genOptions())); } catch (_) { /* fewer candidates */ }
+			try { for (let pass = 0; pass < (si < 4 ? 3 : 1); pass++) list.push(...Array.from(window.generateSentencesForUnit(id, 6, { ...this.genOptions(), preferUnitIds: nouns }))); } catch (_) { /* fewer candidates */ }
 			for (const c of list) {
 				const en = this.enOf(c), key = norm(en);
 				if (!en || c.ko === s.ko || seen.has(key)) continue;
 				seen.add(key);
-				pool.push({ text: rev ? String(c.ko) : en, shared: R.unitIdsOf(c).filter(x => mine.has(x)).length, r: Math.random() });
+				const ids = R.unitIdsOf(c), cn = nounsOf(ids), same = [...nouns].filter(x => cn.has(x)).length;
+				if (same === nouns.size && cn.size === same) perfect++;
+				pool.push({ text: rev ? String(c.ko) : en, ids, score: same * 10 - (cn.size - same) * 6 + ids.filter(x => mine.has(x)).length, r: Math.random() });
 			}
 		}
 		if (!right || pool.length < 3) return null;
-		pool.sort((a, b) => b.shared - a.shared || a.r - b.r);
-		return [{ text: rev ? String(s.ko) : right, ok: true }, ...pool.slice(0, 3).map(p => ({ text: p.text, ok: false }))].sort(() => Math.random() - 0.5);
+		pool.sort((a, b) => b.score - a.score || a.r - b.r);
+		return [{ text: rev ? String(s.ko) : right, ok: true, ids: [...mine] }, ...pool.slice(0, 3).map(p => ({ text: p.text, ok: false, ids: p.ids }))].sort(() => Math.random() - 0.5);
 	}
 
 	sentenceTest(i) {
@@ -663,6 +736,7 @@ class FC2App {
 		const rev = this.opts.reverse, choices = this.buildSentenceTest(s, rev);
 		if (!choices) { this.toast('No quick test for this sentence. Try ↻ New examples'); FX.sfx('deny'); return; }
 		this.stest = { k, s, choices, rev, done: false, picked: -1 };
+		this.markSeen(new Set(choices.flatMap(c => c.ids || [])));   // every unit in the sentence and in the choices was read
 		FX.sfx('tap');
 		this.stestRender();
 	}
@@ -908,6 +982,9 @@ class FC2App {
 
 	// ---------- events ----------
 	bind() {
+		const flush = () => this.flush();
+		window.addEventListener('pagehide', flush);
+		document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
 		this.root.addEventListener('click', ev => {
 			if (!this.g) return;
 			const link = ev.target.closest('[data-unit]');
@@ -982,5 +1059,6 @@ class FC2App {
 	}
 }
 
+window.FC2App = FC2App;
 window.addEventListener('DOMContentLoaded', () => { window.fc2App = new FC2App(document.getElementById('app')); });
 })();

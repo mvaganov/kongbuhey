@@ -70,6 +70,7 @@ const {
 	getMatchingNounsForClassifier,
 	canAdverbPrecede,
 	pickRandom,
+	setPickSteering,
 	filterBySet,
 	getAllUnitsOfPos,
 	selectSubjectUnit,
@@ -3478,7 +3479,14 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
  * @param {Object} [options] Generation options (`variationIndex`, `onlyFromSet`, `allowedUnitIds`, `tense`, `politeness`)
  * @returns {Object} Realized sentence object with `{ ok, ko, pronunciation, ast, eojeols, unitsUsed, unitIds, tree }`
  */
+/** Entry point. options.preferUnitIds / options.slotBias steer slot picks (see argument_concord.js); both are optional. */
 function generateSentenceForUnit(unitOrId, options = {}) {
+	if (!options || (!options.preferUnitIds && !options.slotBias)) return generateSentenceForUnitImpl(unitOrId, options);
+	const prev = setPickSteering({ preferUnitIds: options.preferUnitIds, slotBias: options.slotBias });
+	try { return generateSentenceForUnitImpl(unitOrId, options); } finally { setPickSteering(prev); }
+}
+
+function generateSentenceForUnitImpl(unitOrId, options = {}) {
 	const units = dataModule.KR_EN_languageUnits || (typeof window !== 'undefined' ? window.KR_EN_languageUnits : []);
 	const targetUnit = Array.isArray(unitOrId) ? unitOrId : (typeof unitOrId === "number" && units ? units[unitOrId] : null);
 

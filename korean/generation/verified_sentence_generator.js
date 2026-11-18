@@ -1526,11 +1526,30 @@ function realizeSlot(slot, chosenUnit, realizeOptions = {}) {
 	};
 }
 
+/**
+ * Picks a slot filler. Optional steering (both leave every candidate possible):
+ *   options.preferUnitIds (Set of unit ids): when any candidate is in it, only those are considered.
+ *   options.slotBias ({ reject(unit) -> bool, retries = 2 }): a pick that `reject` flags is redrawn up to `retries` times.
+ */
 function pickCandidateFromPool(candidates, options = {}, slotIndex = 0) {
+	const first = pickCandidateOnce(candidates, options, slotIndex, 0);
+	const bias = options && options.slotBias;
+	if (!first || !bias || typeof bias.reject !== 'function') return first;
+	let chosen = first;
+	const retries = typeof bias.retries === 'number' ? bias.retries : 2;
+	for (let a = 1; a <= retries && bias.reject(chosen); a++) chosen = pickCandidateOnce(candidates, options, slotIndex, a) || chosen;
+	return chosen;
+}
+
+function pickCandidateOnce(candidates, options = {}, slotIndex = 0, attempt = 0) {
 	if (!candidates || candidates.length === 0) return null;
 	if (candidates.length === 1) return candidates[0];
 
 	let pool = candidates;
+	if (options.preferUnitIds instanceof Set) {
+		const preferred = candidates.filter(u => options.preferUnitIds.has(u[DATA_SCHEMA.Id]));
+		if (preferred.length > 0) pool = preferred;
+	}
 	const tier = options.difficultyTier || options.tier;
 
 	if (tier === 'easiest') {
@@ -1563,7 +1582,7 @@ function pickCandidateFromPool(candidates, options = {}, slotIndex = 0) {
 		return pool[Math.floor(Math.random() * pool.length)];
 	}
 	if (typeof options.seedOffset === 'number' || typeof options.variationIndex === 'number') {
-		const base = (Number(options.seedOffset) || 0) + (Number(options.variationIndex) || 0) * 7 + slotIndex * 13;
+		const base = (Number(options.seedOffset) || 0) + (Number(options.variationIndex) || 0) * 7 + slotIndex * 13 + attempt * 31;
 		return pool[Math.abs(base) % pool.length];
 	}
 	const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();

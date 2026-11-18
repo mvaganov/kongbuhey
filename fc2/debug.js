@@ -75,6 +75,7 @@ const scenes = {
 	'sentence-test': { desc: 'Sentence test: Korean enlarged, 4 English choices', expect: '.sent-test .choice', setup: sentence(false, true) },
 	'sentence-test-reverse': { desc: 'Reverse sentence test: English enlarged, 4 Korean choices', expect: '.sent-test .choices.ko', setup: sentence(true, true) },
 	'numbers': { desc: 'Number sound board, unlocked', expect: '[data-act="nb-pick"]', setup(app) { reset(app, 100); app.g.games = { numbers: 1 }; show(app, 'shop'); app.nbOpen(); } },
+	'error-box': { desc: 'The copyable error panel, with a sample error', expect: '#errbox textarea', setup(app) { reset(app); show(app, 'map'); window.fc2ReportError('Debug sample (not a real error)', new Error('Sample error text to copy and paste')); } },
 	'shop': { desc: '3000 냥 and 30 units: the full shop', expect: '[data-act="upgrade"]', setup(app) { reset(app, 3000); own(app, 30); show(app, 'shop'); } },
 	'ascend': { desc: 'Enough stars banked to ascend', expect: '[data-act="ascend"]:not([disabled])', setup(app) { reset(app); own(app, 12).forEach(id => setUnit(app, id, 1, 0, 1)); show(app, 'shop'); } },
 	'levelup': { desc: 'One answer away from a level up', expect: '.k-learn', setup(app) { reset(app); own(app, 6); app.g.xp = G.xpToNext(1) - 1; show(app, 'play'); } }

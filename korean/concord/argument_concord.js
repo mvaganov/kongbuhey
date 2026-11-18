@@ -160,6 +160,11 @@ const DAILY_HABIT_ADVERBS = new Set(["날마다", "매일"]);
 // Core Selection & Concordance Functions
 // ============================================================================
 
+// Optional steering for the sentence generator (set around one generation call, see setPickSteering): { preferUnitIds, slotBias }.
+// Every candidate stays possible; steering only narrows to preferred units and redraws a pick that slotBias.reject flags.
+let pickSteering = null;
+function setPickSteering(steering) { const prev = pickSteering; pickSteering = steering || null; return prev; }
+
 function pickRandom(arr, seedOffset = null, options = null) {
 	if (!arr || arr.length === 0) return null;
 	let pool = arr;
@@ -187,11 +192,23 @@ function pickRandom(arr, seedOffset = null, options = null) {
 			}
 		}
 	}
-	if (typeof seedOffset === 'number' && seedOffset >= 0) {
-		return pool[seedOffset % pool.length];
+	// Only unit rows (arrays) are steered; pickRandom is also used on plain strings/objects.
+	const st = Array.isArray(pool[0]) ? pickSteering : null;
+	if (st && st.preferUnitIds instanceof Set) {
+		const preferred = pool.filter(u => st.preferUnitIds.has(u[DATA_SCHEMA.Id]));
+		if (preferred.length > 0) pool = preferred;
 	}
-	const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
-	return pool[Math.floor(rnd * pool.length)];
+	const draw = attempt => {
+		if (typeof seedOffset === 'number' && seedOffset >= 0) return pool[(seedOffset + attempt * 7) % pool.length];
+		const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();
+		return pool[Math.floor(rnd * pool.length)];
+	};
+	let chosen = draw(0);
+	if (st && st.slotBias && typeof st.slotBias.reject === 'function') {
+		const retries = typeof st.slotBias.retries === 'number' ? st.slotBias.retries : 2;
+		for (let a = 1; a <= retries && pool.length > 1 && st.slotBias.reject(chosen); a++) chosen = draw(a);
+	}
+	return chosen;
 }
 
 function filterBySet(candidates, options = {}, targetId = null) {
@@ -753,6 +770,7 @@ function selectAdverbUnit(isDescriptive, polarity, options = {}, targetId = null
 
 const argumentConcordExports = {
 	pickRandom,
+	setPickSteering,
 	filterBySet,
 	getAllUnitsOfPos,
 	selectSubjectUnit,
