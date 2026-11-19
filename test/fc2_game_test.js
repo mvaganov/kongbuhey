@@ -71,7 +71,7 @@ assert(G.decay(est(0, 5 * HOUR), NOW) === 0 && G.decay(est(0, 13 * HOUR), NOW) =
 }
 { // pulls and scheduling
 	const cands = [{ id: 1, pack: 'SUOBI01', priority: 5 }, { id: 2, pack: 'class2012', priority: 1 }, { id: 3, pack: 'class2011', priority: 0.5 }, { id: 4, pack: 'class2011', priority: 4 }, { id: 5, pack: 'studytext12', priority: 1 }];
-	assert(JSON.stringify(G.pickPull(cands, 4, () => 0)) === '[4,3,2,5]', 'pulls go pack by pack (class, then study texts), highest priority first');
+	assert(JSON.stringify(G.pickPull(cands, 4, () => 0)) === '[3,4,2,5]', 'pulls go pack by pack (class, then study texts), easiest PriorityScore first');
 	assert(G.pickPull(cands, 1, () => 0, 'SUOBI01')[0] === 1, 'a chosen pack is pulled first');
 	const g = G.blankGame(NOW); g.owned = [1, 2, 3, 4];
 	const units = new Map([[1, unit({ score: 1, lastSeen: 1 })], [2, est(0, 5 * HOUR)], [3, unit()], [4, est(1, HOUR)]]);

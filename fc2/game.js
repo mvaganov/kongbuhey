@@ -291,11 +291,11 @@ const rarity = priority => priority >= 5 ? 3 : priority >= 4 ? 2 : priority >= 3
 
 /**
  * Choose the next units to unlock. cands: [{ id, pack, priority }] not yet owned. Works through packs in packRank order
- * (or `pack` first when given); inside a pack, highest PriorityScore then lowest id, picking randomly within a small window.
+ * (or `pack` first when given); inside a pack, lowest PriorityScore (easiest: 0.5 ultra-simple .. 5 niche) then lowest id, picking randomly within a small window.
  */
 function pickPull(cands, n, rng = Math.random, pack = null) {
 	const sorted = cands.slice().sort((a, b) => ((a.pack === pack ? -1 : packRank(a.pack)) - (b.pack === pack ? -1 : packRank(b.pack)))
-		|| (b.priority - a.priority) || (a.id - b.id));
+		|| (a.priority - b.priority) || (a.id - b.id));
 	const out = [];
 	while (out.length < n && sorted.length) {
 		const first = sorted[0].pack;
