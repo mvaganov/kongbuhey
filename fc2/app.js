@@ -344,8 +344,23 @@ class FC2App {
 	generateFor(id) {
 		try {
 			const list = window.generateSentencesForUnit(id, this.opts.count, this.genOptions()), sentences = Array.from(list);
+			if (sentences.length) this.prefetchSoon(id, sentences);
 			return { sentences, msg: sentences.length ? '' : this.opts.onlyOwned ? 'No examples from your unlocked units yet. They appear as you unlock more, or allow all units in the Menu.' : (list.message || 'No example sentences are available for this unit yet.') };
 		} catch (_) { return { sentences: [], msg: 'Could not generate sentences for this unit.' }; }
+	}
+
+	/** Building a quiz generates dozens of candidate sentences (~0.3 s). Do it in idle gaps while the card is read, one sentence at a time. */
+	prefetchSoon(id, sentences) {
+		const todo = sentences.slice();
+		const step = () => {
+			if (!this.card || this.card.id !== id || this.stest) return;
+			const s = todo.shift();
+			if (!s) return;
+			const rev = this.opts.reverse, key = `${rev}|${this.g.owned.length}`;
+			if (!(s.preTest && s.preTest.key === key)) { try { s.preTest = { key, choices: this.buildSentenceTest(s, rev, id) }; } catch (_) { /* built on tap instead */ } }
+			setTimeout(step, 80);
+		};
+		setTimeout(step, 250);
 	}
 
 	maybeSpeak(side) {
@@ -701,8 +716,8 @@ class FC2App {
 	 * nouns preferred, then ranked by how many of the sentence's nouns they share (and how few extra nouns they bring), so only the verb,
 	 * tense or other details differ. Each choice carries the unit ids of its sentence.
 	 */
-	buildSentenceTest(s, rev = false) {
-		const k = this.card, mine = new Set(R.unitIdsOf(s)), right = this.enOf(s);
+	buildSentenceTest(s, rev = false, cardId = null) {
+		const k = { id: cardId === null ? this.card.id : cardId }, mine = new Set(R.unitIdsOf(s)), right = this.enOf(s);
 		const norm = t => t.toLowerCase().replace(/[^\p{L}\p{N} ]/gu, '').replace(/\s+/g, ' ').trim();
 		const isNoun = id => { const p = (this.units.get(id) || [])[C.PartofSpeech]; return p === 'Noun' || p === 'Pronoun'; };
 		const nounsOf = ids => new Set(ids.filter(isNoun));
@@ -713,9 +728,9 @@ class FC2App {
 		const sources = [k.id, ...shuffle(inIt.filter(id => !isNoun(id))), ...shuffle(owned.filter(id => id !== k.id && !mine.has(id) && !isNoun(id))).slice(0, 5), ...shuffle(inIt.filter(isNoun))].slice(0, 10);
 		let perfect = 0;   // candidates with exactly the sentence's nouns: enough of them and we stop generating
 		for (const [si, id] of sources.entries()) {
-			if (perfect >= 6) break;
+			if (perfect >= 3) break;
 			let list = [];
-			try { for (let pass = 0; pass < (si < 4 ? 3 : 1); pass++) list.push(...Array.from(window.generateSentencesForUnit(id, 6, { ...this.genOptions(), preferUnitIds: nouns }))); } catch (_) { /* fewer candidates */ }
+			try { for (let pass = 0; pass < (si < 3 ? 2 : 1); pass++) list.push(...Array.from(window.generateSentencesForUnit(id, 4, { ...this.genOptions(), preferUnitIds: nouns }))); } catch (_) { /* fewer candidates */ }
 			for (const c of list) {
 				const en = this.enOf(c), key = norm(en);
 				if (!en || c.ko === s.ko || seen.has(key)) continue;
@@ -730,12 +745,15 @@ class FC2App {
 		return [{ text: rev ? String(s.ko) : right, ok: true, ids: [...mine] }, ...pool.slice(0, 3).map(p => ({ text: p.text, ok: false, ids: p.ids }))].sort(() => Math.random() - 0.5);
 	}
 
+	get STEST_GUARD_MS() { return this.guardMs === undefined ? 450 : this.guardMs; }
+
 	sentenceTest(i) {
 		const k = this.card, s = k && k.sentences[i];
 		if (!s || k.done || k.side !== 'front') return;
-		const rev = this.opts.reverse, choices = this.buildSentenceTest(s, rev);
+		const rev = this.opts.reverse, pre = s.preTest, choices = pre && pre.key === `${rev}|${this.g.owned.length}` && pre.choices ? pre.choices : this.buildSentenceTest(s, rev);
+		s.preTest = null;   // each quiz is fresh: the next tap builds (or prefetches) a new one
 		if (!choices) { this.toast('No quick test for this sentence. Try ↻ New examples'); FX.sfx('deny'); return; }
-		this.stest = { k, s, choices, rev, done: false, picked: -1 };
+		this.stest = { k, s, choices, rev, done: false, picked: -1, readyAt: Date.now() + this.STEST_GUARD_MS };
 		this.markSeen(new Set(choices.flatMap(c => c.ids || [])));   // every unit in the sentence and in the choices was read
 		FX.sfx('tap');
 		this.stestRender();
@@ -752,6 +770,7 @@ class FC2App {
 	stestPick(j, el) {
 		const t = this.stest;
 		if (!t || t.done || this.card !== t.k || t.k.done) return;
+		if (Date.now() < t.readyAt) return;   // a tap meant for the 🎯 button (or made while the quiz was appearing) must not answer it
 		t.done = true; t.picked = j;
 		const ok = t.choices[j].ok;
 		if (ok) { FX.sfx('answer', this.session.combo + 1); FX.buzz(15); FX.burstAt(el, { count: 20, power: 6 }); } else { FX.sfx('miss'); FX.buzz([20, 30, 20]); }

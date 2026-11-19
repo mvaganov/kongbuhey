@@ -82,7 +82,14 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		};
 		assert(showTestable(), 'a fresh pack has at least one unit with a testable example');
 		const id = app.card.id, answers = app.g.totals.answers;
+		const prefetched = await until(() => app.card.sentences[0].preTest && app.card.sentences[0].preTest.choices, 4000);
+		const pre = prefetched ? app.card.sentences[0].preTest.choices : null;
+		assert(prefetched, 'the quiz for a shown example is built in the background');
 		click('[data-act="sent-test"]');
+		assert(pre && app.stest.choices === pre, 'tapping 🎯 uses the pre-built quiz');
+		click(`[data-act="stest-pick"][data-i="0"]`);
+		assert(app.stest && !app.stest.done, 'a tap in the first moments after the quiz opens does not answer it');
+		app.stest.readyAt = 0;
 		const seenIds = [...new Set(app.stest.choices.flatMap(c => c.ids))].filter(u => app.g.owned.includes(u));
 		assert(seenIds.length > 0 && seenIds.every(u => app.unitOf(u).lastSeen > 0), 'opening a test marks every unit in the sentence and its choices as seen');
 		assert(app.stest && app.stest.choices.length === 4 && app.stest.choices.filter(c => c.ok).length === 1 && d.querySelectorAll('.sent-test .choice').length === 4, 'the test offers 4 translations, one right');
@@ -95,7 +102,7 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(moved && app.g.totals.answers - answers === 3 + 2 * others && app.g.coins > coins0 && app.g.xp + app.g.level * 1000 > xp0, 'a right answer gives the card unit 3 correct answers and every other unit 2, then moves on');
 		showTestable();
 		const id2 = app.card.id, p2 = app.unitOf(id2).score;
-		click('[data-act="sent-test"]');
+		click('[data-act="sent-test"]'); app.stest.readyAt = 0;
 		click(`[data-act="stest-pick"][data-i="${app.stest.choices.findIndex(c => !c.ok)}"]`);
 		const a2 = app.g.totals.answers;
 		await until(() => app.g.totals.answers > a2);
@@ -108,7 +115,7 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		const id = app.g.owned.find(i => { const c = app.generateFor(i); if (!c.sentences.length) return false; app.card = { id: i }; return Boolean(app.buildSentenceTest(c.sentences[0], true)); });
 		app.card = { id, mode: 'learn', st: 'new', side: 'front', shownAt: Date.now(), trial: null, ...app.generateFor(id) };
 		app.renderScreen(false);
-		click('[data-act="sent-test"]');
+		click('[data-act="sent-test"]'); app.stest.readyAt = 0;
 		const t = app.stest, hangul = /[\uAC00-\uD7A3]/;
 		assert(t && t.rev && t.choices.length === 4 && t.choices.every(c => hangul.test(c.text)) && !hangul.test(d.querySelector('.s-big').textContent), 'in reverse mode the English is shown with 4 Korean sentences to choose from');
 		click(`[data-act="stest-pick"][data-i="${t.choices.findIndex(c => c.ok)}"]`);
