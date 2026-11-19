@@ -34,7 +34,9 @@ const store = {
 class FlashcardApp {
 	constructor(root) {
 		this.root = root;
-		this.units = new Map(window.KR_EN_languageUnits.map(u => [u[C.Id], u]));
+		// Merged duplicates (alias rows, tools/merge_units.js) are not study units; the deck drops them on load.
+		const alias = window.buildAliasMap ? window.buildAliasMap(window.KR_EN_languageUnits) : new Map();
+		this.units = new Map(window.KR_EN_languageUnits.filter(u => !alias.has(u[C.Id])).map(u => [u[C.Id], u]));
 		const savedOpts = store.load('opts', {});
 		delete savedOpts.sources; // replaced by Units mode
 		delete savedOpts.vizExpanded;

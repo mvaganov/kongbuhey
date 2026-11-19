@@ -100,6 +100,27 @@ function parseSemanticData(unit) {
 
 const parseSemanticVector = parseSemanticData;
 
+/**
+ * Merged duplicate units (tools/merge_units.js) keep their row, so ids stay array positions, but become inert aliases:
+ * PartofSpeech K.ALIAS and SemanticData.aliasOf = canonical id. Returns that id, or null for a normal unit.
+ */
+const POS_ALIAS = ((typeof require !== 'undefined' ? require('../../data/constants.js') : window).K || {}).ALIAS || 'Alias';
+function aliasTarget(unit) {
+	if (!unit || unit[DATA_SCHEMA.PartofSpeech] !== POS_ALIAS) return null;
+	const to = parseSemanticData(unit).aliasOf;
+	return typeof to === 'number' ? to : null;
+}
+
+/** Map aliasId -> canonical id over a units array (empty when nothing is merged). */
+function buildAliasMap(units) {
+	const map = new Map();
+	for (const u of (units || [])) {
+		const to = aliasTarget(u);
+		if (to !== null) map.set(u[DATA_SCHEMA.Id], to);
+	}
+	return map;
+}
+
 const HANGUL_INITIALS = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
 const HANGUL_MEDIALS = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
 const HANGUL_FINALS = ['', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
@@ -176,6 +197,8 @@ const exportedPrimitives = {
 	DATA_SCHEMA,
 	hasTag,
 	parseSemanticData,
+	aliasTarget,
+	buildAliasMap,
 	parseSemanticVector,
 	HANGUL_INITIALS,
 	HANGUL_MEDIALS,

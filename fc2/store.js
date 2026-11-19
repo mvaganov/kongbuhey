@@ -45,6 +45,36 @@ function progStats(packed) {
 	return st;
 }
 
+const rankOf = u => [u.tier || 0, u.score || 0, stamp(u)];
+const isBetter = (a, b) => { const x = rankOf(a), y = rankOf(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i]; return false; };
+const unpack = a => ({ score: Number(a[0]) || 0, tier: Number(a[1]) || 0, lastCorrect: Number(a[2]) || 0, lastSeen: Number(a[3]) || 0 });
+
+/**
+ * Merged duplicate units (aliases, tools/merge_units.js) hand their saved state to the canonical unit: progress (the more advanced copy wins,
+ * as in bestOf), the localStorage mirror, the owned list (order kept, no repeats) and notes (appended when both have text).
+ * alias: Map aliasId -> canonicalId. Mutates nothing; returns { prog, mirror, owned, notes, moved: canonical ids whose progress changed }.
+ */
+function foldAliases(state, alias) {
+	const prog = new Map(state.prog || []), mirror = { ...(state.mirror || {}) }, notes = { ...(state.notes || {}) }, moved = [];
+	if (!alias || !alias.size) return { prog, mirror, owned: (state.owned || []).slice(), notes, moved };
+	for (const [a, c] of alias) {
+		if (prog.has(a)) {
+			const m = prog.get(a), cur = prog.get(c);
+			prog.delete(a);
+			if (!cur || isBetter(m, cur)) { prog.set(c, m); moved.push(c); }
+		}
+		if (Array.isArray(mirror[a])) {
+			const cur = mirror[c];
+			if (!Array.isArray(cur) || isBetter(unpack(mirror[a]), unpack(cur))) mirror[c] = mirror[a];
+			delete mirror[a];
+		}
+		if (notes[a]) { notes[c] = notes[c] ? `${notes[c]}\n\n${notes[a]}` : notes[a]; delete notes[a]; }
+	}
+	const owned = [], seen = new Set();
+	for (const id of (state.owned || [])) { const to = alias.has(id) ? alias.get(id) : id; if (!seen.has(to)) { seen.add(to); owned.push(to); } }
+	return { prog, mirror, owned, notes, moved };
+}
+
 /** Recovery merge: per unit keep the more advanced copy (higher star, then score, then newer). Returns { prog: Map, changed: ids that differ from `prog` }. */
 function bestOf(prog, packed, validId = () => true) {
 	const out = new Map(prog), changed = [];
@@ -84,7 +114,7 @@ function unpackSession(raw, now, maxAge) {
 	return { n: Number(raw.n) || 0, combo: Number(raw.combo) || 0, round: raw.round || undefined, due: new Map(Array.isArray(raw.due) ? raw.due : []), last: raw.last ?? null };
 }
 
-const api = { packProg, mergeProg, progStats, bestOf, addSnapshot, packSession, unpackSession };
+const api = { packProg, mergeProg, progStats, bestOf, foldAliases, addSnapshot, packSession, unpackSession };
 if (typeof window !== 'undefined') window.FC2Store = api;
 if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })();

@@ -156,6 +156,20 @@ assert(G.decay(est(0, 5 * HOUR), NOW) === 0 && G.decay(est(0, 13 * HOUR), NOW) =
 	assert(snaps.length <= 6 && snaps.some(x => S.progStats(x.packed).scored === 3), 'the richest snapshot survives a run of poorer ones');
 	assert(S.addSnapshot(snaps, {}, 999999999).length === snaps.length, 'an empty progress is never snapshotted');
 }
+{ // merged duplicate units (aliases, tools/merge_units.js) hand their saved state to the canonical unit
+	const S = require('../fc2/store.js');
+	const mk = (score, tier, lc, ls) => ({ score, tier, lastCorrect: lc, lastSeen: ls });
+	const alias = new Map([[10, 1], [11, 2], [12, 3]]);
+	const f = S.foldAliases({
+		prog: new Map([[1, mk(1, 0, 50, 50)], [10, mk(4, 2, 40, 40)], [2, mk(5, 3, 90, 90)], [11, mk(1, 0, 99, 99)], [12, mk(2, 0, 7, 7)]]),
+		mirror: { 10: [4, 2, 40, 40], 2: [5, 3, 90, 90], 11: [1, 0, 99, 99] },
+		owned: [10, 1, 5, 11, 2, 12], notes: { 10: 'a', 1: 'b', 12: 'c' }
+	}, alias);
+	assert(f.prog.get(1).tier === 2 && f.prog.get(2).tier === 3 && f.prog.get(3).score === 2 && ![10, 11, 12].some(id => f.prog.has(id)), 'an alias\'s progress moves to its canonical unit only when more advanced (tier, then score), and never stays under the alias id');
+	assert(f.moved.sort().join() === '1,3' && f.mirror[1][1] === 2 && f.mirror[2][1] === 3 && !(10 in f.mirror) && !(11 in f.mirror), 'moved lists canonical units to re-save; the localStorage mirror folds the same way');
+	assert(f.owned.join() === '1,5,2,3' && f.notes[1] === 'b\n\na' && f.notes[3] === 'c' && !('10' in f.notes), 'owned units map to canonical ids without repeats; notes are carried over');
+	assert(S.foldAliases({ prog: new Map([[1, mk(1, 0, 1, 1)]]), owned: [1] }, new Map()).owned.join() === '1', 'no aliases: state passes through');
+}
 { // fc2/index.html loads the same engine scripts as flashcards/index.html
 	const srcs = dir => [...fs.readFileSync(path.join(__dirname, '..', dir, 'index.html'), 'utf8').matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace(/\?.*$/, ""));
 	const eng = l => l.filter(s => s.startsWith('../data/') || s.startsWith('../korean/'));

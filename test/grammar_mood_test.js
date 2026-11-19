@@ -121,7 +121,7 @@ assert(IMPERATIVE_GRAMMAR_IDS.has(1738), "Contains unit 1738 -지 마십시오")
 assert(PROPOSITIVE_GRAMMAR_IDS instanceof Set, "PROPOSITIVE_GRAMMAR_IDS is a Set");
 assert(PROPOSITIVE_GRAMMAR_IDS.size >= 5, `PROPOSITIVE_GRAMMAR_IDS has >= 5 entries (found ${PROPOSITIVE_GRAMMAR_IDS.size})`);
 assert(PROPOSITIVE_GRAMMAR_IDS.has(51), "Contains unit 51 ~자");
-assert(PROPOSITIVE_GRAMMAR_IDS.has(1183), "Contains unit 1183 -자");
+assert(!PROPOSITIVE_GRAMMAR_IDS.has(1183), "Excludes 1183 -자 (merged duplicate of 51)");
 assert(PROPOSITIVE_GRAMMAR_IDS.has(1170), "Contains unit 1170 -세");
 assert(PROPOSITIVE_GRAMMAR_IDS.has(1021), "Contains unit 1021 -(으)ㄹ까요?");
 assert(PROPOSITIVE_GRAMMAR_IDS.has(1736), "Contains unit 1736 -(으)ㅂ시다");

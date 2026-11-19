@@ -209,7 +209,7 @@ function runTests(options = {}) {
 
 		const expectedColCount = Object.keys(DATA_SCHEMA).length;
 		const idSet = new Set();
-		const validPosSet = new Set([K.NOUN, K.PRONOUN, K.EXCLAMATION, K.DESCRIPTIVE_VERB, K.POS_GRAMMAR, K.ACTION_VERB, K.POS_ADVERB, K.NUMBER, K.DETERMINER]);
+		const validPosSet = new Set([K.NOUN, K.PRONOUN, K.EXCLAMATION, K.DESCRIPTIVE_VERB, K.POS_GRAMMAR, K.ACTION_VERB, K.POS_ADVERB, K.NUMBER, K.DETERMINER, K.ALIAS]);
 
 		for (let i = 0; i < KR_EN_languageUnits.length; i++) {
 			const unit = KR_EN_languageUnits[i];
@@ -271,7 +271,25 @@ function runTests(options = {}) {
 			}
 		}
 
-		console.log(`[ PASS ] (${KR_EN_languageUnits.length} units, sequential IDs 0..${KR_EN_languageUnits.length - 1})`);
+		// Merged duplicates (tools/merge_units.js): an alias points at a live unit, and nothing still references it.
+		const aliasIds = new Map();
+		for (const unit of KR_EN_languageUnits) {
+			if (unit[DATA_SCHEMA.PartofSpeech] !== K.ALIAS) continue;
+			const to = unit[DATA_SCHEMA.SemanticData].aliasOf, target = KR_EN_languageUnits[to];
+			if (!target || target[DATA_SCHEMA.PartofSpeech] === K.ALIAS) {
+				failFast("Stage 1 (Data Integrity)", `Alias ID ${unit[DATA_SCHEMA.Id]} has aliasOf ${to}, which is missing or itself an alias.`);
+			}
+			aliasIds.set(unit[DATA_SCHEMA.Id], to);
+		}
+		const vsRefs = JSON.stringify(require('./data/verified_sentences.js').VERIFIED_SENTENCES.map(r => r[5].map(sl => [sl[0], (sl[6] || []).map(g => g[0])])));
+		const homRefs = JSON.stringify(require('./data/homonyms.js').HOMONYMS);
+		for (const [a, to] of aliasIds) {
+			const re = new RegExp(`[\\[,]${a}[\\],]`);
+			if (re.test(vsRefs)) failFast("Stage 1 (Data Integrity)", `verified_sentences.js still references alias ID ${a}; use ${to}.`);
+			if (re.test(homRefs)) failFast("Stage 1 (Data Integrity)", `homonyms.js still references alias ID ${a}; use ${to}.`);
+		}
+
+		console.log(`[ PASS ] (${KR_EN_languageUnits.length} units, sequential IDs 0..${KR_EN_languageUnits.length - 1}, ${aliasIds.size} merged aliases)`);
 	} catch (err) {
 		failFast("Stage 1 (Data Integrity)", err.stack || err.message);
 	}

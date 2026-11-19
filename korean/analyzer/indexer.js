@@ -139,6 +139,7 @@ function getIndex(languageUnits) {
 		const ko = u[DATA_SCHEMA.Korean];
 		const pos = u[DATA_SCHEMA.PartofSpeech];
 		unitById.set(id, u);
+		if (pos === K.ALIAS) continue; // merged duplicate: never a parse candidate (tools/merge_units.js)
 
 		// Pre-compute unified semantic tags for O(1) runtime queries (zero JSON parsing at runtime)
 		const tags = new Set();

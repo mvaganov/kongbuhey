@@ -92,7 +92,9 @@ const ls = {
 class FC2App {
 	constructor(root) {
 		this.root = root;
-		this.units = new Map(window.KR_EN_languageUnits.map(u => [u[C.Id], u]));
+		// Merged duplicates (alias rows, tools/merge_units.js) are not playable units; their saved state folds into the canonical unit in init().
+		this.alias = window.buildAliasMap ? window.buildAliasMap(window.KR_EN_languageUnits) : new Map();
+		this.units = new Map(window.KR_EN_languageUnits.filter(u => !this.alias.has(u[C.Id])).map(u => [u[C.Id], u]));
 		this.prog = new Map();   // id -> { score, tier, lastCorrect, lastSeen }
 		this.notes = {};
 		const savedOpts = ls.get(LS + 'opts', {});
@@ -122,22 +124,27 @@ class FC2App {
 		}
 		for (const rec of records) {
 			const c = rec.custom || {};
-			if (!this.units.has(rec.unitId)) continue;
+			if (!this.units.has(rec.unitId) && !this.alias.has(rec.unitId)) continue;
 			this.prog.set(rec.unitId, { score: Number(c.RecognitionScore) || 0, tier: G.tierIndex(c.LongTermRecognition),
 				lastCorrect: Number(c.TimeStampLastCorrect) || 0, lastSeen: Number(c.TimeStampLastSeen) || 0 });
 			if (c.notes) this.notes[rec.unitId] = String(c.notes);
 		}
+		const fold = store().foldAliases || (st => ({ ...st, prog: new Map(st.prog), moved: [] }));
+		const notesBefore = { ...this.notes };
+		const folded = fold({ prog: this.prog, mirror: ls.get(LS + 'prog', {}), notes: this.notes, owned: [] }, this.alias);
+		this.prog = folded.prog; this.notes = folded.notes;
 		this.dbPacked = Object.fromEntries([...this.prog].map(([id, u]) => [id, [u.score, u.tier, u.lastCorrect, u.lastSeen]]));   // what the database held, for the Recovery panel
 		this.snaps = ls.get(LS + 'snaps', []) || [];
 		// The localStorage mirror wins a unit only when strictly newer than the database copy.
-		const merged = store().mergeProg(this.prog, ls.get(LS + 'prog', {}), id => this.units.has(id));
+		const merged = store().mergeProg(this.prog, folded.mirror, id => this.units.has(id));
 		this.prog = merged.prog;
 		let g = ls.get(LS + 'game', null);
 		if (!g || g.v !== 1) g = DEBUG === null ? this.migrate() : G.blankGame(nowSec());
 		const blank = G.blankGame(nowSec());
 		this.g = { ...blank, ...g, cos: { ...blank.cos, ...g.cos }, totals: { ...blank.totals, ...g.totals } };
-		this.g.owned = this.g.owned.filter(id => this.units.has(id));
-		for (const id of merged.healed) this.saveUnit(id);
+		this.g.owned = fold({ prog: [], owned: this.g.owned }, this.alias).owned.filter(id => this.units.has(id));
+		for (const id of new Set([...merged.healed, ...folded.moved])) this.saveUnit(id);
+		for (const [id, text] of Object.entries(this.notes)) if (text !== notesBefore[id]) this.saveCell(Number(id), 'notes', text);
 		const sess = store().unpackSession(ls.get(LS + 'session', null), nowSec(), 3 * 3600);
 		if (sess) this.session = { ...this.newSession(), ...sess, round: sess.round || this.newRound() };
 		this.applyCosmetics();

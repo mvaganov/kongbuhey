@@ -32,6 +32,7 @@
     PRONOUN: "Pronoun",
     EXCLAMATION: "Exclamation",
     DETERMINER: "Determiner",
+    ALIAS: "Alias", // merged duplicate: SemanticData.aliasOf names the canonical unit (tools/merge_units.js)
 
     // Ergonomic shorthand properties
     N: "Noun",

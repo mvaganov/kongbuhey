@@ -57,8 +57,15 @@ const {
 	getStem,
 	decomposeHangul,
 	setFinal,
-	hasBatchim
+	hasBatchim,
+	aliasTarget
 } = (typeof require !== 'undefined' ? require('../core/primitives.js') : window);
+
+/** A merged duplicate (alias) unit stands for its canonical unit. */
+function resolveAliasUnit(unit, units) {
+	const to = aliasTarget ? aliasTarget(unit) : null;
+	return (to !== null && units && units[to]) ? units[to] : unit;
+}
 
 function parseSemanticData(unit) {
 	if (!unit) return {};
@@ -3292,9 +3299,9 @@ function addRuntimeVerifiedSentences(templates, sourceName = null) {
  */
 function findMatchingTemplatesForUnit(unitOrId) {
 	const units = getUnitsArray();
-	const targetUnit = Array.isArray(unitOrId)
+	const targetUnit = resolveAliasUnit(Array.isArray(unitOrId)
 		? unitOrId
-		: (typeof unitOrId === 'number' ? units[unitOrId] : null);
+		: (typeof unitOrId === 'number' ? units[unitOrId] : null), units);
 	if (!targetUnit) return [];
 
 	const targetId = targetUnit[DATA_SCHEMA.Id];
@@ -3312,8 +3319,7 @@ function findMatchingTemplatesForUnit(unitOrId) {
 			for (let sIdx = 0; sIdx < tpl.slots.length; sIdx++) {
 				const slot = tpl.slots[sIdx];
 				const usesGrammar = (slot.grammar || []).some(g =>
-					g.unitId === targetId ||
-					(targetId === 52 && g.unitId === 459 && typeof g.text === 'string' && g.text.includes('서'))
+					g.unitId === targetId
 				) || slot.originalUnitId === targetId;
 				if (usesGrammar) {
 					exactMatches.push({ template: tpl, slotIndex: sIdx, matchType: "grammar_exact" });
@@ -3354,9 +3360,9 @@ function findMatchingTemplatesForUnit(unitOrId) {
  */
 function generateVerifiedSentenceForUnit(unitOrId, options = {}) {
 	const units = getUnitsArray();
-	const targetUnit = Array.isArray(unitOrId)
+	const targetUnit = resolveAliasUnit(Array.isArray(unitOrId)
 		? unitOrId
-		: (typeof unitOrId === 'number' ? units[unitOrId] : null);
+		: (typeof unitOrId === 'number' ? units[unitOrId] : null), units);
 
 	if (!targetUnit) {
 		return {
@@ -3434,9 +3440,9 @@ function getTierLabel(tier) {
  */
 function generateVerifiedSentencesForUnit(unitOrId, count = 3, options = {}) {
 	const units = getUnitsArray();
-	const targetUnit = Array.isArray(unitOrId)
+	const targetUnit = resolveAliasUnit(Array.isArray(unitOrId)
 		? unitOrId
-		: (typeof unitOrId === 'number' ? units[unitOrId] : null);
+		: (typeof unitOrId === 'number' ? units[unitOrId] : null), units);
 
 	if (!targetUnit) {
 		return {

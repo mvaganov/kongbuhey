@@ -373,6 +373,24 @@ check("scaffoldUnit automatically scaffolds proper names with taxonomy tags", ()
 	assert.strictEqual(vector.type, "name");
 });
 
+// -----------------------------------------------------------------------------
+// 9. Merged duplicates (alias rows, tools/merge_units.js) are never parse results
+// -----------------------------------------------------------------------------
+console.log("\n[9] Merged Duplicate Units Never Parsed");
+
+check("analyzing a merged lexical duplicate's spelling yields a live unit, never the alias row", () => {
+	const { KR_EN_languageUnits: units, DATA_SCHEMA: D } = require('../data/data.js');
+	const aliases = units.filter(u => u[D.PartofSpeech] === K.ALIAS && /^[가-힣]+$/.test(u[D.Korean]));
+	assert.ok(aliases.length > 0, 'expected at least one lexical alias to check');
+	const idx = analyzer.getIndex();
+	for (const a of aliases) {
+		const tok = analyzer.analyzeSentence(`${a[D.Korean]} 있어요.`, 1, idx).tokens[0];
+		const id = tok && tok.lexical && tok.lexical.unit ? tok.lexical.unit[D.Id] : null;
+		assert.notStrictEqual(id, a[D.Id], `${a[D.Korean]} parsed as alias #${a[D.Id]}`);
+		assert.ok(id === null || units[id][D.PartofSpeech] !== K.ALIAS, `${a[D.Korean]} parsed as an alias row`);
+	}
+});
+
 console.log("\n======================================================");
 console.log(`RESULTS: ${passedTests}/${totalTests} tests passed, ${failedTests} failed.`);
 console.log("======================================================");
