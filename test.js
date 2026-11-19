@@ -476,12 +476,15 @@ function runTests(options = {}) {
 		];
 
 		let totalAssertions = 0;
+		const timings = [];
 		for (const suite of suiteScripts) {
+			const t0 = Date.now();
 			const out = child_process.execFileSync(process.execPath, [suite.path, ...(suite.args || [])], {
 				encoding: 'utf8',
 				stdio: ['pipe', 'pipe', 'pipe']
 			});
 
+			timings.push({ name: suite.name, ms: Date.now() - t0 });
 			const countMatch = out.match(/TOTAL TESTS:\s*(\d+)/);
 			if (countMatch) {
 				totalAssertions += parseInt(countMatch[1], 10);
@@ -496,6 +499,10 @@ function runTests(options = {}) {
 		}
 
 		console.log(`[ PASS ] (${suiteScripts.length} suites, ${totalAssertions.toLocaleString()} assertions passed)`);
+		// Name the suites that cost real time (>= 1 s), slowest first, so a long run says where it went (the fc2 UI test is mostly the one-time jsdom load).
+		const slow = timings.filter(t => t.ms >= 1000).sort((a, b) => b.ms - a.ms), rest = timings.length - slow.length;
+		for (const t of slow) console.log(`        ${t.name.padEnd(46, '.')} ${(t.ms / 1000).toFixed(1)}s`);
+		if (slow.length) console.log(`        (${rest} other suites under 1 s)`);
 	} catch (err) {
 		failFast("Stage 6 (Semantic & Honorific Concord)", err.stdout || err.stderr || err.message);
 	}
