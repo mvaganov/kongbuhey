@@ -3473,7 +3473,8 @@ function generateVerifiedSentencesForUnit(unitOrId, count = 3, options = {}) {
 		...m,
 		diff: computeTemplateDifficulty(m.template)
 	}));
-	scoredMatches.sort((a, b) => a.diff.difficultyScore - b.diff.difficultyScore || a.template.id.localeCompare(b.template.id));
+	// Shorter templates first (fewer slots = easier to read in a quick quiz), then grammar difficulty, then id.
+	scoredMatches.sort((a, b) => a.template.slots.length - b.template.slots.length || a.diff.difficultyScore - b.diff.difficultyScore || a.template.id.localeCompare(b.template.id));
 
 	const sentences = [];
 	const seenKo = new Set();

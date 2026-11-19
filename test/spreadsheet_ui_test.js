@@ -1110,6 +1110,16 @@ async function runSuite() {
 		'When user requests 1 sentence, it always uses the easiest possible tier'
 	);
 
+	// Shortest matching template comes first: the 'easiest' sentence never has more slots than any template using the unit.
+	{
+		const lensOf = id => verifiedGen.findMatchingTemplatesForUnit(id).map(m => m.template.slots.length);
+		const shortTarget = [36, 96, 173, 49, 335, 459].find(id => { const l = lensOf(id); return l.length > 1 && Math.min(...l) < Math.max(...l); });
+		const lens = lensOf(shortTarget);
+		const first = verifiedGen.generateVerifiedSentencesForUnit(shortTarget, 1).sentences[0];
+		const firstTpl = first && verifiedGen.getVerifiedSentenceById(first.verifiedTemplateId);
+		assert(lens.length > 1 && firstTpl && firstTpl.slots.length === Math.min(...lens), 'the easiest sentence comes from the shortest matching template');
+	}
+
 	// 14e. DecksView (Secret Debug UI) & Webapp Integration
 	const { DecksView } = require('../webapp/decks_view.js');
 	const decksView = new DecksView({
