@@ -7,7 +7,11 @@ Phone-first: study happens in `flashcards/` (GitHub Pages); `webapp/` is the des
 Experiment in a small separate project, not in a branch.
 
 ## Commands
-- `node test.js`: default suite, ~70 s (ESLint, data integrity, smoke generation, all test/ suites). Run before every commit.
+- `node test.js`: default suite, ~30 s on a local disk (ESLint, data integrity, smoke generation, all test/ suites, then the fc2 build stamp if all passed). Run before every commit.
+- Agents running through `device_bash` on a mounted folder: file opens there are very slow (`require('jsdom')` took 25 s vs 0.4 s on the owner's host, so the suite took ~75 s). Run tests from a local copy instead (~30 s):
+  `mkdir -p /tmp/kb && [ -d /tmp/kb/node_modules ] || cp -r node_modules /tmp/kb/` (once per session, ~45 s), then
+  `rsync -a --delete --exclude .git --exclude node_modules ./ /tmp/kb/ && (cd /tmp/kb && node test.js)` (sync 0.3 s), then `node tools/stamp.js` in the real repo (the stamp inside the copy is discarded).
+  Edit only in the real repo; never copy files back from `/tmp/kb`.
 - `node test.js --full`: adds the every-unit generation sweep (~20 s) and the jsdom browser load test (slow on some disks); the fc2 UI playthrough already runs by default.
 - `npm run lint`: ESLint only. 0 errors required; `no-unused-vars` warnings are a dead-code cleanup backlog.
 - `node test/<name>_test.js`: one suite, 1-3 s. `node test/browser_load_test.js`: jsdom check of `webapp/index.html`.
