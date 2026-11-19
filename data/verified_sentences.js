@@ -51,12 +51,14 @@ const VERIFIED_TEMPLATE_SCHEMA = {
 	OriginalKo: 3,
 	Punctuation: 4,
 	Slots: 5,
+	Rules: 6,
 	0: 'Id',
 	1: 'Title',
 	2: 'Source',
 	3: 'OriginalKo',
 	4: 'Punctuation',
-	5: 'Slots'
+	5: 'Slots',
+	6: 'Rules'
 };
 
 const VERIFIED_SLOT_SCHEMA = {
@@ -797,7 +799,10 @@ const VERIFIED_SENTENCES = [
 	["vs_359","[studytext162 #14]","studytext162","",".",[[1696,"식사를",K.NOUN_PARTICLE,K.NOMINAL,"을/를","",[[173,"를","Particle"]],null,""],[158,"하고",K.CONJUGATED_VERB,"raw","고","",[[336,"-고","Verb Ending"]],null,""],[710,"30분 후에",K.AUXILIARY_CONSTRUCTION,K.FIXED_GRAMMAR,"30분 후에","",[[710,"-(으)ㄴ 후에","Grammar Pattern"]],null,""],[505,"드셔야 합니다",K.AUXILIARY_CONSTRUCTION,"ao","야 합니다","",[[678,"-(으)시-","Honorific Infix"],[574,"-아/어야 하다","Grammar Pattern"],[50,"-ㅂ니다","Verb Ending"]],null,""]]],
 	["vs_360","[studytext162 #15]","studytext162","","?",[[402,"아이가",K.NOUN_PARTICLE,K.NOMINAL,"이/가","",[[96,"가","Particle"]],null,""],[1405,"감기에",K.NOUN_PARTICLE,K.NOMINAL,"에","",[[132,"에","Particle"]],null,""],[651,"걸려서",K.CONJUGATED_VERB,"ao","서","",[[459,"-아/어서","Verb Ending"]],null,""],[1425,"열이",K.NOUN_PARTICLE,"exact","열이","",[[96,"이","Particle"]],null,""],[1408,"나는 데다가",K.AUXILIARY_CONSTRUCTION,"conj","는 데다가","",[[645,"-는","Adnominal Ending"],[1432,"-(으)ㄴ/는 데다가","Grammar Pattern"]],null,""],[1407,"기침까지",K.NOUN_PARTICLE,K.NOMINAL,"까지","",[[1826,"까지","Particle"]],null,""],[1424,"심하면",K.CONJUGATED_VERB,"conj","으/면","",[[619,"-(으)면","Verb Ending"]],null,""],[400,"너무",K.EXACT_LEXICAL,K.NOMINAL,"","",[],null,""],[2005,"걱정되시죠",K.CONJUGATED_VERB,"conj","으/시죠","",[[678,"-(으)시-","Honorific Infix"],[1773,"-지요","Verb Ending"]],null,""]]],
 	["vs_361","[studytext162 #16]","studytext162","",".",[[1069,"그럴 때",K.AUXILIARY_CONSTRUCTION,"conj","으/ㄹ 때","",[[646,"-(으)ㄹ","Adnominal Ending"],[855,"-(으)ㄹ 때","Grammar Pattern"]],null,""],[1618,"이",K.EXACT_LEXICAL,K.NOMINAL,"","",[],null,""],[701,"약을",K.NOUN_PARTICLE,K.NOMINAL,"을/를","",[[173,"을","Particle"]],null,""],[40,"먹으면",K.CONJUGATED_VERB,"conj","으/면","",[[619,"-(으)면","Verb Ending"]],null,""],[121,"좋습니다",K.CONJUGATED_VERB,"conj","습니다/ㅂ니다","",[[50,"-습니다","Verb Ending"]],null,""]]],
-	["vs_362","[studytext162 #17]","studytext162","",".",[[1618,"이",K.EXACT_LEXICAL,K.NOMINAL,"","",[],null,""],[701,"약은",K.NOUN_PARTICLE,K.NOMINAL,"은/는","",[[36,"은","Particle"]],null,""],[2002,"바닥에",K.NOUN_PARTICLE,K.NOMINAL,"에","",[[200,"에","Particle"]],null,""],[82,"있는",K.ADNOMINAL_MODIFIER,"conj","는","",[[645,"-는","Adnominal Ending"]],null,""],[701,"약을",K.NOUN_PARTICLE,K.NOMINAL,"을/를","",[[173,"을","Particle"]],null,""],[1613,"잘",K.EXACT_LEXICAL,K.NOMINAL,"","",[],null,""],[944,"섞어야 하기",K.AUXILIARY_CONSTRUCTION,"exact","섞어야 하기","",[[574,"-아/어야 하다","Grammar Pattern"],[1815,"-기","Nominalizing Suffix"]],null,""],[1837,"때문에",K.NOUN_PARTICLE,K.NOMINAL,"에","",[[132,"에","Particle"]],null,""],[2003,"흔들어서",K.CONJUGATED_VERB,"ao","서","",[[459,"-아/어서","Verb Ending"]],null,""],[40,"먹지 않으면",K.AUXILIARY_CONSTRUCTION,"exact","먹지 않으면","",[[274,"-지 않다","Grammar Pattern"],[619,"-(으)면","Verb Ending"]],null,""],[251,"안",K.EXACT_LEXICAL,"exact","안","",[],null,""],[1615,"됩니다",K.CONJUGATED_VERB,"conj","습니다/ㅂ니다","",[[50,"-ㅂ니다","Verb Ending"]],null,""]]]
+	["vs_362","[studytext162 #17]","studytext162","",".",[[1618,"이",K.EXACT_LEXICAL,K.NOMINAL,"","",[],null,""],[701,"약은",K.NOUN_PARTICLE,K.NOMINAL,"은/는","",[[36,"은","Particle"]],null,""],[2002,"바닥에",K.NOUN_PARTICLE,K.NOMINAL,"에","",[[200,"에","Particle"]],null,""],[82,"있는",K.ADNOMINAL_MODIFIER,"conj","는","",[[645,"-는","Adnominal Ending"]],null,""],[701,"약을",K.NOUN_PARTICLE,K.NOMINAL,"을/를","",[[173,"을","Particle"]],null,""],[1613,"잘",K.EXACT_LEXICAL,K.NOMINAL,"","",[],null,""],[944,"섞어야 하기",K.AUXILIARY_CONSTRUCTION,"exact","섞어야 하기","",[[574,"-아/어야 하다","Grammar Pattern"],[1815,"-기","Nominalizing Suffix"]],null,""],[1837,"때문에",K.NOUN_PARTICLE,K.NOMINAL,"에","",[[132,"에","Particle"]],null,""],[2003,"흔들어서",K.CONJUGATED_VERB,"ao","서","",[[459,"-아/어서","Verb Ending"]],null,""],[40,"먹지 않으면",K.AUXILIARY_CONSTRUCTION,"exact","먹지 않으면","",[[274,"-지 않다","Grammar Pattern"],[619,"-(으)면","Verb Ending"]],null,""],[251,"안",K.EXACT_LEXICAL,"exact","안","",[],null,""],[1615,"됩니다",K.CONJUGATED_VERB,"conj","습니다/ㅂ니다","",[[50,"-ㅂ니다","Verb Ending"]],null,""]]],
+	["vs_minimal_1","[minimal #1]","minimal","친구랑 가요.",".",[[76,"친구랑",K.NOUN_PARTICLE,K.NOMINAL,"이랑/랑","",[[276,"랑","Particle"]],null,""],[44,"가요",K.CONJUGATED_VERB,"ao","요","",[[49,"-아요/어요","Verb Ending"]],null,""]]],
+	["vs_minimal_2","[minimal #2]","minimal","밥 먹으러 가요.",".",[[38,"밥",K.EXACT_LEXICAL,K.NOMINAL,"","",[],null,""],[40,"먹으러",K.CONJUGATED_VERB,"conj","으/러","",[[485,"-(으)러","Verb Ending"]],null,""],[44,"가요",K.CONJUGATED_VERB,"ao","요","",[[49,"-아요/어요","Verb Ending"]],null,""]]],
+	["vs_minimal_3","[minimal #3]","minimal","친구한테서 받았어요.",".",[[76,"친구한테서",K.NOUN_PARTICLE,K.NOMINAL,"한테서","",[[1707,"한테서","Particle"]],null,""],[365,"받았어요",K.CONJUGATED_VERB,K.PAST,"어요","",[[335,"-았/었-","Tense Infix"],[49,"-아요/어요","Verb Ending"]],null,""]]]
 ];
 
 if (typeof window !== 'undefined') {

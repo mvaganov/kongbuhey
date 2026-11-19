@@ -33,6 +33,19 @@ const privateRows = VERIFIED_SENTENCES.filter(r => !isOpenLicensedSource(r[T.Sou
 assert(privateRows.length > 0 && privateRows.every(r => r[T.OriginalKo] === ''), `all ${privateRows.length} private-source templates have blank OriginalKo`);
 assert(privateRows.every(r => /^\[[^\]]*\]$/.test(r[T.Title]) || r[T.Title] === r[T.Id]), 'private-source titles are label-only (no sentence text)');
 
+// tools/vs_tune.js edits rows in place (one element of one row): tag/rule edits and their undo are byte-identical.
+{
+	const vsTune = require('../tools/vs_tune.js');
+	const src0 = fs.readFileSync(path.join(ROOT, 'data/verified_sentences.js'), 'utf8');
+	const id = VERIFIED_SENTENCES[0][T.Id];
+	const s1 = vsTune.editRules(vsTune.editSlotTags(src0, id, 0, ['x', 'y']), id, [{ slot: 0, kind: 'gap', text: 'a "quoted" [test]' }]);
+	const ctx = { K: require('../data/constants.js').K };
+	const row = vsTune.locateRow(s1, id);
+	const parsed = new Function('K', 'return ' + s1.slice(row.start, row.end + 1))(ctx.K);
+	assert(JSON.stringify(parsed[5][0][7]) === '["x","y"]' && parsed[6][0].text === 'a "quoted" [test]', 'vs_tune writes slot CustomTags and template Rules into the right row elements');
+	assert(vsTune.editRules(vsTune.editSlotTags(s1, id, 0, null), id, []) === src0, 'vs_tune tag/rule edit + undo round-trips byte-identical');
+}
+
 // Writer: must keep the CLI/K import, blank private text, and keep the real overlay untouched when given another path.
 const realOverlay = path.join(ROOT, 'local', 'verified_originals.js');
 const overlayBefore = fs.existsSync(realOverlay) ? fs.statSync(realOverlay).mtimeMs : null;
@@ -45,7 +58,7 @@ try {
 	const out = fs.readFileSync(tmpFile, 'utf8');
 	assert(out.includes('function printHelp') && out.includes('var { K }'), 'writer preserves the CLI and K import (replaces only the data block)');
 	const reloaded = require(tmpFile).VERIFIED_SENTENCES;
-	assert(reloaded.length === VERIFIED_VALID_COUNT(templates) && reloaded.every(r => r[T.OriginalKo] === ''), 'writer output has blank OriginalKo for private templates');
+	assert(reloaded.length === VERIFIED_VALID_COUNT(templates) && reloaded.every(r => isOpenLicensedSource(r[T.Source]) || r[T.OriginalKo] === ''), 'writer output has blank OriginalKo for private templates');
 	const overlayAfter = fs.existsSync(realOverlay) ? fs.statSync(realOverlay).mtimeMs : null;
 	assert(overlayBefore === overlayAfter, 'writing to a custom path never touches the real local/ overlay');
 	if (overlayBefore !== null) {

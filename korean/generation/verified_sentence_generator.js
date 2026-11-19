@@ -168,12 +168,14 @@ const VERIFIED_TEMPLATE_SCHEMA = (verifiedDataModule && verifiedDataModule.VERIF
 	OriginalKo: 3,
 	Punctuation: 4,
 	Slots: 5,
+	Rules: 6,
 	0: 'Id',
 	1: 'Title',
 	2: 'Source',
 	3: 'OriginalKo',
 	4: 'Punctuation',
-	5: 'Slots'
+	5: 'Slots',
+	6: 'Rules'
 };
 
 const VERIFIED_SLOT_SCHEMA = (verifiedDataModule && verifiedDataModule.VERIFIED_SLOT_SCHEMA) || {
@@ -196,6 +198,32 @@ const VERIFIED_SLOT_SCHEMA = (verifiedDataModule && verifiedDataModule.VERIFIED_
 	7: 'CustomTags',
 	8: 'TrailingPunct'
 };
+
+// Template field 6 (optional): semantic rules the tag filter cannot express. Each rule is an object:
+//   { slot, kind: 'anyTags', tags: [...] }   candidate needs at least one of the tags (OR; slot tags are AND)
+//   { slot, kind: 'noTags',  tags: [...] }   candidate has none of the tags
+//   { slot, kind: 'deny',    ids:  [...] }   explicit exclusions found while loosening
+//   { slot, kind: 'sd', key, values: [...] } SemanticData[key] must be one of values
+//   { kind: 'gap', slot?, text }             a documented missing mechanism (no effect on generation)
+// tools/vs_tune.js edits these; unknown kinds are ignored here and reported by the tool.
+const TEMPLATE_RULES_INDEX = (VERIFIED_TEMPLATE_SCHEMA && typeof VERIFIED_TEMPLATE_SCHEMA.Rules === 'number') ? VERIFIED_TEMPLATE_SCHEMA.Rules : 6;
+const SLOT_RULE_KINDS = new Set(['anyTags', 'noTags', 'deny', 'sd']);
+
+function slotRulesAllow(u, slot) {
+	const rules = slot && slot.rules;
+	if (!Array.isArray(rules) || rules.length === 0) return true;
+	for (const r of rules) {
+		if (!r || !SLOT_RULE_KINDS.has(r.kind)) continue;
+		if (r.kind === 'anyTags' && Array.isArray(r.tags) && r.tags.length > 0 && !r.tags.some(t => _hasTag(u, t))) return false;
+		if (r.kind === 'noTags' && Array.isArray(r.tags) && r.tags.some(t => _hasTag(u, t))) return false;
+		if (r.kind === 'deny' && Array.isArray(r.ids) && r.ids.includes(u[DATA_SCHEMA.Id])) return false;
+		if (r.kind === 'sd' && r.key && Array.isArray(r.values)) {
+			const v = parseSemanticData(u)[r.key];
+			if (!r.values.includes(v)) return false;
+		}
+	}
+	return true;
+}
 
 function getUnitsArray() {
 	return dataModule.KR_EN_languageUnits || (typeof window !== 'undefined' ? window.KR_EN_languageUnits : []) || [];
@@ -222,6 +250,9 @@ function hydrateVerifiedSentence(raw) {
 	const originalKo = (localText && localText.ko) || raw[VERIFIED_TEMPLATE_SCHEMA.OriginalKo];
 	const punctuation = raw[VERIFIED_TEMPLATE_SCHEMA.Punctuation] || '';
 	const rawSlots = raw[VERIFIED_TEMPLATE_SCHEMA.Slots] || [];
+	// Optional template-level semantic rules (see slotRulesAllow); most rows omit this field.
+	const rawRules = raw[TEMPLATE_RULES_INDEX];
+	const rules = Array.isArray(rawRules) ? rawRules.filter(r => r && typeof r === 'object') : [];
 
 	const units = getUnitsArray();
 	const grammarUnitIdsSet = new Set();
@@ -283,6 +314,7 @@ function hydrateVerifiedSentence(raw) {
 			originalEn: originalEn,
 			tags: tags,
 			grammar: hydratedGrammar,
+			rules: rules.filter(r => r.slot === idx),
 			morphTemplate: morphTemplate,
 			inflection: {
 				prefix: prefix,
@@ -300,6 +332,7 @@ function hydrateVerifiedSentence(raw) {
 		punctuation: punctuation,
 		isHardcoded: true,
 		grammarUnitIds: Array.from(grammarUnitIdsSet).sort((a, b) => a - b),
+		rules,
 		slots: hydratedSlots
 	};
 }
@@ -351,7 +384,7 @@ function serializeCompactTemplate(tpl) {
 		];
 	});
 
-	return [
+	const row = [
 		tpl.id || '',
 		tpl.title || '',
 		tpl.source || '',
@@ -359,6 +392,8 @@ function serializeCompactTemplate(tpl) {
 		tpl.punctuation || '',
 		slots
 	];
+	if (Array.isArray(tpl.rules) && tpl.rules.length > 0) row.push(tpl.rules);
+	return row;
 }
 
 let cachedHydratedStatic = null;
@@ -1006,6 +1041,7 @@ function isUnitEligibleForSlot(u, slot, ctx, options = {}) {
 			return false;
 		}
 	}
+	if (!slotRulesAllow(u, slot)) return false;
 
 	if (!ctx.requiredTags.includes(K.POSITION) && _hasTag(u, K.POSITION)) {
 		return false;
@@ -2525,7 +2561,7 @@ function generateSentenceFromTemplate(templateOrId, options = {}) {
 				if (targetUnitId !== null && sIdx === targetSlotIndex && units[targetUnitId] && units[targetUnitId][DATA_SCHEMA.PartofSpeech] === slot.pos) {
 					const tUnit = units[targetUnitId];
 					const reqTags = Array.isArray(slot.tags) ? slot.tags : [];
-					const satisfiesSlotTags = reqTags.every(t => _hasTag(tUnit, t)) || slot.originalUnitId === targetUnitId;
+					const satisfiesSlotTags = (reqTags.every(t => _hasTag(tUnit, t)) && slotRulesAllow(tUnit, slot)) || slot.originalUnitId === targetUnitId;
 					if (satisfiesSlotTags) {
 						chosenUnit = tUnit;
 					}
@@ -3570,6 +3606,10 @@ const verifiedGeneratorExports = {
 	extractVerifiedSentenceTemplate,
 	extractVerifiedSentencesFromPassage,
 	getSlotCandidates,
+	buildSlotMatchContext,
+	isUnitEligibleForSlot,
+	slotRulesAllow,
+	SLOT_RULE_KINDS,
 	analyzeTemplateStructure,
 	realizeSlot,
 	generateSentenceFromTemplate,

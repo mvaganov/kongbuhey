@@ -12,12 +12,13 @@
  *
  * Open-licensed sources (e.g. Tatoeba, CC BY) are the exception: their text stays inline in
  * verified_sentences.js, with attribution shown in the app's Credits.
+ * 'minimal' is project-authored short example sentences (tools/vs_tune.js ingest), not course text.
  *
  * Browser: `<script src="../local/verified_originals.js">` sets window.VERIFIED_ORIGINALS (optional file).
  * Node: the same file is require()d.
  */
 
-const OPEN_LICENSED_SOURCES = new Set(['tatoeba']);
+const OPEN_LICENSED_SOURCES = new Set(['tatoeba', 'minimal']);
 
 function isOpenLicensedSource(source) {
 	return OPEN_LICENSED_SOURCES.has(String(source || '').toLowerCase());
