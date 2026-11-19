@@ -80,7 +80,9 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 			app.renderScreen(false);
 			return true;
 		};
-		assert(showTestable(), 'a fresh pack has at least one unit with a testable example');
+		// Some random 5-unit packs have no example with 3 distinct wrong answers (the app then says "try New examples"): widen the pack like later play does.
+		for (let extra = 0; extra < 4 && !showTestable(); extra++) for (let i = 0; i < 15; i++) { const nid = (extra * 15 + i) * 7 + 3; if (!app.g.owned.includes(nid) && app.units.has(nid)) app.g.owned.push(nid); }
+		assert(showTestable(), 'a pack has at least one unit with a testable example');
 		const id = app.card.id, answers = app.g.totals.answers;
 		const prefetched = await until(() => app.card.sentences[0].preTest && app.card.sentences[0].preTest.choices, 4000);
 		const pre = prefetched ? app.card.sentences[0].preTest.choices : null;
@@ -174,6 +176,13 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(d.querySelectorAll('#errbox').length === 1 && before === 0 && w.localStorage.getItem('kb.fc2.dbg.game.corrupt') === '{not json', 'a corrupt save shows the error panel and keeps a copy of the raw text');
 		d.querySelector('#errbox [data-err="dismiss"]').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
 		assert(!d.querySelector('#errbox'), 'the error panel can be dismissed');
+		// a stale cached index.html without store.js: the app still starts, and says why reload safety is off
+		w.localStorage.removeItem('kb.fc2.dbg.game.corrupt'); w.localStorage.setItem('kb.fc2.dbg.game', JSON.stringify(app.g));
+		const store = w.FC2Store; w.FC2Debug.apply = () => {}; delete w.FC2Store;
+		const app3 = new w.FC2App(d.querySelector('#app').cloneNode(true));
+		await app3.ready; await wait(50);
+		w.FC2Store = store; w.FC2Debug.apply = applyScene;
+		assert(/store\.js did not load/.test((d.querySelector('#errbox textarea') || {}).value || '') && app3.g, 'a missing store.js shows a clear error but the app still starts');
 	});
 
 	await step('debug scenes', async () => {

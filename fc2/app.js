@@ -56,6 +56,16 @@ window.fc2ReportError = reportError;
 window.addEventListener('error', ev => { if (!/Cannot set property window/.test(ev.message || '')) reportError('Uncaught error', ev.error || ev.message); });
 window.addEventListener('unhandledrejection', ev => reportError('Unhandled promise rejection', ev.reason));
 
+// store.js holds the reload-safety logic. A phone can hold a stale cached index.html (no store.js tag) next to a fresh app.js: say so loudly
+// and keep playing without the localStorage mirror instead of failing to start.
+const NO_STORE = { packProg: () => ({}), mergeProg: prog => ({ prog, healed: [] }), packSession: () => null, unpackSession: () => null };
+let storeWarned = false;
+function store() {
+	if (window.FC2Store) return window.FC2Store;
+	if (!storeWarned) { storeWarned = true; reportError('Reload safety is off', new Error('store.js did not load, so index.html is probably an old cached copy. Progress is still saved to the unit database, but not mirrored. Reload the page (or clear this site\'s cache) to fix it.')); }
+	return NO_STORE;
+}
+
 const ls = {
 	get(key, fallback) {
 		let raw = null;
@@ -110,7 +120,7 @@ class FC2App {
 			if (c.notes) this.notes[rec.unitId] = String(c.notes);
 		}
 		// The localStorage mirror wins a unit only when strictly newer than the database copy.
-		const merged = window.FC2Store.mergeProg(this.prog, ls.get(LS + 'prog', {}), id => this.units.has(id));
+		const merged = store().mergeProg(this.prog, ls.get(LS + 'prog', {}), id => this.units.has(id));
 		this.prog = merged.prog;
 		let g = ls.get(LS + 'game', null);
 		if (!g || g.v !== 1) g = DEBUG === null ? this.migrate() : G.blankGame(nowSec());
@@ -118,7 +128,7 @@ class FC2App {
 		this.g = { ...blank, ...g, cos: { ...blank.cos, ...g.cos }, totals: { ...blank.totals, ...g.totals } };
 		this.g.owned = this.g.owned.filter(id => this.units.has(id));
 		for (const id of merged.healed) this.saveUnit(id);
-		const sess = window.FC2Store.unpackSession(ls.get(LS + 'session', null), nowSec(), 3 * 3600);
+		const sess = store().unpackSession(ls.get(LS + 'session', null), nowSec(), 3 * 3600);
 		if (sess) this.session = { ...this.newSession(), ...sess, round: sess.round || this.newRound() };
 		this.applyCosmetics();
 		this.render();
@@ -152,13 +162,13 @@ class FC2App {
 		return g;
 	}
 
-	save() { ls.set(LS + 'game', this.g); ls.set(LS + 'session', window.FC2Store.packSession(this.session, nowSec())); this.queueMirror(); }
+	save() { ls.set(LS + 'game', this.g); ls.set(LS + 'session', store().packSession(this.session, nowSec())); this.queueMirror(); }
 	/** Write the progress mirror soon (debounced); flush() writes everything now (page hide, tab switch). */
-	queueMirror() { if (this.mirrorTimer) return; this.mirrorTimer = setTimeout(() => { this.mirrorTimer = null; ls.set(LS + 'prog', window.FC2Store.packProg(this.prog)); }, 250); }
+	queueMirror() { if (this.mirrorTimer) return; this.mirrorTimer = setTimeout(() => { this.mirrorTimer = null; ls.set(LS + 'prog', store().packProg(this.prog)); }, 250); }
 	flush() {
 		if (!this.g) return;
 		if (this.mirrorTimer) { clearTimeout(this.mirrorTimer); this.mirrorTimer = null; }
-		ls.set(LS + 'prog', window.FC2Store.packProg(this.prog)); ls.set(LS + 'game', this.g); ls.set(LS + 'session', window.FC2Store.packSession(this.session, nowSec()));
+		ls.set(LS + 'prog', store().packProg(this.prog)); ls.set(LS + 'game', this.g); ls.set(LS + 'session', store().packSession(this.session, nowSec()));
 	}
 	debugScene(name) { if (DEBUG === null) throw new Error('debug scenes need ?debug in the URL'); this.debug = name; window.FC2Debug.apply(this, name); }
 	unitOf(id) { return this.prog.get(id) || G.blankUnit(); }
@@ -727,17 +737,21 @@ class FC2App {
 		const inIt = [...mine].filter(id => id !== k.id && owned.includes(id));
 		const sources = [k.id, ...shuffle(inIt.filter(id => !isNoun(id))), ...shuffle(owned.filter(id => id !== k.id && !mine.has(id) && !isNoun(id))).slice(0, 5), ...shuffle(inIt.filter(isNoun))].slice(0, 10);
 		let perfect = 0;   // candidates with exactly the sentence's nouns: enough of them and we stop generating
-		for (const [si, id] of sources.entries()) {
-			if (perfect >= 3) break;
-			let list = [];
-			try { for (let pass = 0; pass < (si < 3 ? 2 : 1); pass++) list.push(...Array.from(window.generateSentencesForUnit(id, 4, { ...this.genOptions(), preferUnitIds: nouns }))); } catch (_) { /* fewer candidates */ }
-			for (const c of list) {
-				const en = this.enOf(c), key = norm(en);
-				if (!en || c.ko === s.ko || seen.has(key)) continue;
-				seen.add(key);
-				const ids = R.unitIdsOf(c), cn = nounsOf(ids), same = [...nouns].filter(x => cn.has(x)).length;
-				if (same === nouns.size && cn.size === same) perfect++;
-				pool.push({ text: rev ? String(c.ko) : en, ids, score: same * 10 - (cn.size - same) * 6 + ids.filter(x => mine.has(x)).length, r: Math.random() });
+		// A cheap budget first (fast); only when it finds fewer than 3 distinct wrong answers (small unlock sets) retry with a generous one.
+		for (const budget of [{ n: 4, deep: 3, passes: 2, perfect: 3 }, { n: 6, deep: 4, passes: 3, perfect: 6 }]) {
+			if (pool.length >= 3) break;
+			for (const [si, id] of sources.entries()) {
+				if (perfect >= budget.perfect) break;
+				let list = [];
+				try { for (let pass = 0; pass < (si < budget.deep ? budget.passes : 1); pass++) list.push(...Array.from(window.generateSentencesForUnit(id, budget.n, { ...this.genOptions(), preferUnitIds: nouns }))); } catch (_) { /* fewer candidates */ }
+				for (const c of list) {
+					const en = this.enOf(c), key = norm(en);
+					if (!en || c.ko === s.ko || seen.has(key)) continue;
+					seen.add(key);
+					const ids = R.unitIdsOf(c), cn = nounsOf(ids), same = [...nouns].filter(x => cn.has(x)).length;
+					if (same === nouns.size && cn.size === same) perfect++;
+					pool.push({ text: rev ? String(c.ko) : en, ids, score: same * 10 - (cn.size - same) * 6 + ids.filter(x => mine.has(x)).length, r: Math.random() });
+				}
 			}
 		}
 		if (!right || pool.length < 3) return null;
