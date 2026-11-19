@@ -20,16 +20,15 @@ console.log('======================================================');
 console.log('         FC2 PAGE WIRING (static script checks)       ');
 console.log('======================================================');
 
-// The build stamp (tools/stamp.js) is derived data: refresh it here so a commit never carries a stale one, then check it.
-const stamped = require('../tools/stamp.js').stamp(true);
 const html = fs.readFileSync(path.join(PAGE_DIR, 'index.html'), 'utf8');
 const srcs = [...html.matchAll(/<script[^>]*\ssrc="([^"?]+)(?:\?[^"]*)?"/g)].map(m => m[1]);
 function text0(f) { return fs.readFileSync(path.join(PAGE_DIR, f), 'utf8'); }
 const files = srcs.map(s => path.resolve(PAGE_DIR, s));
 
+// Stamp consistency (tools/stamp.js, which test.js runs last once everything passed): every ?v= equals the hash in version.js.
+const stampHash = (text0('version.js').match(/hash: '([0-9a-f]+)'/) || [])[1];
 const vers = [...html.matchAll(/(?:src|href)="(?!https?:)[^"]*\?v=([0-9a-f]+)"/g)].map(m => m[1]);
-assert(vers.length > 0 && vers.every(v => v === stamped.hash), `every local script/stylesheet tag carries the current build stamp ?v=${stamped.hash} (${vers.length} tags)`);
-assert(/FC2Version/.test(text0('version.js')) && text0('version.js').includes(stamped.hash), 'fc2/version.js matches the stamp');
+assert(Boolean(stampHash) && vers.length > 0 && vers.every(v => v === stampHash), `every stamped script/stylesheet tag carries the build hash in version.js (${stampHash}, ${vers.length} tags)`);
 const missing = srcs.filter((s, i) => !fs.existsSync(files[i]));
 assert(srcs.length > 0 && missing.length === 0, `every script tag points at an existing file${missing.length ? ' (missing: ' + missing.join(', ') + ')' : ''}`);
 assert(new Set(files).size === files.length, 'no script is loaded twice');

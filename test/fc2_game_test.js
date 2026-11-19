@@ -141,12 +141,11 @@ assert(G.decay(est(0, 5 * HOUR), NOW) === 0 && G.decay(est(0, 13 * HOUR), NOW) =
 	assert(back.combo === 7 && back.n === 4 && back.round.coins === 9 && back.due.get(3) === 8 && back.last === 3, 'the session (combo, round, learning queue) survives a reload');
 	assert(S.unpackSession(S.packSession(sess, 1000), 1000 + 3601, 3600) === null && S.unpackSession(null, 1, 1) === null, 'a stale or missing session is dropped');
 }
-{ // fc2/index.html loads the same engine scripts as flashcards/index.html, and every file it names exists
+{ // fc2/index.html loads the same engine scripts as flashcards/index.html
 	const srcs = dir => [...fs.readFileSync(path.join(__dirname, '..', dir, 'index.html'), 'utf8').matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace(/\?.*$/, ""));
 	const eng = l => l.filter(s => s.startsWith('../data/') || s.startsWith('../korean/'));
 	const mine = srcs('fc2');
 	assert(JSON.stringify(eng(mine)) === JSON.stringify(eng(srcs('flashcards'))), 'fc2/index.html loads the same data/ and korean/ scripts as flashcards/index.html');
-	assert(mine.every(s => fs.existsSync(path.join(__dirname, '..', 'fc2', s))), 'fc2/index.html references no missing files');
 }
 
 console.log(`\nfc2 game rules: ${passed} passed, ${failed} failed`);

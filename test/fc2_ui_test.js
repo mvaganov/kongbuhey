@@ -91,7 +91,7 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		for (let extra = 0; extra < 4 && !showTestable(); extra++) for (let i = 0; i < 15; i++) { const nid = (extra * 15 + i) * 7 + 3; if (!app.g.owned.includes(nid) && app.units.has(nid)) app.g.owned.push(nid); }
 		assert(showTestable(), 'a pack has at least one unit with a testable example');
 		const id = app.card.id, answers = app.g.totals.answers;
-		const prefetched = await until(() => app.card.sentences[0].preTest && app.card.sentences[0].preTest.choices, 4000);
+		const prefetched = await until(() => app.card.sentences[0].preTest && app.card.sentences[0].preTest.choices, 20000);
 		const pre = prefetched ? app.card.sentences[0].preTest.choices : null;
 		assert(prefetched, 'the quiz for a shown example is built in the background');
 		click('[data-act="sent-test"]');

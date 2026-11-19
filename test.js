@@ -500,9 +500,13 @@ function runTests(options = {}) {
 		failFast("Stage 6 (Semantic & Honorific Concord)", err.stdout || err.stderr || err.message);
 	}
 
+	// The stamp of approval: only a fully green run stamps the fc2 build (hash of everything the page loads, ?v= cache busting, version.js).
+	let stampNote = '';
+	try { const st = require('./tools/stamp.js').stamp(true); stampNote = ` | fc2 build ${st.hash}${st.stale ? ' (re-stamped)' : ''}`; } catch (err) { stampNote = ` | fc2 stamp FAILED: ${err.message}`; }
+
 	const elapsedSec = ((Date.now() - startTime) / 1000).toFixed(2);
 	console.log(`------------------------------------------------------`);
-	console.log(`OVERALL STATUS: ALL 7 STAGES PASSED (Duration: ${elapsedSec}s)`);
+	console.log(`OVERALL STATUS: ALL 7 STAGES PASSED${stampNote} (Duration: ${elapsedSec}s)`);
 	console.log(`======================================================\n`);
 	return { success: true, duration: elapsedSec };
 }
