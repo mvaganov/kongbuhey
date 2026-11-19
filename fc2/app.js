@@ -30,6 +30,14 @@ const hangulOf = text => String(text).replace(/[^가-힣]/g, '');
 
 // A big error panel with copyable text: storage and load problems must never be silent.
 const errorLog = [];
+/** "build 15c20d95 · 2026-11-19 19:51" from version.js (written by tools/stamp.js); local time. */
+function buildLabel() {
+	const v = window.FC2Version;
+	if (!v) return 'build unknown (version.js did not load)';
+	const t = new Date(v.built), p = n => String(n).padStart(2, '0');
+	return `build ${v.hash} · ${t.getFullYear()}-${p(t.getMonth() + 1)}-${p(t.getDate())} ${p(t.getHours())}:${p(t.getMinutes())}`;
+}
+
 function reportError(where, err) {
 	const text = `${where}: ${err && err.stack ? err.stack : (err && err.message) || String(err)}`;
 	if (errorLog.some(e => e.text === text)) { errorLog.find(e => e.text === text).n++; } else errorLog.push({ text, at: new Date().toISOString(), n: 1 });
@@ -50,7 +58,7 @@ function reportError(where, err) {
 		});
 		document.body.appendChild(box);
 	}
-	box.querySelector('textarea').value = errorLog.map(e => `[${e.at}]${e.n > 1 ? ' x' + e.n : ''} ${e.text}`).join('\n\n') + `\n\n${navigator.userAgent}\n${location.href}`;
+	box.querySelector('textarea').value = errorLog.map(e => `[${e.at}]${e.n > 1 ? ' x' + e.n : ''} ${e.text}`).join('\n\n') + `\n\n${buildLabel()}\n${navigator.userAgent}\n${location.href}`;
 }
 window.fc2ReportError = reportError;
 window.addEventListener('error', ev => { if (!/Cannot set property window/.test(ev.message || '')) reportError('Uncaught error', ev.error || ev.message); });
@@ -957,7 +965,8 @@ class FC2App {
 				<button type="button" class="btn" data-act="backup-open">Backup / restore</button></div>
 				<div class="btn-row"><a class="btn" href="../webapp/index.html">Spreadsheet (webapp)</a><a class="btn" href="../flashcards/index.html">Old flashcards</a></div>
 				<div class="btn-row"><button type="button" class="btn danger" data-act="reset-game">Reset game progress</button></div>
-				<p class="muted">Reset clears coins, levels, unlocks and upgrades. Unit scores in the spreadsheet stay.</p></section>`;
+				<p class="muted">Reset clears coins, levels, unlocks and upgrades. Unit scores in the spreadsheet stay.</p></section>
+			<p class="muted center build-stamp" id="build-stamp">${escapeHtml(buildLabel())}</p>`;
 	}
 
 	backupJson() {

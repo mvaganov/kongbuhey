@@ -52,6 +52,13 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(d.querySelectorAll('#tabs .tab').length === 4 && d.querySelector('#screen .play-big, #screen [data-act="tab"]'), 'boots to a Map with four tabs and an empty-state call to action');
 	});
 
+	await step('build stamp', async () => {
+		app.go('menu');
+		const el = d.querySelector('#build-stamp');
+		assert(w.FC2Version && el && el.textContent.includes(w.FC2Version.hash) && /\d{4}-\d\d-\d\d \d\d:\d\d/.test(el.textContent), 'the Menu ends with the build stamp (hash and time)');
+		app.go('map');
+	});
+
 	await step('pull', async () => {
 		app.go('shop');
 		const coins0 = app.g.coins;
