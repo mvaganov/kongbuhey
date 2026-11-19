@@ -1386,10 +1386,10 @@ function writeDataFile(modifiedLines, filePath = DATA_FILE_PATH) {
 	fs.copyFileSync(tmpPath, filePath);
 	fs.unlinkSync(tmpPath);
 
-	// Automatically update schema analysis if schema_analysis.js is present
+	// Automatically update schema analysis if schema_analysis.js is present (only for the real data file: a temp copy must not touch it)
 	try {
 		const schemaAnalysisPath = path.resolve(__dirname, 'schema_analysis.js');
-		if (fs.existsSync(schemaAnalysisPath)) {
+		if (path.resolve(filePath) === path.resolve(DATA_FILE_PATH) && fs.existsSync(schemaAnalysisPath)) {
 			delete require.cache[schemaAnalysisPath];
 			const schemaAnalysis = require(schemaAnalysisPath);
 			if (typeof schemaAnalysis.updateSchemaSummary === 'function') {
@@ -1441,8 +1441,10 @@ function executeUpdateFromFile(inputFile, explicitCols = null, options = {}) {
 
 			const lineIdx = unitIndices[targetId];
 			const isLast = (targetId === unitIndices.length - 1);
+			// Measure the old entry before overwriting: the new text can itself span lines (function SyntaxFrame).
+			const oldRange = getUnitLineRanges(lines)[targetId];
 			lines[lineIdx] = formatUnitLine(existing, isLast);
-			collapseRange(lines, getUnitLineRanges(lines)[targetId]);
+			collapseRange(lines, oldRange);
 			updatedCount++;
 			updatedIds.push(targetId);
 		} else {

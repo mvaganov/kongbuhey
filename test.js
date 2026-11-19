@@ -472,7 +472,8 @@ function runTests(options = {}) {
 			{ name: "Golden Sentences (flag fixtures)", path: path.resolve(__dirname, 'test', 'golden_sentences_test.js') },
 			{ name: "Content Hygiene (textbook text stays local)", path: path.resolve(__dirname, 'test', 'verified_originals_test.js') },
 			{ name: "Flashcard Deck Logic", path: path.resolve(__dirname, 'test', 'flashcard_deck_test.js') },
-			{ name: "Spreadsheet UI & Database", path: path.resolve(__dirname, 'test', 'spreadsheet_ui_test.js') }
+			{ name: "Spreadsheet UI & Database", path: path.resolve(__dirname, 'test', 'spreadsheet_ui_test.js') },
+			{ name: "select.js API (temp data copy)", path: path.resolve(__dirname, 'test', 'select_test.js') }
 		];
 
 		let totalAssertions = 0;
