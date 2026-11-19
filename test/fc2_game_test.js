@@ -141,6 +141,21 @@ assert(G.decay(est(0, 5 * HOUR), NOW) === 0 && G.decay(est(0, 13 * HOUR), NOW) =
 	assert(back.combo === 7 && back.n === 4 && back.round.coins === 9 && back.due.get(3) === 8 && back.last === 3, 'the session (combo, round, learning queue) survives a reload');
 	assert(S.unpackSession(S.packSession(sess, 1000), 1000 + 3601, 3600) === null && S.unpackSession(null, 1, 1) === null, 'a stale or missing session is dropped');
 }
+{ // recovery helpers: stats, best-of merge, rolling snapshots that keep the richest copy
+	const S = require('../fc2/store.js');
+	const rich = { 1: [5, 2, 100, 100], 2: [3, 1, 90, 90], 3: [1, 0, 80, 80], 4: [0, 0, 0, 0] };
+	const st = S.progStats(rich);
+	assert(st.units === 4 && st.scored === 3 && st.established === 2 && st.stars === 3 && st.latest === 100, 'progStats counts scored, established and starred units');
+	const cur = new Map([[1, { score: 0, tier: 0, lastCorrect: 0, lastSeen: 0 }], [5, { score: 4, tier: 1, lastCorrect: 50, lastSeen: 50 }]]);
+	const b = S.bestOf(cur, { 1: [5, 2, 100, 100], 5: [2, 0, 10, 10], 9: [1, 0, 1, 1] }, id => id !== 9);
+	assert(b.prog.get(1).score === 5 && b.prog.get(1).tier === 2 && b.prog.get(5).score === 4 && !b.prog.has(9) && b.changed.join() === '1', 'bestOf restores lost units but never downgrades a more advanced one, and skips invalid ids');
+	let snaps = S.addSnapshot([], rich, 1000);
+	assert(snaps.length === 1 && S.addSnapshot(snaps, rich, 1000 + 60).length === 1, 'a snapshot is skipped when the last one is recent or identical');
+	snaps = S.addSnapshot(snaps, { 1: [1, 0, 5, 5] }, 1000 + 3600);
+	for (let i = 0; i < 10; i++) snaps = S.addSnapshot(snaps, { 1: [0, 0, i, i], [i + 10]: [0, 0, 0, 0] }, 5000 + i * 3600);
+	assert(snaps.length <= 6 && snaps.some(x => S.progStats(x.packed).scored === 3), 'the richest snapshot survives a run of poorer ones');
+	assert(S.addSnapshot(snaps, {}, 999999999).length === snaps.length, 'an empty progress is never snapshotted');
+}
 { // fc2/index.html loads the same engine scripts as flashcards/index.html
 	const srcs = dir => [...fs.readFileSync(path.join(__dirname, '..', dir, 'index.html'), 'utf8').matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace(/\?.*$/, ""));
 	const eng = l => l.filter(s => s.startsWith('../data/') || s.startsWith('../korean/'));

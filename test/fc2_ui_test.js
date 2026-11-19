@@ -192,6 +192,44 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(/store\.js did not load/.test((d.querySelector('#errbox textarea') || {}).value || '') && app3.g, 'a missing store.js shows a clear error but the app still starts');
 	});
 
+	await step('unit editor and recovery', async () => {
+		const id = app.g.owned[0], ch = (sel, v) => { const el = d.querySelector(sel); el.value = v; el.dispatchEvent(new w.Event('change', { bubbles: true })); };
+		app.go('map');
+		app.tileModal(id);
+		click('[data-act="unit-edit"]');
+		assert(d.querySelector('[data-edit="score"]') && d.querySelector('[data-edit="tier"]') && d.querySelector('[data-edit="h"]') && d.querySelectorAll('[data-act="unit-now"]').length === 2, 'Edit values shows a score field, a star dropdown, a harvest field and two Set to now buttons');
+		ch('[data-edit="score"]', '7'); ch('[data-edit="tier"]', '2'); ch('[data-edit="h"]', '1');
+		app.prog.set(id, { ...app.unitOf(id), lastCorrect: 0, lastSeen: 0 });
+		click('[data-act="unit-now"][data-col="lastCorrect"]'); click('[data-act="unit-now"][data-col="lastSeen"]');
+		const u = app.unitOf(id), now = Math.floor(Date.now() / 1000);
+		assert(u.score === 7 && u.tier === 2 && app.g.h[id] === 1 && Math.abs(u.lastCorrect - now) < 5 && Math.abs(u.lastSeen - now) < 5, 'the editor sets score, star level, harvest count and both timestamps');
+		assert(JSON.parse(w.localStorage.getItem('kb.fc2.dbg.prog'))[id][0] === 7, 'an edit is saved to the progress copy immediately');
+		ch('[data-edit="score"]', '99');
+		assert(app.unitOf(id).score === 10, 'an out-of-range score is clamped');
+		app.closeModal();
+
+		// mirror safety: a stale page without store.js must not blank the saved progress, and an empty prog never replaces a non-empty mirror
+		const keep = w.localStorage.getItem('kb.fc2.dbg.prog'), St = w.FC2Store;
+		delete w.FC2Store; app.writeMirror(); w.FC2Store = St;
+		assert(w.localStorage.getItem('kb.fc2.dbg.prog') === keep, 'with store.js missing the progress copy is left untouched');
+		const saved = app.prog; app.prog = new Map(); app.writeMirror(); app.prog = saved;
+		assert(w.localStorage.getItem('kb.fc2.dbg.prog') === keep, 'an empty progress never replaces a non-empty copy');
+
+		// recovery: lose everything here, find it in the other save (the normal page's namespace) and restore it
+		w.localStorage.setItem('kb.fc2.v1.prog', keep);
+		app.prog = new Map(); app.dbPacked = {}; app.snaps = [];
+		w.localStorage.setItem('kb.fc2.dbg.prog', '{}');
+		click('[data-act="tab"][data-tab="menu"]');
+		click('[data-act="recover-open"]');
+		const rows = d.querySelectorAll('[data-act="recover"]');
+		assert(rows.length >= 1 && /normal page/.test(d.querySelector('#modal').textContent), 'the Recovery panel lists the other save');
+		click('[data-act="recover"][data-i="0"]');
+		const back = app.unitOf(id);
+		assert(back.score === 10 && back.tier === 2 && app.g.owned.includes(id), 'Restore brings the unit progress back');
+		app.closeModal();
+		app.go('map');
+	});
+
 	await step('debug scenes', async () => {
 		const F = w.FC2Debug;
 		for (const name of F.names) {

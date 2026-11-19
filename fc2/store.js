@@ -31,6 +31,49 @@ function mergeProg(dbProg, mirror, validId = () => true) {
 	return { prog, healed };
 }
 
+/** Summary of a packed progress object: how much real progress it holds (used to rank recovery sources and pin the richest snapshot). */
+function progStats(packed) {
+	const st = { units: 0, scored: 0, established: 0, stars: 0, latest: 0 };
+	for (const a of Object.values(packed || {})) {
+		if (!Array.isArray(a)) continue;
+		st.units++;
+		if ((Number(a[0]) || 0) > 0) st.scored++;
+		if ((Number(a[0]) || 0) >= 3) st.established++;
+		st.stars += Number(a[1]) || 0;
+		st.latest = Math.max(st.latest, Number(a[2]) || 0, Number(a[3]) || 0);
+	}
+	return st;
+}
+
+/** Recovery merge: per unit keep the more advanced copy (higher star, then score, then newer). Returns { prog: Map, changed: ids that differ from `prog` }. */
+function bestOf(prog, packed, validId = () => true) {
+	const out = new Map(prog), changed = [];
+	const rank = u => [u.tier || 0, u.score || 0, stamp(u)];
+	const better = (a, b) => { const x = rank(a), y = rank(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i]; return false; };
+	for (const [k, a] of Object.entries(packed || {})) {
+		const id = Number(k);
+		if (!Array.isArray(a) || !validId(id)) continue;
+		const m = { score: Number(a[0]) || 0, tier: Number(a[1]) || 0, lastCorrect: Number(a[2]) || 0, lastSeen: Number(a[3]) || 0 };
+		const cur = out.get(id);
+		if (!cur || better(m, cur)) { out.set(id, m); changed.push(id); }
+	}
+	return { prog: out, changed };
+}
+
+/**
+ * Rolling safety copies of the packed progress: a new one at most every minGapSec, newest `keep` retained, and the richest one ever taken
+ * (most scored units) is always kept, so a later blank or damaged save can never push the last good copy out.
+ */
+function addSnapshot(snaps, packed, now, { minGapSec = 1800, keep = 6 } = {}) {
+	const list = Array.isArray(snaps) ? snaps.filter(x => x && x.packed) : [];
+	const last = list[list.length - 1], st = progStats(packed);
+	if (!st.units || (last && (now - last.at < minGapSec || JSON.stringify(last.packed) === JSON.stringify(packed)))) return list;
+	list.push({ at: now, packed });
+	const rich = list.reduce((b, x) => (progStats(x.packed).scored >= progStats(b.packed).scored ? x : b), list[0]);
+	const recent = list.slice(-keep);
+	return recent.includes(rich) ? recent : [rich, ...recent.slice(1)];
+}
+
 /** Session snapshot: combo, round progress and the learning queue. */
 function packSession(s, now) {
 	return { n: s.n, combo: s.combo, round: s.round, due: [...s.due], last: s.last, savedAt: now };
@@ -41,7 +84,7 @@ function unpackSession(raw, now, maxAge) {
 	return { n: Number(raw.n) || 0, combo: Number(raw.combo) || 0, round: raw.round || undefined, due: new Map(Array.isArray(raw.due) ? raw.due : []), last: raw.last ?? null };
 }
 
-const api = { packProg, mergeProg, packSession, unpackSession };
+const api = { packProg, mergeProg, progStats, bestOf, addSnapshot, packSession, unpackSession };
 if (typeof window !== 'undefined') window.FC2Store = api;
 if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })();

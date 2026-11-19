@@ -127,6 +127,8 @@ class FC2App {
 				lastCorrect: Number(c.TimeStampLastCorrect) || 0, lastSeen: Number(c.TimeStampLastSeen) || 0 });
 			if (c.notes) this.notes[rec.unitId] = String(c.notes);
 		}
+		this.dbPacked = Object.fromEntries([...this.prog].map(([id, u]) => [id, [u.score, u.tier, u.lastCorrect, u.lastSeen]]));   // what the database held, for the Recovery panel
+		this.snaps = ls.get(LS + 'snaps', []) || [];
 		// The localStorage mirror wins a unit only when strictly newer than the database copy.
 		const merged = store().mergeProg(this.prog, ls.get(LS + 'prog', {}), id => this.units.has(id));
 		this.prog = merged.prog;
@@ -170,13 +172,26 @@ class FC2App {
 		return g;
 	}
 
-	save() { ls.set(LS + 'game', this.g); ls.set(LS + 'session', store().packSession(this.session, nowSec())); this.queueMirror(); }
+	save() { ls.set(LS + 'game', this.g); if (window.FC2Store) ls.set(LS + 'session', window.FC2Store.packSession(this.session, nowSec())); else store(); this.queueMirror(); }
 	/** Write the progress mirror soon (debounced); flush() writes everything now (page hide, tab switch). */
-	queueMirror() { if (this.mirrorTimer) return; this.mirrorTimer = setTimeout(() => { this.mirrorTimer = null; ls.set(LS + 'prog', store().packProg(this.prog)); }, 250); }
+	queueMirror() { if (this.mirrorTimer) return; this.mirrorTimer = setTimeout(() => { this.mirrorTimer = null; this.writeMirror(); }, 250); }
+	/**
+	 * Mirror of unit progress + rolling snapshots. Never writes when store.js is missing (a stub must not blank a good mirror), and never
+	 * replaces a non-empty mirror with an empty one.
+	 */
+	writeMirror() {
+		if (!window.FC2Store) { store(); return; }
+		const St = window.FC2Store, packed = St.packProg(this.prog);
+		if (!Object.keys(packed).length) { const old = ls.get(LS + 'prog', {}); if (old && Object.keys(old).length) return; }
+		ls.set(LS + 'prog', packed);
+		const next = St.addSnapshot(this.snaps, packed, nowSec());
+		if (next.length !== this.snaps.length || next.some((x, i) => x !== this.snaps[i])) { this.snaps = next; ls.set(LS + 'snaps', next); }
+	}
 	flush() {
 		if (!this.g) return;
 		if (this.mirrorTimer) { clearTimeout(this.mirrorTimer); this.mirrorTimer = null; }
-		ls.set(LS + 'prog', store().packProg(this.prog)); ls.set(LS + 'game', this.g); ls.set(LS + 'session', store().packSession(this.session, nowSec()));
+		this.writeMirror(); ls.set(LS + 'game', this.g);
+		if (window.FC2Store) ls.set(LS + 'session', window.FC2Store.packSession(this.session, nowSec()));
 	}
 	debugScene(name) { if (DEBUG === null) throw new Error('debug scenes need ?debug in the URL'); this.debug = name; window.FC2Debug.apply(this, name); }
 	unitOf(id) { return this.prog.get(id) || G.blankUnit(); }
@@ -325,7 +340,7 @@ class FC2App {
 		this.renderScreen(false);
 	}
 
-	tileModal(id) {
+	tileModal(id, edit = false) {
 		const u = this.units.get(id);
 		if (!this.g.owned.includes(id)) { this.toast(`Locked · ${u[C.Source]} · unlock with pulls`); FX.sfx('deny'); return; }
 		const p = this.unitOf(id), now = nowSec(), s = this.classify().get(id), I = T.INTERVAL[p.tier], rar = G.rarity(u[C.PriorityScore]);
@@ -334,10 +349,37 @@ class FC2App {
 		this.openModal(`${u[C.Korean]}`, `<div class="unit-en">${escapeHtml(u[C.English])}</div>
 			<p class="pill-row"><span class="pill">${STATUS_LABEL[s]}</span><span class="pill">${STARS[p.tier]} ${TIER_LABEL[p.tier]}</span><span class="pill r${rar}">${RARITY[rar]}</span><span class="pill">${escapeHtml(u[C.Source])}</span></p>
 			${when ? `<p class="muted">${when}</p>` : ''}
-			<table class="kv">${row('RecognitionScore', `${p.score}${G.decay(p, now) ? ` (effective ${G.effectiveScore(p, now)})` : ''}`)}${row('LongTermRecognition', T.TIERS[p.tier])}
+			${edit ? this.unitEditHtml(id, p, s, row) : `<table class="kv">${row('RecognitionScore', `${p.score}${G.decay(p, now) ? ` (effective ${G.effectiveScore(p, now)})` : ''}`)}${row('LongTermRecognition', T.TIERS[p.tier])}
 			${row('Harvests to next star', p.tier < 3 && p.score >= T.ESTABLISHED ? `${this.g.h[id] || 0}/${T.HARVESTS_TO_PROMOTE[p.tier]}` : '-')}
-			${row('TimeStampLastCorrect', R.ago(p.lastCorrect))}${row('TimeStampLastSeen', R.ago(p.lastSeen))}${row('Idle income', s === 'growing' ? `${T.IDLE_RATE[p.tier]} 냥/h` : '0')}</table>
-			<div class="btn-row"><button type="button" class="btn primary" data-act="review" data-id="${id}">Review now</button></div>`);
+			${row('TimeStampLastCorrect', R.ago(p.lastCorrect))}${row('TimeStampLastSeen', R.ago(p.lastSeen))}${row('Idle income', s === 'growing' ? `${T.IDLE_RATE[p.tier]} 냥/h` : '0')}</table>`}
+			<div class="btn-row"><button type="button" class="btn primary" data-act="review" data-id="${id}">Review now</button>
+				<button type="button" class="btn" data-act="unit-edit" data-id="${id}" data-on="${edit ? 0 : 1}">${edit ? 'Done editing' : '🛠 Edit values'}</button></div>`);
+	}
+
+	/** Debug editor for one unit: type the score, pick the star level, set the harvest count, stamp "now" on either timestamp. */
+	unitEditHtml(id, p, s, row) {
+		const need = p.tier < 3 ? T.HARVESTS_TO_PROMOTE[p.tier] : 0;
+		return `<table class="kv edit">
+			${row('RecognitionScore', `<input type="number" inputmode="numeric" min="${T.MIN_SCORE}" max="${T.MAX_SCORE}" step="1" value="${p.score}" data-edit="score" data-id="${id}">`)}
+			${row('LongTermRecognition', `<select data-edit="tier" data-id="${id}">${T.TIERS.map((t, i) => `<option value="${i}" ${i === p.tier ? 'selected' : ''}>${t}</option>`).join('')}</select>`)}
+			${row('Harvests to next star', `<input type="number" inputmode="numeric" min="0" max="${Math.max(need, 0)}" step="1" value="${this.g.h[id] || 0}" data-edit="h" data-id="${id}"> / ${need || '-'}`)}
+			${row('TimeStampLastCorrect', `${R.ago(p.lastCorrect)} <button type="button" class="btn" data-act="unit-now" data-id="${id}" data-col="lastCorrect">Set to now</button>`)}
+			${row('TimeStampLastSeen', `${R.ago(p.lastSeen)} <button type="button" class="btn" data-act="unit-now" data-id="${id}" data-col="lastSeen">Set to now</button>`)}
+			${row('Idle income', `${s === 'growing' ? `${T.IDLE_RATE[p.tier]} 냥/h` : '0'} (read only)`)}</table>
+			<p class="muted">Score is ${T.MIN_SCORE} to ${T.MAX_SCORE}; 3+ counts as established. <b>Harvests to next star</b>: harvests of this unit while ripe at its current star; reaching the number after the slash (and score 3+) earns the next star. Count harvests first, then the star level. <b>Idle income</b> is not stored: it is worked out from the star level (${T.IDLE_RATE.join(' / ')} 냥/h) while the unit is growing, so there is nothing to edit. A unit looks green (growing) when its score is 3+ and TimeStampLastCorrect is recent: set it to now.</p>`;
+	}
+
+	applyUnitEdit(id, field, value) {
+		const p = { ...this.unitOf(id) }, n = Math.round(Number(value));
+		if (!Number.isFinite(n)) return;
+		if (field === 'score') p.score = Math.max(T.MIN_SCORE, Math.min(T.MAX_SCORE, n));
+		else if (field === 'tier') p.tier = Math.max(0, Math.min(T.TIERS.length - 1, n));
+		else if (field === 'h') this.g.h[id] = Math.max(0, n);
+		else if (field === 'lastCorrect' || field === 'lastSeen') p[field] = nowSec();
+		else return;
+		this.prog.set(id, p);
+		this.saveUnit(id); this.save(); this.flush();
+		this.updateHud(); this.renderScreen(false); this.tileModal(id, true);
 	}
 
 	// ---------- play ----------
@@ -962,11 +1004,53 @@ class FC2App {
 				<label class="row">Example sentences per card ${select('count', [1, 2, 3, 4, 5, 6].map(n => [n, n]), o.count)}</label>
 				${check('onlyOwned', 'Build examples only from unlocked units')}${check('audioTrials', 'Listening trials (hear the Korean, pick the meaning)')}${check('sound', 'Sound effects')}${check('haptics', 'Vibration')}</section>
 			<section class="panel"><h2>Data</h2><div class="btn-row"><button type="button" class="btn" data-act="flags-open">Flagged sentences (${this.flags.length})</button>
-				<button type="button" class="btn" data-act="backup-open">Backup / restore</button></div>
+				<button type="button" class="btn" data-act="backup-open">Backup / restore</button>
+				<button type="button" class="btn" data-act="recover-open">Recover progress</button></div>
+				${DEBUG !== null ? '<p class="muted">You are on the <b>?debug</b> page: its progress is a separate save from the normal page.</p>' : ''}
 				<div class="btn-row"><a class="btn" href="../webapp/index.html">Spreadsheet (webapp)</a><a class="btn" href="../flashcards/index.html">Old flashcards</a></div>
 				<div class="btn-row"><button type="button" class="btn danger" data-act="reset-game">Reset game progress</button></div>
 				<p class="muted">Reset clears coins, levels, unlocks and upgrades. Unit scores in the spreadsheet stay.</p></section>
 			<p class="muted center build-stamp" id="build-stamp">${escapeHtml(buildLabel())}</p>`;
+	}
+
+	/** Every place progress could still be: the unit database, this page's mirror, the other page's save (?debug vs normal), snapshots, the old flashcards app. */
+	recoverySources() {
+		const St = window.FC2Store, out = [], ns = LS === 'kb.fc2.v1.' ? 'kb.fc2.dbg.' : 'kb.fc2.v1.', otherName = ns === 'kb.fc2.dbg.' ? 'the ?debug page' : 'the normal page';
+		if (!St) return out;
+		const add = (label, packed, at) => { if (packed && typeof packed === 'object' && Object.keys(packed).length) out.push({ label, packed, at, st: St.progStats(packed) }); };
+		const when = at => new Date(at * 1000).toLocaleString();
+		add('Unit database (this browser)', this.dbPacked);
+		add('This page\'s progress copy', ls.get(LS + 'prog', {}));
+		for (const sn of [...(this.snaps || [])].reverse()) add(`Automatic snapshot ${when(sn.at)}`, sn.packed, sn.at);
+		add(`Save of ${otherName}`, ls.get(ns + 'prog', {}));
+		for (const sn of [...(ls.get(ns + 'snaps', []) || [])].reverse()) add(`Snapshot of ${otherName} ${when(sn.at)}`, sn.packed, sn.at);
+		const deck = ls.get(OLD + 'deck', null), stats = ls.get(OLD + 'stats', {}) || {};
+		if (deck && deck.scores) {
+			const packed = {};
+			for (const [k, raw] of (Array.isArray(deck.scores) ? deck.scores : Object.entries(deck.scores))) { const sc = Number(raw) || 0, st = stats[k] || {}; if (sc) packed[k] = [G.clamp(sc), 0, st.correct || 0, st.seen || st.correct || 0]; }
+			add('Old flashcards app (scores only)', packed);
+		}
+		return out;
+	}
+
+	recoverOpen() {
+		this.recSources = this.recoverySources();
+		const now = nowSec(), cur = window.FC2Store ? window.FC2Store.progStats(Object.fromEntries([...this.prog].map(([id, u]) => [id, [u.score, u.tier, u.lastCorrect, u.lastSeen]]))) : null;
+		const rows = this.recSources.map((r, i) => `<tr><td>${escapeHtml(r.label)}<br><span class="muted">${r.st.scored} scored · ${r.st.established} established · ${r.st.stars} stars · last activity ${r.st.latest ? dur(now - r.st.latest) + ' ago' : 'unknown'}</span></td>
+			<td><button type="button" class="btn" data-act="recover" data-i="${i}">Restore</button></td></tr>`).join('');
+		this.openModal('Recover progress', `<p class="muted">Now: ${cur ? `${cur.scored} scored · ${cur.established} established · ${cur.stars} stars` : 'unavailable (store.js missing: reload the page)'}.${DEBUG !== null ? ' <b>You are on the ?debug page: its save is separate from the normal page.</b>' : ''}</p>
+			${rows ? `<table class="kv recover">${rows}</table><p class="muted">Restore keeps the more advanced copy of each unit (stars, then score, then newer) and never lowers a unit you have now.</p>` : '<p>No saved progress was found in this browser. Use 🛠 Edit values on a unit in the Map to set values by hand.</p>'}`);
+	}
+
+	recoverFrom(i) {
+		const src = (this.recSources || [])[i], St = window.FC2Store;
+		if (!src || !St) return;
+		const r = St.bestOf(this.prog, src.packed, id => this.units.has(id));
+		this.prog = r.prog;
+		for (const id of r.changed) { this.saveUnit(id); if (this.unitOf(id).score > 0 && !this.g.owned.includes(id)) this.g.owned.push(id); }
+		this.save(); this.flush(); this.updateHud(); this.render();
+		this.recoverOpen();
+		this.toast(r.changed.length ? `Restored ${r.changed.length} units` : 'Nothing to restore: you already have this or better');
 	}
 
 	backupJson() {
@@ -1039,6 +1123,7 @@ class FC2App {
 		this.root.addEventListener('change', ev => {
 			const t = ev.target;
 			if (t.matches('[data-pack]')) { this.pullPack = t.value; return; }
+			if (t.dataset && t.dataset.edit) { this.applyUnitEdit(Number(t.dataset.id), t.dataset.edit, t.value); return; }
 			const opt = t.dataset && t.dataset.opt;
 			if (!opt) return;
 			this.opts[opt] = t.type === 'checkbox' ? t.checked : (opt === 'count' ? parseInt(t.value, 10) : t.value);
@@ -1069,6 +1154,10 @@ class FC2App {
 			case 'nb-say': if (this.nb && this.nb.q) window.speakKorean(this.nb.q.ko, el); break;
 			case 'nb-mode': if (this.nb) { this.nb.mode = el.dataset.m; this.nbNext(); } break;
 			case 'tile': this.tileModal(Number(el.dataset.id)); break;
+			case 'unit-edit': this.tileModal(Number(el.dataset.id), el.dataset.on === '1'); break;
+			case 'unit-now': this.applyUnitEdit(Number(el.dataset.id), el.dataset.col, 1); break;
+			case 'recover-open': this.recoverOpen(); break;
+			case 'recover': this.recoverFrom(Number(el.dataset.i)); break;
 			case 'review': this.session.front.unshift(Number(el.dataset.id)); this.card = null; this.closeModal(); this.go('play'); break;
 			case 'score': this.score(Number(el.dataset.v), el); break;
 			case 'choose': this.choose(Number(el.dataset.i), el); break;
