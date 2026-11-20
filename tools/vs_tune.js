@@ -206,7 +206,7 @@ function getTpl(id) {
 }
 const isLocked = (slot) => Boolean(slot.inflection && (slot.inflection.stemForm === K.FIXED_GRAMMAR || slot.inflection.stemForm === 'exact'));
 const defaultTags = (slot) => {
-	if (typeof slot.originalUnitId === 'number' && U(slot.originalUnitId)) return unitTags(U(slot.originalUnitId));
+	if (typeof slot.originalUnitId === 'number' && U(slot.originalUnitId)) return vg.defaultSlotTags(U(slot.originalUnitId));
 	return [];
 };
 function rawCustomTags(id, slotIdx) {

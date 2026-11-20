@@ -215,6 +215,16 @@ const VERIFIED_SLOT_SCHEMA = (verifiedDataModule && verifiedDataModule.VERIFIED_
 // tools/vs_tune.js edits these; unknown kinds are ignored here and reported by the tool.
 const TEMPLATE_RULES_INDEX = (VERIFIED_TEMPLATE_SCHEMA && typeof VERIFIED_TEMPLATE_SCHEMA.Rules === 'number') ? VERIFIED_TEMPLATE_SCHEMA.Rules : 6;
 // allow {ids}: these units join the slot even without its tags (an explicit list next to the tag filter).
+// Tags that only exempt a word from a validator check. They describe one word, not a class, so they never
+// become a slot's default filter (else adding object_elidable to 만나다 would shrink every 만나다 slot to
+// the three tagged verbs). Add a tag here when a validator reads it but slots should not filter by it.
+const VALIDATOR_ONLY_TAGS = new Set(['object_elidable', 'motion_activity']);
+/** A slot's default tag filter: the original unit's tags minus validator-only tags. */
+function defaultSlotTags(unit) {
+	const raw = unit && unit[DATA_SCHEMA.SemanticTags];
+	const all = raw instanceof Set ? Array.from(raw) : (Array.isArray(raw) ? [...raw] : []);
+	return all.filter(t => t && !VALIDATOR_ONLY_TAGS.has(t));
+}
 const SLOT_RULE_KINDS = new Set(['anyTags', 'noTags', 'deny', 'sd', 'allow']);
 
 function slotRulesAllow(u, slot) {
@@ -280,8 +290,7 @@ function hydrateVerifiedSentence(raw) {
 		if (Array.isArray(customTags)) {
 			tags = [...customTags];
 		} else if (unit && unit[DATA_SCHEMA.SemanticTags]) {
-			const rawTags = unit[DATA_SCHEMA.SemanticTags];
-			tags = (rawTags instanceof Set ? Array.from(rawTags) : (Array.isArray(rawTags) ? [...rawTags] : [])).filter(Boolean);
+			tags = defaultSlotTags(unit);
 		} else {
 			tags = [];
 		}
@@ -369,8 +378,7 @@ function serializeCompactTemplate(tpl) {
 			const units = getUnitsArray();
 			const u = units && units[s.originalUnitId];
 			if (u && u[DATA_SCHEMA.SemanticTags]) {
-				const uTags = u[DATA_SCHEMA.SemanticTags];
-				const uSet = uTags instanceof Set ? uTags : new Set(uTags || []);
+				const uSet = new Set(defaultSlotTags(u));
 				if (s.tags.length !== uSet.size || !s.tags.every(t => uSet.has(t))) {
 					customTags = [...s.tags];
 				}
@@ -3675,6 +3683,8 @@ const verifiedGeneratorExports = {
 	isUnitEligibleForSlot,
 	slotRulesAllow,
 	SLOT_RULE_KINDS,
+	VALIDATOR_ONLY_TAGS,
+	defaultSlotTags,
 	analyzeTemplateStructure,
 	realizeSlot,
 	generateSentenceFromTemplate,
