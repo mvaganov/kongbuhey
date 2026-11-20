@@ -57,7 +57,8 @@ FIXTURES (test/golden_sentences.json; checked by test/golden_sentences_test.js w
   fixture <id> <i> <unitId> bad|ok "<reason>" [--confidence clear|unsure] [--gap-class C]
                                   "template <id> slot <i> must not (bad) / must (ok) produce this unit".
                                   Status is computed: "open" if the generator violates it today, else "fixed".
-  fixtures [--unsure] [--open]    list slot fixtures; --unsure = the human-review list (one sitting with a native speaker)
+  fixtures [--unsure] [--open]    list slot fixtures; --unsure = the native-speaker review list, also written to
+                                  local/native_review.txt (numbered, with context, no agent guess; share that file)
   fixture-rm <gid>                delete a slot fixture (a mistaken one; to change it, delete and add again)
   fixtures --sync                 mark open fixtures the generator now satisfies as fixed (the suite fails until you do)
   human <gid> right|wrong ["note"] record the native speaker's verdict on an unsure fixture (wrong flips it)
@@ -700,14 +701,33 @@ function cmdFixtures(flags) {
 	let list = readGolden().fixtures.filter(isSlotFixture);
 	if (flags.unsure) list = list.filter(fx => fx.confidence === 'unsure');
 	if (flags.open) list = list.filter(fx => fx.status === 'open');
-	if (flags.unsure) console.log('For a native speaker: is each sentence natural Korean? (the agent\'s guess is in brackets)');
+	if (flags.unsure) return writeReviewList(list);
 	for (const fx of list) {
 		const u = U(fx.unitId);
-		const guess = fx.expect === 'bad' ? 'agent: unnatural' : 'agent: natural';
-		if (flags.unsure) console.log(`${fx.id}  ${fx.ko}   [${guess}]`);
-		else console.log(`${fx.id} ${fx.expect.padEnd(3)} ${fx.status.padEnd(5)} ${fx.confidence.padEnd(6)} ${fx.templateId}[${fx.slot}] ${shortUnit(u)}${fx.gapClass ? ' gap:' + fx.gapClass : ''}  ${fx.ko}  | ${fx.reason}`);
+		console.log(`${fx.id} ${fx.expect.padEnd(3)} ${fx.status.padEnd(5)} ${fx.confidence.padEnd(6)} ${fx.templateId}[${fx.slot}] ${shortUnit(u)}${fx.gapClass ? ' gap:' + fx.gapClass : ''}  ${fx.ko}  | ${fx.reason}`);
 	}
 	console.log(`(${list.length} slot fixtures)`);
+}
+
+/**
+ * The native-speaker review list: numbered sentences with the original template sentence as context, no agent
+ * guess (it biases the reviewer), ids in a key at the end. Written as UTF-8 to local/native_review.txt (gitignored:
+ * originals are textbook text; a PowerShell pipe would garble Hangul). Record answers: human <gid> right|wrong "note"
+ * ("right" = the fixture's expect was correct).
+ */
+function writeReviewList(list) {
+	const lines = [
+		`Korean sentence review (${today()}). For each numbered sentence: natural / a bit odd / wrong, and how you would say it.`,
+		'Each one swaps one word of a correct textbook sentence (shown in parentheses). Judge the new sentence on its own.',
+		'',
+	];
+	list.forEach((fx, n) => lines.push(`${n + 1}. ${fx.ko}`, `   (original: ${sentenceOf(getTpl(fx.templateId))})`, ''));
+	lines.push('key (for recording answers, not for the reviewer): ' + list.map((fx, n) => `${n + 1}=${fx.id}`).join(' '));
+	const text = lines.join('\n') + '\n';
+	const out = path.resolve(__dirname, '..', 'local', 'native_review.txt');
+	fs.mkdirSync(path.dirname(out), { recursive: true });
+	fs.writeFileSync(out, text);
+	console.log(text + `(${list.length} unsure fixtures -> ${path.relative(process.cwd(), out)})`);
 }
 
 function cmdFixtureRm(gid, flags) {

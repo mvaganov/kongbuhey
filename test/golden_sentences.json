@@ -20,10 +20,15 @@
       "expect": "bad",
       "ko": "것은 사지 마.",
       "reason": "bound noun 것 as bare topic of 사지 마 is incomplete",
-      "confidence": "clear",
+      "confidence": "human",
       "status": "fixed",
       "addedAt": "2026-11-20",
-      "reviewedBy": "opus spot-check 2026-11-20"
+      "reviewedBy": "opus spot-check 2026-11-20",
+      "human": {
+        "verdict": "right",
+        "note": "native speaker review: wrong; say 그것을/그거 사지 마",
+        "at": "2026-11-20"
+      }
     },
     {
       "id": "g003",
@@ -68,12 +73,18 @@
       "templateId": "vs_372",
       "slot": 1,
       "unitId": 947,
-      "expect": "bad",
+      "expect": "ok",
       "ko": "저는 소금으로 하겠습니다.",
       "reason": "저는 소금으로 하겠습니다: ordering salt is nonsense",
-      "confidence": "clear",
+      "confidence": "human",
       "status": "fixed",
-      "addedAt": "2026-11-20"
+      "addedAt": "2026-11-20",
+      "human": {
+        "verdict": "wrong",
+        "note": "native speaker review: fine when ordering",
+        "at": "2026-11-20"
+      },
+      "fixedAt": "2026-11-20"
     },
     {
       "id": "g007",
@@ -119,9 +130,14 @@
       "expect": "bad",
       "ko": "저는 좀 똑똑한데요.",
       "reason": "저는 좀 똑똑한데요: self-praise with 좀 is unnatural (trait adjectives)",
-      "confidence": "clear",
+      "confidence": "human",
       "status": "fixed",
-      "addedAt": "2026-11-20"
+      "addedAt": "2026-11-20",
+      "human": {
+        "verdict": "right",
+        "note": "native speaker review: grammatical but rude self-praise; not Korean manners",
+        "at": "2026-11-20"
+      }
     },
     {
       "id": "g011",
@@ -131,9 +147,14 @@
       "expect": "bad",
       "ko": "저는 좀 그리운데요.",
       "reason": "그립다 needs an object/target, 'I am a bit missed' reading wrong",
-      "confidence": "unsure",
+      "confidence": "human",
       "status": "fixed",
-      "addedAt": "2026-11-20"
+      "addedAt": "2026-11-20",
+      "human": {
+        "verdict": "right",
+        "note": "native speaker review: wrong; natives say (나는) ___ 보고 싶어(요)",
+        "at": "2026-11-20"
+      }
     },
     {
       "id": "g012",
@@ -306,21 +327,32 @@
       "expect": "bad",
       "ko": "신문을 만졌어요.",
       "reason": "신문을 만졌어요 (touched the newspaper) is odd as study-text sentence",
-      "confidence": "unsure",
+      "confidence": "human",
       "status": "fixed",
-      "addedAt": "2026-11-20"
+      "addedAt": "2026-11-20",
+      "human": {
+        "verdict": "right",
+        "note": "native speaker review: strange; no reason to touch a newspaper",
+        "at": "2026-11-20"
+      }
     },
     {
       "id": "g026",
       "templateId": "vs_417",
       "slot": 1,
       "unitId": 1857,
-      "expect": "bad",
+      "expect": "ok",
       "ko": "신문을 바꿨어요.",
       "reason": "신문을 바꿨어요 odd (what changed?)",
-      "confidence": "unsure",
+      "confidence": "human",
       "status": "fixed",
-      "addedAt": "2026-11-20"
+      "addedAt": "2026-11-20",
+      "human": {
+        "verdict": "wrong",
+        "note": "native speaker review: fine (switched to another newspaper company)",
+        "at": "2026-11-20"
+      },
+      "fixedAt": "2026-11-20"
     },
     {
       "id": "g027",
@@ -367,9 +399,14 @@
       "expect": "bad",
       "ko": "여자하고 통화했어요?",
       "reason": "bare 여자하고 통화했어요? (no determiner) is odd",
-      "confidence": "unsure",
+      "confidence": "human",
       "status": "fixed",
-      "addedAt": "2026-11-20"
+      "addedAt": "2026-11-20",
+      "human": {
+        "verdict": "right",
+        "note": "native speaker review: not wrong but nobody refers to a person as bare 여자 on the phone",
+        "at": "2026-11-20"
+      }
     },
     {
       "id": "g031",
@@ -526,9 +563,14 @@
       "expect": "bad",
       "ko": "비싸면 됩니다.",
       "reason": "비싸면 됩니다 (it is fine if expensive) nonsense; same for 나쁘다 어렵다",
-      "confidence": "clear",
+      "confidence": "human",
       "status": "fixed",
-      "addedAt": "2026-11-20"
+      "addedAt": "2026-11-20",
+      "human": {
+        "verdict": "right",
+        "note": "native speaker review: clearly wrong",
+        "at": "2026-11-20"
+      }
     },
     {
       "id": "g044",
@@ -597,12 +639,18 @@
       "templateId": "vs_398",
       "slot": 3,
       "unitId": 457,
-      "expect": "bad",
+      "expect": "ok",
       "ko": "모두 기다리고 있으니까 천천히 오세요.",
       "reason": "천천히 오세요 after 'everyone is waiting' contradicts (should hurry)",
-      "confidence": "clear",
+      "confidence": "human",
       "status": "fixed",
-      "addedAt": "2026-11-20"
+      "addedAt": "2026-11-20",
+      "human": {
+        "verdict": "wrong",
+        "note": "native speaker review: fine (take your time, we are waiting)",
+        "at": "2026-11-20"
+      },
+      "fixedAt": "2026-11-20"
     },
     {
       "id": "g050",
@@ -633,13 +681,18 @@
       "templateId": "vs_302",
       "slot": 5,
       "unitId": 1868,
-      "expect": "bad",
+      "expect": "ok",
       "ko": "할아버지도 오랜만에 가족이 모두 모이니까 힘들어하신다.",
       "reason": "가족이 모두 모이니까 힘들어하신다: negative emotion contradicts the cause",
-      "confidence": "clear",
-      "status": "fixed",
+      "confidence": "human",
+      "status": "open",
       "gapClass": "cross-slot",
-      "addedAt": "2026-11-20"
+      "addedAt": "2026-11-20",
+      "human": {
+        "verdict": "wrong",
+        "note": "native speaker review: fine",
+        "at": "2026-11-20"
+      }
     },
     {
       "id": "g053",
@@ -695,13 +748,19 @@
       "templateId": "vs_532",
       "slot": 5,
       "unitId": 649,
-      "expect": "bad",
+      "expect": "ok",
       "ko": "길이 많이 막히니까 버스를 타지 말고 택시를 탑시다.",
       "reason": "길이 막히니까 ... 택시를 탑시다: recommending a road vehicle contradicts the traffic-jam reason",
-      "confidence": "clear",
+      "confidence": "human",
       "status": "fixed",
       "gapClass": "cross-slot",
-      "addedAt": "2026-11-20"
+      "addedAt": "2026-11-20",
+      "human": {
+        "verdict": "wrong",
+        "note": "native speaker review: fine",
+        "at": "2026-11-20"
+      },
+      "fixedAt": "2026-11-20"
     },
     {
       "id": "g058",

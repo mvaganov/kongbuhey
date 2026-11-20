@@ -105,6 +105,9 @@ async function chat(p, key, effort, messages, maxTokens) {
 // natural is decided here, not by the model: an "error" issue or a score <= FLAG_SCORE fails a sentence.
 // Calibration 2026-11-20: textbook originals scored 4-5 (0/30 flagged); 8 golden bad fixtures were scored
 // 2-3 with only style/context notes, so the score catches what the issue type misses.
+// Native-speaker review of 11 of those fixtures: the model agreed on the 5 that were actually fine, but
+// scored all 6 confirmed-bad ones 4-5 (rude self-praise, 그립다 for 보고 싶다, bare 여자/것은, nonsense
+// like 비싸면 됩니다). It catches grammar/register errors, not pragmatic oddness: a second opinion, not a gate.
 function parseVerdict(content) {
 	const m = content.match(/\{[\s\S]*\}/);
 	if (!m) return null;
