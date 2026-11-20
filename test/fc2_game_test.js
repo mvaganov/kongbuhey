@@ -141,6 +141,13 @@ assert(G.decay(est(0, 5 * HOUR), NOW) === 0 && G.decay(est(0, 13 * HOUR), NOW) =
 	assert(back.combo === 7 && back.n === 4 && back.round.coins === 9 && back.due.get(3) === 8 && back.last === 3, 'the session (combo, round, learning queue) survives a reload');
 	assert(S.unpackSession(S.packSession(sess, 1000), 1000 + 3601, 3600) === null && S.unpackSession(null, 1, 1) === null, 'a stale or missing session is dropped');
 }
+{ // a database record damaged by the old bulk-save bug (only lastSeen kept) must not beat the progress copy at equal timestamps
+	const S = require('../fc2/store.js');
+	const db = new Map([[3, { score: 0, tier: 0, lastCorrect: 0, lastSeen: 500 }]]), mirror = { 3: [6, 2, 400, 500] };
+	assert(S.mergeProg(db, mirror).prog.get(3).score === 0, 'with equal timestamps the database copy still wins by default (spreadsheet edits stay)');
+	const healed = S.mergeProg(db, mirror, () => true, new Set([3]));
+	assert(healed.prog.get(3).score === 6 && healed.prog.get(3).tier === 2 && healed.healed.includes(3), 'a damaged database record (missing progress columns) is healed from the progress copy');
+}
 { // recovery helpers: stats, best-of merge, rolling snapshots that keep the richest copy
 	const S = require('../fc2/store.js');
 	const rich = { 1: [5, 2, 100, 100], 2: [3, 1, 90, 90], 3: [1, 0, 80, 80], 4: [0, 0, 0, 0] };

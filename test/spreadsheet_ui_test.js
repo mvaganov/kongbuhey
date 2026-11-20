@@ -1161,6 +1161,46 @@ async function runSuite() {
 	const psCol = DEFAULT_COLUMNS_SPEC.find(c => c.key === 'PriorityScore');
 	assert(psCol && psCol.type === 'number', 'webapp/db.js defines PriorityScore with type number to support decimal tiers');
 
+	{ // saveBulkUnitCellValues against IndexedDB's request ordering: several cells for one unit in one call must ALL survive
+		// (a read-modify-write per cell inside one transaction lets every get see the old record, so only the last put wins).
+		const makeFakeIdb = () => {
+			const stores = {};
+			return { stores, transaction(name) {
+				const store = stores[name] || (stores[name] = new Map()), queue = [], tx = { oncomplete: null, onerror: null, error: null };
+				let running = false;
+				const keyOf = r => (r.unitId !== undefined ? r.unitId : r.key !== undefined ? r.key : r.id);
+				const pump = () => {
+					if (running) return;
+					running = true;
+					const step = () => {
+						const job = queue.shift();
+						if (!job) { running = false; setTimeout(() => tx.oncomplete && tx.oncomplete(), 0); return; }
+						job.req.result = job.run();
+						setTimeout(() => { if (job.req.onsuccess) job.req.onsuccess(); step(); }, 0);
+					};
+					setTimeout(step, 0);
+				};
+				const add = run => { const req = { onsuccess: null, onerror: null, result: undefined }; queue.push({ req, run }); pump(); return req; };
+				tx.objectStore = () => ({
+					get: key => add(() => (store.has(key) ? JSON.parse(JSON.stringify(store.get(key))) : undefined)),
+					put: rec => add(() => { store.set(keyOf(rec), JSON.parse(JSON.stringify(rec))); }),
+					getAll: () => add(() => [...store.values()].map(r => JSON.parse(JSON.stringify(r))))
+				});
+				return tx;
+			} };
+		};
+		const idbDb = new KongbuheyDB();
+		idbDb.db = makeFakeIdb();
+		await idbDb.saveBulkUnitCellValues([
+			{ unitId: 7, colKey: 'RecognitionScore', value: 5 }, { unitId: 7, colKey: 'LongTermRecognition', value: 'recognized' },
+			{ unitId: 7, colKey: 'TimeStampLastCorrect', value: 111 }, { unitId: 7, colKey: 'TimeStampLastSeen', value: 222 },
+			{ unitId: 8, colKey: 'RecognitionScore', value: -2 }
+		]);
+		await idbDb.saveBulkUnitCellValues([{ unitId: 7, colKey: 'notes', value: 'hi' }, { unitId: 7, colKey: 'RecognitionScore', value: 6 }]);
+		const rec7 = (await idbDb.loadAllUnitDataIncremental()).find(r => r.unitId === 7);
+		assert(rec7 && rec7.custom.RecognitionScore === 6 && rec7.custom.LongTermRecognition === 'recognized' && rec7.custom.TimeStampLastCorrect === 111 && rec7.custom.TimeStampLastSeen === 222 && rec7.custom.notes === 'hi', 'IndexedDB bulk save keeps every cell of a unit written in one call (the last write to a cell wins)');
+	}
+
 	console.log(`\n======================================================`);
 	console.log(`TOTAL TESTS: ${passed + failed}`);
 	console.log(`PASSED:      ${passed}`);

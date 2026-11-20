@@ -572,16 +572,25 @@ class KongbuheyDB {
 			const tx = this.db.transaction('unit_data', 'readwrite');
 			const store = tx.objectStore('unit_data');
 
+			// One read-modify-write per UNIT, applying all of its cells: every get in a transaction sees the record as it was before any
+			// put, so a get/put per cell lets the last cell overwrite the others (only the last of several cells for a unit survived).
+			const byUnit = new Map();
 			for (const u of updates) {
-				const getReq = store.get(u.unitId);
+				if (!byUnit.has(u.unitId)) byUnit.set(u.unitId, []);
+				byUnit.get(u.unitId).push(u);
+			}
+			for (const [unitId, cells] of byUnit) {
+				const getReq = store.get(unitId);
 				getReq.onsuccess = () => {
-					const record = getReq.result || { unitId: u.unitId, custom: {}, defaultOverrides: {}, updatedAt: 0 };
+					const record = getReq.result || { unitId, custom: {}, defaultOverrides: {}, updatedAt: 0 };
 					if (!record.custom) record.custom = {};
 					if (!record.defaultOverrides) record.defaultOverrides = {};
-					if (u.isDefaultColumn) {
-						record.defaultOverrides[u.colKey] = u.value;
-					} else {
-						record.custom[u.colKey] = u.value;
+					for (const u of cells) {
+						if (u.isDefaultColumn) {
+							record.defaultOverrides[u.colKey] = u.value;
+						} else {
+							record.custom[u.colKey] = u.value;
+						}
 					}
 					record.updatedAt = Date.now();
 					store.put(record);

@@ -126,9 +126,11 @@ class FC2App {
 				if (this.db.useMemoryFallback) reportError('Unit database unavailable', new Error('IndexedDB is not available in this browser: unit progress is kept in this browser\'s local storage only and will not show in the spreadsheet.'));
 			} catch (e) { this.db = null; reportError('Unit database failed to open', e); }
 		}
+		const damaged = new Set();
 		for (const rec of records) {
 			const c = rec.custom || {};
 			if (!this.units.has(rec.unitId) && !this.alias.has(rec.unitId)) continue;
+			if (c.RecognitionScore === undefined || c.LongTermRecognition === undefined || c.TimeStampLastCorrect === undefined) damaged.add(this.alias.has(rec.unitId) ? this.alias.get(rec.unitId) : rec.unitId);   // an old bulk-save bug kept only the last cell
 			this.prog.set(rec.unitId, { score: Number(c.RecognitionScore) || 0, tier: G.tierIndex(c.LongTermRecognition),
 				lastCorrect: Number(c.TimeStampLastCorrect) || 0, lastSeen: Number(c.TimeStampLastSeen) || 0 });
 			if (c.notes) this.notes[rec.unitId] = String(c.notes);
@@ -139,8 +141,8 @@ class FC2App {
 		this.prog = folded.prog; this.notes = folded.notes;
 		this.dbPacked = Object.fromEntries([...this.prog].map(([id, u]) => [id, [u.score, u.tier, u.lastCorrect, u.lastSeen]]));   // what the database held, for the Recovery panel
 		this.snaps = ls.get(LS + 'snaps', []) || [];
-		// The localStorage mirror wins a unit only when strictly newer than the database copy.
-		const merged = store().mergeProg(this.prog, folded.mirror, id => this.units.has(id));
+		// The localStorage mirror wins a unit when strictly newer than the database copy, or when the database record lacks progress columns.
+		const merged = store().mergeProg(this.prog, folded.mirror, id => this.units.has(id), damaged);
 		this.prog = merged.prog;
 		let g = ls.get(LS + 'game', null);
 		if (!g || g.v !== 1) g = DEBUG === null ? this.migrate() : G.blankGame(nowSec());
@@ -152,6 +154,7 @@ class FC2App {
 		const sess = store().unpackSession(ls.get(LS + 'session', null), nowSec(), 3 * 3600);
 		if (sess) this.session = { ...this.newSession(), ...sess, round: sess.round || this.newRound() };
 		this.applyCosmetics();
+		this.findRecoverable();
 		this.render();
 		if (DEBUG !== null) this.debugScene(DEBUG);
 		setInterval(() => { if (this.tab === 'map' && this.modalHidden() && !this.cheat) this.renderScreen(false); }, 15000);
@@ -343,7 +346,7 @@ class FC2App {
 			return `<section class="pack"><header><b>${escapeHtml(p.name)}</b><span>${p.owned}/${p.ids.length} · ${stars}/${max}★</span></header>
 				<div class="bar thin"><i style="width:${Math.round(100 * stars / max)}%"></i></div><div class="tiles">${p.ids.map(tile).join('')}</div></section>`;
 		}).join('');
-		return `<section class="hive${idle ? ' has' : ''}"><div><b>Hive</b><small>+${fmt(rate)} 냥/h from ${c.growing} growing${full && idle ? ' · <u>store full</u>' : ''}</small></div>
+		return `${this.recoverHintHtml()}<section class="hive${idle ? ' has' : ''}"><div><b>Hive</b><small>+${fmt(rate)} 냥/h from ${c.growing} growing${full && idle ? ' · <u>store full</u>' : ''}</small></div>
 				<button type="button" class="btn gold" data-act="collect" ${idle ? '' : 'disabled'}>Collect <span id="idle">${fmt(idle)}</span></button></section>
 			<button type="button" class="play-big${c.ripe + c.wilted ? ' due' : ''}" data-act="tab" data-tab="play"><b>▶ Play</b><small>${waiting || (g.owned.length ? 'Practice, or pull new units' : 'Start with a free pull in the Shop')}</small></button>
 			${this.goalsHtml(c)}
@@ -1079,7 +1082,8 @@ class FC2App {
 				<div class="btn-row"><a class="btn" href="../webapp/index.html">Spreadsheet (webapp)</a><a class="btn" href="../flashcards/index.html">Old flashcards</a></div>
 				<div class="btn-row"><button type="button" class="btn danger" data-act="reset-game">Reset game progress</button></div>
 				<p class="muted">Reset clears coins, levels, unlocks and upgrades. Unit scores in the spreadsheet stay.</p></section>
-			<p class="muted center build-stamp" id="build-stamp">${escapeHtml(buildLabel())}</p>`;
+			<p class="muted center build-stamp" id="build-stamp">${escapeHtml(buildLabel())}</p>
+			<p class="muted center build-stamp" id="where-am-i">${EPHEMERAL ? 'DEBUG page (nothing is saved)' : DEBUG !== null ? 'DEBUG page (saving on, test mode)' : 'Normal page (saved)'}<br>${escapeHtml(location.href)}</p>`;
 	}
 
 	/** Every place progress could still be: the unit database, this page's mirror, the other page's save (?debug vs normal), snapshots, the old flashcards app. */
@@ -1102,6 +1106,26 @@ class FC2App {
 		return out;
 	}
 
+	/** On the real page: if a much richer saved copy exists elsewhere in this browser (the ?debug save, a snapshot), say so on the map. */
+	findRecoverable() {
+		this.recoverHint = null;
+		if (EPHEMERAL || !window.FC2Store) return;
+		const St = window.FC2Store;
+		this.recSources = this.recoverySources();
+		const cur = St.progStats(Object.fromEntries([...this.prog].map(([id, u]) => [id, [u.score, u.tier, u.lastCorrect, u.lastSeen]])));
+		let best = -1;
+		this.recSources.forEach((r, i) => { if (r.st.scored >= cur.scored + 5 && (best < 0 || r.st.scored > this.recSources[best].st.scored)) best = i; });
+		if (best >= 0) this.recoverHint = best;
+	}
+
+	recoverHintHtml() {
+		const r = this.recoverHint !== null && this.recoverHint !== undefined ? (this.recSources || [])[this.recoverHint] : null;
+		if (!r) return '';
+		return `<section class="panel hint-box"><b>💾 Found saved progress</b><p class="muted">${escapeHtml(r.label)}: ${r.st.scored} scored units, ${r.st.established} established, ${r.st.stars} stars${r.st.latest ? ', last activity ' + dur(nowSec() - r.st.latest) + ' ago' : ''}. This page has fewer.</p>
+			<div class="btn-row"><button type="button" class="btn primary" data-act="recover" data-i="${this.recoverHint}">Restore it</button>${r.game ? `<button type="button" class="btn" data-act="recover" data-i="${this.recoverHint}" data-game="1">Restore + game</button>` : ''}
+			<button type="button" class="btn" data-act="recover-open">See all copies</button></div></section>`;
+	}
+
 	recoverOpen() {
 		this.recSources = this.recoverySources();
 		const now = nowSec(), cur = window.FC2Store ? window.FC2Store.progStats(Object.fromEntries([...this.prog].map(([id, u]) => [id, [u.score, u.tier, u.lastCorrect, u.lastSeen]]))) : null;
@@ -1122,8 +1146,8 @@ class FC2App {
 			this.g.owned = this.g.owned.filter(id => this.units.has(id));
 		}
 		for (const id of r.changed) { this.saveUnit(id); if (this.unitOf(id).score > 0 && !this.g.owned.includes(id)) this.g.owned.push(id); }
-		this.save(); this.flush(); this.updateHud(); this.render();
-		this.recoverOpen();
+		this.save(); this.flush(); this.updateHud(); this.findRecoverable(); this.render();
+		if (!this.modalHidden()) this.recoverOpen();
 		this.toast(r.changed.length ? `Restored ${r.changed.length} units` : 'Nothing to restore: you already have this or better');
 	}
 
@@ -1149,6 +1173,10 @@ class FC2App {
 					const recs = await this.db.loadAllUnitDataIncremental(), back = new Map(recs.map(r => [r.unitId, r.custom || {}]));
 					const ok = ids.filter(id => { const c = back.get(id), u = this.prog.get(id); return c && Number(c.RecognitionScore) === u.score && G.tierIndex(c.LongTermRecognition) === u.tier && Number(c.TimeStampLastCorrect) === u.lastCorrect && Number(c.TimeStampLastSeen) === u.lastSeen; }).length;
 					row('Unit database', `${wrote ? '' : 'write failed, '}${ok}/${ids.length} units read back correctly`, wrote && ok === ids.length);
+					if (ok < ids.length) {
+						const bad = ids.filter(id => { const c = back.get(id), u = this.prog.get(id); return !(c && Number(c.RecognitionScore) === u.score && G.tierIndex(c.LongTermRecognition) === u.tier && Number(c.TimeStampLastCorrect) === u.lastCorrect && Number(c.TimeStampLastSeen) === u.lastSeen); }).slice(0, 3);
+						reportError('Unit database read-back mismatch', new Error(`database fallback mode: ${Boolean(this.db.useMemoryFallback)}; records in database: ${recs.length}\n` + bad.map(id => `unit ${id}: game has ${JSON.stringify(this.prog.get(id))}, database has ${JSON.stringify(back.get(id) || {})}`).join('\n')));
+					}
 				} else row('Unit database', DEBUG !== null ? 'not used on the ?debug page' : 'unavailable in this browser (the progress copy is your save)', DEBUG !== null);
 			}
 		} catch (e) { reportError('Force save failed', e); row('Error', escapeHtml(e.message || String(e)), false); }

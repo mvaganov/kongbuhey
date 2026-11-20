@@ -252,6 +252,41 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(staged && writes.length === 0 && mem.get('kb.fc2.dbg.prog') === prog, 'a ?debug scene page replaces the game in memory but writes nothing to storage');
 	});
 
+	await step('normal page: saved-elsewhere card and damaged database', async () => {
+		// The player's real progress ended up in the ?debug save: the normal page must notice and offer it, not show an empty map.
+		const rich = {}; for (let i = 0; i < 8; i++) rich[10 + i] = [5, 1, 1000 + i, 1000 + i];
+		const mem = new Map([['kb.fc2.dbg.prog', JSON.stringify(rich)], ['kb.fc2.v1.game', JSON.stringify({ v: 1, coins: 7, owned: [10, 11, 12] })]]);
+		const dom3 = await JSDOM.fromFile(page, {
+			url: require('url').pathToFileURL(page).href, runScripts: 'dangerously', resources: 'usable', pretendToBeVisual: true, virtualConsole: new VirtualConsole(),
+			beforeParse(w3) {
+				Object.defineProperty(w3, 'localStorage', { value: { getItem: k => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => { mem.set(k, String(v)); }, removeItem: k => mem.delete(k) }, configurable: true, writable: true });
+				w3.HTMLCanvasElement.prototype.getContext = () => new Proxy({}, { get: () => () => {}, set: () => true });
+				w3.SpeechSynthesisUtterance = function(t) { this.text = t; };
+				Object.defineProperty(w3, 'speechSynthesis', { value: { speak() {}, cancel() {}, getVoices: () => [] }, configurable: true });
+			}
+		});
+		await new Promise(r => dom3.window.addEventListener('load', r));
+		await dom3.window.fc2App.ready;
+		const a3 = dom3.window.fc2App, d3 = dom3.window.document;
+		const hint = d3.querySelector('.hint-box');
+		assert(hint && /8 scored/.test(hint.textContent) && !d3.querySelector('#dbg-badge'), 'the normal page shows a "Found saved progress" card when another copy has far more');
+		d3.querySelector('.hint-box [data-act="recover"]').dispatchEvent(new dom3.window.MouseEvent('click', { bubbles: true }));
+		assert(a3.unitOf(10).score === 5 && a3.unitOf(17).tier === 1 && !d3.querySelector('.hint-box') && JSON.parse(mem.get('kb.fc2.v1.prog'))[17][0] === 5, 'Restore it brings the units back, hides the card and saves them to the normal save');
+		a3.go('menu');
+		assert(/Normal page/.test((d3.querySelector('#where-am-i') || {}).textContent || ''), 'the Menu says which page and URL you are on');
+
+		// A database record left damaged by the old bulk-save bug (only lastSeen kept) is healed from the progress copy, and the heal reaches the database whole.
+		const wdb = dom3.window, recs = new Map([[20, { unitId: 20, custom: { TimeStampLastSeen: 5000 } }]]);
+		wdb.KongbuheyDB = class { async open() {} async loadAllUnitDataIncremental() { return [...recs.values()]; } async saveBulkUnitCellValues(cells) { for (const c of cells) { const r = recs.get(c.unitId) || { unitId: c.unitId, custom: {} }; r.custom[c.colKey] = c.value; recs.set(c.unitId, r); } return true; } };
+		mem.set('kb.fc2.v1.prog', JSON.stringify({ 20: [6, 2, 4000, 5000] }));
+		const root = d3.querySelector('#app').cloneNode(true);
+		const a4 = new wdb.FC2App(root); await a4.ready; await wait(50);
+		assert(a4.unitOf(20).score === 6 && a4.unitOf(20).tier === 2 && a4.unitOf(20).lastCorrect === 4000, 'a damaged database record is healed from the progress copy on load');
+		const c20 = recs.get(20).custom;
+		assert(c20.RecognitionScore === 6 && c20.LongTermRecognition === 'definitionKnown' && c20.TimeStampLastCorrect === 4000 && c20.TimeStampLastSeen === 5000, 'the healed progress is written back to the database in full');
+		dom3.window.close();
+	});
+
 	await step('noun slot varies', async () => {
 		const isNoun = id => (app.units.get(id) || [])[w.DATA_SCHEMA.PartofSpeech] === 'Noun';
 		const nounIds = [];

@@ -89,12 +89,11 @@ function list(app) {
 
 function apply(app, name) {
 	const scene = scenes[name];
-	if (!scene) { reset(app); show(app, 'map'); list(app); return; }
-	scene.setup(app);
-	if (typeof document !== 'undefined' && !document.getElementById('dbg-badge')) {
+	if (scene) scene.setup(app); else { reset(app); show(app, 'map'); list(app); }
+	if (typeof document !== 'undefined' && !document.getElementById('dbg-badge')) {   // shown for the scene list too: you always know you are on a debug page
 		const b = document.createElement('a');
-		b.id = 'dbg-badge'; b.href = '?debug'; b.textContent = 'DEBUG: ' + name + (/[?&]persist\b/.test(location.search) ? '' : ' (nothing is saved)');
-		b.style.cssText = 'position:fixed;left:6px;top:50px;z-index:99;font:11px monospace;color:#000;background:#ffd166;padding:2px 6px;border-radius:6px;opacity:.85;text-decoration:none';
+		b.id = 'dbg-badge'; b.href = '?debug'; b.textContent = 'DEBUG: ' + (scene ? name : 'scene list') + (/[?&]persist\b/.test(location.search) ? '' : ' - nothing is saved');
+		b.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99;font:bold 13px monospace;color:#fff;background:#c0392b;padding:4px 8px;text-align:center;text-decoration:none';
 		document.body.appendChild(b);
 	}
 }

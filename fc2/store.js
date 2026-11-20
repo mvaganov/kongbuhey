@@ -17,16 +17,17 @@ const stamp = u => Math.max(u.lastSeen || 0, u.lastCorrect || 0);
 
 /**
  * Merge database progress with the mirror. The mirror wins a unit only when strictly newer (its latest timestamp is greater), so a score
- * edited by hand in the spreadsheet (no new timestamp) is not overwritten. Returns { prog: Map, healed: ids the database should be rewritten for }.
+ * edited by hand in the spreadsheet (no new timestamp) is not overwritten, EXCEPT for ids in preferMirror (database records missing their
+ * progress columns, left by an old bulk-save bug where only the last cell of a unit was kept). Returns { prog: Map, healed: ids the database should be rewritten for }.
  */
-function mergeProg(dbProg, mirror, validId = () => true) {
+function mergeProg(dbProg, mirror, validId = () => true, preferMirror = new Set()) {
 	const prog = new Map(dbProg), healed = [];
 	for (const [k, a] of Object.entries(mirror || {})) {
 		const id = Number(k);
 		if (!Array.isArray(a) || !validId(id)) continue;
 		const m = { score: Number(a[0]) || 0, tier: Number(a[1]) || 0, lastCorrect: Number(a[2]) || 0, lastSeen: Number(a[3]) || 0 };
 		const d = prog.get(id);
-		if (!d || stamp(m) > stamp(d)) { prog.set(id, m); healed.push(id); }
+		if (!d || preferMirror.has(id) || stamp(m) > stamp(d)) { prog.set(id, m); healed.push(id); }   // preferMirror: the database record lacks progress columns (damaged)
 	}
 	return { prog, healed };
 }
