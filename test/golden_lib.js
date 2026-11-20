@@ -12,6 +12,14 @@
  *   reason             why it is wrong (one line)
  *   status             "open"  = known bug: reported, does not fail the suite
  *                      "fixed" = regression guard: any reproduction fails the suite
+ *
+ * Slot fixtures (written by `node tools/vs_tune.js fixture`, checked exactly by tools/vs_tune.js slotFixtureState):
+ *   templateId, slot, unitId   template T, slot i varied alone, with unit U in it
+ *   expect             "bad" = must not be generated, "ok" = must stay generatable
+ *   ko                 the realized sentence (documentation)
+ *   confidence         "clear" | "unsure" (on the human-review list: `vs_tune.js fixtures --unsure`) | "human"
+ *   gapClass           optional: the missing mechanism (vs_tune.js gap-classes) that keeps it open
+ *   status             as above; an open fixture the generator now satisfies fails until `fixtures --sync`
  */
 'use strict';
 

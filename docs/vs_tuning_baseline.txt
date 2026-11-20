@@ -1,0 +1,21 @@
+# vs_tune.js stats  (variants.oneSlot = sum of variable slot pools = distinct one-slot variations the game can make)
+# baseline recorded 2026-11-20 at c74988a, before tuning batch 1. Compare with: node tools/vs_tune.js batch status
+fixtures.slot=0
+grammarUnits=169
+grammarUnits.noTemplate=52
+grammarUnits.noTemplateLe3Slots=111
+review.batches=0
+review.templates=0
+slots=3586
+slots.customTags=27
+slots.locked=893
+slots.pool.2to5=539
+slots.pool.6to30=310
+slots.pool.gt30=56
+slots.pool.le1=1788
+slots.pool.median=1
+slots.variable=2693
+templates=547
+templates.minimal=3
+variants.oneSlot=16279
+variants.oneSlot.early=12482

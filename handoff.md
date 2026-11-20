@@ -62,7 +62,8 @@ data/                   constants, units, templates, homonym resolver (each also
 korean/index.js         Node facade over korean/ (the browser loads korean/ modules directly)
 tools/exhaustive.js     seeded generation sweep (smoke test, not an oracle)    tools/text_analyzer.js  passage analysis CLI
 ingest.js, schema_analysis.js, verify_sentences_cli.js   still at root, not yet sorted
-tools/vs_tune.js        Verified Sentence CLI: show/list/gen/check templates, edit slot filters and template Rules (writes the data file)
+tools/vs_tune.js        Verified Sentence CLI: show/list/gen/check templates, edit slot filters and template Rules (writes the data file),
+                        tuning batches (data/vs_review.json), slot fixtures, gap classes, stats (docs/vs_tuning_baseline.txt)
 tools/merge_units.js    merge duplicate units: alias=canonical pairs -> alias rows, remapped templates/homonyms (see Decisions)
 ```
 - **Add a verified sentence:** put one sentence per line in a text file (optional `| <grammar ids>` the line must cover), then
@@ -78,7 +79,8 @@ tools/merge_units.js    merge duplicate units: alias=canonical pairs -> alias ro
    resolution logic (`data/homonyms.js`, `tools/text_analyzer.js`) usable in the browser.
 6. TODO (owner request 2026-11-20): API round-trip tests for the other data tools, like `test/select_test.js` (temp copy of the data file
    beside the original, edit through the tool's API, assert it still loads, only the target changed, `--dry-run` writes nothing, real
-   files untouched). Cover `data/verified_sentences.js` CLI and writers (`tools/vs_tune.js` beyond its edit round-trip, `tools/text_analyzer.js`
+   files untouched). Cover `data/verified_sentences.js` CLI and writers (`tools/vs_tune.js` write commands: it has no data-file option
+   yet, so tags/rule-add/fixture/done write the real files; its data invariants are checked in golden_sentences_test), `tools/text_analyzer.js`
    `--add-verified`), `tools/merge_units.js` (needs a data-file option first; it writes the real files today), `data/homonyms.js update`,
    `ingest.js`, `tools/triage_flags.js`. Same pattern: write the test, then make it fail on a known bug before trusting it.
 7. Stretch, paused 2026-11-15: Tatoeba sentences (structures differ too much from the class). Status in `docs/tatoeba_selection_plan.md`.
@@ -96,16 +98,42 @@ tools/merge_units.js    merge duplicate units: alias=canonical pairs -> alias ro
   to an alias. The webapp still lists alias rows (POS Alias) so they stay inspectable.
 - Template order for a unit: fewest slots first, then grammar difficulty (`generateVerifiedSentencesForUnit`).
 
-## Verified-sentence tuning workflow (agreed 2026-11-20, in progress)
-Goal: varied, short, not-wrong sentences. Loop per batch of 20-30 templates, lowest unit ids first (SUOBI00, SUOBI01):
-1. A mid-tier agent (Sonnet) runs `tools/vs_tune.js show/tags --dry-run/slot --check` per slot; keeps a filter change only if every newly
-   admitted sentence is natural; uses `deny`/`noTags` rules for a few bad candidates; records anything no rule kind can express as a
-   `gap` rule (`vs_tune.js gaps` lists them). Strict defaults also admit nonsense (vs_367 verb slot): tightening is part of the job.
-2. Every bad sentence found becomes a golden fixture (`test/golden_sentences.json`, status open) written by the agents: the owner cannot judge Korean.
-3. A stronger agent (Opus) implements the dominant gap classes as generator features, flips fixtures to fixed, and spot-checks the batch.
-4. Owner reviews and commits/pushes; next batch.
-Known blockers: the analyzer rejects -자, -(으)ㄹ게요, -니, 줘요, 고파서 (12 of 15 pilot sentences in `local/minimal_pilot.txt`), so
-"one short sentence per grammar unit" waits on analyzer work. Known gap: time-word tense vs predicate tense (내일 ... 잤어요 passes).
+## Verified-sentence tuning workflow (agreed 2026-11-20)
+Goal: varied, short, not-wrong sentences in fc2. The game varies ONE slot at a time with the rest of the template fixed, so each slot is
+judged against its original sentence. Baseline: `docs/vs_tuning_baseline.txt` (1,788 of 2,693 variable slots admit one word).
+State lives in code, not here: `vs_tune.js batch` (open batch, `data/vs_review.json`), `gaps --summary`, `fixtures --unsure`, `batch status`.
+`test/golden_sentences_test.js` enforces it: slot fixtures, gap classes, ledger ids.
+
+One agent at a time (vs_tune writes files in place; no locks). Per batch: loosener (Sonnet) -> implementer (Opus) -> owner (review,
+native-speaker list, commit). The orchestrating session starts each agent with the prompt below and does not do the batch itself.
+
+**Loosener brief (Sonnet). Paste as the agent prompt:**
+> Kongbuhey repo (read CLAUDE.md first: test from a local copy, never commit). Run `node tools/vs_tune.js batch` (opens or resumes
+> the batch) and `node tools/vs_tune.js gap-classes`. For each listed template: `show <id>`; for each variable slot (the `pools` column,
+> slot:pool size), decide which words fit the sentence with every other slot fixed, then:
+> 1. Loosen: `tags <id> <i> -tag --dry-run`; read every `OK` line (`REJ` = an existing validator already rejects it). Write it (same
+>    command without `--dry-run`) only if every OK sentence is natural. Pool already big (>30) and natural: leave it. Strict defaults
+>    also admit nonsense: tightening (`rule-add` noTags/anyTags/deny) is part of the job.
+> 2. At most 3 attempts per slot. No tag/rule split works: `rule-add <id> '{"kind":"gap","class":...,"slot":i,"text":...}'`.
+>    A word that lacks a tag is class `data-tag` with `units`: do not edit data.js tags (other templates share them).
+> 3. Fixtures (`fixture <id> <i> <unitId> bad|ok "<reason>"`): one `bad` per distinct kind of wrong sentence you saw (excluded ones
+>    become fixed, gap ones open with `--gap-class`), one `ok` for the newly admitted word you are surest of. `--confidence unsure`
+>    whenever you would not bet on it; `evidence <ko> ...` shows Tatoeba support. Unsure fixtures go to a native speaker.
+> 4. `done <id> "<what changed | kept: reason>"`. Locked slots never vary: skip them.
+> Finish: `node test.js` (local copy) passes, then report `batch status`, `gaps --summary`, and the count from `fixtures --unsure`. Stop.
+
+**Implementer (Opus), after the loosener:** `gaps --summary`, take the top class (or two), implement it in the generator/concord/data
+(CLAUDE.md rules: no Hangul literals or unit ids in logic), remove the gap rules it now handles (`rule-rm`), `fixtures --sync`,
+`node test.js`, spot-check `gen <id> 5 --slot i` on ~10 changed slots. Report what was implemented and what is left.
+
+**Owner:** `node tools/vs_tune.js fixtures --unsure` is the native-speaker list; record answers with `human <gid> right|wrong`; commit.
+
+Existing checks to know before calling something a gap: the validator already has temporal concord (section E of
+`generateSentenceFromTemplate`, `TEMPORAL_CONCORD_MISMATCH`) and verb-object collocation (`VERB_OBJECT_COLLOCATION_MISMATCH`:
+이름을 읽었어요 is rejected). Known hole: 모레 숙제를 다 하고 잤어요? passes (`tags vs_367 0 -temporal_past -past --dry-run`), so the
+temporal check misses some time words; extend it rather than adding a second one.
+Ingestion of minimal sentences (one short sentence per grammar unit) is a separate track, blocked on the analyzer: it rejects -자,
+-(으)ㄹ게요, -니, 줘요, 고파서 (12 of 15 pilot sentences in `local/minimal_pilot.txt`). One Opus task, then `vs_tune.js ingest`.
 
 ## fc2 reload safety, error panel, sentence steering (2026-11-19)
 - `fc2/store.js` (pure, tested in `test/fc2_game_test.js`): unit progress is mirrored to localStorage (`kb.fc2.v1.prog`) and merged with the IndexedDB copy on load (newer timestamp wins, DB healed). The session (combo, round, learning queue) is saved and restored if under 3 h old. `save()` is debounced for the mirror; `flush()` runs on pagehide/visibilitychange.

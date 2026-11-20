@@ -27,24 +27,75 @@ READ
   gen <id> [count] [--slot i] [--seed S]   random sentences (--slot i varies only slot i, like the game does)
   check <id> "<korean>"           does the string conform to the template? (slot-by-slot report)
   rules <id>                      the template's extra semantic rules
-  gaps                            every documented missing mechanism (kind "gap") and unknown rule kind
+  gaps [--summary] [--class C]    documented missing mechanisms (kind "gap"); --summary counts per class
+  gap-classes                     the closed list of gap classes (a gap rule must use one)
   coverage [--max-slots N]        grammar units with no template of at most N slots (default 4)
+  stats                           key=value tuning metrics (compare with docs/vs_tuning_baseline.txt)
+  evidence <ko> [<ko>...]         Tatoeba sentences (docs/kor_sentences.tsv) containing every given string
 
 WRITE (all accept --dry-run; all print the admitted/dropped units realized in the sentence)
   tags <id> <i> -tag +tag ...     remove (-) / add (+) slot filter tags
   reset <id> [<i>]                slot (or every slot) back to the strict default: the original unit's tags
   rule-add <id> '<json>'          e.g. '{"slot":2,"kind":"noTags","tags":["family"]}'
-                                  kinds: anyTags | noTags | deny {ids} | sd {key, values} | gap {text, slot?}
+                                  kinds: anyTags {tags} | noTags {tags} | deny {ids} | sd {key, values}
+                                         gap {class, text, slot?, units?}   (see gap-classes)
   rule-rm <id> <n>                remove rule number n (from \`rules\`)
   ingest <file> [--source S]      add one template per line (default source "minimal"); "# ..." lines are comments;
                                   an optional "| 52,459" suffix lists grammar unit ids the line must cover
 
-LOOSENING LOOP (per slot, see docs in tools/vs_tune.js header)
+BATCHES (ledger: data/vs_review.json)
+  batch [--n 25]                  the open batch's remaining templates; opens the next batch if none is open
+  batch status                    progress of the open batch + stats changed since the baseline
+  done <id> "<note>"              mark a template of the open batch reviewed (note: what changed, or "kept")
+
+FIXTURES (test/golden_sentences.json; checked by test/golden_sentences_test.js without sampling)
+  fixture <id> <i> <unitId> bad|ok "<reason>" [--confidence clear|unsure] [--gap-class C]
+                                  "template <id> slot <i> must not (bad) / must (ok) produce this unit".
+                                  Status is computed: "open" if the generator violates it today, else "fixed".
+  fixtures [--unsure] [--open]    list slot fixtures; --unsure = the human-review list (one sitting with a native speaker)
+  fixtures --sync                 mark open fixtures the generator now satisfies as fixed (the suite fails until you do)
+  human <gid> right|wrong ["note"] record the native speaker's verdict on an unsure fixture (wrong flips it)
+
+LOOSENING LOOP: see "Verified-sentence tuning workflow" in handoff.md. In short, per variable slot:
   show -> tags <id> <i> -X --dry-run -> read every OK sentence -> keep (rerun without --dry-run) or try another tag.
   The game varies ONE slot at a time with the rest fixed, so judge each slot against the fixed original context.
-  If no tag split expresses the right set, add a rule; if no rule kind can, add a "gap" rule describing the
-  missing mechanism (it is documented in the data and listed by \`gaps\`).
+  No tag split works -> a rule; no rule kind can express it -> a gap rule with a class.
 `;
+
+// ---------------------------------------------------------------- gap classes (closed list)
+// A gap rule documents a mechanism the generator lacks. The class lets the implementing agent count which
+// mechanism blocks the most templates. Add a class here (with a test-visible description) only when none fits:
+// "other" is counted and reported, so a growing "other" count is the signal to split it.
+const GAP_CLASSES = {
+	'tense-time': 'a time word (어제, 내일, 지금, ...) disagrees with the predicate tense, e.g. 내일 ... 잤어요',
+	'cross-slot': 'the right set for slot i depends on the word in another slot (verb-object fit, place-verb fit) and the original context cannot fix it',
+	'honorific': 'subject honorific or speech-level agreement (-(으)시-, 드리다/주다, 께서) with the person in another slot',
+	'counter': 'number system or counter word agreement (한 개 / 일 분, native vs Sino-Korean)',
+	'predicate-class': 'grammar valid only for some predicate classes (adjective vs action verb, -고 있다, imperatives, -(으)러)',
+	'particle-choice': 'the particle must change with the new word (에 vs 에서, 한테 vs 에게 for animacy) and the template keeps the old one',
+	'data-tag': 'not a mechanism: the right words exist but lack (or wrongly carry) a SemanticTag in data.js; list them in "units"',
+	'english': 'the Korean is fine but the generated English is wrong',
+	'template-error': 'the template itself was extracted wrongly (wrong unit, grammar or locking)',
+	'other': 'none of the above; the text must say what mechanism is missing'
+};
+
+function validateRule(rule) {
+	if (!rule || typeof rule !== 'object') return 'a rule must be a JSON object';
+	if (!RULE_KINDS.includes(rule.kind)) return `unknown kind "${rule.kind}" (known: ${RULE_KINDS.join(', ')})`;
+	if (rule.kind === 'gap') {
+		if (!GAP_CLASSES[rule.class]) return `a gap rule needs "class", one of: ${Object.keys(GAP_CLASSES).join(', ')} (see \`gap-classes\`)`;
+		if (!rule.text || String(rule.text).length < 10) return 'a gap rule needs "text" (one sentence: what goes wrong and with which words)';
+		if (rule.slot !== undefined && typeof rule.slot !== 'number') return 'gap "slot" must be a number when given';
+		if (rule.units !== undefined && !(Array.isArray(rule.units) && rule.units.every(Number.isInteger))) return 'gap "units" must be an array of unit ids';
+		if (rule.class === 'data-tag' && !(rule.units && rule.units.length)) return 'a data-tag gap must list the affected unit ids in "units"';
+		return null;
+	}
+	if (typeof rule.slot !== 'number') return 'slot rules need a numeric "slot"';
+	if ((rule.kind === 'anyTags' || rule.kind === 'noTags') && !(Array.isArray(rule.tags) && rule.tags.length)) return `${rule.kind} needs a non-empty "tags" array`;
+	if (rule.kind === 'deny' && !(Array.isArray(rule.ids) && rule.ids.length && rule.ids.every(Number.isInteger))) return 'deny needs a non-empty "ids" array of unit ids';
+	if (rule.kind === 'sd' && !(rule.key && Array.isArray(rule.values))) return 'sd needs "key" and a "values" array';
+	return null;
+}
 
 // ---------------------------------------------------------------- unit helpers
 const U = (id) => UNITS[id];
@@ -352,16 +403,18 @@ const RULE_KINDS = ['anyTags', 'noTags', 'deny', 'sd', 'gap'];
 function cmdRules(id) {
 	const t = getTpl(id);
 	if (!t.rules.length) { console.log(`${id}: no rules`); return; }
-	t.rules.forEach((r, k) => console.log(`${k}: ${JSON.stringify(r)}${RULE_KINDS.includes(r.kind) ? '' : '   <- UNKNOWN KIND (ignored by generator)'}`));
+	t.rules.forEach((r, k) => { const e = validateRule(r); console.log(`${k}: ${JSON.stringify(r)}${e ? '   <- INVALID: ' + e : ''}`); });
 }
 
 function cmdRuleAdd(id, json, flags) {
 	let rule;
 	try { rule = JSON.parse(json); } catch (e) { throw new Error('rule must be JSON: ' + e.message); }
-	if (!RULE_KINDS.includes(rule.kind)) throw new Error(`unknown kind "${rule.kind}" (known: ${RULE_KINDS.join(', ')}). To document a mechanism that does not exist yet, use {"kind":"gap","slot":i,"text":"..."}`);
-	if (rule.kind === 'gap' && !rule.text) throw new Error('a gap rule needs "text" explaining the missing mechanism');
-	if (rule.kind !== 'gap' && typeof rule.slot !== 'number') throw new Error('slot rules need a numeric "slot"');
+	const err = validateRule(rule);
+	if (err) throw new Error(err + '. To document a mechanism that does not exist yet: {"kind":"gap","class":"<gap-classes>","slot":i,"text":"..."}');
 	const before = getTpl(id);
+	if (typeof rule.slot === 'number' && !before.slots[rule.slot]) throw new Error(`slot ${rule.slot} out of range (template has ${before.slots.length})`);
+	const dup = before.rules.find(r => JSON.stringify(r) === JSON.stringify(rule));
+	if (dup) throw new Error('the template already has this exact rule');
 	const rules = [...before.rules, rule];
 	if (typeof rule.slot === 'number' && rule.kind !== 'gap') {
 		const after = withRules(before, rules);
@@ -385,18 +438,42 @@ function cmdRuleRm(id, n, flags) {
 	console.log(`  removed: ${JSON.stringify(rule)}`);
 }
 
-function cmdGaps() {
-	let n = 0;
+function allGaps() {
+	const out = [];
 	for (const t of vg.getAllVerifiedSentences()) {
-		(t.rules || []).forEach((r, k) => {
-			if (r.kind === 'gap' || !RULE_KINDS.includes(r.kind)) {
-				n++;
-				console.log(`${t.id} rule ${k}${typeof r.slot === 'number' ? ' slot ' + r.slot : ''}: ${r.kind === 'gap' ? r.text : 'UNKNOWN KIND ' + JSON.stringify(r)}`);
-				console.log(`    ${sentenceOf(t)}`);
-			}
-		});
+		(t.rules || []).forEach((r, k) => { if (r.kind === 'gap' || !RULE_KINDS.includes(r.kind)) out.push({ t, k, r }); });
+	}
+	return out;
+}
+
+function cmdGaps(flags) {
+	const gaps = allGaps();
+	if (flags.summary) {
+		const by = {};
+		for (const { t, r } of gaps) {
+			const c = r.kind === 'gap' ? (GAP_CLASSES[r.class] ? r.class : `INVALID(${r.class})`) : `UNKNOWN-KIND(${r.kind})`;
+			(by[c] = by[c] || new Set()).add(t.id);
+		}
+		Object.entries(by).sort((a, b) => b[1].size - a[1].size)
+			.forEach(([c, ids]) => console.log(`${String(ids.size).padStart(4)} templates  ${c}`));
+		console.log(`(${gaps.length} gap rules)`);
+		return;
+	}
+	let n = 0;
+	for (const { t, k, r } of gaps) {
+		if (flags.class && r.class !== flags.class) continue;
+		n++;
+		const head = `${t.id} rule ${k}${typeof r.slot === 'number' ? ' slot ' + r.slot : ''}`;
+		console.log(r.kind === 'gap'
+			? `${head} [${r.class || 'NO CLASS'}]: ${r.text}${r.units ? '  units ' + r.units.map(x => shortUnit(U(x))).join(' ') : ''}`
+			: `${head}: UNKNOWN KIND ${JSON.stringify(r)}`);
+		console.log(`    ${sentenceOf(t)}`);
 	}
 	console.log(`(${n} gaps)`);
+}
+
+function cmdGapClasses() {
+	for (const [c, d] of Object.entries(GAP_CLASSES)) console.log(`${c.padEnd(16)} ${d}`);
 }
 
 function cmdCoverage(flags) {
@@ -407,6 +484,250 @@ function cmdCoverage(flags) {
 	const missing = gram.filter(u => !(best.get(u[D.Id]) <= max));
 	missing.forEach(u => console.log(`${String(u[D.Id]).padStart(5)} ${u[D.Korean]}  shortest: ${best.has(u[D.Id]) ? best.get(u[D.Id]) + ' slots' : 'none'}  | ${String(u[D.English]).slice(0, 50)}`));
 	console.log(`(${missing.length} of ${gram.length} grammar units lack a template of <= ${max} slots)`);
+}
+
+// ---------------------------------------------------------------- batches (review ledger)
+const LEDGER_PATH = path.join(ROOT, 'data', 'vs_review.json');
+const BASELINE_PATH = path.join(ROOT, 'docs', 'vs_tuning_baseline.txt');
+const PER_UNIT_PER_PASS = 6;
+const today = () => new Date().toISOString().slice(0, 10);
+
+function readLedger() {
+	if (!fs.existsSync(LEDGER_PATH)) return { batches: [], reviewed: {} };
+	const j = JSON.parse(fs.readFileSync(LEDGER_PATH, 'utf8'));
+	return { batches: j.batches || [], reviewed: j.reviewed || {} };
+}
+function writeLedger(l) { fs.writeFileSync(LEDGER_PATH, JSON.stringify(l, null, '\t') + '\n'); }
+
+const variableSlots = (t) => t.slots.map((s, i) => i).filter(i => !isLocked(t.slots[i]));
+
+/**
+ * Review order: templates grouped by their lowest grammar unit id (SUOBI00/01 first). Within a unit the
+ * shortest come first, because the game uses a unit's shortest templates first. Each pass takes at most
+ * PER_UNIT_PER_PASS templates per unit, so early units do not swallow every batch (은/는 has 126 templates).
+ * Templates with no variable slot are skipped: there is nothing to tune.
+ */
+function reviewOrder() {
+	const tpls = vg.getAllVerifiedSentences().filter(t => variableSlots(t).length > 0);
+	const groupOf = (t) => (t.grammarUnitIds.length ? Math.min(...t.grammarUnitIds) : 1e9);
+	const groups = new Map();
+	for (const t of tpls) { const g = groupOf(t); if (!groups.has(g)) groups.set(g, []); groups.get(g).push(t); }
+	const keyed = [];
+	for (const [g, list] of groups) {
+		list.sort((a, b) => a.slots.length - b.slots.length || a.id.localeCompare(b.id, 'en', { numeric: true }));
+		list.forEach((t, rank) => keyed.push({ t, pass: Math.floor(rank / PER_UNIT_PER_PASS), g }));
+	}
+	keyed.sort((a, b) => a.pass - b.pass || a.g - b.g || a.t.slots.length - b.t.slots.length || a.t.id.localeCompare(b.t.id, 'en', { numeric: true }));
+	return keyed.map(k => k.t);
+}
+
+function openBatch(l) {
+	const b = l.batches[l.batches.length - 1];
+	return b && b.ids.some(id => !l.reviewed[id]) ? b : null;
+}
+
+function printBatch(b, l) {
+	const left = b.ids.filter(id => !l.reviewed[id]);
+	console.log(`batch ${b.n} (opened ${b.opened}): ${b.ids.length - left.length}/${b.ids.length} reviewed   (pools = variable slot:pool size)`);
+	for (const id of left) {
+		const t = vg.getVerifiedSentenceById(id);
+		if (!t) { console.log(`  ${id}  (MISSING TEMPLATE)`); continue; }
+		const g = U(Math.min(...t.grammarUnitIds));
+		const pools = variableSlots(t).map(i => `${i}:${vg.getSlotCandidates(t.slots[i]).count}`).join(' ');
+		console.log(`  ${id.padEnd(16)} pools ${pools.padEnd(14)} [${g ? g[D.Korean] : '-'}]  ${sentenceOf(t)}`);
+	}
+	if (!left.length) console.log('  complete: run `batch status`, then hand off (see handoff.md)');
+}
+
+function cmdBatch(sub, flags) {
+	const l = readLedger();
+	if (sub === 'status') return cmdBatchStatus(l);
+	const open = openBatch(l);
+	if (open) { printBatch(open, l); return; }
+	const n = Number(flags.n || 25);
+	const inBatch = new Set(l.batches.flatMap(b => b.ids));
+	const ids = reviewOrder().filter(t => !l.reviewed[t.id] && !inBatch.has(t.id)).slice(0, n).map(t => t.id);
+	if (!ids.length) { console.log('every template with a variable slot has been reviewed'); return; }
+	const b = { n: l.batches.length + 1, opened: today(), ids };
+	if (flags['dry-run']) { console.log('(dry run: batch not opened)'); printBatch(b, l); return; }
+	l.batches.push(b);
+	writeLedger(l);
+	printBatch(b, l);
+}
+
+function cmdDone(id, note, flags) {
+	const l = readLedger();
+	const b = l.batches.find(x => x.ids.includes(id));
+	if (!b) throw new Error(`${id} is not in any batch (run \`batch\` to see the open batch)`);
+	if (!note || note.length < 4) throw new Error('done needs a note: what changed ("-food slot 1; gap tense-time") or "kept: already right"');
+	if (flags['dry-run']) { console.log('(dry run)'); return; }
+	l.reviewed[id] = { batch: b.n, note };
+	writeLedger(l);
+	const left = b.ids.filter(x => !l.reviewed[x]).length;
+	console.log(`${id} reviewed (batch ${b.n}: ${left} left)`);
+}
+
+function cmdBatchStatus(l) {
+	const b = l.batches[l.batches.length - 1];
+	if (b) printBatch(b, l);
+	if (!fs.existsSync(BASELINE_PATH)) { console.log('no baseline file (docs/vs_tuning_baseline.txt)'); return; }
+	const parse = (txt) => Object.fromEntries(txt.split(/\r?\n/).filter(x => /^[\w.-]+=/.test(x)).map(x => x.split('=')));
+	const base = parse(fs.readFileSync(BASELINE_PATH, 'utf8'));
+	const now = parse(statsLines().join('\n'));
+	console.log('changed since baseline:');
+	let any = false;
+	for (const k of new Set([...Object.keys(base), ...Object.keys(now)])) {
+		if (base[k] !== now[k]) { any = true; console.log(`  ${k}: ${base[k] === undefined ? '-' : base[k]} -> ${now[k] === undefined ? '-' : now[k]}`); }
+	}
+	if (!any) console.log('  (nothing)');
+}
+
+// ---------------------------------------------------------------- slot fixtures
+// A slot fixture states "template T, slot i, varied alone, must not (expect bad) / must (expect ok) produce
+// unit U". Checking it is exact and fast (pool membership + one realization), unlike the sampled flag fixtures.
+const goldenPath = () => path.join(ROOT, 'test', 'golden_sentences.json');
+function readGolden() { return fs.existsSync(goldenPath()) ? JSON.parse(fs.readFileSync(goldenPath(), 'utf8')) : { fixtures: [] }; }
+function writeGolden(j) { fs.writeFileSync(goldenPath(), JSON.stringify(j, null, 2) + '\n'); }
+const isSlotFixture = (fx) => typeof fx.templateId === 'string' && typeof fx.slot === 'number' && Number.isInteger(fx.unitId);
+
+/** Does the game produce unit `unitId` in slot `slotIdx` of template `tpl` (the slot varied alone)? */
+function slotAdmits(tpl, slotIdx, unitId) {
+	const slot = tpl.slots[slotIdx];
+	if (!slot) return { admitted: false, ko: '', note: 'no such slot' };
+	if (isLocked(slot)) return { admitted: slot.originalUnitId === unitId, ko: sentenceOf(tpl), note: 'locked slot' };
+	if (!poolIds(slot).includes(unitId)) {
+		const r = realizeWith(tpl, slotIdx, unitId);
+		return { admitted: false, ko: r.ok ? r.ko : '', note: 'not in slot pool' };
+	}
+	const r = realizeWith(tpl, slotIdx, unitId);
+	return { admitted: r.ok, ko: r.ko, note: r.ok ? '' : r.note };
+}
+
+/** {admitted, satisfied, ko} for a slot fixture against the current data and generator. */
+function slotFixtureState(fx) {
+	const t = vg.getVerifiedSentenceById(fx.templateId);
+	if (!t) return { admitted: false, satisfied: false, ko: '', note: `template ${fx.templateId} missing` };
+	const a = slotAdmits(t, fx.slot, fx.unitId);
+	return { ...a, satisfied: fx.expect === 'ok' ? a.admitted : !a.admitted };
+}
+
+function cmdFixture(id, i, unitId, expect, reason, flags) {
+	const t = getTpl(id);
+	if (!t.slots[i]) throw new Error(`slot ${i} out of range`);
+	if (!U(unitId)) throw new Error(`no unit ${unitId}`);
+	if (expect !== 'bad' && expect !== 'ok') throw new Error('expect must be "bad" or "ok"');
+	if (!reason || reason.length < 8) throw new Error('give a reason (why the sentence is wrong / right)');
+	const confidence = flags.confidence || 'clear';
+	if (!['clear', 'unsure'].includes(confidence)) throw new Error('--confidence must be clear or unsure');
+	if (flags['gap-class'] && !GAP_CLASSES[flags['gap-class']]) throw new Error(`unknown gap class (see gap-classes)`);
+	const j = readGolden();
+	if (j.fixtures.some(fx => isSlotFixture(fx) && fx.templateId === id && fx.slot === i && fx.unitId === unitId)) throw new Error('a fixture for this template/slot/unit exists already');
+	const fx = { id: '', templateId: id, slot: i, unitId, expect, ko: '', reason, confidence, status: '' };
+	if (flags['gap-class']) fx.gapClass = flags['gap-class'];
+	const st = slotFixtureState(fx);
+	fx.ko = st.ko || `(${U(unitId)[D.Korean]} in: ${sentenceOf(t)})`;
+	fx.status = st.satisfied ? 'fixed' : 'open';
+	const maxN = j.fixtures.reduce((m, f) => Math.max(m, Number(String(f.id).replace(/\D/g, '')) || 0), 0);
+	fx.id = 'g' + String(maxN + 1).padStart(3, '0');
+	fx.addedAt = today();
+	console.log(`${fx.id} ${expect} ${fx.status}  ${fx.ko}   (${st.admitted ? 'generated today' : 'not generated today'}${st.note ? ': ' + st.note : ''})`);
+	if (fx.status === 'open' && !fx.gapClass) console.log('  NOTE: open = the generator violates this today. Fix the slot (tags/rule) or pass --gap-class if no rule can.');
+	if (flags['dry-run']) { console.log('(dry run: nothing written)'); return; }
+	j.fixtures.push(fx);
+	writeGolden(j);
+}
+
+function cmdFixtures(flags) {
+	if (flags.sync) {
+		// open -> fixed only; a fixed fixture that is violated again is a regression and must fail the suite.
+		const j = readGolden();
+		const flipped = j.fixtures.filter(fx => isSlotFixture(fx) && fx.status === 'open' && slotFixtureState(fx).satisfied);
+		flipped.forEach(fx => { fx.status = 'fixed'; fx.fixedAt = today(); console.log(`${fx.id} open -> fixed  ${fx.ko}`); });
+		if (flipped.length && !flags['dry-run']) writeGolden(j);
+		console.log(`(${flipped.length} fixtures flipped to fixed)`);
+		return;
+	}
+	let list = readGolden().fixtures.filter(isSlotFixture);
+	if (flags.unsure) list = list.filter(fx => fx.confidence === 'unsure');
+	if (flags.open) list = list.filter(fx => fx.status === 'open');
+	if (flags.unsure) console.log('For a native speaker: is each sentence natural Korean? (the agent\'s guess is in brackets)');
+	for (const fx of list) {
+		const u = U(fx.unitId);
+		const guess = fx.expect === 'bad' ? 'agent: unnatural' : 'agent: natural';
+		if (flags.unsure) console.log(`${fx.id}  ${fx.ko}   [${guess}]`);
+		else console.log(`${fx.id} ${fx.expect.padEnd(3)} ${fx.status.padEnd(5)} ${fx.confidence.padEnd(6)} ${fx.templateId}[${fx.slot}] ${shortUnit(u)}${fx.gapClass ? ' gap:' + fx.gapClass : ''}  ${fx.ko}  | ${fx.reason}`);
+	}
+	console.log(`(${list.length} slot fixtures)`);
+}
+
+function cmdHuman(gid, verdict, note, flags) {
+	if (verdict !== 'right' && verdict !== 'wrong') throw new Error('verdict must be "right" (the agent guessed correctly) or "wrong"');
+	const j = readGolden();
+	const fx = j.fixtures.find(f => f.id === gid && isSlotFixture(f));
+	if (!fx) throw new Error(`no slot fixture ${gid}`);
+	if (verdict === 'wrong') fx.expect = fx.expect === 'bad' ? 'ok' : 'bad';
+	fx.confidence = 'human';
+	fx.human = { verdict, note: note || '', at: today() };
+	fx.status = slotFixtureState(fx).satisfied ? 'fixed' : 'open';
+	console.log(`${gid}: ${verdict}; now expects ${fx.expect}, status ${fx.status}`);
+	if (verdict === 'wrong' && fx.status === 'open') console.log(`  the slot must change so ${fx.templateId}[${fx.slot}] ${fx.expect === 'ok' ? 'admits' : 'excludes'} unit ${fx.unitId}`);
+	if (flags['dry-run']) { console.log('(dry run: nothing written)'); return; }
+	writeGolden(j);
+}
+
+// ---------------------------------------------------------------- stats and evidence
+function statsLines() {
+	const tpls = vg.getAllVerifiedSentences();
+	const out = {};
+	const inc = (k, n = 1) => { out[k] = (out[k] || 0) + n; };
+	const pools = [];
+	const earlySources = new Set(['SUOBI00', 'SUOBI01']);
+	out.templates = tpls.length;
+	for (const t of tpls) {
+		const g = t.grammarUnitIds.length ? U(Math.min(...t.grammarUnitIds)) : null;
+		const early = g && earlySources.has(g[D.Source]);
+		if (t.source === 'minimal') inc('templates.minimal');
+		t.slots.forEach((s, i) => {
+			inc('slots');
+			if (rawCustomTags(t.id, i)) inc('slots.customTags');
+			if (isLocked(s)) { inc('slots.locked'); return; }
+			const n = vg.getSlotCandidates(s).count;
+			pools.push(n);
+			inc('slots.variable');
+			inc(n <= 1 ? 'slots.pool.le1' : n <= 5 ? 'slots.pool.2to5' : n <= 30 ? 'slots.pool.6to30' : 'slots.pool.gt30');
+			inc('variants.oneSlot', n);
+			if (early) inc('variants.oneSlot.early', n);
+		});
+		for (const r of t.rules || []) inc(r.kind === 'gap' ? `gaps.${r.class || 'NO_CLASS'}` : `rules.${r.kind}`);
+	}
+	pools.sort((a, b) => a - b);
+	out['slots.pool.median'] = pools.length ? pools[Math.floor(pools.length / 2)] : 0;
+	const best = new Map();
+	for (const t of tpls) for (const g of t.grammarUnitIds) best.set(g, Math.min(best.get(g) || 99, t.slots.length));
+	const gram = UNITS.filter(u => u && u[D.PartofSpeech] === K.POS_GRAMMAR);
+	out.grammarUnits = gram.length;
+	out['grammarUnits.noTemplate'] = gram.filter(u => !best.has(u[D.Id])).length;
+	out['grammarUnits.noTemplateLe3Slots'] = gram.filter(u => !(best.get(u[D.Id]) <= 3)).length;
+	const l = readLedger();
+	out['review.batches'] = l.batches.length;
+	out['review.templates'] = Object.keys(l.reviewed).length;
+	const sf = readGolden().fixtures.filter(isSlotFixture);
+	out['fixtures.slot'] = sf.length;
+	for (const fx of sf) { inc(`fixtures.slot.${fx.status}`); if (fx.confidence === 'unsure') inc('fixtures.slot.unsure'); }
+	return Object.keys(out).sort().map(k => `${k}=${out[k]}`);
+}
+
+function cmdStats() {
+	console.log('# vs_tune.js stats  (variants.oneSlot = sum of variable slot pools = distinct one-slot variations the game can make)');
+	statsLines().forEach(x => console.log(x));
+}
+
+function cmdEvidence(words) {
+	if (!words.length) throw new Error('give one or more Korean strings');
+	const file = path.join(ROOT, 'docs', 'kor_sentences.tsv');
+	const hits = fs.readFileSync(file, 'utf8').split(/\r?\n/).map(x => x.split('\t')[2]).filter(x => x && words.every(w => x.includes(w)));
+	hits.slice(0, 6).forEach(x => console.log('  ' + x));
+	console.log(`(${hits.length} Tatoeba sentences contain ${words.map(w => JSON.stringify(w)).join(' + ')}; CC BY, tatoeba.org)`);
 }
 
 function kNameMap(src) {
@@ -479,7 +800,7 @@ function cmdIngest(file, flags) {
 function parseArgs(argv) {
 	const pos = [];
 	const flags = {};
-	const BOOL = new Set(['all', 'check', 'dry-run']);
+	const BOOL = new Set(['all', 'check', 'dry-run', 'summary', 'unsure', 'open', 'sync']);
 	for (let k = 0; k < argv.length; k++) {
 		const a = argv[k];
 		if (a.startsWith('--')) {
@@ -507,9 +828,17 @@ function main() {
 	case 'rules': return cmdRules(a);
 	case 'rule-add': return cmdRuleAdd(a, [b, ...rest].join(' '), flags);
 	case 'rule-rm': return cmdRuleRm(a, num(b, 'rule number'), flags);
-	case 'gaps': return cmdGaps();
+	case 'gaps': return cmdGaps(flags);
+	case 'gap-classes': return cmdGapClasses();
 	case 'coverage': return cmdCoverage(flags);
+	case 'stats': return cmdStats();
+	case 'evidence': return cmdEvidence([a, b, ...rest].filter(x => x !== undefined));
 	case 'ingest': return cmdIngest(a, flags);
+	case 'batch': return cmdBatch(a, flags);
+	case 'done': return cmdDone(a, [b, ...rest].join(' ').trim(), flags);
+	case 'fixture': return cmdFixture(a, num(b, 'slot'), num(rest[0], 'unitId'), rest[1], rest.slice(2).join(' ').trim(), flags);
+	case 'fixtures': return cmdFixtures(flags);
+	case 'human': return cmdHuman(a, b, rest.join(' ').trim(), flags);
 	default: console.log(HELP);
 	}
 }
@@ -518,4 +847,7 @@ if (require.main === module) {
 	try { main(); } catch (e) { console.error('error: ' + e.message); process.exit(2); }
 }
 
-module.exports = { splitTop, locateRow, editSlotTags, editRules, rowText, kNameMap };
+module.exports = {
+	splitTop, locateRow, editSlotTags, editRules, rowText, kNameMap,
+	GAP_CLASSES, RULE_KINDS, validateRule, reviewOrder, readLedger, isSlotFixture, slotAdmits, slotFixtureState, statsLines
+};
