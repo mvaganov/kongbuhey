@@ -1,0 +1,137 @@
+{
+	"batches": [
+		{
+			"n": 1,
+			"opened": "2026-11-20",
+			"ids": [
+				"vs_171",
+				"vs_181",
+				"vs_185",
+				"vs_372",
+				"vs_400",
+				"vs_411",
+				"vs_25",
+				"vs_59",
+				"vs_85",
+				"vs_378",
+				"vs_417",
+				"vs_450",
+				"vs_120",
+				"vs_134",
+				"vs_138",
+				"vs_391",
+				"vs_12",
+				"vs_228",
+				"vs_398",
+				"vs_302",
+				"vs_340",
+				"vs_532",
+				"vs_163",
+				"vs_343",
+				"vs_147"
+			]
+		}
+	],
+	"reviewed": {
+		"vs_171": {
+			"batch": 1,
+			"note": "slot0 -appliance, noTags vehicles/places/media/documents etc, deny 것 주머니"
+		},
+		"vs_181": {
+			"batch": 1,
+			"note": "kept: slot2 pool already restricted to buyable-object verbs, natural"
+		},
+		"vs_185": {
+			"batch": 1,
+			"note": "kept strict: validator rejects original; gap other"
+		},
+		"vs_372": {
+			"batch": 1,
+			"note": "slot1 food only minus condiment/vegetable/etc; slot0 +우리"
+		},
+		"vs_400": {
+			"batch": 1,
+			"note": "slot2 retagged to person states (피곤/아프/바쁜...), denied trait adjectives; slot0 gap (validator rejects human+춥다)"
+		},
+		"vs_411": {
+			"batch": 1,
+			"note": "slot0 +우리, deny 누구; slots 1,2 locked"
+		},
+		"vs_25": {
+			"batch": 1,
+			"note": "kept: pool 3 languages natural; gap: validator rejects other languages"
+		},
+		"vs_59": {
+			"batch": 1,
+			"note": "slot1 retagged to intransitive_motion (가다 오다 걷다...) because person-object validator rejects all; gap other"
+		},
+		"vs_85": {
+			"batch": 1,
+			"note": "slot0 -discourse (+아주 좀 너무 ...); slot1 kept (pool 73 natural)"
+		},
+		"vs_378": {
+			"batch": 1,
+			"note": "slot1 +배우다 공부하다 알다 이해하다 따라하다 (denied 놓다 두다 준비 확인); slot0 pool 9 languages kept"
+		},
+		"vs_417": {
+			"batch": 1,
+			"note": "slot0 widened (만화책), slot1 +사다 받다 찾다 고르다 정리 버리다 팔다...; gap 보다 rejected"
+		},
+		"vs_450": {
+			"batch": 1,
+			"note": "slot0 widened to people (family/jobs/names), slot1 +이야기하다"
+		},
+		"vs_120": {
+			"batch": 1,
+			"note": "slot0 -home -electronics (+세탁기 선풍기 벽시계 가전제품); slot1 kept (10 object-fit verbs)"
+		},
+		"vs_134": {
+			"batch": 1,
+			"note": "slot0 appliance->container (쓰레기통 봉투 상자) since appliance pool admitted 벽시계/안내기; original 세탁기 no longer in pool (open ok fixture g042)"
+		},
+		"vs_138": {
+			"batch": 1,
+			"note": "same as vs_134"
+		},
+		"vs_391": {
+			"batch": 1,
+			"note": "slot0 weather->general adjectives (간단 깨끗 편하 ...) minus negative/odd ones; slot1 되다 pool1 kept"
+		},
+		"vs_12": {
+			"batch": 1,
+			"note": "kept: template-error (colon segment mismatch rejects every candidate)"
+		},
+		"vs_228": {
+			"batch": 1,
+			"note": "slot0 -direction (+건너편 밑 가운데 중간 맞은편; denied 사이 중); slot1 kept (64 places natural)"
+		},
+		"vs_398": {
+			"batch": 1,
+			"note": "slot3 deny 천천히; slot1 -> volitional_human intransitive activities (일하다 공부하다 식사하다 ...); slot0 kept (조금/모두/다)"
+		},
+		"vs_302": {
+			"batch": 1,
+			"note": "slot0 +할머니 부모님 외할머니 작은어머니; slot3 deny 조금; slot5 kept strict (gap cross-slot)"
+		},
+		"vs_340": {
+			"batch": 1,
+			"note": "slot1 deny 모두; slot6 -> communication verbs (설명 이야기 부탁); slot2 kept (붓다 only; 다치다 bad)"
+		},
+		"vs_532": {
+			"batch": 1,
+			"note": "slot1 deny 모두; slot3 only road vehicles; slot5 only non-road (지하철 기차 배 비행기 자전거); gap: validator rejects original 막히다"
+		},
+		"vs_163": {
+			"batch": 1,
+			"note": "slot1 -accompaniment (+함께); slot2/6 kept (no natural alternatives pass validator)"
+		},
+		"vs_343": {
+			"batch": 1,
+			"note": "slot2 -education -cognition -abstract (숙제 요리 산책 sports...), denied odd nouns; slot7 denied contradicting/trait adjectives (즐겁다 잘생기다 ...)"
+		},
+		"vs_147": {
+			"batch": 1,
+			"note": "kept strict: slot3 gap (validator rejects 단순한 스타일/넥타이), slot5 loosening admits 빨리/똑바로 junk"
+		}
+	}
+}
