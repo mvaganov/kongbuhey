@@ -144,6 +144,10 @@ re-implemented eligibility), intransitive verbs with a `collocation_filter` take
 nouns (new tag: 여행, 유학, 해외여행, ...), 넣다 + ingredient, 보다 + reading, 잘하다 + language/sports/instrument. -> 7,788 sentences.
 Left: 5 validator-reject gaps (살다+person adnominal, 춥다 with a person subject, 단순한 + clothing, 여러분/너희 + 말하다, 만나다-type
 verbs without an object), 53 low-yield slots (wide verb pools filtered by collocation).
+Batch 3 (2026-11-20, Sonnet, ~147k tokens): 25 templates. Opus pass: data tag `object_elidable` (만나다, 사귀다, 뵙다) exempts verbs whose
+person object is routinely dropped from MISSING_TRANSITIVE_PERSON_OBJECT; vs_tune rejects rules on locked slots. -> ~7,850 sentences.
+Per-batch gains are shrinking (+171, +60): the later templates are long and mostly locked; consider batching by low-yield/pool-1
+slots across all templates instead of by template order.
 
 **Owner:** `node tools/vs_tune.js fixtures --unsure` is the native-speaker list; record answers with `human <gid> right|wrong`; commit.
 

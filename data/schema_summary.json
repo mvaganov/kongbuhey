@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-20T13:13:28.491Z",
+  "generatedAt": "2026-11-20T13:55:39.526Z",
   "totalUnits": 2045,
   "validVectorCount": 2045,
   "partsOfSpeech": [
@@ -452,6 +452,7 @@
     "number",
     "number_unit",
     "object",
+    "object_elidable",
     "obligation",
     "observation",
     "occurrence",
@@ -847,6 +848,7 @@
     "scalable_duration": 2,
     "transitive_audio": 1,
     "transitive_person": 13,
+    "object_elidable": 3,
     "transitive_visual": 2,
     "transitive_writing": 1,
     "transitive_reading": 1,

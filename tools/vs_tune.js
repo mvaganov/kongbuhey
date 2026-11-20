@@ -452,6 +452,7 @@ function cmdRuleAdd(id, json, flags) {
 	if (err) throw new Error(err + '. To document a mechanism that does not exist yet: {"kind":"gap","class":"<gap-classes>","slot":i,"text":"..."}');
 	const before = getTpl(id);
 	if (typeof rule.slot === 'number' && !before.slots[rule.slot]) throw new Error(`slot ${rule.slot} out of range (template has ${before.slots.length})`);
+	if (rule.kind !== 'gap' && isLocked(before.slots[rule.slot])) throw new Error(`slot ${rule.slot} is LOCKED (stemForm exact/fixed): it never varies, so a ${rule.kind} rule has no effect`);
 	const dup = before.rules.find(r => JSON.stringify(r) === JSON.stringify(rule));
 	if (dup) throw new Error('the template already has this exact rule');
 	const rules = [...before.rules, rule];
@@ -667,7 +668,7 @@ function cmdFixture(id, i, unitId, expect, reason, flags) {
 	if (!t.slots[i]) throw new Error(`slot ${i} out of range`);
 	if (!U(unitId)) throw new Error(`no unit ${unitId}`);
 	if (expect !== 'bad' && expect !== 'ok') throw new Error('expect must be "bad" or "ok"');
-	if (!reason || reason.length < 8) throw new Error('give a reason (why the sentence is wrong / right)');
+	if (!reason || reason.length < 8) throw new Error(`the reason must be at least 8 characters (got ${reason ? reason.length : 0}): say why the sentence is wrong / right`);
 	const confidence = flags.confidence || 'clear';
 	if (!['clear', 'unsure'].includes(confidence)) throw new Error('--confidence must be clear or unsure');
 	if (flags['gap-class'] && !GAP_CLASSES[flags['gap-class']]) throw new Error(`unknown gap class (see gap-classes)`);

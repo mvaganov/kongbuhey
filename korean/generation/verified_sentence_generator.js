@@ -2047,7 +2047,8 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 
 			// B2. Elliptical Strict-Collocation Verb Check (e.g., prior clause "돈을 ... *씻을 수 있습니다", or objectless *앞에서 사귑시다)
 			if (verbUnit && pred.predType === K.ACTION && pred.isVariedSlot && objCandidates.length === 0) {
-				if (_hasTag(verbUnit, "transitive_person") && !constituents.some(c => c.role === "companion" || c.role === K.RECIPIENT)) {
+				// object_elidable (data tag): the person object is routinely dropped (빨리 만나고 싶어요, 우리 사귀어요).
+				if (_hasTag(verbUnit, "transitive_person") && !_hasTag(verbUnit, "object_elidable") && !constituents.some(c => c.role === "companion" || c.role === K.RECIPIENT)) {
 					errors.push({
 						code: "MISSING_TRANSITIVE_PERSON_OBJECT",
 						message: `Verb '${verbKo}' requires an animate object or companion in: "${realized.ko}"`
