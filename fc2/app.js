@@ -13,6 +13,9 @@ const C = window.DATA_SCHEMA;
 // ?debug[=scene]: see fc2/debug.js. Debug mode keeps its own localStorage namespace and skips the unit database.
 const DEBUG = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('debug');
 const LS = DEBUG === null ? 'kb.fc2.v1.' : 'kb.fc2.dbg.', OLD = 'kb.fc.v1.';
+// ?debug scenes REPLACE the whole save (coins, units, progress) with a staged state, so a ?debug page must never write anything:
+// otherwise opening a scene silently overwrites whatever was saved under the debug namespace. Tests add &persist to exercise saving.
+const EPHEMERAL = DEBUG !== null && !(typeof location !== 'undefined' && new URLSearchParams(location.search).has('persist'));
 const SCORES = [[-2, 'Very hard'], [-1, 'Missed it'], [0, 'Needs practice'], [1, 'Correct'], [2, 'Easy']];
 const SCORE_HUE = { '-2': 0, '-1': 22, 0: 48, 1: 95, 2: 135 };
 const STARS = ['☆', '★', '★★', '★★★'], RARITY = ['N', 'R', 'SR', 'SSR'];
@@ -81,12 +84,12 @@ const ls = {
 		if (raw == null) return fallback;
 		try { return JSON.parse(raw); } catch (e) {
 			// Never let a corrupt save be silently replaced by a fresh game: keep the raw text and say so.
-			try { window.localStorage.setItem(key + '.corrupt', raw); } catch (_) { /* nothing more to do */ }
+			if (!EPHEMERAL) try { window.localStorage.setItem(key + '.corrupt', raw); } catch (_) { /* nothing more to do */ }
 			reportError(`Saved data (${key}) is unreadable; a copy was kept as ${key}.corrupt`, e);
 			return fallback;
 		}
 	},
-	set(key, value) { try { window.localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { reportError(`Saving (${key}) failed`, e); return false; } }
+	set(key, value) { if (EPHEMERAL) return true; try { window.localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { reportError(`Saving (${key}) failed`, e); return false; } }
 };
 
 class FC2App {
@@ -193,7 +196,10 @@ class FC2App {
 		if (!Object.keys(packed).length) { const old = ls.get(LS + 'prog', {}); if (old && Object.keys(old).length) return; }
 		ls.set(LS + 'prog', packed);
 		const next = St.addSnapshot(this.snaps, packed, nowSec());
-		if (next.length !== this.snaps.length || next.some((x, i) => x !== this.snaps[i])) { this.snaps = next; ls.set(LS + 'snaps', next); }
+		if (next.length !== this.snaps.length || next.some((x, i) => x !== this.snaps[i])) {
+			for (const sn of next) if (!this.snaps.includes(sn) && this.g) sn.game = JSON.parse(JSON.stringify(this.g));   // new snapshot: keep coins, level, unlocks, upgrades too
+			this.snaps = next; ls.set(LS + 'snaps', next);
+		}
 	}
 	flush() {
 		if (!this.g) return;
@@ -834,15 +840,15 @@ class FC2App {
 		const norm = t => t.toLowerCase().replace(/[^\p{L}\p{N} ]/gu, '').replace(/\s+/g, ' ').trim();
 		const isNoun = id => { const p = (this.units.get(id) || [])[C.PartofSpeech]; return p === 'Noun' || p === 'Pronoun'; };
 		const nounsOf = ids => new Set(ids.filter(isNoun));
-		const nouns = nounsOf([...mine]);
+		const cardNoun = isNoun(k.id), nouns = nounsOf([...mine].filter(id => !(cardNoun && id === k.id)));   // when the tested unit is a noun, its slot must differ in every option
 		const seen = new Set([norm(right), norm(String(s.enLiteral || ''))]), pool = [];
 		const shuffle = a => a.sort(() => Math.random() - 0.5), owned = this.g.owned;
 		const inIt = [...mine].filter(id => id !== k.id && owned.includes(id));
-		const sources = [k.id, ...shuffle(inIt.filter(id => !isNoun(id))), ...shuffle(owned.filter(id => id !== k.id && !mine.has(id) && !isNoun(id))).slice(0, 5), ...shuffle(inIt.filter(isNoun))].slice(0, 10);
+		const sources = [...(cardNoun ? [] : [k.id]), ...shuffle(inIt.filter(id => !isNoun(id))), ...shuffle(owned.filter(id => id !== k.id && !mine.has(id) && !isNoun(id))).slice(0, 5), ...shuffle(inIt.filter(isNoun))].slice(0, 10);
 		let perfect = 0;   // candidates with exactly the sentence's nouns: enough of them and we stop generating
 		// A cheap budget first (fast); only when it finds fewer than 3 distinct wrong answers (small unlock sets) retry with a generous one.
 		for (const budget of [{ n: 4, deep: 3, passes: 2, perfect: 3 }, { n: 6, deep: 4, passes: 3, perfect: 6 }]) {
-			if (pool.length >= 3) break;
+			if (pool.length >= 3 && (!cardNoun || new Set(pool.map(p => p.repl.slice().sort().join())).size >= 3)) break;   // noun cards also want 3 different replacement nouns
 			for (const [si, id] of sources.entries()) {
 				if (perfect >= budget.perfect) break;
 				let list = [];
@@ -850,16 +856,25 @@ class FC2App {
 				for (const c of list) {
 					const en = this.enOf(c), key = norm(en);
 					if (!en || c.ko === s.ko || seen.has(key)) continue;
+					const ids = R.unitIdsOf(c);
+					if (cardNoun && ids.includes(k.id)) continue;   // the tested noun itself never appears in a wrong answer
 					seen.add(key);
-					const ids = R.unitIdsOf(c), cn = nounsOf(ids), same = [...nouns].filter(x => cn.has(x)).length;
-					if (same === nouns.size && cn.size === same) perfect++;
-					pool.push({ text: rev ? String(c.ko) : en, ids, score: same * 10 - (cn.size - same) * 6 + ids.filter(x => mine.has(x)).length, r: Math.random() });
+					const cn = nounsOf(ids), same = [...nouns].filter(x => cn.has(x)).length, repl = [...cn].filter(x => !nouns.has(x)), off = Math.abs(repl.length - (cardNoun ? 1 : 0));
+					if (same === nouns.size && off === 0) perfect++;
+					pool.push({ text: rev ? String(c.ko) : en, ids, repl, score: same * 10 - off * 6 + ids.filter(x => mine.has(x)).length, r: Math.random() });
 				}
 			}
 		}
 		if (!right || pool.length < 3) return null;
 		pool.sort((a, b) => b.score - a.score || a.r - b.r);
-		return [{ text: rev ? String(s.ko) : right, ok: true, ids: [...mine] }, ...pool.slice(0, 3).map(p => ({ text: p.text, ok: false, ids: p.ids }))].sort(() => Math.random() - 0.5);
+		let picked = pool.slice(0, 3);
+		if (cardNoun) {   // each wrong answer swaps in a different noun: best-ranked first, no replacement noun used twice, then fill from the rest
+			const used = new Set(), by = [];
+			for (const p of pool) { if (by.length >= 3) break; if (p.repl.some(x => used.has(x))) continue; p.repl.forEach(x => used.add(x)); by.push(p); }
+			for (const p of pool) { if (by.length >= 3) break; if (!by.includes(p)) by.push(p); }
+			picked = by;
+		}
+		return [{ text: rev ? String(s.ko) : right, ok: true, ids: [...mine] }, ...picked.map(p => ({ text: p.text, ok: false, ids: p.ids }))].sort(() => Math.random() - 0.5);
 	}
 
 	get STEST_GUARD_MS() { return this.guardMs === undefined ? 450 : this.guardMs; }
@@ -1060,7 +1075,7 @@ class FC2App {
 				<button type="button" class="btn" data-act="backup-open">Backup / restore</button>
 				<button type="button" class="btn" data-act="recover-open">Recover progress</button>
 				<button type="button" class="btn" data-act="force-save">💾 Force save</button></div>
-				${DEBUG !== null ? '<p class="muted">You are on the <b>?debug</b> page: its progress is a separate save from the normal page.</p>' : ''}
+				${EPHEMERAL ? '<p class="muted"><b>?debug page: nothing is saved here.</b> Use the normal page for real play.</p>' : ''}
 				<div class="btn-row"><a class="btn" href="../webapp/index.html">Spreadsheet (webapp)</a><a class="btn" href="../flashcards/index.html">Old flashcards</a></div>
 				<div class="btn-row"><button type="button" class="btn danger" data-act="reset-game">Reset game progress</button></div>
 				<p class="muted">Reset clears coins, levels, unlocks and upgrades. Unit scores in the spreadsheet stay.</p></section>
@@ -1071,13 +1086,13 @@ class FC2App {
 	recoverySources() {
 		const St = window.FC2Store, out = [], ns = LS === 'kb.fc2.v1.' ? 'kb.fc2.dbg.' : 'kb.fc2.v1.', otherName = ns === 'kb.fc2.dbg.' ? 'the ?debug page' : 'the normal page';
 		if (!St) return out;
-		const add = (label, packed, at) => { if (packed && typeof packed === 'object' && Object.keys(packed).length) out.push({ label, packed, at, st: St.progStats(packed) }); };
+		const add = (label, packed, at, game) => { if (packed && typeof packed === 'object' && Object.keys(packed).length) out.push({ label, packed, at, game, st: St.progStats(packed) }); };
 		const when = at => new Date(at * 1000).toLocaleString();
 		add('Unit database (this browser)', this.dbPacked);
 		add('This page\'s progress copy', ls.get(LS + 'prog', {}));
-		for (const sn of [...(this.snaps || [])].reverse()) add(`Automatic snapshot ${when(sn.at)}`, sn.packed, sn.at);
+		for (const sn of [...(this.snaps || [])].reverse()) add(`Automatic snapshot ${when(sn.at)}`, sn.packed, sn.at, sn.game);
 		add(`Save of ${otherName}`, ls.get(ns + 'prog', {}));
-		for (const sn of [...(ls.get(ns + 'snaps', []) || [])].reverse()) add(`Snapshot of ${otherName} ${when(sn.at)}`, sn.packed, sn.at);
+		for (const sn of [...(ls.get(ns + 'snaps', []) || [])].reverse()) add(`Snapshot of ${otherName} ${when(sn.at)}`, sn.packed, sn.at, sn.game);
 		const deck = ls.get(OLD + 'deck', null), stats = ls.get(OLD + 'stats', {}) || {};
 		if (deck && deck.scores) {
 			const packed = {};
@@ -1091,16 +1106,21 @@ class FC2App {
 		this.recSources = this.recoverySources();
 		const now = nowSec(), cur = window.FC2Store ? window.FC2Store.progStats(Object.fromEntries([...this.prog].map(([id, u]) => [id, [u.score, u.tier, u.lastCorrect, u.lastSeen]]))) : null;
 		const rows = this.recSources.map((r, i) => `<tr><td>${escapeHtml(r.label)}<br><span class="muted">${r.st.scored} scored · ${r.st.established} established · ${r.st.stars} stars · last activity ${r.st.latest ? dur(now - r.st.latest) + ' ago' : 'unknown'}</span></td>
-			<td><button type="button" class="btn" data-act="recover" data-i="${i}">Restore</button></td></tr>`).join('');
-		this.openModal('Recover progress', `<p class="muted">Now: ${cur ? `${cur.scored} scored · ${cur.established} established · ${cur.stars} stars` : 'unavailable (store.js missing: reload the page)'}.${DEBUG !== null ? ' <b>You are on the ?debug page: its save is separate from the normal page.</b>' : ''}</p>
+			<td><button type="button" class="btn" data-act="recover" data-i="${i}">Restore</button>${r.game ? `<button type="button" class="btn" data-act="recover" data-i="${i}" data-game="1">+ game</button>` : ''}</td></tr>`).join('');
+		this.openModal('Recover progress', `<p class="muted">Now: ${cur ? `${cur.scored} scored · ${cur.established} established · ${cur.stars} stars` : 'unavailable (store.js missing: reload the page)'}.${EPHEMERAL ? ' <b>This is the ?debug page: it never saves. Open the normal page to recover.</b>' : ''}</p>
 			${rows ? `<table class="kv recover">${rows}</table><p class="muted">Restore keeps the more advanced copy of each unit (stars, then score, then newer) and never lowers a unit you have now.</p>` : '<p>No saved progress was found in this browser. Use 🛠 Edit values on a unit in the Map to set values by hand.</p>'}`);
 	}
 
-	recoverFrom(i) {
+	recoverFrom(i, withGame = false) {
 		const src = (this.recSources || [])[i], St = window.FC2Store;
 		if (!src || !St) return;
 		const r = St.bestOf(this.prog, src.packed, id => this.units.has(id));
 		this.prog = r.prog;
+		if (withGame && src.game) {   // snapshots from this version on also hold the game (coins, level, unlocks, upgrades): replace the current one
+			const blank = G.blankGame(nowSec());
+			this.g = { ...blank, ...src.game, cos: { ...blank.cos, ...src.game.cos }, totals: { ...blank.totals, ...src.game.totals } };
+			this.g.owned = this.g.owned.filter(id => this.units.has(id));
+		}
 		for (const id of r.changed) { this.saveUnit(id); if (this.unitOf(id).score > 0 && !this.g.owned.includes(id)) this.g.owned.push(id); }
 		this.save(); this.flush(); this.updateHud(); this.render();
 		this.recoverOpen();
@@ -1109,6 +1129,7 @@ class FC2App {
 
 	/** Writes everything now and reads it back to prove it stuck: game, session, progress copy, snapshots, and every unit in the database. */
 	async forceSave() {
+		if (EPHEMERAL) { this.openModal('Force save', '<p><b>?debug page: nothing is saved here by design</b> (scenes replace the whole game). Open the normal page to play and save.</p>'); return; }
 		this.openModal('Force save', '<p>Saving...</p>');
 		const rows = [], row = (k, v, ok = true) => rows.push(`<tr><th>${k}</th><td>${ok ? '✔' : '✖'} ${v}</td></tr>`);
 		try {
@@ -1242,7 +1263,7 @@ class FC2App {
 			case 'unit-edit': this.tileModal(Number(el.dataset.id), el.dataset.on === '1'); break;
 			case 'unit-now': this.applyUnitEdit(Number(el.dataset.id), el.dataset.col, 1); break;
 			case 'recover-open': this.recoverOpen(); break;
-			case 'recover': this.recoverFrom(Number(el.dataset.i)); break;
+			case 'recover': this.recoverFrom(Number(el.dataset.i), el.dataset.game === '1'); break;
 			case 'review': this.session.front.unshift(Number(el.dataset.id)); this.card = null; this.closeModal(); this.go('play'); break;
 			case 'score': this.score(Number(el.dataset.v), el); break;
 			case 'choose': this.choose(Number(el.dataset.i), el); break;

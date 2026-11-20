@@ -29,7 +29,7 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 	const said = [];
 	const page = path.join(ROOT, 'fc2', 'index.html');
 	const dom = await JSDOM.fromFile(page, {
-		url: require('url').pathToFileURL(page).href + '?debug',   // debug mode: its own storage namespace, and the scene list
+		url: require('url').pathToFileURL(page).href + '?debug&persist',   // debug mode: its own storage namespace and the scene list; &persist lets it save (a plain ?debug page never writes)
 		runScripts: 'dangerously', resources: 'usable', pretendToBeVisual: true, virtualConsole: vc,
 		beforeParse(w) {
 			const mem = new Map();   // file:// pages have no localStorage in jsdom: give it one so a reload can be simulated
@@ -228,6 +228,50 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(back.score === 10 && back.tier === 2 && app.g.owned.includes(id), 'Restore brings the unit progress back');
 		app.closeModal();
 		app.go('map');
+	});
+
+	await step('debug pages never save', async () => {
+		// Regression: opening ?debug=<scene> staged a fake game and the debug page then saved it over the real progress.
+		const writes = [], prog = JSON.stringify({ 5: [7, 2, 100, 100] }), mem = new Map([['kb.fc2.dbg.prog', prog], ['kb.fc2.dbg.game', JSON.stringify({ v: 1, coins: 4242, owned: [5] })]]);
+		const dom2 = await JSDOM.fromFile(page, {
+			url: require('url').pathToFileURL(page).href + '?debug=harvest-card', runScripts: 'dangerously', resources: 'usable', pretendToBeVisual: true, virtualConsole: new VirtualConsole(),
+			beforeParse(w2) {
+				Object.defineProperty(w2, 'localStorage', { value: { getItem: k => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => { writes.push(k); mem.set(k, String(v)); }, removeItem: k => mem.delete(k) }, configurable: true, writable: true });
+				w2.HTMLCanvasElement.prototype.getContext = () => new Proxy({}, { get: () => () => {}, set: () => true });
+				w2.SpeechSynthesisUtterance = function(t) { this.text = t; };
+				Object.defineProperty(w2, 'speechSynthesis', { value: { speak() {}, cancel() {}, getVoices: () => [] }, configurable: true });
+			}
+		});
+		await new Promise(r => dom2.window.addEventListener('load', r));
+		await dom2.window.fc2App.ready;
+		const a2 = dom2.window.fc2App;
+		a2.save(); a2.flush(); a2.markSeen([a2.g.owned[0]]);
+		await wait(450);
+		const staged = a2.g.owned.length > 0 && a2.g.coins !== 4242;
+		dom2.window.close();
+		assert(staged && writes.length === 0 && mem.get('kb.fc2.dbg.prog') === prog, 'a ?debug scene page replaces the game in memory but writes nothing to storage');
+	});
+
+	await step('noun slot varies', async () => {
+		const isNoun = id => (app.units.get(id) || [])[w.DATA_SCHEMA.PartofSpeech] === 'Noun';
+		const nounIds = [];
+		for (let id = 0; id < 400 && nounIds.length < 40; id++) if (isNoun(id)) nounIds.push(id);
+		for (const id of nounIds) if (!app.g.owned.includes(id)) app.g.owned.push(id);
+		let built = 0, bad = '', dup = 0;
+		for (const id of nounIds) {
+			if (built >= 4) break;
+			const c = app.generateFor(id), s = c.sentences.find(x => w.FlashcardRender.unitIdsOf(x).includes(id));
+			if (!s) continue;
+			app.card = { id };
+			const ch = app.buildSentenceTest(s, false, id);
+			if (!ch) continue;
+			built++;
+			const wrong = ch.filter(x => !x.ok), mineIds = new Set(w.FlashcardRender.unitIdsOf(s));
+			if (wrong.some(x => x.ids.includes(id))) bad = 'a wrong answer still contains the tested noun';
+			const repl = wrong.map(x => x.ids.filter(u => isNoun(u) && !mineIds.has(u)).sort().join());
+			if (new Set(repl).size !== repl.length && repl.every(Boolean)) dup++;   // rare when the unlocked pool has too little variety
+		}
+		assert(built >= 1 && !bad && dup <= Math.floor(built / 4), `when the tested unit is a noun, wrong answers swap in different nouns${bad ? ' (' + bad + ')' : ''} (${built} quizzes built, ${dup} with a repeated replacement)`);
 	});
 
 	await step('cheat mode, force save, lean backup', async () => {

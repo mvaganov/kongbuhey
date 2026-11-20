@@ -1,7 +1,8 @@
 /**
  * fc2/debug.js - "fc2/index.html?debug=<scene>" opens the game in a ready-made state (a ripe listening trial, the sentence
  * test, the number board...) so a screen can be checked in seconds instead of after two days of play. "?debug" lists the scenes.
- * Debug mode uses its own localStorage namespace (kb.fc2.dbg.*) and never touches the unit database: your real save is safe.
+ * A ?debug page NEVER SAVES (scenes replace the whole game, so saving would overwrite your progress with the staged state). It reads the
+ * kb.fc2.dbg.* namespace but writes nothing and never touches the unit database. Tests add &persist to exercise saving.
  * test/fc2_ui_test.js runs every scene too, so this is the one place that knows how to reach each screen.
  * Adding a screen worth checking? Add a scene here with an `expect` selector; the UI test then covers it for free.
  */
@@ -92,7 +93,7 @@ function apply(app, name) {
 	scene.setup(app);
 	if (typeof document !== 'undefined' && !document.getElementById('dbg-badge')) {
 		const b = document.createElement('a');
-		b.id = 'dbg-badge'; b.href = '?debug'; b.textContent = 'DEBUG: ' + name;
+		b.id = 'dbg-badge'; b.href = '?debug'; b.textContent = 'DEBUG: ' + name + (/[?&]persist\b/.test(location.search) ? '' : ' (nothing is saved)');
 		b.style.cssText = 'position:fixed;left:6px;top:50px;z-index:99;font:11px monospace;color:#000;background:#ffd166;padding:2px 6px;border-radius:6px;opacity:.85;text-decoration:none';
 		document.body.appendChild(b);
 	}
