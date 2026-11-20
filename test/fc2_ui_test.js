@@ -146,6 +146,22 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(app.prog.get(id).tier === 1, 'passing the trial promotes the unit');
 	});
 
+	await step('trial choices are never the same answer', async () => {
+		// 누구 "who" and 누가 "who (subject)" are one answer to the player: they must never share a trial.
+		const norm = t => String(t).replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+		const C = w.DATA_SCHEMA;
+		app.g.owned = [...app.units.keys()];
+		let bad = 0;
+		for (const id of [30, 66]) {
+			for (let i = 0; i < 40; i++) {
+				const labels = app.buildTrial(id, 0).choices.map(c => norm(c.label));
+				if (new Set(labels).size !== labels.length) bad++;
+			}
+		}
+		assert(app.units.get(30)[C.English] === 'who', 'fixture unit 30 is "who"');
+		assert(bad === 0, `no trial offers two answers that differ only by case, spacing or a parenthetical (${bad} bad)`);
+	});
+
 	await step('number board', async () => {
 		app.closeModal();
 		app.g.coins = 25; app.go('shop');

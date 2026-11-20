@@ -426,6 +426,29 @@ for (const adv of futureTestWords) {
 assert(clashCount2 === 28, `Tested 28 invalid future+past clashes`);
 
 // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Regression (flagged in play): "공책이 없을 거예요" translated as "The notebook is not present." (future tense dropped for 있다/없다)
+// -----------------------------------------------------------------------------
+{
+	const { generateSentencesForUnit } = require('../webapp/selector.js');
+	const futureEnd = /[을ㄹ] ?거(예요|다)/;
+	const found = new Map();   // ko -> enNatural
+	for (const unitId of [79, 81, 82]) {   // 공책, 없다, 있다
+		for (let seed = 1; seed <= 60; seed++) {
+			korean.setRandomSeed(seed);
+			for (const sent of generateSentencesForUnit(unitId, 6, { seedOffset: seed })) {
+				if (/(있|없)을 거예요/.test(sent.ko) && !found.has(sent.ko)) found.set(sent.ko, String(sent.enNatural || sent.en || ''));
+			}
+		}
+	}
+	assert(found.size > 0, `generator produced future 있다/없다 sentences to check (${found.size})`);
+	for (const [ko, en] of found) {
+		const neg = ko.includes('없을');
+		assert(futureEnd.test(ko) && /\bwill\b/.test(en), `future "${ko}" is translated in the future tense: "${en}"`);
+		assert(!neg || /will not/.test(en), `negative future "${ko}" says "will not": "${en}"`);
+	}
+}
+
 // Summary
 // -----------------------------------------------------------------------------
 console.log("\n======================================================");

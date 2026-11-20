@@ -501,11 +501,14 @@ function realizeNaturalClause(clause, ast, isSubordinate = false) {
 				// Possession ("The student has a book")
 				const haveV = tense === K.PAST
 					? (isNegExist ? "did not have" : "had")
-					: (isNegExist ? (agr.singular && agr.person === 3 ? "does not have" : "do not have") : (agr.singular && agr.person === 3 ? "has" : "have"));
+					: tense === K.FUTURE
+						? (isNegExist ? "will not have" : "will have")
+						: (isNegExist ? (agr.singular && agr.person === 3 ? "does not have" : "do not have") : (agr.singular && agr.person === 3 ? "has" : "have"));
 				vpStr = `${ advPre }${ haveV }`;
 			} else {
-				const beV = tense === K.PAST ? agr.bePast : agr.bePres;
-				vpStr = `${ beV }${ isNegExist ? " not" : "" } ${ advPre }${ locationParts.length > 0 ? "" : K.PRESENT }`.trim();
+				// Future keeps its auxiliary: "will be present" / "will not be present" (it used to fall through to the present tense).
+				const lead = tense === K.FUTURE ? `will${ isNegExist ? " not" : "" } be` : `${ tense === K.PAST ? agr.bePast : agr.bePres }${ isNegExist ? " not" : "" }`;
+				vpStr = `${ lead } ${ advPre }${ locationParts.length > 0 ? "" : K.PRESENT }`.trim();
 			}
 		} else if (!isAction) {
 			// Descriptive Verb (Adjective predicate)

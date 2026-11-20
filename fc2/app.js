@@ -648,14 +648,16 @@ class FC2App {
 		let type = T.TRIAL_TYPES[tier];
 		if (type === 'listen' && !(this.opts.audioTrials && 'speechSynthesis' in window)) type = 'meaning';
 		const u = this.units.get(id), n = T.TRIAL_CHOICES[tier], label = x => String(type === 'recall' ? x[C.Korean] : x[C.English]);
-		const owned = new Set(this.g.owned), seen = new Set([label(u)]), picks = [], all = [...this.units.values()];
+		// Two answers that differ only by case, whitespace or a parenthetical ("who" vs "who (subject)") are the same answer to the player.
+		const key = x => { const t = label(x).replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase(); return t || label(x).trim().toLowerCase(); };
+		const owned = new Set(this.g.owned), seen = new Set([key(u)]), picks = [], all = [...this.units.values()];
 		const pos = x => x[C.PartofSpeech] === u[C.PartofSpeech];
-		const ok = x => x[C.Id] !== id && x[C.Korean] !== u[C.Korean] && x[C.English] !== u[C.English] && !seen.has(label(x));
+		const ok = x => x[C.Id] !== id && x[C.Korean] !== u[C.Korean] && x[C.English] !== u[C.English] && !seen.has(key(x));
 		// Distractors: unlocked units of the same part of speech first, then the same pack, then anything.
 		for (const pool of [all.filter(x => owned.has(x[C.Id]) && pos(x)), all.filter(x => pos(x) && x[C.Source] === u[C.Source]), all.filter(pos), all]) {
 			for (const x of pool.sort(() => Math.random() - 0.5)) {
 				if (picks.length >= n - 1) break;
-				if (ok(x)) { seen.add(label(x)); picks.push(x); }
+				if (ok(x)) { seen.add(key(x)); picks.push(x); }
 			}
 		}
 		return { type, tier, choices: [u, ...picks].map(x => ({ id: x[C.Id], label: label(x) })).sort(() => Math.random() - 0.5) };
