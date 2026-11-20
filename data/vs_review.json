@@ -30,6 +30,37 @@
 				"vs_343",
 				"vs_147"
 			]
+		},
+		{
+			"n": 2,
+			"opened": "2026-11-20",
+			"ids": [
+				"vs_295",
+				"vs_64",
+				"vs_208",
+				"vs_142",
+				"vs_323",
+				"vs_263",
+				"vs_179",
+				"vs_345",
+				"vs_188",
+				"vs_244",
+				"vs_492",
+				"vs_514",
+				"vs_102",
+				"vs_91",
+				"vs_226",
+				"vs_403",
+				"vs_86",
+				"vs_93",
+				"vs_89",
+				"vs_399",
+				"vs_516",
+				"vs_541",
+				"vs_26",
+				"vs_96",
+				"vs_24"
+			]
 		}
 	],
 	"reviewed": {
@@ -132,6 +163,106 @@
 		"vs_147": {
 			"batch": 1,
 			"note": "kept strict: slot3 gap (validator rejects 단순한 스타일/넥타이), slot5 loosening admits 빨리/똑바로 junk"
+		},
+		"vs_295": {
+			"batch": 2,
+			"note": "-education -sinoRoot (activity only) + deny 8 non-activities"
+		},
+		"vs_64": {
+			"batch": 2,
+			"note": "kept: gap validator-reject ADNOMINAL_ACTION_COLLOCATION_MISMATCH slot 4"
+		},
+		"vs_208": {
+			"batch": 2,
+			"note": "kept: pools 3/12 natural (다음/이번/지난; country names)"
+		},
+		"vs_142": {
+			"batch": 2,
+			"note": "deny 옷장/방석/가구; kept 소파/식탁/책장"
+		},
+		"vs_323": {
+			"batch": 2,
+			"note": "kept: pool 9 numbers natural; other slots pool 1 with nothing natural"
+		},
+		"vs_263": {
+			"batch": 2,
+			"note": "kept: pool-1 slots; nothing natural to add"
+		},
+		"vs_179": {
+			"batch": 2,
+			"note": "-name -proper_noun: person nouns join (45 OK); honorific nouns rejected by validator (correct in 반말)"
+		},
+		"vs_345": {
+			"batch": 2,
+			"note": "deny 천천히 (semantically odd); illness pool kept"
+		},
+		"vs_188": {
+			"batch": 2,
+			"note": "deny 인기, 이야기하다"
+		},
+		"vs_244": {
+			"batch": 2,
+			"note": "deny 7 verbs not fitting 있는지 + -ㄹ까요; kept 알아보다/확인하다"
+		},
+		"vs_492": {
+			"batch": 2,
+			"note": "-name -proper_noun: person nouns join (same set as vs_179)"
+		},
+		"vs_514": {
+			"batch": 2,
+			"note": "kept: 3 verbs all natural"
+		},
+		"vs_102": {
+			"batch": 2,
+			"note": "kept: other slots locked, 담다 only"
+		},
+		"vs_91": {
+			"batch": 2,
+			"note": "-vegetable (food, ingredient), deny 우유; gap VERB_OBJECT_COLLOCATION_MISMATCH"
+		},
+		"vs_226": {
+			"batch": 2,
+			"note": "deny 5 nonsense verbs + 신기하다; gap: allow does not land"
+		},
+		"vs_403": {
+			"batch": 2,
+			"note": "kept: pool-1 slots only"
+		},
+		"vs_86": {
+			"batch": 2,
+			"note": "kept: 대구/속초 natural, rest locked"
+		},
+		"vs_93": {
+			"batch": 2,
+			"note": "kept: pool 2 swaps natural"
+		},
+		"vs_89": {
+			"batch": 2,
+			"note": "deny 좋아하다"
+		},
+		"vs_399": {
+			"batch": 2,
+			"note": "-home -appliance (electronics): 컴퓨터/텔레비전 join"
+		},
+		"vs_541": {
+			"batch": 2,
+			"note": "kept; gap validator-reject VALENCY_TRANSITIVITY_MISMATCH"
+		},
+		"vs_516": {
+			"batch": 2,
+			"note": "kept; gap validator-reject VERB_OBJECT_COLLOCATION_MISMATCH"
+		},
+		"vs_26": {
+			"batch": 2,
+			"note": "kept: country x food (케냐 냉면) would be odd; 노래 only"
+		},
+		"vs_96": {
+			"batch": 2,
+			"note": "deny 샐러드"
+		},
+		"vs_24": {
+			"batch": 2,
+			"note": "kept: countries and 5 verbs all natural"
 		}
 	}
 }
