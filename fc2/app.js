@@ -106,6 +106,7 @@ class FC2App {
 		this.session = this.newSession();
 		this.editingNotes = false;
 		this.pullPack = '';
+		this.cheat = false; this.cheatMinutes = '60';   // run-time only
 		this.bind();
 		this.ready = this.init();
 	}
@@ -150,7 +151,7 @@ class FC2App {
 		this.applyCosmetics();
 		this.render();
 		if (DEBUG !== null) this.debugScene(DEBUG);
-		setInterval(() => { if (this.tab === 'map' && this.modalHidden()) this.renderScreen(false); }, 15000);
+		setInterval(() => { if (this.tab === 'map' && this.modalHidden() && !this.cheat) this.renderScreen(false); }, 15000);
 	}
 
 	/** First launch: adopt scores, timestamps, notes and flags from flashcards/ (kb.fc.v1.*). Scored cards start owned. */
@@ -210,6 +211,15 @@ class FC2App {
 		this.db.saveBulkUnitCellValues([['RecognitionScore', u.score], ['LongTermRecognition', T.TIERS[u.tier]], ['TimeStampLastCorrect', u.lastCorrect],
 			['TimeStampLastSeen', u.lastSeen]].map(([colKey, value]) => ({ unitId: id, colKey, value }))).catch(e => reportError('Saving unit progress failed', e));
 	}
+	/** Write several units' progress to the unit database in one call; resolves true when it worked (or there is no database). */
+	saveUnits(ids) {
+		this.queueMirror();
+		if (!this.db) return Promise.resolve(true);
+		const cells = [];
+		for (const id of ids) { const u = this.unitOf(id); for (const [colKey, value] of [['RecognitionScore', u.score], ['LongTermRecognition', T.TIERS[u.tier]], ['TimeStampLastCorrect', u.lastCorrect], ['TimeStampLastSeen', u.lastSeen]]) cells.push({ unitId: id, colKey, value }); }
+		return this.db.saveBulkUnitCellValues(cells).then(() => true, e => { reportError('Saving unit progress failed', e); return false; });
+	}
+
 	markSeen(ids) {
 		const t = nowSec();
 		for (const id of ids) if (this.units.has(id)) { this.prog.set(id, { ...this.unitOf(id), lastSeen: t }); this.saveCell(id, 'TimeStampLastSeen', t); }
@@ -331,10 +341,46 @@ class FC2App {
 				<button type="button" class="btn gold" data-act="collect" ${idle ? '' : 'disabled'}>Collect <span id="idle">${fmt(idle)}</span></button></section>
 			<button type="button" class="play-big${c.ripe + c.wilted ? ' due' : ''}" data-act="tab" data-tab="play"><b>▶ Play</b><small>${waiting || (g.owned.length ? 'Practice, or pull new units' : 'Start with a free pull in the Shop')}</small></button>
 			${this.goalsHtml(c)}
+			${this.cheatHtml()}
 			${(g.games || {}).numbers ? '<button type="button" class="btn wide" data-act="nb-open">🔊 Number sound board</button>' : ''}
 			${g.owned.length ? this.questsHtml() : ''}
 			${g.owned.length ? '' : '<p class="muted center">Your map is empty. The first pull is free.</p><button type="button" class="btn primary wide" data-act="tab" data-tab="shop">🛒 Open the Shop</button>'}
 			${packs}<p class="legend">${Object.values(STATUS_LABEL).join(' · ')}</p>`;
+	}
+
+	// ---------- cheat mode (map): tap units to add recognition, and age every unit to fast-forward ripeness ----------
+	cheatHtml() {
+		const on = this.cheat;
+		return `<section class="panel cheat"><button type="button" class="btn wide${on ? ' primary' : ''}" data-act="cheat-toggle">🛠 Cheat mode: ${on ? 'ON (tap a unit: +1 recognition)' : 'off'}</button>
+			${on ? `<p class="muted">A tap adds 1 to the unit's score (max ${T.MAX_SCORE}); a unit never answered gets "last correct" = now, so it turns green. Maturing moves every unit's TimeStampLastCorrect and TimeStampLastSeen back, so growing units ripen sooner.</p>
+				<label class="row">Mature by <input type="text" inputmode="numeric" id="cheat-min" data-cheat-min value="${escapeHtml(this.cheatMinutes)}" size="6"> minutes <button type="button" class="btn" data-act="cheat-mature">Mature all</button></label>` : ''}</section>`;
+	}
+
+	cheatTap(id) {
+		if (!this.g.owned.includes(id)) { this.toast('Locked unit'); FX.sfx('deny'); return; }
+		const p = { ...this.unitOf(id) }, now = nowSec();
+		p.score = Math.min(T.MAX_SCORE, p.score + 1);
+		if (!p.lastCorrect) p.lastCorrect = now;
+		if (!p.lastSeen) p.lastSeen = now;
+		this.prog.set(id, p);
+		this.saveUnits([id]); this.save();
+		FX.sfx('tap');
+		this.renderScreen(false);
+		this.toast(`${this.units.get(id)[C.Korean]}: score ${p.score}`);
+	}
+
+	matureAll(minutes) {
+		const secs = Math.round(Number(minutes) * 60);
+		if (!(secs > 0)) { this.toast('Enter a number of minutes'); return; }
+		const ids = [];
+		for (const [id, u] of this.prog) {
+			if (!u.lastCorrect && !u.lastSeen) continue;
+			this.prog.set(id, { ...u, lastCorrect: u.lastCorrect ? u.lastCorrect - secs : 0, lastSeen: u.lastSeen ? u.lastSeen - secs : 0 });
+			ids.push(id);
+		}
+		this.saveUnits(ids); this.save(); this.flush();
+		this.renderScreen(false);
+		this.toast(`Matured ${ids.length} units by ${minutes} min`);
 	}
 
 	collect(el) {
@@ -1012,7 +1058,8 @@ class FC2App {
 				${check('onlyOwned', 'Build examples only from unlocked units')}${check('audioTrials', 'Listening trials (hear the Korean, pick the meaning)')}${check('sound', 'Sound effects')}${check('haptics', 'Vibration')}</section>
 			<section class="panel"><h2>Data</h2><div class="btn-row"><button type="button" class="btn" data-act="flags-open">Flagged sentences (${this.flags.length})</button>
 				<button type="button" class="btn" data-act="backup-open">Backup / restore</button>
-				<button type="button" class="btn" data-act="recover-open">Recover progress</button></div>
+				<button type="button" class="btn" data-act="recover-open">Recover progress</button>
+				<button type="button" class="btn" data-act="force-save">💾 Force save</button></div>
 				${DEBUG !== null ? '<p class="muted">You are on the <b>?debug</b> page: its progress is a separate save from the normal page.</p>' : ''}
 				<div class="btn-row"><a class="btn" href="../webapp/index.html">Spreadsheet (webapp)</a><a class="btn" href="../flashcards/index.html">Old flashcards</a></div>
 				<div class="btn-row"><button type="button" class="btn danger" data-act="reset-game">Reset game progress</button></div>
@@ -1060,10 +1107,37 @@ class FC2App {
 		this.toast(r.changed.length ? `Restored ${r.changed.length} units` : 'Nothing to restore: you already have this or better');
 	}
 
+	/** Writes everything now and reads it back to prove it stuck: game, session, progress copy, snapshots, and every unit in the database. */
+	async forceSave() {
+		this.openModal('Force save', '<p>Saving...</p>');
+		const rows = [], row = (k, v, ok = true) => rows.push(`<tr><th>${k}</th><td>${ok ? '✔' : '✖'} ${v}</td></tr>`);
+		try {
+			if (!window.FC2Store) { store(); row('Progress copy', 'store.js is missing: reload the page first', false); }
+			else {
+				this.flush();
+				const raw = k => { try { return window.localStorage.getItem(LS + k); } catch (_) { return null; } };
+				const ids = [...this.prog.keys()].filter(id => { const u = this.prog.get(id); return u.score || u.tier || u.lastCorrect || u.lastSeen; });
+				const game = raw('game'), prog = raw('prog'), sess = raw('session');
+				row('Game', game && JSON.parse(game).coins === this.g.coins ? `${game.length} bytes, coins ${this.g.coins}` : 'read-back mismatch', Boolean(game) && JSON.parse(game).coins === this.g.coins);
+				const copy = prog ? JSON.parse(prog) : {}, same = ids.filter(id => { const a = copy[id], u = this.prog.get(id); return a && a[0] === u.score && a[1] === u.tier && a[2] === u.lastCorrect && a[3] === u.lastSeen; }).length;
+				row('Progress copy', `${same}/${ids.length} units match, ${(prog || '').length} bytes`, same === ids.length);
+				row('Session', sess ? `${sess.length} bytes` : 'not saved', Boolean(sess));
+				row('Snapshots', `${(this.snaps || []).length} kept`);
+				if (this.db) {
+					const wrote = await this.saveUnits(ids);
+					const recs = await this.db.loadAllUnitDataIncremental(), back = new Map(recs.map(r => [r.unitId, r.custom || {}]));
+					const ok = ids.filter(id => { const c = back.get(id), u = this.prog.get(id); return c && Number(c.RecognitionScore) === u.score && G.tierIndex(c.LongTermRecognition) === u.tier && Number(c.TimeStampLastCorrect) === u.lastCorrect && Number(c.TimeStampLastSeen) === u.lastSeen; }).length;
+					row('Unit database', `${wrote ? '' : 'write failed, '}${ok}/${ids.length} units read back correctly`, wrote && ok === ids.length);
+				} else row('Unit database', DEBUG !== null ? 'not used on the ?debug page' : 'unavailable in this browser (the progress copy is your save)', DEBUG !== null);
+			}
+		} catch (e) { reportError('Force save failed', e); row('Error', escapeHtml(e.message || String(e)), false); }
+		this.openModal('Force save', `<table class="kv">${rows.join('')}</table><p class="muted">${rows.some(r => r.includes('✖')) ? 'Something did not save: the red error box above has the details to copy.' : 'Everything above was written and read back.'}</p>`);
+	}
+
 	backupJson() {
 		const units = {};
 		for (const id of this.g.owned) { const u = this.unitOf(id); units[id] = [u.score, u.tier, u.lastCorrect, u.lastSeen]; }
-		return JSON.stringify({ app: 'kongbuhey-fc2', version: 1, game: this.g, opts: this.opts, flags: this.flags, units, notes: this.notes });
+		return JSON.stringify({ app: 'kongbuhey-fc2', version: 1, game: this.g, opts: this.opts, units, notes: this.notes });   // flagged sentences are not included: they have their own ⬇ Flags export
 	}
 
 	restore() {
@@ -1073,7 +1147,7 @@ class FC2App {
 			if (data.app !== 'kongbuhey-fc2' || !data.game) throw new Error('Not an fc2 backup');
 			this.g = { ...G.blankGame(nowSec()), ...data.game };
 			this.opts = { ...DEFAULT_OPTS, ...(data.opts || {}) };
-			this.flags = data.flags || [];
+			if (Array.isArray(data.flags)) this.flags = data.flags;   // older backups carried flags; newer ones leave yours alone
 			for (const [k, a] of Object.entries(data.units || {})) { const id = Number(k); this.prog.set(id, { score: a[0], tier: a[1], lastCorrect: a[2], lastSeen: a[3] }); this.saveUnit(id); }
 			for (const [k, text] of Object.entries(data.notes || {})) { this.notes[k] = text; this.saveCell(Number(k), 'notes', text); }
 			this.save(); ls.set(LS + 'opts', this.opts); ls.set(LS + 'flags', this.flags);
@@ -1140,6 +1214,7 @@ class FC2App {
 		});
 		this.root.addEventListener('input', ev => {
 			const t = ev.target;
+			if (t.matches('[data-cheat-min]')) { this.cheatMinutes = t.value; return; }
 			if (!t.matches('[data-notes]') || !this.card) return;
 			const id = this.card.id;
 			this.notes[id] = t.value;
@@ -1160,7 +1235,10 @@ class FC2App {
 			case 'nb-pick': this.nbPick(Number(el.dataset.v), el); break;
 			case 'nb-say': if (this.nb && this.nb.q) window.speakKorean(this.nb.q.ko, el); break;
 			case 'nb-mode': if (this.nb) { this.nb.mode = el.dataset.m; this.nbNext(); } break;
-			case 'tile': this.tileModal(Number(el.dataset.id)); break;
+			case 'tile': if (this.cheat) this.cheatTap(Number(el.dataset.id)); else this.tileModal(Number(el.dataset.id)); break;
+			case 'cheat-toggle': this.cheat = !this.cheat; this.renderScreen(false); break;
+			case 'cheat-mature': this.matureAll(this.cheatMinutes); break;
+			case 'force-save': this.forceSave(); break;
 			case 'unit-edit': this.tileModal(Number(el.dataset.id), el.dataset.on === '1'); break;
 			case 'unit-now': this.applyUnitEdit(Number(el.dataset.id), el.dataset.col, 1); break;
 			case 'recover-open': this.recoverOpen(); break;
@@ -1182,7 +1260,7 @@ class FC2App {
 			case 'cosmetic': this.cosmetic(el.dataset.kind, el.dataset.key, el); break;
 			case 'close-modal': this.closeModal(); break;
 			case 'flags-open': this.openModal('Flagged sentences', this.flagsHtml()); break;
-			case 'backup-open': this.openModal('Backup / restore', `<p class="muted">Game state, options, flags, notes and the scores of unlocked units.</p>
+			case 'backup-open': this.openModal('Backup / restore', `<p class="muted">Game state, options, notes and the scores of unlocked units.</p>
 				<textarea id="backup-text" class="export" rows="10">${escapeHtml(this.backupJson())}</textarea><div class="btn-row"><button type="button" class="btn" data-act="copy" data-target="backup-text">Copy</button>
 				<button type="button" class="btn danger" data-act="restore">Restore from text</button></div><p id="backup-msg" class="muted"></p>`); break;
 			case 'copy': this.copyText(this.$('#' + el.dataset.target), el); break;

@@ -230,6 +230,50 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		app.go('map');
 	});
 
+	await step('cheat mode, force save, lean backup', async () => {
+		app.go('map');
+		const id = app.g.owned[1];
+		app.prog.set(id, { score: 0, tier: 0, lastCorrect: 0, lastSeen: 0 });
+		click('[data-act="cheat-toggle"]');
+		assert(app.cheat && d.querySelector('#cheat-min'), 'Cheat mode shows the minutes field');
+		click(`.tile[data-id="${id}"]`); click(`.tile[data-id="${id}"]`);
+		const u = app.unitOf(id), now = Math.floor(Date.now() / 1000);
+		assert(u.score === 2 && Math.abs(u.lastCorrect - now) < 5 && !d.querySelector('#modal:not(.hidden) .unit-en'), 'in cheat mode each tap adds 1 recognition (and stamps a never-answered unit) without opening the unit');
+		const typed = d.querySelector('#cheat-min'); typed.value = '90'; typed.dispatchEvent(new w.Event('input', { bubbles: true }));
+		app.renderScreen(false);
+		assert(d.querySelector('#cheat-min').value === '90', 'the typed minutes survive a map redraw');
+		const before = { ...app.unitOf(id) }, other = app.g.owned.find(i => i !== id && app.unitOf(i).lastCorrect);
+		const ob = other === undefined ? null : { ...app.unitOf(other) };
+		click('[data-act="cheat-mature"]');
+		assert(app.unitOf(id).lastCorrect === before.lastCorrect - 5400 && app.unitOf(id).lastSeen === before.lastSeen - 5400 && (!ob || app.unitOf(other).lastCorrect === ob.lastCorrect - 5400), 'Mature all moves every unit\'s timestamps back by the entered minutes');
+		assert(JSON.parse(w.localStorage.getItem('kb.fc2.dbg.prog'))[id][2] === app.unitOf(id).lastCorrect, 'maturing is saved immediately');
+		click('[data-act="cheat-toggle"]');
+		app.go('menu');
+		click('[data-act="force-save"]');
+		await until(() => /read back|written/.test(d.querySelector('#modal').textContent), 8000);
+		assert(/Everything above was written and read back/.test(d.querySelector('#modal').textContent) && !d.querySelector('#modal').textContent.includes('✖'), 'Force save writes everything and reads it back');
+		app.closeModal();
+		// the database path (jsdom has no IndexedDB): a faithful fake passes, one that silently drops writes is reported
+		const makeDb = drop => { const m = new Map(); return { saveBulkUnitCellValues: async cells => { if (!drop) for (const c of cells) m.set(c.unitId, { ...(m.get(c.unitId) || {}), [c.colKey]: c.value }); }, loadAllUnitDataIncremental: async () => [...m].map(([unitId, custom]) => ({ unitId, custom })) }; };
+		for (const [drop, label] of [[false, 'a working database reads back'], [true, 'a database that drops writes is reported']]) {
+			app.db = makeDb(drop); click('[data-act="force-save"]');
+			await until(() => /Everything above|did not save/.test(d.querySelector('#modal').textContent), 8000);
+			const text = d.querySelector('#modal').textContent;
+			assert(drop ? text.includes('✖') && /did not save/.test(text) : !text.includes('✖'), `force save: ${label}`);
+			app.closeModal();
+		}
+		app.db = null;
+		app.flags = [{ ko: 'x', flaggedAt: 'now' }];
+		const backup = JSON.parse(app.backupJson());
+		assert(!('flags' in backup) && backup.units && backup.game, 'the backup carries progress but no flagged sentences');
+		const keep = app.flags;
+		app.$('#backup-text') || app.openModal('b', '<textarea id="backup-text"></textarea><p id="backup-msg"></p>');
+		d.querySelector('#backup-text').value = JSON.stringify(backup);
+		app.restore();
+		assert(app.flags === keep, 'restoring a backup without flags leaves your flagged sentences alone');
+		app.closeModal();
+	});
+
 	await step('debug scenes', async () => {
 		const F = w.FC2Debug;
 		for (const name of F.names) {
