@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict';
+if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('./exit_log.js').watch('tools/vs_tune.js', { okCodes: [1] }); // failed runs -> test.js report
 /**
  * tools/vs_tune.js - inspect and tune Verified Sentence templates from the command line (no web UI).
  *
@@ -63,6 +64,11 @@ FIXTURES (test/golden_sentences.json; checked by test/golden_sentences_test.js w
                                   Status is computed: "open" if the generator violates it today, else "fixed".
   fixtures [--unsure] [--open]    list slot fixtures; --unsure = the native-speaker review list, also written to
                                   local/native_review.txt (numbered, with context, no agent guess; share that file)
+  expansions                      words select.js INSERT queued as candidates for only-list slots
+                                  (TODO_check_sentences_for_expansion_options.json): validates each, drops the ones
+                                  the validator rejects, shows the rest in their sentence
+  only-add <id> <i> <unitId>...   add words to a slot's only list (and clear them from the queue)
+  expansion-rm <id> <i> <unitId>  drop a queued candidate (judged unnatural)
   fixture-rm <gid>                delete a slot fixture (a mistaken one; to change it, delete and add again)
   fixtures --sync                 mark open fixtures the generator now satisfies as fixed (the suite fails until you do)
   human <gid> right|wrong ["note"] record the native speaker's verdict on an unsure fixture (wrong flips it)
@@ -760,6 +766,50 @@ function writeReviewList(list) {
 	console.log(text + `(${list.length} unsure fixtures -> ${path.relative(process.cwd(), out)})`);
 }
 
+// ---------------------------------------------------------------- only-list expansions
+const oe = require('./only_expansion.js');
+function cmdExpansions(flags) {
+	const j = oe.readTodo();
+	const keep = [];
+	let dropped = 0;
+	for (const it of j.items) {
+		const t = vg.getVerifiedSentenceById(it.templateId);
+		if (!t || !U(it.unitId)) { dropped++; continue; }
+		const r = realizeWith(withOnlyAdded(t, it.slot, [it.unitId]), it.slot, it.unitId);
+		if (!r.ok) { dropped++; continue; }
+		keep.push(it);
+		console.log(`${it.templateId}[${it.slot}] +${it.unitId}  ${r.ko}   | ${r.en}`);
+	}
+	if (dropped && !flags['dry-run']) { j.items = keep; oe.writeTodo(j); }
+	console.log(`(${keep.length} candidates; ${dropped} dropped: the validator rejects them or the template/unit is gone)`);
+	if (keep.length) console.log('accept: only-add <id> <i> <unitId>   reject: expansion-rm <id> <i> <unitId>');
+}
+function withOnlyAdded(t, i, ids) {
+	const rules = t.rules.map(r => (r.kind === 'only' && r.slot === i) ? { ...r, ids: [...new Set([...r.ids, ...ids])] } : r);
+	return withRules(t, rules);
+}
+function dropQueued(id, i, ids) {
+	const j = oe.readTodo();
+	const before = j.items.length;
+	j.items = j.items.filter(it => !(it.templateId === id && it.slot === i && ids.includes(it.unitId)));
+	if (j.items.length !== before) oe.writeTodo(j);
+	return before - j.items.length;
+}
+function cmdOnlyAdd(id, i, ids, flags) {
+	const t = getTpl(id);
+	const k = t.rules.findIndex(r => r.kind === 'only' && r.slot === i);
+	if (k < 0) throw new Error(`${id} slot ${i} has no only rule (use allow, or tags)`);
+	for (const x of ids) if (!U(x)) throw new Error(`no unit ${x}`);
+	const after = withOnlyAdded(t, i, ids);
+	printDelta(t, after, i, flags);
+	if (flags['dry-run']) { console.log('  (dry run: nothing written)'); return; }
+	rawSetRules(id, after.rules);
+	console.log(`  written: ${id}[${i}] only += ${ids.join(',')}; ${dropQueued(id, i, ids)} queued candidate(s) cleared`);
+}
+function cmdExpansionRm(id, i, ids) {
+	console.log(`${dropQueued(id, i, ids)} queued candidate(s) removed`);
+}
+
 function cmdFixtureRm(gid, flags) {
 	const j = readGolden();
 	const k = j.fixtures.findIndex(f => f.id === gid && isSlotFixture(f));
@@ -967,6 +1017,9 @@ function main() {
 	case 'stats': return cmdStats(flags);
 	case 'unit': return cmdUnit([a, b, ...rest].filter(x => x !== undefined));
 	case 'fixture-rm': return cmdFixtureRm(a, flags);
+	case 'expansions': return cmdExpansions(flags);
+	case 'only-add': return cmdOnlyAdd(a, num(b, 'slot'), rest.map(x => num(x, 'unitId')), flags);
+	case 'expansion-rm': return cmdExpansionRm(a, num(b, 'slot'), rest.map(x => num(x, 'unitId')));
 	case 'evidence': return cmdEvidence([a, b, ...rest].filter(x => x !== undefined));
 	case 'ingest': return cmdIngest(a, flags);
 	case 'batch': return cmdBatch(a, flags);

@@ -71,6 +71,9 @@ tools/merge_units.js    merge duplicate units: alias=canonical pairs -> alias ro
   open-licensed); textbook text goes through `tools/text_analyzer.js --add-verified` so it lands in `local/`. Rejections are analyzer gaps.
 
 ## Priorities (in order)
+0. Refactor the conjugator (agreed 2026-11-20, not started): it builds malformed forms that the validator accepts (받가지고,
+   사으라고/고르으라고, 찾실/넣실: -가지고, -(으)라고, -(으)시- with some stems; batch 4 log). Old code with much feature creep;
+   pin current correct output with tests first, then refactor. Gap class `morphology` collects new cases.
 1. Play `fc2/` on the phone (and `flashcards/` to compare) and send balance and pacing notes. Semester starts ~2026-12-01; early units (class2011 to class2112) first.
 2. New study modes on top of `shared/`: reverse sound board (hear Korean, pick from a button matrix) and multiple-choice comprehension.
 3. Study, flag, triage, fix (CLAUDE.md loop). Freeze generator scope once the loop works.

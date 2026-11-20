@@ -16,6 +16,8 @@ Experiment in a small separate project, not in a branch.
 - `npm run lint`: ESLint only. 0 errors required; `no-unused-vars` warnings are a dead-code cleanup backlog.
 - `node test/<name>_test.js`: one suite, 1-3 s. `node test/browser_load_test.js`: jsdom check of `webapp/index.html`.
 - State what you ran. Done means named tests pass and lint is clean.
+- Agent shells: start compound commands with `set -o pipefail` and check exit codes (`cmd | tail` reports tail's status; a failed
+  step in `a && b` silently skips b). `node test.js` lists every CLI that exited non-zero since its last run.
 - fc2 screens: `fc2/index.html?debug` lists scenes; `?debug=trial-listen` (etc.) opens a ready-made state in seconds, that NEVER SAVES (scenes replace the whole game; a `?debug` page that saved once wiped a player's progress, see handoff.md). Tests load `?debug&persist` to exercise saving. Never send the owner to a `?debug` URL for real play.
   Scenes live in `fc2/debug.js`; `test/fc2_ui_test.js` renders every one in jsdom. A new fc2 screen gets a scene (with an `expect` selector) instead of a hand-built test setup or a phone check.
 - A new script in `fc2/` must be added to `fc2/index.html`; `test/fc2_pages_test.js` (default suite, <1 s) fails if a tag is missing, duplicated or dangling, or if a `window.FC2*` global is used but never defined. A phone can cache a stale `index.html` next to a fresh `app.js`, so keep `app.js` tolerant of a missing optional module.
@@ -42,6 +44,8 @@ statement. `test/cli_help_test.js` (in `node test.js --full`) finds CLIs by text
 - `tools/tatoeba_prefilter.js`: deterministic Tatoeba candidate filter.
 - `tools/merge_units.js`: merge duplicate language units.
 - `tools/stamp.js`: fc2 build stamp.
+- `tools/only_expansion.js` (library): INSERT queues words that may fit `only`-list slots (`vs_tune.js expansions`).
+- `tools/exit_log.js` (library): logs every CLI's non-zero exit; `node test.js` prints them (a new CLI copies the `watch()` line).
 - External APIs (OpenAI-compatible, keys in gitignored `local/keys.env`): `https://api.exaone.ai/v1` model `k-exaone_v2.5`
   (free), `https://api.upstage.ai/v1` model `solar-pro4` (paid).
 

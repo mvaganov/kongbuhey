@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('./tools/exit_log.js').watch('ingest.js'); // failed runs -> test.js report
 
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('./data/constants.js') : (typeof window !== 'undefined' ? window : {});

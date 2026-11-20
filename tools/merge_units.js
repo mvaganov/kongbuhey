@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict';
+if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('./exit_log.js').watch('tools/merge_units.js'); // failed runs -> test.js report
 require('./cli_help.js').exitWithHeaderHelp(__filename);
 /**
  * tools/merge_units.js - merge duplicate language units into one canonical unit.

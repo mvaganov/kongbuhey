@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict';
+if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('./exit_log.js').watch('tools/tatoeba_prefilter.js'); // failed runs -> test.js report
 require('./cli_help.js').exitWithHeaderHelp(__filename);
 /**
  * Stage A+B of docs/tatoeba_selection_plan.md. Deterministic, no LLM.

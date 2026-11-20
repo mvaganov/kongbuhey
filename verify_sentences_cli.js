@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('./tools/exit_log.js').watch('verify_sentences_cli.js'); // failed runs -> test.js report
 /**
  * verify_sentences_cli.js
  * 

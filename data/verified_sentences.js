@@ -1,3 +1,4 @@
+if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('../tools/exit_log.js').watch('data/verified_sentences.js'); // failed runs -> test.js report
 // Universal Constants
 var { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
 

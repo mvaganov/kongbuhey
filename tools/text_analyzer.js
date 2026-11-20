@@ -1,3 +1,4 @@
+if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('./exit_log.js').watch('tools/text_analyzer.js'); // failed runs -> test.js report
 require('./cli_help.js').exitWithHeaderHelp(__filename);
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});

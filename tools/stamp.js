@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('./exit_log.js').watch('tools/stamp.js'); // failed runs -> test.js report
 /**
  * Build stamp for fc2/ (no build step needed, just run it): `node tools/stamp.js` (test/fc2_pages_test.js runs it for you).
  * 1. Hashes every file fc2/index.html loads (plus index.html itself, ignoring the ?v= values).

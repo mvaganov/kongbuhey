@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('./tools/exit_log.js').watch('schema_analysis.js'); // failed runs -> test.js report
 require('./tools/cli_help.js').exitWithHeaderHelp(__filename);
 
 // Universal Constants

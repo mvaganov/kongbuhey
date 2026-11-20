@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('./tools/exit_log.js').watch('select.js'); // failed runs -> test.js report
 
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('./data/constants.js') : (typeof window !== 'undefined' ? window : {});
@@ -1414,6 +1415,7 @@ function executeUpdateFromFile(inputFile, explicitCols = null, options = {}) {
 
 	let updatedCount = 0;
 	let insertedCount = 0;
+	const insertedUnits = [];
 	const updatedIds = [];
 
 	records.forEach(rec => {
@@ -1484,6 +1486,7 @@ function executeUpdateFromFile(inputFile, explicitCols = null, options = {}) {
 			const newLine = formatUnitLine(newUnit, false);
 			lines.splice(closeIdx, 0, newLine);
 			insertedCount++;
+			insertedUnits.push(newUnit);
 		}
 	});
 
@@ -1501,6 +1504,7 @@ function executeUpdateFromFile(inputFile, explicitCols = null, options = {}) {
 	if (!options.dryRun && (updatedCount > 0 || insertedCount > 0)) {
 		writeDataFile(lines, dataPath);
 	}
+	if (insertedUnits.length) require('./tools/only_expansion.js').afterInsert(insertedUnits, KR_EN_languageUnits, DATA_SCHEMA, options);
 
 	return {
 		updated: updatedCount,
@@ -1647,6 +1651,10 @@ function executeInsert(insertStr, options = {}) {
 
 	if (!options.dryRun) {
 		writeDataFile(lines, dataPath);
+	}
+	{
+		const main = require('./data/data.js');
+		require('./tools/only_expansion.js').afterInsert([newUnit], main.KR_EN_languageUnits, main.DATA_SCHEMA, options);
 	}
 
 	return { inserted: 1, unit: newUnit, dryRun: !!options.dryRun };

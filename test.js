@@ -1,4 +1,15 @@
 #!/usr/bin/env node
+// Failed CLI runs since the last test run (tools/exit_log.js): shell pipelines can hide a failure, so list them
+// loudly at the end. Entries the suite itself causes are discarded.
+const _isHelpRun = process.argv.some(a => a === '--help' || a === '-h');
+const _toolErrors = _isHelpRun ? [] : require('./tools/exit_log.js').takeAll();
+process.on('exit', () => {
+	if (_isHelpRun) return;
+	require('./tools/exit_log.js').takeAll();
+	if (!_toolErrors.length) return;
+	console.log(`\n!!! ${_toolErrors.length} CLI run(s) FAILED since the last test run (check they were noticed and redone):`);
+	for (const e of _toolErrors.slice(-20)) console.log(`!!!   ${e.at || ''} ${e.tool || '?'} exit ${e.code} ${e.args || ''}\n!!!      ${e.error || ''}`);
+});
 
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('./data/constants.js') : (typeof window !== 'undefined' ? window : {});

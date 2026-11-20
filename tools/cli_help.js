@@ -1,3 +1,4 @@
+if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('./exit_log.js').watch('tools/cli_help.js'); // failed runs -> test.js report
 /**
  * tools/cli_help.js - `--help` / `-h` for CLIs that document themselves in their header comment.
  *

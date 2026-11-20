@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('./exit_log.js').watch('tools/triage_flags.js'); // failed runs -> test.js report
 /**
  * tools/triage_flags.js - turn "⚐ Bad sentence" flags into regression fixtures.
  *

@@ -55,6 +55,24 @@ try {
 	assert(a2[fnId][D.Source] === 'selecttest_b' && String(a2[fnId][D.SyntaxFrame]) === String(before[fnId][D.SyntaxFrame]) && a2.length === before.length,
 		'inline UPDATE SET edits the same unit again without damaging it');
 
+	// INSERT queues the new unit for only-list slots it could join (tools/only_expansion.js)
+	{
+		const TODO = path.join(os.tmpdir(), `select_test_todo_${process.pid}.json`);
+		const oe = require('../tools/only_expansion.js');
+		const rows = require('../data/verified_sentences.js').VERIFIED_SENTENCES;
+		const target = oe.onlySlots(load().KR_EN_languageUnits, D, rows).find(x => x.shared.length && x.pos === 'Action Verb');
+		assert(Boolean(target), 'there is an only-list verb slot with shared tags to test against');
+		const newId = load().KR_EN_languageUnits.length;
+		fs.writeFileSync(REC, JSON.stringify([{ Id: newId, Korean: '시험삼다', English: 'test verb', PartofSpeech: 'Action Verb', PriorityScore: 3, SemanticTags: target.shared }]));
+		select.executeUpdateFromFile(REC, null, { dataFile: TMP, dryRun: true, expansionTodoPath: TODO });
+		assert(!fs.existsSync(TODO), 'a dry-run INSERT queues nothing');
+		select.executeUpdateFromFile(REC, null, { dataFile: TMP, expansionTodoPath: TODO });
+		const items = fs.existsSync(TODO) ? JSON.parse(fs.readFileSync(TODO, 'utf8')).items : [];
+		assert(items.some(it => it.unitId === newId && it.templateId === target.templateId && it.slot === target.slot),
+			`INSERT of a word with the shared tags queues it for ${target.templateId}[${target.slot}]`);
+		fs.rmSync(TODO, { force: true });
+	}
+
 	// --dry-run writes nothing
 	const snapshot = fs.readFileSync(TMP, 'utf8');
 	fs.writeFileSync(REC, JSON.stringify([{ Id: lineId, English: 'dry run' }]));

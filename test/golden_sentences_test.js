@@ -107,6 +107,8 @@ assert(notSelf.length === 0, `every template realizes its original word in every
 const leaked = [];
 for (const t of templates) t.slots.forEach((s, i) => { if ((s.tags || []).some(x => vg.VALIDATOR_ONLY_TAGS.has(x))) leaked.push(`${t.id}[${i}]`); });
 assert(vg.VALIDATOR_ONLY_TAGS.size > 0 && leaked.length === 0, `no slot filters by a validator-only tag${leaked.length ? ' -> ' + leaked.slice(0, 5).join(', ') : ''}`);
+const oeTags = require('../tools/only_expansion.js').VALIDATOR_ONLY_TAGS;
+assert([...vg.VALIDATOR_ONLY_TAGS].sort().join() === [...oeTags].sort().join(), 'tools/only_expansion.js mirrors the generator\'s VALIDATOR_ONLY_TAGS');
 const ledger = vsTune.readLedger();
 const tplIds = new Set(templates.map(t => t.id));
 const batchIds = new Set(ledger.batches.flatMap(b => b.ids));

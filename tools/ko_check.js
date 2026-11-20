@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('./exit_log.js').watch('tools/ko_check.js'); // failed runs -> test.js report
 /**
  * tools/ko_check.js - ask a Korean-first LLM whether sentences sound natural.
  *
