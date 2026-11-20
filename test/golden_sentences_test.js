@@ -94,6 +94,15 @@ function validateCheck() {
 		&& vsTune.validateRule({ kind: 'gap', class: 'data-tag', text: '오늘 lacks temporalNoun' }) !== null
 		&& vsTune.validateRule({ kind: 'noTags', slot: 1, tags: [] }) !== null;
 }
+// Every template reproduces its own sentence when any one variable slot is varied (the original is attested
+// Korean; tag filters keep it, and validator errors it raises itself are waived in the generator).
+const notSelf = [];
+for (const t of templates) t.slots.forEach((s, i) => {
+	if (s.inflection && ['exact', 'fixed_grammar', 'fixed'].includes(String(s.inflection.stemForm).toLowerCase())) return;
+	const r = vsTune.slotAdmits(t, i, s.originalUnitId);
+	if (!r.admitted && r.note !== 'locked slot') notSelf.push(`${t.id}[${i}] ${r.note}`);
+});
+assert(notSelf.length === 0, `every template realizes its original word in every variable slot${notSelf.length ? ` -> ${notSelf.length}, e.g. ${notSelf.slice(0, 3).join('; ')}` : ''}`);
 const ledger = vsTune.readLedger();
 const tplIds = new Set(templates.map(t => t.id));
 const batchIds = new Set(ledger.batches.flatMap(b => b.ids));

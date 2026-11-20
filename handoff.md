@@ -100,7 +100,9 @@ tools/merge_units.js    merge duplicate units: alias=canonical pairs -> alias ro
 
 ## Verified-sentence tuning workflow (agreed 2026-11-20)
 Goal: varied, short, not-wrong sentences in fc2. The game varies ONE slot at a time with the rest of the template fixed, so each slot is
-judged against its original sentence. Baseline: `docs/vs_tuning_baseline.txt` (1,788 of 2,693 variable slots admit one word).
+judged against its original sentence. Baseline: `docs/vs_tuning_baseline.txt` (1,788 of 2,693 variable slots admit one word; 6,436
+one-slot sentences realize). Generator guarantees (tested): a slot's own word is always in its pool (only `deny` removes it), and a
+validator error that the original sentence also raises is waived, so only what a variation changes can reject it.
 State lives in code, not here: `vs_tune.js batch` (open batch, `data/vs_review.json`), `gaps --summary`, `fixtures --unsure`, `batch status`.
 `test/golden_sentences_test.js` enforces it: slot fixtures, gap classes, ledger ids.
 
@@ -110,21 +112,33 @@ native-speaker list, commit). The orchestrating session starts each agent with t
 **Loosener brief (Sonnet). Paste as the agent prompt:**
 > Kongbuhey repo (read CLAUDE.md first: test from a local copy, never commit). Run `node tools/vs_tune.js batch` (opens or resumes
 > the batch) and `node tools/vs_tune.js gap-classes`. For each listed template: `show <id>`; for each variable slot (the `pools` column,
-> slot:pool size), decide which words fit the sentence with every other slot fixed, then:
+> slot:pool size), decide which words fit the sentence with every other slot fixed. `show` prints how many pool words realize;
+> `slot <id> <i> --open --by-tag` lists what the validator alone allows, grouped by tag (`unit <id>` shows one word's tags). Then:
 > 1. Loosen: `tags <id> <i> -tag --dry-run`; read every `OK` line (`REJ` = an existing validator already rejects it). Write it (same
->    command without `--dry-run`) only if every OK sentence is natural. Pool already big (>30) and natural: leave it. Strict defaults
->    also admit nonsense: tightening (`rule-add` noTags/anyTags/deny) is part of the job.
+>    command without `--dry-run`) only if every OK sentence is natural. Prefer a tag that matches the good set; for a few extra words
+>    use `{"kind":"allow","ids":[...]}`. Never leave a slot with no tags: a big pool where few realize (`show`: "pool 1022, 5 realize")
+>    makes the game fail on that slot. Pool already big (>30) and natural: leave it. Strict defaults also admit nonsense:
+>    tightening (`rule-add` noTags/anyTags/deny) is part of the job.
 > 2. At most 3 attempts per slot. No tag/rule split works: `rule-add <id> '{"kind":"gap","class":...,"slot":i,"text":...}'`.
 >    A word that lacks a tag is class `data-tag` with `units`: do not edit data.js tags (other templates share them).
 > 3. Fixtures (`fixture <id> <i> <unitId> bad|ok "<reason>"`): one `bad` per distinct kind of wrong sentence you saw (excluded ones
 >    become fixed, gap ones open with `--gap-class`), one `ok` for the newly admitted word you are surest of. `--confidence unsure`
 >    whenever you would not bet on it; `evidence <ko> ...` shows Tatoeba support. Unsure fixtures go to a native speaker.
 > 4. `done <id> "<what changed | kept: reason>"`. Locked slots never vary: skip them.
+> 5. A validator rejecting a natural sentence with the new word is gap class `validator-reject` (name the error code); do not work
+>    around a failing test with a deny rule: report it.
 > Finish: `node test.js` (local copy) passes, then report `batch status`, `gaps --summary`, and the count from `fixtures --unsure`. Stop.
 
 **Implementer (Opus), after the loosener:** `gaps --summary`, take the top class (or two), implement it in the generator/concord/data
 (CLAUDE.md rules: no Hangul literals or unit ids in logic), remove the gap rules it now handles (`rule-rm`), `fixtures --sync`,
 `node test.js`, spot-check `gen <id> 5 --slot i` on ~10 changed slots. Report what was implemented and what is left.
+
+Before each batch, look for a mechanical cause first: batch 1's loosener spent ~195k tokens for +348 sentences, while one
+generator fix it pointed at (originals failing their own validator: 257 of 547 templates) gave +832. If several gaps share an error
+code, measure it across all templates before reviewing more.
+
+Batch log: 1 (2026-11-20, Sonnet): 25 templates, 67 slot fixtures (19 unsure), gaps mostly validator-reject; the Opus pass added the
+original-word guarantee, the baseline waiver, `allow` rules, `slot --open`, `unit`, `fixture-rm`, `stats --deep`. 6,436 -> 7,617 sentences.
 
 **Owner:** `node tools/vs_tune.js fixtures --unsure` is the native-speaker list; record answers with `human <gid> right|wrong`; commit.
 

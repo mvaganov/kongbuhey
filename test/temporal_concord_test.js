@@ -433,10 +433,11 @@ assert(clashCount2 === 28, `Tested 28 invalid future+past clashes`);
 	const { generateSentencesForUnit } = require('../webapp/selector.js');
 	const futureEnd = /[을ㄹ] ?거(예요|다)/;
 	const found = new Map();   // ko -> enNatural
+	// AST generator only: these units may gain verified templates (tuning), which would stop the AST path being sampled.
 	for (const unitId of [79, 81, 82]) {   // 공책, 없다, 있다
 		for (let seed = 1; seed <= 60; seed++) {
 			korean.setRandomSeed(seed);
-			for (const sent of generateSentencesForUnit(unitId, 6, { seedOffset: seed })) {
+			for (const sent of generateSentencesForUnit(unitId, 6, { seedOffset: seed, useAstOnly: true })) {
 				if (/(있|없)을 거예요/.test(sent.ko) && !found.has(sent.ko)) found.set(sent.ko, String(sent.enNatural || sent.en || ''));
 			}
 		}

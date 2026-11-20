@@ -214,7 +214,8 @@ const VERIFIED_SLOT_SCHEMA = (verifiedDataModule && verifiedDataModule.VERIFIED_
 //   { kind: 'gap', slot?, text }             a documented missing mechanism (no effect on generation)
 // tools/vs_tune.js edits these; unknown kinds are ignored here and reported by the tool.
 const TEMPLATE_RULES_INDEX = (VERIFIED_TEMPLATE_SCHEMA && typeof VERIFIED_TEMPLATE_SCHEMA.Rules === 'number') ? VERIFIED_TEMPLATE_SCHEMA.Rules : 6;
-const SLOT_RULE_KINDS = new Set(['anyTags', 'noTags', 'deny', 'sd']);
+// allow {ids}: these units join the slot even without its tags (an explicit list next to the tag filter).
+const SLOT_RULE_KINDS = new Set(['anyTags', 'noTags', 'deny', 'sd', 'allow']);
 
 function slotRulesAllow(u, slot) {
 	const rules = slot && slot.rules;
@@ -1042,19 +1043,26 @@ function isUnitEligibleForSlot(u, slot, ctx, options = {}) {
 	if (u[DATA_SCHEMA.PartofSpeech] !== ctx.requiredPos) return false;
 	const uId = u[DATA_SCHEMA.Id];
 	const isOrigUnit = uId === slot.originalUnitId;
+	const isAllowed = Array.isArray(slot.rules) && slot.rules.some(r => r && r.kind === 'allow' && Array.isArray(r.ids) && r.ids.includes(uId));
 
-	for (let tIdx = 0; tIdx < ctx.requiredTags.length; tIdx++) {
-		if (!_hasTag(u, ctx.requiredTags[tIdx])) {
+	// The template's own word is attested in this slot: tag filters and tag rules never drop it (a tuned slot
+	// can narrow to a set that excludes it). Only an explicit deny rule removes it. Same for allow-listed units.
+	if (isOrigUnit || isAllowed) {
+		if (!slotRulesAllow(u, { rules: ((slot && slot.rules) || []).filter(r => r && r.kind === 'deny') })) return false;
+	} else {
+		for (let tIdx = 0; tIdx < ctx.requiredTags.length; tIdx++) {
+			if (!_hasTag(u, ctx.requiredTags[tIdx])) {
+				return false;
+			}
+		}
+		if (!slotRulesAllow(u, slot)) return false;
+
+		if (!ctx.requiredTags.includes(K.POSITION) && _hasTag(u, K.POSITION)) {
 			return false;
 		}
-	}
-	if (!slotRulesAllow(u, slot)) return false;
-
-	if (!ctx.requiredTags.includes(K.POSITION) && _hasTag(u, K.POSITION)) {
-		return false;
-	}
-	if (!ctx.requiredTags.includes(K.MEASUREWORD) && !ctx.requiredTags.includes(K.COUNTER) && _hasTag(u, K.MEASUREWORD, K.COUNTER)) {
-		return false;
+		if (!ctx.requiredTags.includes(K.MEASUREWORD) && !ctx.requiredTags.includes(K.COUNTER) && _hasTag(u, K.MEASUREWORD, K.COUNTER)) {
+			return false;
+		}
 	}
 
 	if (!isOrigUnit) {
@@ -2453,6 +2461,47 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 	};
 }
 
+// ---- Baseline waiver: the verified original sentence is attested Korean. An error the validator also raises
+// for the unvaried original is a validator false alarm, so it never counts against a variation: only errors
+// about what the variation changed can reject it. Signature = code + message with the sentence text removed
+// (messages name the words involved, so an error about a newly chosen word never matches the baseline).
+const _baselineErrorCache = new Map();
+function _errorSignature(err, sentences) {
+	let msg = String((err && err.message) || '');
+	for (const sent of sentences) if (sent) msg = msg.split(sent).join('#');
+	return `${err && err.code}|${msg}`;
+}
+function baselineErrorSignatures(template) {
+	const key = `${template.id}\u0000${template.originalKo || ''}\u0000${template.slots.length}`;
+	if (_baselineErrorCache.has(key)) return _baselineErrorCache.get(key);
+	_baselineErrorCache.set(key, new Set());
+	// The validator only checks varied slots, so the baseline is each variable slot "varied" to its own word.
+	// (Baseline errors are a set per template: an error the original raises in one slot is waived in all.)
+	const sigs = new Set();
+	template.slots.forEach((slot, i) => {
+		if (isLockedSlot(slot) || typeof slot.originalUnitId !== 'number') return;
+		const res = generateSentenceFromTemplate(template, {
+			varyMode: 'selected', unlockedSlots: [i], targetSlotIndex: i, targetUnitId: slot.originalUnitId, _baselineCheck: true
+		});
+		if (res && res.baseline && res.validation && !res.validation.valid) {
+			for (const e of res.validation.errors) sigs.add(_errorSignature(e, [res.ko, res.koBare]));
+		}
+	});
+	_baselineErrorCache.set(key, sigs);
+	return sigs;
+}
+function waiveBaselineErrors(template, valResult, sentences) {
+	const base = baselineErrorSignatures(template);
+	if (!base.size) return;
+	const kept = [];
+	const waived = [];
+	for (const e of valResult.errors) (base.has(_errorSignature(e, sentences)) ? waived : kept).push(e);
+	if (!waived.length) return;
+	valResult.errors = kept;
+	valResult.waived = waived;
+	valResult.valid = kept.length === 0;
+}
+
 /**
  * Generates a complete Korean sentence from a Verified Sentence template.
  */
@@ -2718,6 +2767,8 @@ function generateSentenceFromTemplate(templateOrId, options = {}) {
 
 		// Validate using AST syntactic, valency, collocation, and concord validators
 		const valResult = validateVerifiedSentence(ast, candidateResult, slotChoices);
+		if (options._baselineCheck) return { baseline: true, ko: koWithPunct, koBare, validation: valResult };
+		if (!valResult.valid) waiveBaselineErrors(template, valResult, [koWithPunct, koBare]);
 
 		if (valResult.valid) {
 			const unlockedList = isSelectedMode ? Array.from(unlockedSlotSet) : template.slots.map((_, i) => i);
