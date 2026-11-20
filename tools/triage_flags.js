@@ -16,6 +16,7 @@
  * the report shows every unit used, and reproducibility across seeds.
  */
 'use strict';
+require('./cli_help.js').exitWithHeaderHelp(__filename);
 
 const fs = require('fs');
 const path = require('path');

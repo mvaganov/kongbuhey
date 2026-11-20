@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict';
+require('./cli_help.js').exitWithHeaderHelp(__filename);
 /**
  * tools/merge_units.js - merge duplicate language units into one canonical unit.
  *

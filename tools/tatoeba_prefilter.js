@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict';
+require('./cli_help.js').exitWithHeaderHelp(__filename);
 /**
  * Stage A+B of docs/tatoeba_selection_plan.md. Deterministic, no LLM.
  *   A: script prefilter on docs/kor_sentences.tsv  -> local/tatoeba_stageA.tsv, local/tatoeba_dropped.tsv

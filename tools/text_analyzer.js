@@ -1,3 +1,4 @@
+require('./cli_help.js').exitWithHeaderHelp(__filename);
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
@@ -15,6 +16,11 @@ const { K } = (typeof require !== 'undefined') ? require('../data/constants.js')
  *   - korean/analyzer/token_analyzer.js   (Single-token morphological decomposition)
  *   - korean/analyzer/sentence_analyzer.js (Sentence multi-word constructions)
  *   - korean/analyzer/passage_analyzer.js  (Passage analysis & text report formatting)
+ *
+ * Usage (needs the gitignored local/studytexts.js):
+ *   node tools/text_analyzer.js [studytextN] [--json]   morphology + curriculum-gap report (default studytext12)
+ *   node tools/text_analyzer.js studytextN --add-verified   also save its templates to data/verified_sentences.js (writes)
+ *   node tools/text_analyzer.js --sync-verified          re-sync templates for every ingested study text (writes)
  */
 
 const fs = require('fs');

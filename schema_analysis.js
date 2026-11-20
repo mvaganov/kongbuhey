@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+require('./tools/cli_help.js').exitWithHeaderHelp(__filename);
 
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('./data/constants.js') : (typeof window !== 'undefined' ? window : {});
@@ -13,6 +14,10 @@ const { K } = (typeof require !== 'undefined') ? require('./data/constants.js') 
  *
  * Automatically saves/updates schema_summary.json on demand or when triggered by
  * select.js / homonyms.js updates.
+ *
+ * Usage:
+ *   node schema_analysis.js                         regenerate data/schema_summary.json (writes) and list POS counts
+ *   node schema_analysis.js --audit-tags [--json]   semantic tag hygiene audit (read-only; exit 1 on problems)
  */
 
 const fs = require('fs');

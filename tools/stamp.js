@@ -8,6 +8,7 @@
  * `built` only changes when the hash does, so running it repeatedly never dirties the tree. `--check` changes nothing: exit 1 if stale.
  */
 'use strict';
+require('./cli_help.js').exitWithHeaderHelp(__filename);
 
 const fs = require('fs');
 const path = require('path');
