@@ -61,6 +61,37 @@
 				"vs_96",
 				"vs_24"
 			]
+		},
+		{
+			"n": 3,
+			"opened": "2026-11-20",
+			"ids": [
+				"vs_128",
+				"vs_219",
+				"vs_122",
+				"vs_494",
+				"vs_182",
+				"vs_509",
+				"vs_197",
+				"vs_178",
+				"vs_426",
+				"vs_165",
+				"vs_425",
+				"vs_346",
+				"vs_187",
+				"vs_385",
+				"vs_156",
+				"vs_510",
+				"vs_155",
+				"vs_304",
+				"vs_329",
+				"vs_330",
+				"vs_544",
+				"vs_29",
+				"vs_397",
+				"vs_373",
+				"vs_92"
+			]
 		}
 	],
 	"reviewed": {
@@ -263,6 +294,106 @@
 		"vs_24": {
 			"batch": 2,
 			"note": "kept: countries and 5 verbs all natural"
+		},
+		"vs_128": {
+			"batch": 3,
+			"note": "slot1 allow 서점,편의점; slot4 deny 낚시하다"
+		},
+		"vs_122": {
+			"batch": 3,
+			"note": "slot1 allow 서점,편의점; slot2 allow 제일/좀/조금"
+		},
+		"vs_219": {
+			"batch": 3,
+			"note": "slot1 allow 광화문,남이섬; slot2 allow 식당,편의점; slot0 locked numeral"
+		},
+		"vs_494": {
+			"batch": 3,
+			"note": "slot0/1 inanimate_institution; slot3 deny >=40"
+		},
+		"vs_182": {
+			"batch": 3,
+			"note": "slot4 institutions; slot8 allow 기다리다; slot1 그러면; gap 만나다"
+		},
+		"vs_509": {
+			"batch": 3,
+			"note": "slot0 proper_noun minus venues/districts; others locked/qword"
+		},
+		"vs_178": {
+			"batch": 3,
+			"note": "slot0 deny 글쎄; slot4 -loanword + allow 거울,휴지; slot5 deny teens"
+		},
+		"vs_197": {
+			"batch": 3,
+			"note": "kept: slots locked/pool 1, nothing natural to add"
+		},
+		"vs_426": {
+			"batch": 3,
+			"note": "slot0 allow weekdays/오전/오후/저녁/오늘/내일; slot2 allow daily actions"
+		},
+		"vs_165": {
+			"batch": 3,
+			"note": "slot3 narrowed: deny 12 object-requiring verbs, allow 보다; slot1 kept (all natural)"
+		},
+		"vs_346": {
+			"batch": 3,
+			"note": "slot4 allow degree/frequency adverbs, deny validator-rejected manner adverbs; slot5 deny rejected adjectives (only 아프다 fits)"
+		},
+		"vs_425": {
+			"batch": 3,
+			"note": "slot2 allow 식사/일하다/끝나다/일어나다"
+		},
+		"vs_187": {
+			"batch": 3,
+			"note": "slot1 allow 의자,방; slot2 kept"
+		},
+		"vs_385": {
+			"batch": 3,
+			"note": "slot0 inanimate_institution minus company offices"
+		},
+		"vs_156": {
+			"batch": 3,
+			"note": "slot2 narrowed 76->10 natural 'how were you' verbs"
+		},
+		"vs_510": {
+			"batch": 3,
+			"note": "slot0 deny 서른+ native tens; slot2 locked"
+		},
+		"vs_155": {
+			"batch": 3,
+			"note": "slot1 allow 방학하다; others pool 1 locked"
+		},
+		"vs_304": {
+			"batch": 3,
+			"note": "kept: pool-1 slots, no natural alternates"
+		},
+		"vs_329": {
+			"batch": 3,
+			"note": "slot2 deny duplicate/감기; slot0 gap validator-reject"
+		},
+		"vs_330": {
+			"batch": 3,
+			"note": "slot3 allow 잘,많이"
+		},
+		"vs_544": {
+			"batch": 3,
+			"note": "gap validator-reject (VERB_OBJECT_COLLOCATION_MISMATCH)"
+		},
+		"vs_29": {
+			"batch": 3,
+			"note": "slot1 deny 운전/서명/결정, allow 식사/운동/여행"
+		},
+		"vs_397": {
+			"batch": 3,
+			"note": "slot1 deny 요즘; slot2 allow 먹다,기다리다,공부,운동,일하다,자다"
+		},
+		"vs_92": {
+			"batch": 3,
+			"note": "slot2 deny 따라하다, allow 먹다/마시다/닫다/열다/끄다"
+		},
+		"vs_373": {
+			"batch": 3,
+			"note": "slot1 allow 가다,타다"
 		}
 	}
 }
