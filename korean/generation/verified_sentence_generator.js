@@ -225,7 +225,9 @@ function defaultSlotTags(unit) {
 	const all = raw instanceof Set ? Array.from(raw) : (Array.isArray(raw) ? [...raw] : []);
 	return all.filter(t => t && !VALIDATOR_ONLY_TAGS.has(t));
 }
-const SLOT_RULE_KINDS = new Set(['anyTags', 'noTags', 'deny', 'sd', 'allow']);
+// only {ids}: the slot's pool is exactly these units plus its own word (tags and other filters ignored;
+// deny still applies). For slots whose good set no tag expresses, e.g. a verb slot fixed by its object.
+const SLOT_RULE_KINDS = new Set(['anyTags', 'noTags', 'deny', 'sd', 'allow', 'only']);
 
 function slotRulesAllow(u, slot) {
 	const rules = slot && slot.rules;
@@ -1052,6 +1054,11 @@ function isUnitEligibleForSlot(u, slot, ctx, options = {}) {
 	const uId = u[DATA_SCHEMA.Id];
 	const isOrigUnit = uId === slot.originalUnitId;
 	const isAllowed = Array.isArray(slot.rules) && slot.rules.some(r => r && r.kind === 'allow' && Array.isArray(r.ids) && r.ids.includes(uId));
+	const onlyRule = Array.isArray(slot.rules) ? slot.rules.find(r => r && r.kind === 'only' && Array.isArray(r.ids)) : null;
+	if (onlyRule) {
+		if (!isOrigUnit && !onlyRule.ids.includes(uId)) return false;
+		return slotRulesAllow(u, { rules: slot.rules.filter(r => r && r.kind === 'deny') });
+	}
 
 	// The template's own word is attested in this slot: tag filters and tag rules never drop it (a tuned slot
 	// can narrow to a set that excludes it). Only an explicit deny rule removes it. Same for allow-listed units.

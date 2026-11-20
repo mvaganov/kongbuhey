@@ -148,6 +148,11 @@ Batch 3 (2026-11-20, Sonnet, ~147k tokens): 25 templates. Opus pass: data tag `o
 person object is routinely dropped from MISSING_TRANSITIVE_PERSON_OBJECT; vs_tune rejects rules on locked slots. -> ~7,850 sentences.
 Per-batch gains are shrinking (+171, +60): the later templates are long and mostly locked; consider batching by low-yield/pool-1
 slots across all templates instead of by template order.
+Batch 4 (2026-11-20, Sonnet, ~142k tokens): the 52 low-yield slots (48 templates, `batch --low-yield`), each narrowed to an `only`
+list of the natural words among those that realize. slots.lowYield 52 -> 0; sentences.oneSlot 7,858 -> 7,198 (the removed ones
+realized but were unnatural; the game now varies those slots reliably). Found: the conjugator builds malformed forms that pass
+the validator (받가지고, 사으라고/고르으라고, 찾실/넣실: -가지고, -(으)라고, -(으)시- with some stems); none is reachable now (only
+lists exclude them), but loosening could re-admit them. Fix the conjugator next (gap class `morphology`).
 
 **Owner:** `node tools/vs_tune.js fixtures --unsure` is the native-speaker list; record answers with `human <gid> right|wrong`; commit.
 

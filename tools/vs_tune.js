@@ -24,6 +24,7 @@ READ
   list [--source S] [--grammar G] [--unit U] [--max-slots N]   one line per template: id, slots, sentence
   show <id> [--n N]               slots: unit, grammar, tag filters (default/custom), pool size, N sample units
   slot <id> <i> [--check] [--all] every candidate for slot i; --check realizes each one in the sentence + validates
+  slot <id> <i> --check --ok      only the candidates that realize, one short line each (id, sentence)
   slot <id> <i> --open [--by-tag] every unit of the slot's POS, ignoring tags, realized; --by-tag groups the OK ones by tag
                                   (find which tag to keep, or the ids for an allow rule)
   unit <id> [<id>...]             a unit's tags, POS and English
@@ -42,6 +43,7 @@ WRITE (all accept --dry-run; all print the admitted/dropped units realized in th
   reset <id> [<i>]                slot (or every slot) back to the strict default: the original unit's tags
   rule-add <id> '<json>'          e.g. '{"slot":2,"kind":"noTags","tags":["family"]}'
                                   kinds: anyTags {tags} | noTags {tags} | deny {ids} | allow {ids} | sd {key, values}
+                                  only {ids}: the pool is exactly these units + the slot's own word (deny still applies)
                                   (allow: listed units join without the slot's tags; the slot's own word is always in)
                                          gap {class, text, slot?, units?}   (see gap-classes)
   rule-rm <id> <n>                remove rule number n (from \`rules\`)
@@ -50,6 +52,8 @@ WRITE (all accept --dry-run; all print the admitted/dropped units realized in th
 
 BATCHES (ledger: data/vs_review.json)
   batch [--n 25]                  the open batch's remaining templates; opens the next batch if none is open
+  batch --low-yield               open a batch of every template with a low-yield slot (pool >= 20, under 20% realize),
+                                  reviewed or not; the list marks those slots with !
   batch status                    progress of the open batch + stats (deep, ~40 s) changed since the baseline
   done <id> "<note>"              mark a template of the open batch reviewed (note: what changed, or "kept")
 
@@ -62,6 +66,10 @@ FIXTURES (test/golden_sentences.json; checked by test/golden_sentences_test.js w
   fixture-rm <gid>                delete a slot fixture (a mistaken one; to change it, delete and add again)
   fixtures --sync                 mark open fixtures the generator now satisfies as fixed (the suite fails until you do)
   human <gid> right|wrong ["note"] record the native speaker's verdict on an unsure fixture (wrong flips it)
+
+TAGS: a slot's tags are ANDed (a word needs every tag). The slot's own word is always admitted. anyTags = OR within the
+  rule; noTags excludes; allow {ids} admits words regardless of tags; only {ids} replaces the whole filter with a list;
+  deny {ids} removes any word, the original included.
 
 LOOSENING LOOP: see "Verified-sentence tuning workflow" in handoff.md. In short, per variable slot:
   show -> tags <id> <i> -X --dry-run -> read every OK sentence -> keep (rerun without --dry-run) or try another tag.
@@ -82,6 +90,7 @@ const GAP_CLASSES = {
 	'particle-choice': 'the particle must change with the new word (에 vs 에서, 한테 vs 에게 for animacy) and the template keeps the old one',
 	'data-tag': 'not a mechanism: the right words exist but lack (or wrongly carry) a SemanticTag in data.js; list them in "units"',
 	'validator-reject': 'an existing validator rejects a natural sentence with the NEW word (errors the original also raises are already waived); name the error code',
+	'morphology': 'the validator accepts a malformed conjugation (받가지고, 사으라고, 찾실): the conjugator is wrong for that stem + ending',
 	'english': 'the Korean is fine but the generated English is wrong',
 	'template-error': 'the template itself was extracted wrongly (wrong unit, grammar or locking)',
 	'other': 'none of the above; the text must say what mechanism is missing'
@@ -100,7 +109,7 @@ function validateRule(rule) {
 	}
 	if (typeof rule.slot !== 'number') return 'slot rules need a numeric "slot"';
 	if ((rule.kind === 'anyTags' || rule.kind === 'noTags') && !(Array.isArray(rule.tags) && rule.tags.length)) return `${rule.kind} needs a non-empty "tags" array`;
-	if ((rule.kind === 'deny' || rule.kind === 'allow') && !(Array.isArray(rule.ids) && rule.ids.length && rule.ids.every(Number.isInteger))) return `${rule.kind} needs a non-empty "ids" array of unit ids`;
+	if (['deny', 'allow', 'only'].includes(rule.kind) && !(Array.isArray(rule.ids) && rule.ids.length && rule.ids.every(Number.isInteger))) return `${rule.kind} needs a non-empty "ids" array of unit ids`;
 	if (rule.kind === 'sd' && !(rule.key && Array.isArray(rule.values))) return 'sd needs "key" and a "values" array';
 	return null;
 }
@@ -326,6 +335,10 @@ function cmdSlot(id, i, flags) {
 	if (flags.open) return cmdSlotOpen(t, i, flags);
 	const pool = vg.getSlotCandidates(s).candidates;
 	console.log(`${t.id} slot ${i} (${s.originalSurface}, ${s.pos}) tags: ${s.tags.join(', ') || '(none)'}  pool ${pool.length}${isLocked(s) ? '  LOCKED' : ''}`);
+	if (flags.check && flags.ok) {
+		for (const u of pool) { const r = realizeWith(t, i, u[D.Id]); if (r.ok) console.log(`  ${u[D.Id]} ${r.ko}`); }
+		return;
+	}
 	if (flags.check) printRealized(t, i, pool, flags.all ? 0 : 60);
 	else (flags.all ? pool : pool.slice(0, 200)).forEach(u => console.log('  ' + fmtUnit(u)));
 }
@@ -438,7 +451,7 @@ function cmdReset(id, i, flags) {
 	console.log(flags['dry-run'] ? '  (dry run: nothing written)' : `  ${id}: reset ${i === undefined ? 'all slots' : 'slot ' + i} to default tags`);
 }
 
-const RULE_KINDS = ['anyTags', 'noTags', 'deny', 'allow', 'sd', 'gap'];
+const RULE_KINDS = ['anyTags', 'noTags', 'deny', 'allow', 'only', 'sd', 'gap'];
 function cmdRules(id) {
 	const t = getTpl(id);
 	if (!t.rules.length) { console.log(`${id}: no rules`); return; }
@@ -561,19 +574,28 @@ function reviewOrder() {
 	return keyed.map(k => k.t);
 }
 
+function lowYieldSlots(t) {
+	return variableSlots(t).filter(i => {
+		const pool = vg.getSlotCandidates(t.slots[i]).candidates;
+		if (pool.length < 20) return false;
+		return pool.filter(u => realizeWith(t, i, u[D.Id]).ok).length < pool.length * 0.2;
+	});
+}
+
 function openBatch(l) {
 	const b = l.batches[l.batches.length - 1];
-	return b && b.ids.some(id => !l.reviewed[id]) ? b : null;
+	return b && b.ids.some(id => !(l.reviewed[id] && l.reviewed[id].batch === b.n)) ? b : null;
 }
 
 function printBatch(b, l) {
-	const left = b.ids.filter(id => !l.reviewed[id]);
+	const left = b.ids.filter(id => !(l.reviewed[id] && l.reviewed[id].batch === b.n));
 	console.log(`batch ${b.n} (opened ${b.opened}): ${b.ids.length - left.length}/${b.ids.length} reviewed   (pools = variable slot:pool size)`);
 	for (const id of left) {
 		const t = vg.getVerifiedSentenceById(id);
 		if (!t) { console.log(`  ${id}  (MISSING TEMPLATE)`); continue; }
 		const g = U(Math.min(...t.grammarUnitIds));
-		const pools = variableSlots(t).map(i => `${i}:${vg.getSlotCandidates(t.slots[i]).count}`).join(' ');
+		const ly = b.lowYield ? new Set(lowYieldSlots(t)) : new Set();
+		const pools = variableSlots(t).map(i => `${i}:${vg.getSlotCandidates(t.slots[i]).count}${ly.has(i) ? '!' : ''}`).join(' ');
 		console.log(`  ${id.padEnd(16)} pools ${pools.padEnd(14)} [${g ? g[D.Korean] : '-'}]  ${sentenceOf(t)}`);
 	}
 	if (!left.length) console.log('  complete: run `batch status`, then hand off (see handoff.md)');
@@ -586,9 +608,12 @@ function cmdBatch(sub, flags) {
 	if (open) { printBatch(open, l); return; }
 	const n = Number(flags.n || 25);
 	const inBatch = new Set(l.batches.flatMap(b => b.ids));
-	const ids = reviewOrder().filter(t => !l.reviewed[t.id] && !inBatch.has(t.id)).slice(0, n).map(t => t.id);
+	const ids = flags['low-yield']
+		? vg.getAllVerifiedSentences().filter(t => lowYieldSlots(t).length > 0).map(t => t.id)
+		: reviewOrder().filter(t => !l.reviewed[t.id] && !inBatch.has(t.id)).slice(0, n).map(t => t.id);
 	if (!ids.length) { console.log('every template with a variable slot has been reviewed'); return; }
 	const b = { n: l.batches.length + 1, opened: today(), ids };
+	if (flags['low-yield']) b.lowYield = true;
 	if (flags['dry-run']) { console.log('(dry run: batch not opened)'); printBatch(b, l); return; }
 	l.batches.push(b);
 	writeLedger(l);
@@ -597,13 +622,13 @@ function cmdBatch(sub, flags) {
 
 function cmdDone(id, note, flags) {
 	const l = readLedger();
-	const b = l.batches.find(x => x.ids.includes(id));
+	const b = [...l.batches].reverse().find(x => x.ids.includes(id));
 	if (!b) throw new Error(`${id} is not in any batch (run \`batch\` to see the open batch)`);
 	if (!note || note.length < 4) throw new Error('done needs a note: what changed ("-food slot 1; gap tense-time") or "kept: already right"');
 	if (flags['dry-run']) { console.log('(dry run)'); return; }
 	l.reviewed[id] = { batch: b.n, note };
 	writeLedger(l);
-	const left = b.ids.filter(x => !l.reviewed[x]).length;
+	const left = b.ids.filter(x => !(l.reviewed[x] && l.reviewed[x].batch === b.n)).length;
 	console.log(`${id} reviewed (batch ${b.n}: ${left} left)`);
 }
 
@@ -657,7 +682,7 @@ function exampleKo(t, i, unitId) {
 	const open = withSlotTags(t, i, []);
 	open.slots[i].rules = [];
 	const r = realizeWith(open, i, unitId);
-	if (r.ok || r.ko) return r.ko;
+	if (r.ok) return r.ko;
 	const res = vg.generateSentenceFromTemplate(open, { targetUnitId: unitId, targetSlotIndex: i, varyMode: 'selected', unlockedSlots: [i] });
 	const m = res && res.message && res.message.match(/in: "([^"]+)"/);
 	return m ? m[1] : `(${U(unitId)[D.Korean]} in: ${sentenceOf(t)})`;
@@ -683,7 +708,11 @@ function cmdFixture(id, i, unitId, expect, reason, flags) {
 	fx.id = 'g' + String(maxN + 1).padStart(3, '0');
 	fx.addedAt = today();
 	console.log(`${fx.id} ${expect} ${fx.status}  ${fx.ko}   (${st.admitted ? 'generated today' : 'not generated today'}${st.note ? ': ' + st.note : ''})`);
-	if (fx.status === 'open' && !fx.gapClass) console.log('  NOTE: open = the generator violates this today. Fix the slot (tags/rule) or pass --gap-class if no rule can.');
+	if (fx.status === 'open' && !fx.gapClass) {
+		console.log(expect === 'ok'
+			? '  NOTE: open = the game cannot produce this sentence today. Admit the word first (tags/allow), then add the fixture, or pass --gap-class if nothing can.'
+			: '  NOTE: open = the game produces this sentence today. Exclude it (tags/deny), or pass --gap-class if no rule can.');
+	}
 	if (flags['dry-run']) { console.log('(dry run: nothing written)'); return; }
 	j.fixtures.push(fx);
 	writeGolden(j);
@@ -904,7 +933,7 @@ function cmdIngest(file, flags) {
 function parseArgs(argv) {
 	const pos = [];
 	const flags = {};
-	const BOOL = new Set(['all', 'check', 'dry-run', 'summary', 'unsure', 'open', 'sync', 'deep', 'by-tag']);
+	const BOOL = new Set(['all', 'check', 'dry-run', 'summary', 'unsure', 'open', 'sync', 'deep', 'by-tag', 'low-yield', 'ok']);
 	for (let k = 0; k < argv.length; k++) {
 		const a = argv[k];
 		if (a.startsWith('--')) {
