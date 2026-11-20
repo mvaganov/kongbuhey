@@ -92,6 +92,61 @@
 				"vs_373",
 				"vs_92"
 			]
+		},
+		{
+			"n": 4,
+			"opened": "2026-11-20",
+			"ids": [
+				"vs_376",
+				"vs_378",
+				"vs_387",
+				"vs_390",
+				"vs_407",
+				"vs_408",
+				"vs_414",
+				"vs_415",
+				"vs_417",
+				"vs_447",
+				"vs_448",
+				"vs_466",
+				"vs_472",
+				"vs_493",
+				"vs_4",
+				"vs_12",
+				"vs_18",
+				"vs_46",
+				"vs_73",
+				"vs_78",
+				"vs_79",
+				"vs_81",
+				"vs_101",
+				"vs_115",
+				"vs_120",
+				"vs_124",
+				"vs_151",
+				"vs_167",
+				"vs_173",
+				"vs_177",
+				"vs_181",
+				"vs_212",
+				"vs_233",
+				"vs_256",
+				"vs_259",
+				"vs_271",
+				"vs_281",
+				"vs_282",
+				"vs_294",
+				"vs_314",
+				"vs_316",
+				"vs_317",
+				"vs_320",
+				"vs_326",
+				"vs_331",
+				"vs_341",
+				"vs_358",
+				"vs_361"
+			],
+			"lowYield": true
 		}
 	],
 	"reviewed": {
@@ -100,8 +155,8 @@
 			"note": "slot0 -appliance, noTags vehicles/places/media/documents etc, deny 것 주머니"
 		},
 		"vs_181": {
-			"batch": 1,
-			"note": "kept: slot2 pool already restricted to buyable-object verbs, natural"
+			"batch": 4,
+			"note": "low-yield slot 2: kept 6 of 18"
 		},
 		"vs_185": {
 			"batch": 1,
@@ -132,20 +187,20 @@
 			"note": "slot0 -discourse (+아주 좀 너무 ...); slot1 kept (pool 73 natural)"
 		},
 		"vs_378": {
-			"batch": 1,
-			"note": "slot1 +배우다 공부하다 알다 이해하다 따라하다 (denied 놓다 두다 준비 확인); slot0 pool 9 languages kept"
+			"batch": 4,
+			"note": "low-yield slot 1: kept 5 of 6"
 		},
 		"vs_417": {
-			"batch": 1,
-			"note": "slot0 widened (만화책), slot1 +사다 받다 찾다 고르다 정리 버리다 팔다...; gap 보다 rejected"
+			"batch": 4,
+			"note": "low-yield slot 1: kept 11 of 15"
 		},
 		"vs_450": {
 			"batch": 1,
 			"note": "slot0 widened to people (family/jobs/names), slot1 +이야기하다"
 		},
 		"vs_120": {
-			"batch": 1,
-			"note": "slot0 -home -electronics (+세탁기 선풍기 벽시계 가전제품); slot1 kept (10 object-fit verbs)"
+			"batch": 4,
+			"note": "low-yield slot 1: kept 5 of 10"
 		},
 		"vs_134": {
 			"batch": 1,
@@ -160,8 +215,8 @@
 			"note": "slot0 weather->general adjectives (간단 깨끗 편하 ...) minus negative/odd ones; slot1 되다 pool1 kept"
 		},
 		"vs_12": {
-			"batch": 1,
-			"note": "kept: template-error (colon segment mismatch rejects every candidate)"
+			"batch": 4,
+			"note": "low-yield slot 2: kept 2 of 16"
 		},
 		"vs_228": {
 			"batch": 1,
@@ -394,6 +449,178 @@
 		"vs_373": {
 			"batch": 3,
 			"note": "slot1 allow 가다,타다"
+		},
+		"vs_376": {
+			"batch": 4,
+			"note": "low-yield slot 4: kept 10 of 26"
+		},
+		"vs_387": {
+			"batch": 4,
+			"note": "low-yield slot 3: kept 4 of 23"
+		},
+		"vs_390": {
+			"batch": 4,
+			"note": "low-yield slot 5: kept 4 of 20"
+		},
+		"vs_407": {
+			"batch": 4,
+			"note": "low-yield slot 4: kept 7 of 26"
+		},
+		"vs_408": {
+			"batch": 4,
+			"note": "low-yield slots 1,3: kept 7 of 21, 9 of 44"
+		},
+		"vs_414": {
+			"batch": 4,
+			"note": "low-yield slot 2: kept 4 of 23"
+		},
+		"vs_415": {
+			"batch": 4,
+			"note": "low-yield slot 6: kept 4 of 23"
+		},
+		"vs_447": {
+			"batch": 4,
+			"note": "low-yield slot 6: kept 5 of 40"
+		},
+		"vs_448": {
+			"batch": 4,
+			"note": "low-yield slots 1,3: kept 9 of 41, 2 of 10"
+		},
+		"vs_466": {
+			"batch": 4,
+			"note": "low-yield slots 0,1: kept 1 of 1, 8 of 32"
+		},
+		"vs_472": {
+			"batch": 4,
+			"note": "low-yield slot 5: kept 11 of 40"
+		},
+		"vs_493": {
+			"batch": 4,
+			"note": "low-yield slot 2: kept 5 of 16"
+		},
+		"vs_4": {
+			"batch": 4,
+			"note": "low-yield slot 10: kept 2 of 14"
+		},
+		"vs_18": {
+			"batch": 4,
+			"note": "low-yield slot 9: kept 1 of 15"
+		},
+		"vs_46": {
+			"batch": 4,
+			"note": "low-yield slot 7: kept 3 of 9"
+		},
+		"vs_73": {
+			"batch": 4,
+			"note": "low-yield slot 6: only original"
+		},
+		"vs_78": {
+			"batch": 4,
+			"note": "low-yield slot 14: only original"
+		},
+		"vs_79": {
+			"batch": 4,
+			"note": "low-yield slot 3: kept 2 of 9"
+		},
+		"vs_81": {
+			"batch": 4,
+			"note": "low-yield slot 3: kept 2 of 33"
+		},
+		"vs_101": {
+			"batch": 4,
+			"note": "low-yield slot 7: kept 3 of 23"
+		},
+		"vs_115": {
+			"batch": 4,
+			"note": "low-yield slot 4: kept 1 of 25"
+		},
+		"vs_124": {
+			"batch": 4,
+			"note": "low-yield slot 3: kept 4 of 17"
+		},
+		"vs_151": {
+			"batch": 4,
+			"note": "low-yield slot 6: only original"
+		},
+		"vs_167": {
+			"batch": 4,
+			"note": "low-yield slot 4: kept 1 of 18; others malformed"
+		},
+		"vs_173": {
+			"batch": 4,
+			"note": "low-yield slot 6: kept 3 of 18"
+		},
+		"vs_177": {
+			"batch": 4,
+			"note": "low-yield slot 0: kept 9 of 15"
+		},
+		"vs_212": {
+			"batch": 4,
+			"note": "low-yield slot 2: kept 5 of 27"
+		},
+		"vs_233": {
+			"batch": 4,
+			"note": "low-yield slot 7: kept 3 of 18"
+		},
+		"vs_256": {
+			"batch": 4,
+			"note": "low-yield slot 3: kept 2 of 8"
+		},
+		"vs_259": {
+			"batch": 4,
+			"note": "low-yield slots 4,8: only original"
+		},
+		"vs_271": {
+			"batch": 4,
+			"note": "low-yield slot 1: kept 2 of 27"
+		},
+		"vs_281": {
+			"batch": 4,
+			"note": "low-yield slot 4: kept 4 of 21"
+		},
+		"vs_282": {
+			"batch": 4,
+			"note": "low-yield slot 5: kept 1 of 22"
+		},
+		"vs_294": {
+			"batch": 4,
+			"note": "low-yield slot 1: only original"
+		},
+		"vs_314": {
+			"batch": 4,
+			"note": "low-yield slot 5: only original"
+		},
+		"vs_316": {
+			"batch": 4,
+			"note": "low-yield slot 8: only original"
+		},
+		"vs_317": {
+			"batch": 4,
+			"note": "low-yield slot 5: only original"
+		},
+		"vs_320": {
+			"batch": 4,
+			"note": "low-yield slot 0: only original"
+		},
+		"vs_326": {
+			"batch": 4,
+			"note": "low-yield slot 4: kept 2 of 10"
+		},
+		"vs_331": {
+			"batch": 4,
+			"note": "low-yield slot 5: only original"
+		},
+		"vs_341": {
+			"batch": 4,
+			"note": "low-yield slot 6: only original; other stems malformed"
+		},
+		"vs_358": {
+			"batch": 4,
+			"note": "low-yield slot 1: only original"
+		},
+		"vs_361": {
+			"batch": 4,
+			"note": "low-yield slot 3: kept 4 of 28"
 		}
 	}
 }
