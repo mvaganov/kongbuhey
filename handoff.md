@@ -139,6 +139,11 @@ code, measure it across all templates before reviewing more.
 
 Batch log: 1 (2026-11-20, Sonnet): 25 templates, 67 slot fixtures (19 unsure), gaps mostly validator-reject; the Opus pass added the
 original-word guarantee, the baseline waiver, `allow` rules, `slot --open`, `unit`, `fixture-rm`, `stats --deep`. 6,436 -> 7,617 sentences.
+Batch 2 (2026-11-20, Sonnet, ~135k tokens): 25 templates (입니다, 이/가, 에, 을/를). Opus pass: `allow` rules now land (the target check
+re-implemented eligibility), intransitive verbs with a `collocation_filter` take the objects it names, verb data: 가다 + `motion_activity`
+nouns (new tag: 여행, 유학, 해외여행, ...), 넣다 + ingredient, 보다 + reading, 잘하다 + language/sports/instrument. -> 7,788 sentences.
+Left: 5 validator-reject gaps (살다+person adnominal, 춥다 with a person subject, 단순한 + clothing, 여러분/너희 + 말하다, 만나다-type
+verbs without an object), 53 low-yield slots (wide verb pools filtered by collocation).
 
 **Owner:** `node tools/vs_tune.js fixtures --unsure` is the native-speaker list; record answers with `human <gid> right|wrong`; commit.
 

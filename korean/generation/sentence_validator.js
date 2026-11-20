@@ -171,7 +171,7 @@ function validateSentenceAST(ast, realized) {
 					((verbKo === "자다" || verbKo === "주무시다") && objKo === "잠") ||
 					(verbKo === "꾸다" && objKo === "꿈") ||
 					(verbKo === "추다" && objKo === "춤") ||
-					((verbKo === "가다" || verbKo === "오다" || verbKo === "다니다") && COGNATE_MOTION_ACTIVITIES.has(objKo));
+					((verbKo === "가다" || verbKo === "오다" || verbKo === "다니다") && (COGNATE_MOTION_ACTIVITIES.has(objKo) || hasTag(objUnit, "motion_activity")));
 				const hasTransitiveTag = verbUnit && (
 					hasTag(verbUnit, "transitive", K.TRANSITIVE_GENERAL) ||
 					verbKo === "보이다" ||

@@ -1993,7 +1993,10 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 							(targetSemData && targetSemData.type === K.INTRANSITIVE);
 						const isPersonDativeOnly = _hasTag(targetVerb, "dative_humble", K.DATIVE_PERSON) ||
 							(targetSemData && targetSemData.req === K.PERSON && !_hasTag(objUnit, K.PERSON, K.FAMILY));
-						if (isIntransTarget || isPersonDativeOnly) {
+						// An intransitive verb with a collocation_filter takes exactly the objects the filter names
+						// (여행을 가다, 영어를 잘하다); the filter check below decides.
+						const intransWithObjectFilter = isIntransTarget && Boolean(targetSemData && targetSemData.collocation_filter);
+						if ((isIntransTarget && !intransWithObjectFilter) || isPersonDativeOnly) {
 							errors.push({
 								code: "VERB_OBJECT_COLLOCATION_MISMATCH",
 								message: `Intransitive or person-only verb '${vKo}' cannot take object '${objUnit[DATA_SCHEMA.Korean] || ""}' in: "${realized.ko}"`
@@ -2617,7 +2620,10 @@ function generateSentenceFromTemplate(templateOrId, options = {}) {
 				if (targetUnitId !== null && sIdx === targetSlotIndex && units[targetUnitId] && units[targetUnitId][DATA_SCHEMA.PartofSpeech] === slot.pos) {
 					const tUnit = units[targetUnitId];
 					const reqTags = Array.isArray(slot.tags) ? slot.tags : [];
-					const satisfiesSlotTags = (reqTags.every(t => _hasTag(tUnit, t)) && slotRulesAllow(tUnit, slot)) || slot.originalUnitId === targetUnitId;
+					// In the slot's pool = eligible (covers allow rules and the original word); the tag test is kept for
+					// callers that pass pool-narrowing options (onlyFromSet) that the target must bypass.
+					const satisfiesSlotTags = slotPool.candidates.some(c => c[DATA_SCHEMA.Id] === targetUnitId)
+						|| (reqTags.every(t => _hasTag(tUnit, t)) && slotRulesAllow(tUnit, slot)) || slot.originalUnitId === targetUnitId;
 					if (satisfiesSlotTags) {
 						chosenUnit = tUnit;
 					}

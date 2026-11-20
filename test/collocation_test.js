@@ -169,7 +169,9 @@ assert(readCandidates.every(n => hasTag(n, "reading")), "All 읽다 candidates h
 // 보다 (visual media)
 const visualCandidates = getNounCandidatesForVerb(watchVerb);
 assert(visualCandidates.length > 0, "보다 has matching noun candidates", `Found ${visualCandidates.length}`);
-assert(visualCandidates.every(n => hasTag(n, "visual_media")), "All 보다 candidates have 'visual_media' tag (영화, 드라마, 뉴스, 텔레비전)");
+// Reading material is also looked at (신문을 보다, 책을 보다; slot fixture g029, 2026-11-20).
+assert(visualCandidates.every(n => hasTag(n, "visual_media", "reading")), "All 보다 candidates have 'visual_media' or 'reading' tag (영화, 드라마, 뉴스, 신문, 책)");
+assert(visualCandidates.some(n => n[DATA_SCHEMA.Korean] === "신문") && !visualCandidates.some(n => n[DATA_SCHEMA.Korean] === "밥"), "보다 takes 신문 but not 밥");
 
 // 듣다 (audio/music)
 const listenCandidates = getNounCandidatesForVerb(listenVerb);
