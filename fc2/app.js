@@ -272,6 +272,7 @@ class FC2App {
 	go(tab) {
 		if (tab !== 'play' && this.tab === 'play') this.session.combo = 0;
 		this.tab = tab;
+		FX.clear();   // a burst left mid-flight must not survive a screen change
 		this.ensureQuests();
 		if (tab === 'play' && !this.card) this.pickCard();
 		this.renderTabs();

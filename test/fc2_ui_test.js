@@ -162,6 +162,15 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(bad === 0, `no trial offers two answers that differ only by case, spacing or a parenthetical (${bad} bad)`);
 	});
 
+	await step('screen change clears the particle canvas', async () => {
+		let cleared = 0;
+		const orig = w.FC2Fx.clear;
+		w.FC2Fx.clear = (...a) => { cleared++; return orig.apply(w.FC2Fx, a); };
+		app.go('map'); app.go('play'); app.go('map');
+		w.FC2Fx.clear = orig;
+		assert(typeof orig === 'function' && cleared >= 3, `every tab switch clears the effects canvas (${cleared} clears for 3 switches)`);
+	});
+
 	await step('number board', async () => {
 		app.closeModal();
 		app.g.coins = 25; app.go('shop');

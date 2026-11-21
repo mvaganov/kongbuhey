@@ -24,12 +24,25 @@ function ensureCanvas() {
 		if (ctx) ctx.setTransform(d, 0, 0, d, 0, 0);
 	};
 	size();
-	window.addEventListener('resize', size);
+	window.addEventListener('resize', () => { size(); wipe(); });
+	// rAF stops in a background tab, which freezes the last frame on screen: clear it instead of resuming a stale burst.
+	document.addEventListener('visibilitychange', () => { if (document.hidden) clear(); });
 	return Boolean(ctx);
 }
 
+/** Wipe the whole bitmap (identity transform, real pixel size), whatever the CSS size or devicePixelRatio is right now. */
+function wipe() {
+	if (!ctx) return;
+	ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.restore();
+}
+
+/** Drop every live particle and blank the canvas. Called on screen changes and when the page is hidden. */
+function clear() { parts = []; running = false; wipe(); }
+
 function tick() {
-	ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+	wipe();
 	parts = parts.filter(p => p.life > 0);
 	for (const p of parts) {
 		p.vy += p.g; p.x += p.vx; p.y += p.vy; p.vx *= 0.985; p.life -= 1; p.rot += p.spin;
@@ -162,5 +175,5 @@ function buzz(pattern) {
 	if (opts.haptics && navigator.vibrate) { try { navigator.vibrate(pattern); } catch (_) { /* optional */ } }
 }
 
-window.FC2Fx = { opts, burst, burstAt, floatText, fly, countUp, banner, flash, sfx, buzz };
+window.FC2Fx = { opts, burst, burstAt, floatText, fly, countUp, banner, flash, sfx, buzz, clear };
 })();
