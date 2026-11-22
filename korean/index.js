@@ -15,13 +15,13 @@
  * | F1      | Basic Hangul & Syllables               | korean/core/primitives.js             | Built-in Jamo tables                  |
  * | F2      | Numeral Systems (Sino & Native)        | korean/core/numbers.js                | Dynamically loaded from data.js       |
  * | F3      | Regular Verb Conjugation & Particles   | korean/core/morphology.js             | Built-in affix rules                  |
- * | F4      | Phonological Assimilation              | korean/core/morphology.js             | korean/specs/pronunciation_rules.js   |
+ * | F4      | Phonological Assimilation              | korean/core/morphology.js             | data/pronunciation_rules.js           |
  * | F5      | Honorific & Humble Suppletion          | korean/core/morphology.js             | data.js (HonorificRules, sv)          |
  * | F6      | Classifier / Counter Concord           | korean/concord/classifier_concord.js  | data.js (counters, measureWord)       |
  * | F7      | Deictic & Spatial Concord              | korean/concord/spatial_concord.js     | data.js (deictic, position)           |
  * | F8      | Mood, Modality & Negation              | korean/concord/mood_concord.js        | data.js (imperative, inability, etc.) |
  * | F9      | Adverbial & NPI Concord                | korean/concord/adverbial_concord.js   | data.js (adverb_degree, npi, etc.)    |
- * | F10     | Verb Argument & Case Frames            | korean/core/morphology.js             | korean/specs/verb_argument_specs.js   |
+ * | F10     | Verb Argument & Case Frames            | korean/core/morphology.js             | data/verb_argument_specs.js           |
  * | F11     | Clausal Connective Concord             | korean/concord/clausal_validation.js  | data.js (clausalConnectives)          |
  * |         |                                        | korean/concord/clausal_generator.js   |                                       |
  *
@@ -64,8 +64,8 @@ const phonetics = require('./phonetics/pronunciation.js');
 const englishPhonemes = require('./phonetics/english_phonemes.js');
 
 // 3. Declarative Specs & Evaluators
-const verbSpecs = require('./specs/verb_argument_specs.js');
-const pronunciationSpecs = require('./specs/pronunciation_rules.js');
+const verbSpecs = require('../data/verb_argument_specs.js');
+const pronunciationSpecs = require('../data/pronunciation_rules.js');
 const filterEvaluator = require('./utils/filter_evaluator.js');
 const lutSerializer = require('./utils/lut_serializer.js');
 

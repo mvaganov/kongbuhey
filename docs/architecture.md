@@ -27,6 +27,45 @@ Last reviewed 2026-11-22.
   Treat every such literal as code debt with interest: it hides a rule from the data tools and from the owner, and it drifts from the data.
   Do not pay it down as a standalone sweep. When a change already touches how the code handles a word or rule, move that knowledge into the
   data in the same change, pinned by a fixture, and never add new literals.
+- **Hangul constants scheme (agreed 2026-11-22, migration in progress).** Every Hangul literal that engine code depends on lives in
+  `data/hangul_constants.js` (`HANGUL_CONSTANTS`, loaded right after `data/constants.js`). Each entry's comment states the rule and either
+  `Data fix: <tag or SemanticData field>` or `Mechanics` (grammar machinery that legitimately lives in code). Regexes are built from these
+  constants with `new RegExp(...)` at module load; no Hangul inside regex literals.
+  - **Naming:** a table moves whole, under ONE name for what the code does with it (not one name per word). A lone literal gets a
+    use-specific name `<AREA>_<RULE>_<ROLE>`; two rules that test the same spelling get two names, because their reasons, and so their
+    future fixes, differ. `AREA` is the owning function or module.
+  - **Scope:** engine code (`korean/`, `shared/`). Exempt by decision: tools (`tools/`, `test/`, root CLIs), user interface (`fc2/`,
+    `flashcards/`, `webapp/`), data files, and error/log message text. Magic unit ids (`g.id === 645`, `units[66]`,
+    `[322, 1383].includes(g.unitId)`) count as the same kind of debt.
+  - **Tool: `tools/hangul_literals.js`.** Default lists every literal (`file:line function kind text`); `--summary` (the scale),
+    `--by-file`, `--by-function` (with the lines each function spans, comment header included), `--compare` (single-value comparisons
+    and unit ids, with chains marked), `--tables` (every table: size, name, free-floating or inside which function). Kinds: `compare`
+    (a word tested against one value: the most valuable to move into `data.js` tags), `table`, `regex`, `unit-id`, `other`. `[chainN]`
+    marks a run of single-value tests on the same subject (`a === 'x' || a === 'y'`, or consecutive ifs with identical bodies): a
+    ready-made table.
+  - **Enforcement:** `--check` runs in `node test.js` Stage 0 as a per-file ratchet against `test/hangul_literals_baseline.json`: a file
+    with more literals than its baseline fails (a new file must have none); a file with fewer also fails until you lock the gain in with
+    `--save-baseline`, so the numbers only go down.
+  - **Migration order, per function or table group** (each step verified by `node tools/bench_generation.js` and `node test.js`):
+    1. Chains -> a table: rewrite `a === 'x' || a === 'y'` / repeated identical ifs as one array or Set lookup. Do this first whenever the
+       code can be refactored to use a table instead of individual constants.
+    2. Inline tables inside functions -> hoisted to module level (also stops rebuilding them on every call).
+    3. Module-level ("free-floating") tables -> moved into `hangul_constants.js` whole, under one name.
+    4. Remaining single comparisons -> named constants, or better, a tag in `data.js` (then delete the code path).
+    5. Regexes -> `new RegExp` from named fragments. Most error-prone; give these to a stronger model.
+    Model fit: steps 2-3 are mechanical (Haiku can do uniform cases); step 1 is safe for Haiku only when every branch is the same test on
+    the same subject with an identical body (what `[chainN]` marks); anything with differing bodies, mixed tests or side effects, and
+    steps 4-5, need Sonnet or better. A behaviour change in generation fails the bench's output fingerprint; analyzer code is covered by
+    Stage 5 and the analyzer suites, not the bench.
+  - **This file and the tool are the place to look for quick code-quality wins:** read the entry names, pick one marked `Data fix`,
+    add the tag to the units, replace the spelling test with a tag test, delete the entry, lower the baseline.
+  - **Scale on 2026-11-22** (after the pilot and moving three rule-table files to `data/`; current numbers:
+    `node tools/hangul_literals.js --summary`): 5,797 literals in 29 files (60 more are exempt error text). compare 1,137 (503 of them in
+    209 chains), table 3,475 in 380 tables (85 module-level holding 968; most of the rest are anonymous inline lists inside functions),
+    regex 262, unit-id 130, other 793. Largest: `unit_sentence_generator.js` 2,194 (1,956 in tables), `argument_concord.js` 691 (72
+    module-level word lists such as `DRINKABLE_NOUNS`: semantic classes that are really missing data.js tags), `verified_sentence_generator.js`
+    643. Mixed files with a big spec table (`PARTICLE_SPECS` in `analyzer/particles.js`, `CLAUSAL_QUIZ_BANKS` in
+    `concord/clausal_generator.js`) can have the table extracted to `data/` the same way.
 
 ## 2. Data model
 - `data/data.js`: one array of unit rows, columns named by `DATA_SCHEMA`. **A unit id is its array position**, and progress everywhere is
@@ -34,6 +73,9 @@ Last reviewed 2026-11-22.
   readers resolve them (`resolveAliasUnit`, `FC2Store.foldAliases`). Enforced: Stage 1 (sequential ids, no references to aliases).
 - Tags are stored as `Set`s (`hasTag`). **Unit rows are not mutated at runtime** by any page; the generation caches below rely on that and
   key on the units array's identity, so a full data reload is safe but an in-place row edit would need a cache reset.
+- Rule tables that are data, not logic, live in `data/` beside the units, loaded by the pages as classic scripts and kept browser-safe
+  by ESLint: `verb_suffix_rules.js` (the analyzer's verb ending table), `pronunciation_rules.js`, `verb_argument_specs.js`
+  (moved from `korean/` 2026-11-22). A `korean/` file that is mostly a table belongs here too.
 - `data/verified_sentences.js`: ~550 templates (compact rows, hydrated on first use). Textbook text (`OriginalKo`, titles) lives in
   gitignored `local/verified_originals.js` and is overlaid when present; public builds show labels only. Enforced:
   `test/verified_originals_test.js`.

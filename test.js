@@ -151,7 +151,7 @@ function runTests(options = {}) {
 				}
 			}
 		}
-		const { VERB_SUFFIX_RULES } = require('./korean/analyzer/verb_suffix_rules.js');
+		const { VERB_SUFFIX_RULES } = require('./data/verb_suffix_rules.js');
 		for (const rule of VERB_SUFFIX_RULES) {
 			for (const g of rule.grammar) {
 				const u = KR_EN_languageUnits[g.id];
@@ -184,6 +184,12 @@ function runTests(options = {}) {
 					failFast("Stage 0 (Code Quality & Static Hygiene)", `Hardcoded magic unitId lookup found in '${path.relative(__dirname, filePath)}': '${magicGet[0]}'. Look up unit dynamically via index or express in data.js.`);
 				}
 			}
+		}
+
+		// 4b. Hangul literals and magic unit ids in engine code: a per-file ratchet (docs/architecture.md section 1, "Hangul constants scheme").
+		{
+			const r = require('child_process').spawnSync(process.execPath, [path.resolve(__dirname, 'tools', 'hangul_literals.js'), '--check'], { encoding: 'utf8' });
+			if (r.status !== 0) failFast("Stage 0 (Code Quality & Static Hygiene)", (r.stdout || '') + (r.stderr || ''));
 		}
 
 		// 5. Schema & Formatting Cleanliness

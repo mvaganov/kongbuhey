@@ -33,7 +33,7 @@ const {
 	getSubjectCandidatesForDescriptiveVerb
 } = (typeof require !== 'undefined' ? require('../core/morphology.js') : window);
 const { getSpatialPositions } = (typeof require !== 'undefined' ? require('../concord/spatial_concord.js') : window);
-const { ACTION_VERB_SPECS } = (typeof require !== 'undefined' ? require('../specs/verb_argument_specs.js') : window);
+const { ACTION_VERB_SPECS } = (typeof require !== 'undefined' ? require('../../data/verb_argument_specs.js') : window);
 
 function getProperNames() {
 	if (!state.properNames || state.properNames.length === 0) {

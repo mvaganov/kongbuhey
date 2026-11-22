@@ -44,7 +44,7 @@ const {
 	N_INSERTION_COMPOUNDS,
 	NON_N_INSERTION_WORDS,
 	LETTER_NAME_EXCEPTIONS
-} = (typeof require !== 'undefined' ? require('../specs/pronunciation_rules.js') : window);
+} = (typeof require !== 'undefined' ? require('../../data/pronunciation_rules.js') : window);
 
 /**
  * Phonetically resolves a single Korean token word according to Standard Pronunciation.

@@ -1028,7 +1028,8 @@ async function runSuite() {
 		}
 	};
 	mockWindow.window = mockWindow;
-	vm.runInNewContext(fs.readFileSync(path.resolve(__dirname, '../korean/generation/verified_originals.js'), 'utf8'), mockWindow); // browser load order
+	vm.runInNewContext(fs.readFileSync(path.resolve(__dirname, '../data/hangul_constants.js'), 'utf8'), mockWindow); // browser load order: right after constants.js
+	vm.runInNewContext(fs.readFileSync(path.resolve(__dirname, '../korean/generation/verified_originals.js'), 'utf8'), mockWindow);
 	const vsGenCode = fs.readFileSync(path.resolve(__dirname, '../korean/generation/verified_sentence_generator.js'), 'utf8');
 	vm.runInNewContext(vsGenCode, mockWindow);
 	const vsViewCode = fs.readFileSync(path.resolve(__dirname, '../webapp/verified_sentences_view.js'), 'utf8');

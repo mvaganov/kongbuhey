@@ -1,6 +1,8 @@
 (function() {
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('../../data/constants.js') : (typeof window !== 'undefined' ? window : {});
+const { HANGUL_CONSTANTS: HC } = (typeof require !== 'undefined') ? require('../../data/hangul_constants.js') : window;
+const SLOT_SHORTENED_CARDINALS = new Set(HC.SLOT_NATIVE_CARDINALS_SHORTENED_BEFORE_COUNTER);
 const { getVerifiedOriginals } = (typeof require !== 'undefined') ? require('./verified_originals.js') : window;
 
 /**
@@ -1094,20 +1096,19 @@ function isUnitEligibleForSlot(u, slot, ctx, options = {}) {
 		const isNumericSlot = slot.category === K.NUMERIC || slot.category === K.NUMERIC_PHRASE || Boolean(slot.inflection && slot.inflection.stemForm === K.NUMERIC);
 		if (uId === 1369) return false; // Bound noun 말 ('end') cannot substitute freely for time/generic slots
 		if ((uId === 1180 || uId === 1631) && !isOrigUnit) return false; // Post-nominal relational nouns 후/전 cannot replace bare time words (e.g. 이때 -> *후)
-		if (!isNumericSlot && uKo === "개월") return false;
+		if (!isNumericSlot && uKo === HC.SLOT_COUNTER_ONLY_IN_NUMERIC_SLOT_MONTHS) return false;
 		if (u[DATA_SCHEMA.PartofSpeech] === K.NUMBER && _hasTag(u, "attributive") && (ctx.slotHasParticle || ctx.slotMorph !== "")) return false;
 		if ((slot.category === "noun_plural" || (slot.grammar || []).some(g => g.unitId === 550)) && u[DATA_SCHEMA.PartofSpeech] !== K.NOUN) return false;
 		if (u[DATA_SCHEMA.PartofSpeech] === K.NUMBER && ctx.origUnit && ctx.origUnit[DATA_SCHEMA.PartofSpeech] === K.NUMBER) {
-			if ((uKo === "영" || uKo === "공") && (ctx.origUnit[DATA_SCHEMA.Korean] || "") !== "영" && (ctx.origUnit[DATA_SCHEMA.Korean] || "") !== "공") return false;
+			if (HC.SLOT_ZERO_WORDS_REPLACE_ONLY_ZERO.includes(uKo) && !HC.SLOT_ZERO_WORDS_REPLACE_ONLY_ZERO.includes(ctx.origUnit[DATA_SCHEMA.Korean] || "")) return false;
 			if (!_hasTag(ctx.origUnit, K.SINO_NUMBER)) {
 				if (_hasTag(u, K.SINO_NUMBER)) return false;
-				const CARDINAL_WITH_ATTRIBUTIVE_FORM = new Set(["하나", "둘", "셋", "넷", "열하나", "열둘", "열셋", "열넷", "스물"]);
-				if (!ctx.slotHasParticle && CARDINAL_WITH_ATTRIBUTIVE_FORM.has(uKo)) return false;
+				if (!ctx.slotHasParticle && SLOT_SHORTENED_CARDINALS.has(uKo)) return false;
 			}
 		}
 		if (ctx.origUnit && _hasTag(ctx.origUnit, K.FOOD) && _hasTag(u, K.PLACE, K.FACILITY, "institution")) return false;
-		const isBenefactiveSlot = (slot.grammar || []).some(g => g.unitId === 322 || g.unitId === 1383) || Boolean(slot.inflection && /주/.test(slot.inflection.suffix || ""));
-		if (isBenefactiveSlot && (uKo === "주다" || uKo.endsWith("주다") || uKo === "드리다")) return false;
+		const isBenefactiveSlot = (slot.grammar || []).some(g => g.unitId === 322 || g.unitId === 1383) || Boolean(slot.inflection && (slot.inflection.suffix || "").includes(HC.SLOT_BENEFACTIVE_SUFFIX_MARKER));
+		if (isBenefactiveSlot && (uKo.endsWith(HC.SLOT_BENEFACTIVE_EXCLUDED_MAIN_VERB_GIVE) || uKo === HC.SLOT_BENEFACTIVE_EXCLUDED_MAIN_VERB_GIVE_HONORIFIC)) return false;
 
 		if ((ctx.requiredPos === K.ACTION_VERB || ctx.requiredPos === K.DESCRIPTIVE_VERB) && uKo.includes(" ")) {
 			const origHasSpace = Boolean(ctx.origUnit && (ctx.origUnit[DATA_SCHEMA.Korean] || "").includes(" "));
@@ -1116,12 +1117,11 @@ function isUnitEligibleForSlot(u, slot, ctx, options = {}) {
 
 		if (isNumericSlot && ctx.origUnit) {
 			const origCounterKo = ctx.origUnit[DATA_SCHEMA.Korean] || "";
-			if (origCounterKo === "시" && uKo !== "시") return false;
-			if (origCounterKo !== "시" && uKo === "시") return false;
+			if ((origCounterKo === HC.SLOT_CLOCK_HOUR_COUNTER) !== (uKo === HC.SLOT_CLOCK_HOUR_COUNTER)) return false;
 		}
 
-		const hasPresAdn645 = Array.isArray(slot.grammar) && slot.grammar.some(g => g.id === 645 || g.text === "-는" || g.text === "는");
-		if (hasPresAdn645 && u[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB && !uKo.endsWith("있다") && !uKo.endsWith("없다")) {
+		const hasPresAdn645 = Array.isArray(slot.grammar) && slot.grammar.some(g => g.id === 645 || HC.SLOT_PRESENT_ADNOMINAL_ENDING_TEXTS.includes(g.text));
+		if (hasPresAdn645 && u[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB && !HC.SLOT_PRESENT_ADNOMINAL_DV_SUFFIXES.some(x => uKo.endsWith(x))) {
 			return false;
 		}
 

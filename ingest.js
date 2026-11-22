@@ -321,7 +321,7 @@ async function main() {
 				console.log(`    Suggested VERB_SUFFIX_RULES entry for verb_suffix_rules.js:\n    ${snippet}\n`);
 			}
 		}
-		console.log(`Tip: If any of these should decompose cleanly, update korean/analyzer/verb_suffix_rules.js or sentence_analyzer.js.`);
+		console.log(`Tip: If any of these should decompose cleanly, update data/verb_suffix_rules.js or sentence_analyzer.js.`);
 		console.log(`------------------------------------------------------\n`);
 	}
 

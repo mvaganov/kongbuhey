@@ -14,7 +14,7 @@ const { K } = (typeof require !== 'undefined') ? require('../../data/constants.j
 const { DATA_SCHEMA, decomposeHangul, composeHangul, setFinal, hasBatchim } =
 	(typeof require !== 'undefined' ? require('../core/primitives.js') : window);
 const { VERB_SUFFIX_RULES } =
-	(typeof require !== 'undefined' ? require('./verb_suffix_rules.js') : window);
+	(typeof require !== 'undefined' ? require('../../data/verb_suffix_rules.js') : window);
 
 /**
  * Matches conjugated verb ending patterns and recovers the underlying dictionary stem.

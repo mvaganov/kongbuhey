@@ -371,7 +371,7 @@ function deduceExistingVerbStem(surface, dataPath = DEFAULT_DATA_PATH) {
 
 /**
  * Generates a ready-to-paste JavaScript rule snippet for VERB_SUFFIX_RULES
- * in korean/analyzer/verb_suffix_rules.js based on a reverse-stem morphology match.
+ * in data/verb_suffix_rules.js based on a reverse-stem morphology match.
  */
 function generateVerbSuffixSnippet(morph) {
 	if (!morph || !morph.verbUnit) return null;
@@ -815,7 +815,7 @@ function auditSemanticTaxonomy(dataPath = DEFAULT_DATA_PATH, options = {}) {
 	const tagCounts = summary.tagCounts;
 
 	// Lazy require specs & rules
-	const { ACTION_VERB_SPECS, DESCRIPTIVE_VERB_SPECS } = require('./korean/specs/verb_argument_specs.js');
+	const { ACTION_VERB_SPECS, DESCRIPTIVE_VERB_SPECS } = require('./data/verb_argument_specs.js');
 	const { GRAMMAR_TAGS, CURRICULUM_TAXONOMY_TAGS, SEMANTIC_TAG_SELECTION_WHITELIST } = require('./korean/constants/tags.js');
 	const { auditSemanticRules } = require('./select.js');
 

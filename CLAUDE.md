@@ -48,6 +48,7 @@ statement. `test/cli_help_test.js` (in `node test.js --full`) finds CLIs by text
 - `tools/merge_units.js`: merge duplicate language units.
 - `tools/stamp.js`: fc2 build stamp.
 - `tools/bench_generation.js`: generation speed and output-unchanged check (baseline `test/bench_baseline.json`).
+- `tools/hangul_literals.js`: Hangul literals and magic unit ids in engine code (list, `--summary`, `--by-file`, `--by-function`, `--compare`, `--tables`); `--check` is a Stage 0 ratchet. New Hangul goes in `data/hangul_constants.js`.
 - `tools/only_expansion.js` (library): INSERT queues words that may fit `only`-list slots (`vs_tune.js expansions`).
 - `tools/exit_log.js` (library): logs every CLI's non-zero exit; `node test.js` prints them (a new CLI copies the `watch()` line).
 - External APIs (OpenAI-compatible, keys in gitignored `local/keys.env`): `https://api.exaone.ai/v1` model `k-exaone_v2.5`
@@ -71,7 +72,7 @@ The app has a "⚐ Bad sentence" button; "⬇ Flags" exports JSON into `flagged/
 Do not fix a flagged bug without a fixture. Do not mark a flag confirmed from memory: use the report.
 
 ## Rules
-- No NEW Hangul literals or unit IDs in generator/concord logic: put linguistic knowledge in `data.js` tags/SemanticData. Existing ones are code debt (`docs/architecture.md` section 1): move a rule into the data when a change already touches it. Stage 0 catches only some id patterns.
+- No NEW Hangul literals or unit IDs in generator/concord logic: put linguistic knowledge in `data.js` tags/SemanticData. Existing ones are code debt (`docs/architecture.md` section 1, Hangul constants scheme): move a rule into the data when a change already touches it. Stage 0 fails if any engine file gains a Hangul literal or magic unit id (`tools/hangul_literals.js --check`).
 - Multi-word grammar is declared in `SyntaxFrame` as `/*js:matcher*/` closures, compiled by `korean/analyzer/indexer.js`.
 - Judge refactors by behaviour and fixtures, not by grep counts.
 - TTS uses a native Korean voice only. English transliteration rules are pinned by `test/english_phonemes_test.js`.

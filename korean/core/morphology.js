@@ -74,10 +74,10 @@ const {
 	DOUBLE_CODA_SIMPLIFY,
 	H_ONSET_MAP,
 	NASAL_CODA
-} = (typeof require !== 'undefined' ? require('../specs/pronunciation_rules.js') : window);
+} = (typeof require !== 'undefined' ? require('../../data/pronunciation_rules.js') : window);
 
 const { ACTION_VERB_SPECS, DESCRIPTIVE_VERB_SPECS } =
-	(typeof require !== 'undefined' ? require('../specs/verb_argument_specs.js') : window);
+	(typeof require !== 'undefined' ? require('../../data/verb_argument_specs.js') : window);
 
 const { parseAndValidateCollocationFilter } =
 	(typeof require !== 'undefined' ? require('../utils/filter_evaluator.js') : window);

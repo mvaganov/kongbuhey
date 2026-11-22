@@ -50,7 +50,7 @@ module.exports = [
 	},
 	{
 		// Modules that must stay browser-safe (they are loaded by <script> tags in webapp/index.html).
-		files: ['korean/analyzer/**/*.js', 'korean/core/**/*.js'],
+		files: ['korean/analyzer/**/*.js', 'korean/core/**/*.js', 'data/verb_suffix_rules.js', 'data/pronunciation_rules.js', 'data/verb_argument_specs.js', 'data/hangul_constants.js'],
 		rules: {
 			'no-console': ['error', { allow: ['warn', 'error'] }],
 			'no-restricted-syntax': [

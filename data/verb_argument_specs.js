@@ -1,6 +1,6 @@
 (function() {
 // Universal Constants
-const { K } = (typeof require !== 'undefined') ? require('../../data/constants.js') : (typeof window !== 'undefined' ? window : {});
+const { K } = (typeof require !== 'undefined') ? require('./constants.js') : (typeof window !== 'undefined' ? window : {});
 
 /**
  * Action and Descriptive Verb Argument Specifications
@@ -9,7 +9,7 @@ const { K } = (typeof require !== 'undefined') ? require('../../data/constants.j
  * arguments, particles, and domain preference flags.
  */
 
-const { hasTag } = (typeof require !== 'undefined' ? require('../core/primitives.js') : window);
+const { hasTag } = (typeof require !== 'undefined' ? require('../korean/core/primitives.js') : window);
 
 const ACTION_VERB_SPECS = Object.freeze([
 	// Apparel (Fine-grained)
