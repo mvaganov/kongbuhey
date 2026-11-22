@@ -186,7 +186,7 @@ class FC2App {
 		return g;
 	}
 
-	save() { ls.set(LS + 'game', this.g); if (window.FC2Store) ls.set(LS + 'session', window.FC2Store.packSession(this.session, nowSec())); else store(); this.queueMirror(); }
+	save() { this.syncAvail(); ls.set(LS + 'game', this.g); if (window.FC2Store) ls.set(LS + 'session', window.FC2Store.packSession(this.session, nowSec())); else store(); this.queueMirror(); }
 	/** Write the progress mirror soon (debounced); flush() writes everything now (page hide, tab switch). */
 	queueMirror() { if (this.mirrorTimer) return; this.mirrorTimer = setTimeout(() => { this.mirrorTimer = null; this.writeMirror(); }, 250); }
 	/**
@@ -466,7 +466,29 @@ class FC2App {
 	}
 
 	// ---------- verified-sentence queue ("time to use it"): the front of the queue is generated first; a generated template goes to the back ----------
-	vqIds() { return window.getAllVerifiedSentences().map(t => t.id); }
+	vqIds() { const V = window.verifiedSentenceGenerator; return (V && V.getVerifiedTemplatesShared ? V.getVerifiedTemplatesShared() : window.getAllVerifiedSentences()).map(t => t.id); }
+
+	/**
+	 * Keep the generator's availability cache in step with the unlocked units. The cache catches up exactly whenever it is read; this
+	 * only starts a background sweep (6 ms slices, 40 ms apart) so the catching-up for every locked sentence is spread over time after an unlock.
+	 */
+	syncAvail() {
+		const V = window.verifiedSentenceGenerator;
+		if (!V || !V.syncOwnedUnits || !this.g) return;
+		try { if (V.syncOwnedUnits(this.g.owned)) this.availPump(); } catch (e) { reportError('availability cache', e); }
+	}
+
+	availPump() {
+		const V = window.verifiedSentenceGenerator;
+		if (!V || !V.availabilityStep || this.availTimer) return;
+		const run = () => {
+			this.availTimer = null;
+			let more = false;
+			try { more = V.availabilityStep(6); } catch (e) { reportError('availability sweep', e); }
+			if (more) this.availTimer = setTimeout(run, 40);
+		};
+		this.availTimer = setTimeout(run, 300);
+	}
 
 	vqUsed(sentences) {
 		const Q = window.FC2Queue;
@@ -480,7 +502,7 @@ class FC2App {
 	/** Verified sentences that fit the unit: ones the owned units can build first, then ones that still need an unlock; each group in queue order. */
 	vqRows() {
 		const rank = window.FC2Queue.rankMap(this.g.vq, this.vqIds());
-		return window.listVerifiedFitsForUnit(this.vqUnit, new Set(this.g.owned))
+		return window.listVerifiedFitsForUnit(this.vqUnit, this.g.owned)
 			.sort((a, b) => (a.missing.length > 0) - (b.missing.length > 0) || rank.get(a.templateId) - rank.get(b.templateId));
 	}
 
@@ -493,12 +515,12 @@ class FC2App {
 		const rows = this.vqRows();
 		if (!rows.length) return '<p class="muted">No verified sentence uses this unit. Its examples come from the generator.</p>';
 		const body = rows.map((r, i) => {
-			const miss = new Set(r.missing);
-			const status = !miss.size ? '<span class="vq-ok">✓ ready</span>'
-				: miss.size === 1 ? `<span class="vq-lock">🔒 needs ${this.vqChip(r.missing[0], 'need')}</span>`
-				: `<span class="vq-lock many" title="${escapeHtml('needs: ' + r.missing.map(id => this.units.get(id)[C.Korean]).join(', '))}">🔒 2+</span>`;
-			const chips = r.slots.map(s => this.vqChip(s.unitId, s.role === 'target' ? 'tgt' : miss.has(s.unitId) ? 'need' : '')).join('');
-			return `<li class="vq-row${miss.size ? ' locked' : ''}" data-tid="${escapeHtml(r.templateId)}"><span class="vq-grip" aria-label="Drag to reorder" title="Drag to reorder">⠿</span>
+			const miss = r.missing, missAt = new Set(miss.map(x => x.slotIndex).filter(x => x !== null));
+			const status = !miss.length ? '<span class="vq-ok">✓ ready</span>'
+				: miss.length === 1 ? `<span class="vq-lock">🔒 needs ${this.vqChip(miss[0].unitId, 'need')}${miss[0].pool > 1 ? `<small class="vq-alt">or any of ${miss[0].pool - 1} more</small>` : ''}</span>`
+				: `<span class="vq-lock many" title="${escapeHtml('needs: ' + miss.map(x => this.units.get(x.unitId)[C.Korean]).join(', '))}">🔒 2+</span>`;
+			const chips = r.slots.map(s => this.vqChip(s.unitId, s.role === 'target' ? 'tgt' : missAt.has(s.index) ? 'need' : '')).join('');
+			return `<li class="vq-row${miss.length ? ' locked' : ''}" data-tid="${escapeHtml(r.templateId)}"><span class="vq-grip" aria-label="Drag to reorder" title="Drag to reorder">⠿</span>
 				<div class="vq-main"><div class="vq-title"><b>${i + 1}</b> ${escapeHtml(r.ko || r.title)}</div><div class="vq-chips">${chips}</div><div class="vq-status">${status}</div></div>
 				<div class="vq-btns"><button type="button" class="btn small" data-act="vq-front" data-tid="${escapeHtml(r.templateId)}">⇧ Front</button><button type="button" class="btn small" data-act="vq-back" data-tid="${escapeHtml(r.templateId)}">⇩ Back</button></div></li>`;
 		}).join('');
@@ -948,6 +970,7 @@ class FC2App {
 		const shuffle = a => a.sort(() => Math.random() - 0.5), owned = this.g.owned;
 		const inIt = [...mine].filter(id => id !== k.id && owned.includes(id));
 		const sources = [...(cardNoun ? [] : [k.id]), ...shuffle(inIt.filter(id => !isNoun(id))), ...shuffle(owned.filter(id => id !== k.id && !mine.has(id) && !isNoun(id))).slice(0, 5), ...shuffle(inIt.filter(isNoun))].slice(0, 10);
+		const genBase = this.genOptions();   // owned set, strength mean and queue order once per quiz, not once per generation call (~30)
 		let perfect = 0;   // candidates with exactly the sentence's nouns: enough of them and we stop generating
 		// A cheap budget first (fast); only when it finds fewer than 3 distinct wrong answers (small unlock sets) retry with a generous one.
 		for (const budget of [{ n: 4, deep: 3, passes: 2, perfect: 3 }, { n: 6, deep: 4, passes: 3, perfect: 6 }]) {
@@ -955,7 +978,7 @@ class FC2App {
 			for (const [si, id] of sources.entries()) {
 				if (perfect >= budget.perfect) break;
 				let list = [];
-				try { for (let pass = 0; pass < (si < budget.deep ? budget.passes : 1); pass++) list.push(...Array.from(window.generateSentencesForUnit(id, budget.n, { ...this.genOptions(), preferUnitIds: nouns }))); } catch (_) { /* fewer candidates */ }
+				try { for (let pass = 0; pass < (si < budget.deep ? budget.passes : 1); pass++) list.push(...Array.from(window.generateSentencesForUnit(id, budget.n, { ...genBase, seedOffset: Math.floor(Math.random() * 997), preferUnitIds: nouns }))); } catch (_) { /* fewer candidates */ }
 				for (const c of list) {
 					const en = this.enOf(c), key = norm(en);
 					if (!en || c.ko === s.ko || seen.has(key)) continue;

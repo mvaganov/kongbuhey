@@ -461,6 +461,13 @@ for (const dvUnit of allDescriptiveVerbs) {
 	}
 }
 
+{ // mood_concord.js skips a forbidden form unless the text contains it literally: that is only exact while forms are plain text
+	const st = require('../korean/state.js');
+	const kinds = ['FORBIDDEN_DV_LONG_INABILITY_FORMS', 'FORBIDDEN_DV_IMPERATIVE_FORMS', 'FORBIDDEN_DV_PROPOSITIVE_FORMS', 'FORBIDDEN_DV_VOLITIONAL_FORMS'];
+	const special = kinds.flatMap(k => [...st[k].keys()].filter(f => /[.*+?^${}()|[\]\\]/.test(f)));
+	assert(kinds.every(k => st[k].size > 0) && special.length === 0, `forbidden mood forms are plain text, so the literal pre-check is exact (${special.slice(0, 3).join(', ')})`);
+}
+
 console.log("\n======================================================");
 console.log(`TOTAL TESTS: ${totalTests}`);
 console.log(`PASSED:      ${passedTests}`);

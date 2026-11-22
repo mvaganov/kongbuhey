@@ -121,5 +121,24 @@ const minG = (t) => (t.grammarUnitIds.length ? Math.min(...t.grammarUnitIds) : 1
 assert(order.length > 0 && minG(order[0]) === Math.min(...order.map(minG)) && order[0].slots.length <= order[1].slots.length,
 	'review order starts with the lowest grammar unit id, shortest template first');
 
+{ // Generation reads one shared template snapshot (no per-call deep clone): it must never mutate it, and edits must still reach it.
+	const shared = vg.getVerifiedTemplatesShared(), before = JSON.stringify(shared);
+	const owned = new Set(); for (let i = 0; i < 700; i++) owned.add(i);
+	for (let id = 0; id < 2045; id += 37) {
+		vg.generateVerifiedSentencesForUnit(id, 3, { seedOffset: id % 7 });
+		vg.generateVerifiedSentencesForUnit(id, 3, { seedOffset: 3, onlyFromSet: true, allowedUnitIds: owned, queueOrder: [] });
+	}
+	vg.listVerifiedFitsForUnit(79, [...owned]);
+	assert(vg.getVerifiedTemplatesShared() === shared && JSON.stringify(shared) === before, 'generation leaves the shared template snapshot unchanged (same array, same content)');
+	const copy = vg.getAllVerifiedSentences()[0];
+	copy.slots[0].tags.push('zz_mutated');
+	assert(!shared[0].slots[0].tags.includes('zz_mutated'), 'getAllVerifiedSentences() returns editable copies that do not touch the shared snapshot');
+	const id = shared[0].id, old = shared[0].title;
+	vg.updateVerifiedSentenceTitle(id, 'zz cache test');
+	assert(vg.getVerifiedTemplatesShared().find(t => t.id === id).title === 'zz cache test' && vg.getVerifiedTemplatesShared() !== shared, 'an edit rebuilds the snapshot');
+	vg.resetHardcodedVerifiedSentence(id);
+	assert(vg.getVerifiedTemplatesShared().find(t => t.id === id).title === old, 'resetting the edit restores the original');
+}
+
 console.log(`\nTOTAL: ${passed + failed}  PASSED: ${passed}  FAILED: ${failed}  KNOWN-BUGS(open): ${openCount}`);
 if (failed > 0) process.exit(1);

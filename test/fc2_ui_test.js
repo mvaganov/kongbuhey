@@ -44,6 +44,13 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 	await w.fc2App.ready;
 	const app = w.fc2App, G = w.FC2Game;
 	const click = sel => { const el = d.querySelector(sel); if (!el) throw new Error('missing ' + sel); el.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); };
+	// Every generateFor queues background quiz building (prefetchSoon) that blocks the event loop for seconds in jsdom and starves later
+	// steps' timers. A step that generates many times runs inside quiet(): prefetch is stubbed and the options are restored even on failure.
+	const quiet = async fn => {
+		const prefetch = app.prefetchSoon, opts = { ...app.opts };
+		app.prefetchSoon = () => {};
+		try { return await fn(); } finally { app.prefetchSoon = prefetch; Object.assign(app.opts, opts); }
+	};
 	const step = async (name, fn) => { try { await fn(); } catch (e) { assert(false, `${name}: ${e.message}`); } };
 
 	await step('boot', async () => {
@@ -171,12 +178,11 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(typeof orig === 'function' && cleared >= 3, `every tab switch clears the effects canvas (${cleared} clears for 3 switches)`);
 	});
 
-	await step('verified sentence queue', async () => {
+	await step('verified sentence queue', () => quiet(async () => {
 		const V = w.verifiedSentenceGenerator, ids = V.getAllVerifiedSentences().map(t => t.id), Q = w.FC2Queue;
 		const unit = 79;   // 공책: two verified templates fit it
-		const fits = V.listVerifiedFitsForUnit(unit, new Set());
+		const fits = V.listVerifiedFitsForUnit(unit, []);
 		assert(fits.length >= 2 && fits.every(r => r.slots.some(s => s.role === 'target' && s.unitId === unit)), `the unit has several fitting verified templates (${fits.length})`);
-		const prefetch = app.prefetchSoon; app.prefetchSoon = () => {};   // each generateFor would queue background quiz building that starves the next steps' timers
 		app.opts.onlyOwned = false; app.opts.count = 3;
 		// 1. the front of the queue is generated first, and a generated template goes to the back
 		for (const front of [fits[0].templateId, fits[1].templateId]) {
@@ -194,9 +200,8 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		// 3. the list view: ready sentences first, locked after; a single missing unit is highlighted, several show 2+
 		app.card = { id: unit, mode: 'learn', st: 'new', side: 'front', shownAt: Date.now(), trial: null, ...app.generateFor(unit) };
 		app.go('play');
-		const rowsOf = fitList => fitList.map(r => ({ ...r, need: r.needed.slice() }));
-		const target = rowsOf(fits).sort((a, b) => a.need.length - b.need.length)[0];
-		app.g.owned = [unit, ...target.need.slice(0, -1)];
+		const target = fits.map(r => ({ ...r, need: r.missing.map(m => m.unitId) })).sort((a, b) => a.need.length - b.need.length)[0];
+		app.g.owned = [unit, ...target.need.slice(0, -1)];   // everything the sentence needs except one unit
 		app.vqUnit = unit;
 		click('[data-act="vq-open"]');
 		assert(!d.querySelector('#modal').classList.contains('hidden') && d.querySelectorAll('.vq-row').length === fits.length, 'the Queue button opens one row per fitting verified sentence');
@@ -204,8 +209,8 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(rows.every(r => r.querySelector('.vq-ok, .vq-lock')) && d.querySelector('.vq-grip') && d.querySelector('[data-act="vq-front"]') && d.querySelector('[data-act="vq-back"]'), 'rows show a status, a drag grip and Front / Back buttons');
 		const lockedAfterReady = rows.map(r => r.classList.contains('locked')).every((l, i, a) => !l || a.slice(i).every(Boolean));
 		assert(lockedAfterReady, 'sentences the owned units can build come before the ones that need an unlock');
-		const one = rows.find(r => r.querySelector('.vq-lock:not(.many) .vq-chip.need'));
-		assert(one && one.dataset.tid === target.templateId, 'a sentence missing exactly one unit highlights that unit');
+		const one = rows.find(r => r.dataset.tid === target.templateId);
+		assert(one && one.querySelector('.vq-lock:not(.many) .vq-chip.need'), 'a sentence missing exactly one unit highlights that unit');
 		assert(rows.some(r => r.querySelector('.vq-lock.many') && /2\+/.test(r.querySelector('.vq-lock.many').textContent)) || fits.length < 2, 'a sentence missing several units is marked 2+');
 		// 4. reordering: Front / Back buttons and the drag move
 		const tids = () => [...d.querySelectorAll('.vq-row')].map(r => r.dataset.tid);
@@ -225,9 +230,54 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		// 5. the queue order is what the next generation uses
 		app.g.vq = Q.toFront(app.g.vq, ids, b);
 		assert(app.generateFor(unit).sentences[0].verifiedTemplateId === b, 'the order set in the list decides the next generated sentence');
-		app.prefetchSoon = prefetch; app.opts.onlyOwned = true;
 		app.closeModal();
-	});
+	}));
+
+	await step('availability: any fitting unlocked word opens a slot; cached; swept in slices', () => quiet(async () => {
+		const V = w.verifiedSentenceGenerator, tpls = V.getAllVerifiedSentences(), ids = tpls.map(t => t.id);
+		// 1. A slot is open when ANY unlocked unit fits it, not only the textbook word.
+		let found = null;
+		for (const tpl of tpls) {
+			const words = tpl.slots.map((slot, index) => ({ slot, index })).filter(x => typeof x.slot.originalUnitId === 'number');
+			if (words.length < 2) continue;
+			const target = words[0].slot.originalUnitId;
+			if (!V.findMatchingTemplatesForUnit(target).some(m => m.template.id === tpl.id && m.slotIndex === words[0].index)) continue;
+			const owned = new Set([target]);
+			for (const g of tpl.slots.flatMap(sl => sl.grammar || [])) if (typeof g.unitId === 'number') owned.add(g.unitId);
+			const swapped = [];
+			for (const x of words.slice(1)) {
+				const alt = V.getSlotCandidates(x.slot, {}).candidates.map(u => u[w.DATA_SCHEMA.Id]).find(id => id !== x.slot.originalUnitId);
+				if (alt !== undefined) { owned.add(alt); swapped.push(x.slot.originalUnitId); }
+			}
+			if (swapped.length !== words.length - 1) continue;
+			const row = V.listVerifiedFitsForUnit(target, owned).find(r => r.templateId === tpl.id);
+			if (row && !row.missing.length) { found = { tpl, target, owned, swapped }; break; }
+		}
+		assert(found && found.swapped.every(id => !found.owned.has(id)), 'found a sentence whose textbook words are locked but other unlocked words fit its slots');
+		if (found) {
+			const r = V.generateVerifiedSentencesForUnit(found.target, 3, { onlyFromSet: true, allowedUnitIds: new w.Set([...found.owned]), queueOrder: [found.tpl.id, ...ids.filter(i => i !== found.tpl.id)] });
+			const first = r.sentences[0];
+			assert(first && first.verifiedTemplateId === found.tpl.id, 'that sentence is generated');
+			assert(first && first.unitIds.every(id => found.owned.has(id)), `it uses only unlocked units (${first && first.ko})`);
+		}
+		// 2. Unlocking a unit re-checks only the locked slots against that one unit, in small slices.
+		V.syncOwnedUnits([]);
+		V.syncOwnedUnits([30]);
+		let slices = 0;
+		while (V.availabilityStep(0)) slices++;
+		const before = V.getAvailabilityStats();
+		assert(slices > 5 && before.entries === ids.length, `the first sweep is spread over many slices (${slices}) and covers every template (${before.entries})`);
+		const rowsFor = () => JSON.stringify(V.listVerifiedFitsForUnit(79, [30, 80]).map(r => [r.templateId, r.missing]));
+		V.syncOwnedUnits([30, 80]);
+		const lazy = rowsFor();   // read before any sweep: catches up on demand
+		while (V.availabilityStep(0)) slices++;
+		const after = V.getAvailabilityStats();
+		assert(after.slotComputes === before.slotComputes, 'an unlock recomputes no slot from scratch');
+		assert(after.unitChecks - before.unitChecks <= before.lockedSlots, `an unlock checks only the new unit against locked slots (${after.unitChecks - before.unitChecks} checks, ${before.lockedSlots} locked slots)`);
+		assert(after.lockedSlots < before.lockedSlots, `the new unit opens some locked slots (${before.lockedSlots} -> ${after.lockedSlots})`);
+		V.syncOwnedUnits([]); V.syncOwnedUnits([30, 80]);   // cold recompute for comparison
+		assert(rowsFor() === lazy, 'the incrementally updated cache gives exactly the cold-computed answer');
+	}));
 
 	await step('number board', async () => {
 		app.closeModal();

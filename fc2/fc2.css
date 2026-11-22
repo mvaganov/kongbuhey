@@ -255,3 +255,4 @@ code { background: var(--panel2); border-radius: 4px; padding: 1px 5px; }
 .vq-chip.need { background: var(--bad); color: #fff; font-weight: 700; } .vq-chip.need small { color: #ffe3e0; }
 .vq-ok { color: var(--good); font-size: 13px; font-weight: 700; } .vq-lock { font-size: 13px; color: var(--muted); } .vq-lock.many { color: var(--bad); font-weight: 800; }
 .vq-btns { display: flex; flex-direction: column; gap: 6px; justify-content: center; } .vq-btns .btn { min-height: 36px; padding: 6px 10px; font-size: 13px; }
+.vq-alt { margin-left: 6px; color: var(--muted); font-size: 11px; }

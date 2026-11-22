@@ -415,9 +415,11 @@ function serializeCompactTemplate(tpl) {
 }
 
 let cachedHydratedStatic = null;
+let templateEdits = 0;   // bumped on every template edit; the availability cache (further down) drops its entries when it changes
 
 function resetHardcodedVerifiedCache() {
 	cachedHydratedStatic = null;
+	templateEdits++;
 }
 
 function getHardcodedVerifiedArray() {
@@ -1192,25 +1194,16 @@ function getSlotCandidates(slot, options = {}) {
 		};
 	}
 
-	const ctx = buildSlotMatchContext(slot, units);
+	// Eligibility depends only on the slot, the unit data and options.isNegativeClause, so the full list is cached per slot object;
+	// the per-call set filter runs on that (short) list. The cold scan only visits units of the slot's part of speech.
+	const base = slotEligibleUnits(slot, units, Boolean(options.isNegativeClause));
 	const onlyFromSet = Boolean(options.onlyFromSet);
 	const allowedUnitIds = options.allowedUnitIds instanceof Set ? options.allowedUnitIds : null;
 	const targetUnitId = typeof options.targetUnitId === 'number' ? options.targetUnitId : null;
 
-	const candidates = [];
-	for (let i = 0; i < units.length; i++) {
-		const u = units[i];
-		if (!isUnitEligibleForSlot(u, slot, ctx, options)) continue;
-
-		if (onlyFromSet && allowedUnitIds) {
-			const uId = u[DATA_SCHEMA.Id];
-			if (uId !== targetUnitId && !allowedUnitIds.has(uId)) {
-				continue;
-			}
-		}
-
-		candidates.push(u);
-	}
+	const candidates = (onlyFromSet && allowedUnitIds)
+		? base.filter(u => { const uId = u[DATA_SCHEMA.Id]; return uId === targetUnitId || allowedUnitIds.has(uId); })
+		: base.slice();
 
 	return {
 		candidates,
@@ -1219,6 +1212,40 @@ function getSlotCandidates(slot, options = {}) {
 		isZeroChoice: candidates.length === 0,
 		singleChoiceUnit: candidates.length === 1 ? candidates[0] : null
 	};
+}
+
+// units array -> Map(part of speech -> units of that POS, in data order). isUnitEligibleForSlot rejects any other POS first thing.
+const _posIndex = new WeakMap();
+function unitsByPos(units) {
+	let m = _posIndex.get(units);
+	if (!m) {
+		m = new Map();
+		for (const u of units) {
+			if (!u) continue;
+			const pos = u[DATA_SCHEMA.PartofSpeech];
+			if (!m.has(pos)) m.set(pos, []);
+			m.get(pos).push(u);
+		}
+		_posIndex.set(units, m);
+	}
+	return m;
+}
+
+// slot object -> { units, ctx, lists: [positive, negative] }: match context and eligible units, computed once per slot.
+const _slotMemo = new WeakMap();
+function slotMemo(slot, units) {
+	let m = _slotMemo.get(slot);
+	if (!m || m.units !== units) { m = { units, ctx: buildSlotMatchContext(slot, units), lists: [null, null] }; _slotMemo.set(slot, m); }
+	return m;
+}
+function cachedSlotContext(slot, units) { return slotMemo(slot, units).ctx; }
+function slotEligibleUnits(slot, units, negative) {
+	const m = slotMemo(slot, units), k = negative ? 1 : 0;
+	if (!m.lists[k]) {
+		const opts = negative ? { isNegativeClause: true } : {};
+		m.lists[k] = (unitsByPos(units).get(m.ctx.requiredPos) || []).filter(u => isUnitEligibleForSlot(u, slot, m.ctx, opts));
+	}
+	return m.lists[k];
 }
 
 /**
@@ -2526,7 +2553,7 @@ function waiveBaselineErrors(template, valResult, sentences) {
  */
 function generateSentenceFromTemplate(templateOrId, options = {}) {
 	const template = (typeof templateOrId === 'string')
-		? getVerifiedSentenceById(templateOrId)
+		? (getVerifiedSnapshot().byId.get(templateOrId) || null)
 		: templateOrId;
 
 	if (!template || !Array.isArray(template.slots) || template.slots.length === 0) {
@@ -2903,6 +2930,7 @@ function _loadStateFromLocalStorage() {
 }
 
 function _saveStateToLocalStorage() {
+	templateEdits++;   // every template mutation ends here: cached availability is stale
 	if (typeof window === 'undefined' || !window.localStorage) return;
 	try {
 		const stateObj = exportVerifiedSentencesState();
@@ -2955,8 +2983,18 @@ function getPosDeck(pos) {
  * Computes the difficulty score of a Verified Sentence structure based on the
  * average PriorityScore of its mandatory slots (fixed grammar or single choice) and grammar units.
  */
+// Difficulty depends only on the template and the unit data: memoized per template object (shared snapshot objects are stable).
+const _difficultyMemo = new WeakMap();
 function computeTemplateDifficulty(tpl) {
 	if (!tpl) return { difficultyScore: 2.5, mandatoryElements: [], mandatoryElementsCount: 0 };
+	const units = getUnitsArray(), hit = _difficultyMemo.get(tpl);
+	if (hit && hit.units === units) return hit.value;
+	const value = computeTemplateDifficultyUncached(tpl);
+	_difficultyMemo.set(tpl, { units, value });
+	return value;
+}
+
+function computeTemplateDifficultyUncached(tpl) {
 	const units = getUnitsArray();
 	const mandatoryScores = [];
 	const mandatoryElements = [];
@@ -3023,13 +3061,14 @@ function computeTemplateDifficulty(tpl) {
 
 function getPrioritizedVerifiedSentences() {
 	ensureRuntimeInitialized();
-	const all = getAllVerifiedSentences();
+	const all = getVerifiedTemplatesShared();
+	if (_prioritizedTemplates && _prioritizedTemplates.of === all) return _prioritizedTemplates.list;
 	const scored = all.map(tpl => ({
 		template: tpl,
 		...computeTemplateDifficulty(tpl)
 	}));
 	scored.sort((a, b) => a.difficultyScore - b.difficultyScore || a.id.localeCompare(b.id));
-	_prioritizedTemplates = scored;
+	_prioritizedTemplates = { of: all, list: scored };
 	return scored;
 }
 
@@ -3037,8 +3076,8 @@ function ensureRuntimeInitialized() {
 	if (_runtimeInitialized) return;
 	_runtimeInitialized = true;
 	_loadStateFromLocalStorage();
-	buildPosDecks();
-	getPrioritizedVerifiedSentences();
+	// The POS decks and the difficulty ranking are built on demand (getPosDecks / getPrioritizedVerifiedSentences, webapp decks view):
+	// ranking every template up front cost ~250 ms before the first card.
 }
 
 function exportVerifiedSentencesState() {
@@ -3051,6 +3090,7 @@ function exportVerifiedSentencesState() {
 }
 
 function importVerifiedSentencesState(stateObj) {
+	templateEdits++;
 	_runtimeInitialized = true;
 	_hardcodedOverrides.clear();
 	_customTemplates = [];
@@ -3093,11 +3133,34 @@ function applyOverridesToHardcoded(rawTpl) {
  * Returns all Verified Sentence templates (hardcoded with any active tag/title edits
  * followed by custom/runtime entries).
  */
-function getAllVerifiedSentences() {
+/**
+ * Shared, READ-ONLY view of every template (hardcoded with overrides applied, then custom), rebuilt only when a template is edited
+ * (templateEdits) or the hardcoded data is reloaded. Unedited hardcoded templates are the hydrated objects themselves, so the snapshot
+ * costs nothing per call and its objects are stable keys for the per-template / per-slot caches below. Never mutate what it returns.
+ */
+let _snapshot = null;
+function getVerifiedSnapshot() {
 	ensureRuntimeInitialized();
-	const hardcoded = getHardcodedVerifiedArray().map(applyOverridesToHardcoded);
-	const custom = _customTemplates.map(t => ({ ...deepCloneTemplate(t), isHardcoded: false }));
-	return [...hardcoded, ...custom];
+	const hard = getHardcodedVerifiedArray();
+	if (_snapshot && _snapshot.ver === templateEdits && _snapshot.hard === hard) return _snapshot;
+	const list = [
+		...hard.map(t => (_hardcodedOverrides.has(t.id) ? applyOverridesToHardcoded(t) : t)),
+		..._customTemplates.map(t => ({ ...deepCloneTemplate(t), isHardcoded: false }))
+	];
+	const byId = new Map();
+	for (const t of list) if (t && !byId.has(t.id)) byId.set(t.id, t);   // custom ids never collide with hardcoded ones; first wins like find()
+	_snapshot = { ver: templateEdits, hard, list, byId };
+	return _snapshot;
+}
+
+/** Read-only array of every template, shared between calls (see getVerifiedSnapshot). For editing, use getAllVerifiedSentences(). */
+function getVerifiedTemplatesShared() {
+	return getVerifiedSnapshot().list;
+}
+
+/** Every template as fresh, editable copies (editor and tool API). Hot paths use getVerifiedTemplatesShared() instead. */
+function getAllVerifiedSentences() {
+	return getVerifiedSnapshot().list.map(t => ({ ...deepCloneTemplate(t), isHardcoded: Boolean(t.isHardcoded) }));
 }
 
 function getVerifiedSentenceById(id) {
@@ -3379,7 +3442,7 @@ function findMatchingTemplatesForUnit(unitOrId) {
 
 	const targetId = targetUnit[DATA_SCHEMA.Id];
 	const targetPos = targetUnit[DATA_SCHEMA.PartofSpeech];
-	const allTemplates = getAllVerifiedSentences();
+	const allTemplates = getVerifiedTemplatesShared();
 
 	const exactMatches = [];
 	const tagMatches = [];
@@ -3413,7 +3476,7 @@ function findMatchingTemplatesForUnit(unitOrId) {
 				continue;
 			}
 
-			const slotCtx = buildSlotMatchContext(slot, units);
+			const slotCtx = cachedSlotContext(slot, units);
 			if (!isUnitEligibleForSlot(targetUnit, slot, slotCtx)) continue;
 
 			if (slot.originalUnitId === targetId) {
@@ -3434,64 +3497,167 @@ function canonicalUnitId(id) {
 	return u ? resolveAliasUnit(u, units)[DATA_SCHEMA.Id] : id;
 }
 
-/**
- * Units a sentence needs besides the card's own unit: in the generator's default mode every other slot keeps the verified word,
- * and every grammar unit of the template must be known. Returns canonical ids, no duplicates.
- */
-function getTemplateRequiredUnitIds(template, targetUnitId, targetSlotIndex) {
-	const need = new Set(), self = canonicalUnitId(targetUnitId);
-	const add = id => { if (typeof id !== 'number') return; const c = canonicalUnitId(id); if (c !== self) need.add(c); };
-	(template.slots || []).forEach((slot, i) => {
-		if (i !== targetSlotIndex) add(slot.originalUnitId);
-		for (const g of (slot.grammar || [])) add(g.unitId);
-	});
-	return [...need];
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Availability cache: which verified templates the unlocked units can build.
+// A word slot is available when ANY unlocked unit fits it (not only the textbook word). A fixed slot (locked grammar form) needs its own
+// unit. Computed once per template, then kept: unlocking a unit can only turn locked slots available, so only the new unit is checked
+// against them. A read always catches up exactly; availabilityStep() does the same work in small time slices so an unlock costs no spike.
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Entries are keyed by template id and dropped whenever a template is edited (templateEdits).
+const avail = { owned: new Set(), log: [], entries: new Map(), cursor: 0, editVer: 0, stats: { slotComputes: 0, unitChecks: 0, resets: 0 } };
+const nowMs = () => ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now());
+
+function slotContext(e, i, units) {
+	return cachedSlotContext(e.slotRefs[i], units);
 }
 
 /**
- * Every verified template that can teach `unitId`, one row each, with what it needs beyond the unit.
- * ownedIds (Set) decides `missing`; rows keep the matcher's order (exact matches first). Used by the queue view in fc2.
- * row: { templateId, title, ko, source, slotIndex, matchType, slots: [{ index, unitId, role: 'target'|'word'|'grammar' }], needed, missing }
+ * Tell the cache which units are unlocked (array or Set). New units are logged (cheap); a removed unit resets the cache.
+ * Returns true when anything changed, so a caller can start the background sweep.
  */
-function listVerifiedFitsForUnit(unitId, ownedIds = new Set()) {
-	const units = getUnitsArray(), rows = [], seen = new Set();
-	const owned = id => ownedIds.has(id) || ownedIds.has(canonicalUnitId(id));
+function syncOwnedUnits(ids) {
+	const next = ids instanceof Set ? ids : new Set(ids || []);
+	for (const id of avail.owned) {
+		if (!next.has(id)) {
+			avail.owned = new Set(next); avail.log = []; avail.entries.clear(); avail.cursor = 0; avail.stats.resets++;
+			return true;
+		}
+	}
+	let added = 0;
+	for (const id of next) if (!avail.owned.has(id)) { avail.owned.add(id); avail.log.push(id); added++; }
+	if (added) avail.cursor = 0;
+	return added > 0;
+}
+
+function computeSlotAvail(e, i, units) {
+	const slot = e.slotRefs[i];
+	avail.stats.slotComputes++;
+	if (typeof slot.originalUnitId !== 'number') return { ok: true, fixed: null };
+	if (isLockedSlot(slot)) { const id = canonicalUnitId(slot.originalUnitId); return { ok: avail.owned.has(id), fixed: id }; }
+	// Same answer as testing every unlocked unit against the slot, via the slot's cached eligible-unit list (no eligibility calls).
+	for (const u of slotEligibleUnits(slot, units, false)) if (avail.owned.has(u[DATA_SCHEMA.Id])) return { ok: true, fixed: null };
+	return { ok: false, fixed: null };
+}
+
+/** Up-to-date availability of every slot of a template (computed on first use, otherwise caught up with units unlocked since). */
+function availabilityEntry(tpl) {
+	const units = getUnitsArray();
+	if (avail.editVer !== templateEdits) { avail.entries.clear(); avail.editVer = templateEdits; avail.cursor = 0; }
+	let e = avail.entries.get(tpl.id);
+	if (e && e.slotRefs.length !== tpl.slots.length) e = null;
+	if (!e) {
+		e = { slotRefs: tpl.slots, slots: [], seen: avail.log.length };
+		for (let i = 0; i < tpl.slots.length; i++) e.slots.push(computeSlotAvail(e, i, units));
+		avail.entries.set(tpl.id, e);
+		return e;
+	}
+	if (e.seen < avail.log.length) {
+		e.slots.forEach((st, i) => {
+			if (st.ok) return;
+			if (st.fixed !== null) { st.ok = avail.owned.has(st.fixed); return; }
+			const slot = e.slotRefs[i], ctx = slotContext(e, i, units);
+			for (let k = e.seen; k < avail.log.length && !st.ok; k++) {
+				const u = units[avail.log[k]];
+				avail.stats.unitChecks++;
+				if (u && isUnitEligibleForSlot(u, slot, ctx)) st.ok = true;
+			}
+		});
+		e.seen = avail.log.length;
+	}
+	return e;
+}
+
+/**
+ * Background sweep: brings every template's cache entry up to date, stopping after ~budgetMs. Call repeatedly (e.g. from setTimeout)
+ * until it returns false. A sweep restarts from the front whenever a unit is unlocked.
+ */
+function availabilityStep(budgetMs = 6) {
+	const all = getVerifiedTemplatesShared(), t0 = nowMs();
+	if (avail.sweepOf !== all) { avail.sweepOf = all; avail.cursor = 0; }
+	while (avail.cursor < all.length) {
+		const tpl = all[avail.cursor++];
+		if (tpl && Array.isArray(tpl.slots)) availabilityEntry(tpl);
+		if (nowMs() - t0 >= budgetMs) break;   // checked per template: a cold template (first slot scans) can take a few ms
+	}
+	return avail.cursor < all.length;
+}
+
+function getAvailabilityStats() {
+	let lockedSlots = 0;
+	for (const e of avail.entries.values()) for (const st of e.slots) if (!st.ok && st.fixed === null) lockedSlots++;
+	return { ...avail.stats, entries: avail.entries.size, lockedSlots, owned: avail.owned.size, pendingUnits: avail.log.length };
+}
+
+/**
+ * What a template still needs for the card's unit: [{ unitId, slotIndex }]. Empty = fully buildable with the unlocked units.
+ * Every grammar unit must be unlocked; a word slot (other than the target's) needs ANY fitting unlocked unit, and the entry
+ * names the textbook word of the slot that has none (slotIndex null = a grammar unit).
+ */
+function templateMissing(tpl, targetUnitId, targetSlotIndex) {
+	const e = availabilityEntry(tpl), self = canonicalUnitId(targetUnitId), missing = [], grammarSeen = new Set();
+	tpl.slots.forEach((slot, i) => {
+		for (const g of (slot.grammar || [])) {
+			if (typeof g.unitId !== 'number') continue;
+			const c = canonicalUnitId(g.unitId);
+			if (c !== self && !avail.owned.has(c) && !grammarSeen.has(c)) { grammarSeen.add(c); missing.push({ unitId: c, slotIndex: null }); }
+		}
+		if (i !== targetSlotIndex && !e.slots[i].ok) missing.push({ unitId: canonicalUnitId(slot.originalUnitId), slotIndex: i });
+	});
+	return missing;
+}
+
+/** Word slots whose textbook word is not unlocked but another unlocked unit fits: the generator varies these instead of using the textbook word. */
+function slotsToRelax(tpl, targetSlotIndex) {
+	const e = availabilityEntry(tpl), out = [];
+	tpl.slots.forEach((slot, i) => {
+		if (i === targetSlotIndex || typeof slot.originalUnitId !== 'number' || e.slots[i].fixed !== null || !e.slots[i].ok) return;
+		if (!avail.owned.has(canonicalUnitId(slot.originalUnitId))) out.push(i);
+	});
+	return out;
+}
+
+/**
+ * Every verified template that can teach `unitId`, one row each, with what it still needs. ownedIds (array or Set) = unlocked units.
+ * row: { templateId, title, ko, source, slotIndex, matchType, slots: [{ index, unitId, role: 'target'|'word' }],
+ *        missing: [{ unitId, slotIndex|null, pool }] }   pool = how many units could fill it (1 = this exact unit)
+ */
+function listVerifiedFitsForUnit(unitId, ownedIds = []) {
+	syncOwnedUnits(ownedIds);
+	const rows = [], seen = new Set();
 	for (const m of findMatchingTemplatesForUnit(unitId)) {
 		const tpl = m.template;
 		if (seen.has(tpl.id)) continue;
 		seen.add(tpl.id);
-		const needed = getTemplateRequiredUnitIds(tpl, unitId, m.slotIndex);
 		const chips = [];
 		tpl.slots.forEach((slot, i) => {
 			if (typeof slot.originalUnitId !== 'number') return;
 			chips.push({ index: i, unitId: i === m.slotIndex ? unitId : canonicalUnitId(slot.originalUnitId), role: i === m.slotIndex ? 'target' : 'word' });
 		});
-		rows.push({
-			templateId: tpl.id, title: tpl.title || tpl.id, ko: tpl.originalKo || '', source: tpl.source || '',
-			slotIndex: m.slotIndex, matchType: m.matchType, slots: chips,
-			needed, missing: needed.filter(id => !owned(id) && units[id])
-		});
+		const missing = templateMissing(tpl, unitId, m.slotIndex).map(x => ({
+			...x, pool: x.slotIndex === null || isLockedSlot(tpl.slots[x.slotIndex]) ? 1 : Math.max(1, getSlotCandidates(tpl.slots[x.slotIndex], { targetUnitId: unitId }).count)
+		}));
+		rows.push({ templateId: tpl.id, title: tpl.title || tpl.id, ko: tpl.originalKo || '', source: tpl.source || '', slotIndex: m.slotIndex, matchType: m.matchType, slots: chips, missing });
 	}
 	return rows;
 }
 
 /**
- * Order matches by the "time to use it" queue: one match per template, templates fully usable with the allowed units first
+ * Order matches by the "time to use it" queue: one match per template, templates fully buildable from the allowed units first
  * (only when the caller restricts to a set), then front of the queue first. Templates the queue has never seen count as front.
  */
 function orderMatchesByQueue(matches, options) {
 	const rank = new Map();
 	options.queueOrder.forEach((id, i) => rank.set(id, i));
-	const allowed = options.onlyFromSet && options.allowedUnitIds instanceof Set ? options.allowedUnitIds : null;
+	const restricted = Boolean(options.onlyFromSet && options.allowedUnitIds instanceof Set);
 	const best = new Map();   // template id -> first/best match (exact word matches beat tag matches)
 	matches.forEach((m, i) => {
 		const cur = best.get(m.template.id);
 		if (!cur || (cur.m.matchType === 'lexical_tags' && m.matchType !== 'lexical_tags')) best.set(m.template.id, { m, i: cur ? cur.i : i });
 	});
-	const rows = [...best.values()].map(({ m, i }) => {
-		const missing = allowed ? getTemplateRequiredUnitIds(m.template, options.targetUnitId, m.slotIndex).filter(id => !allowed.has(id)).length : 0;
-		return { m, i, group: missing ? 1 : 0, r: rank.has(m.template.id) ? rank.get(m.template.id) : -1 };
-	});
+	const rows = [...best.values()].map(({ m, i }) => ({
+		m, i, group: restricted && templateMissing(m.template, options.targetUnitId, m.slotIndex).length ? 1 : 0,
+		r: rank.has(m.template.id) ? rank.get(m.template.id) : -1
+	}));
 	rows.sort((a, b) => a.group - b.group || a.r - b.r || a.i - b.i);
 	return rows.map(x => x.m);
 }
@@ -3619,6 +3785,9 @@ function generateVerifiedSentencesForUnit(unitOrId, count = 3, options = {}) {
 	scoredMatches.sort((a, b) => a.template.slots.length - b.template.slots.length || a.diff.difficultyScore - b.diff.difficultyScore || a.template.id.localeCompare(b.template.id));
 
 	// "Time to use it" queue (fc2): the front of the queue is generated first, so every template gets its turn.
+	const restricted = Boolean(options.onlyFromSet && options.allowedUnitIds instanceof Set);
+	if (restricted) syncOwnedUnits(options.allowedUnitIds);
+	const relaxFor = item => (restricted ? slotsToRelax(item.template, item.slotIndex) : []);
 	const queueMode = Array.isArray(options.queueOrder);
 	if (queueMode) {
 		const ordered = orderMatchesByQueue(scoredMatches, { ...options, targetUnitId: targetId });
@@ -3652,7 +3821,7 @@ function generateVerifiedSentencesForUnit(unitOrId, count = 3, options = {}) {
 				targetUnitId: targetId,
 				targetSlotIndex: matchItem.slotIndex,
 				varyMode: 'selected',
-				unlockedSlots: [matchItem.slotIndex],
+				unlockedSlots: [matchItem.slotIndex, ...relaxFor(matchItem)],
 				difficultyTier: tier,
 				variationIndex: attempt,
 				seedOffset: seedOff + attempt * 5
@@ -3691,7 +3860,7 @@ function generateVerifiedSentencesForUnit(unitOrId, count = 3, options = {}) {
 				if (variableSlots.length === 0) continue;
 
 				const chosenSlotToVary = variableSlots[v % variableSlots.length];
-				const unlocked = [matchItem.slotIndex, chosenSlotToVary];
+				const unlocked = [matchItem.slotIndex, chosenSlotToVary, ...relaxFor(matchItem)];
 
 				const res = generateSentenceFromTemplate(tpl, {
 					...options,
@@ -3776,6 +3945,7 @@ const verifiedGeneratorExports = {
 	generateSentenceFromTemplate,
 	generateSentencesFromTemplate,
 	getAllVerifiedSentences,
+	getVerifiedTemplatesShared,
 	getVerifiedSentenceById,
 	updateVerifiedSentenceTitle,
 	updateVerifiedSentenceSlotTags,
@@ -3791,7 +3961,9 @@ const verifiedGeneratorExports = {
 	findMatchingTemplatesForUnit,
 	generateVerifiedSentenceForUnit,
 	generateVerifiedSentencesForUnit,
-	getTemplateRequiredUnitIds,
+	syncOwnedUnits,
+	availabilityStep,
+	getAvailabilityStats,
 	listVerifiedFitsForUnit,
 	buildPosDecks,
 	getPosDecks,

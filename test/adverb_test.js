@@ -432,6 +432,12 @@ for (const npi of npiList) {
 	}
 }
 
+{ // adverbial_concord.js skips an NPI / manner adverb unless the text contains it literally: exact only while they are plain text
+	const st = require('../korean/state.js');
+	const words = [...st.ALL_NPI_WORDS, ...st.MANNER_ADVERBS.keys()], special = words.filter(f => /[.*+?^${}()|[\]\\]/.test(f));
+	assert(words.length > 0 && special.length === 0, `NPI and manner adverb words are plain text, so the literal pre-check is exact`, special.join(', '));
+}
+
 console.log("\n======================================================");
 console.log(`TOTAL TESTS: ${totalTests}`);
 console.log(`PASSED:      ${passedTests}`);

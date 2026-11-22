@@ -138,6 +138,7 @@ function validateAdverbConcord(text, context = {}) {
 
 	// 1. Negative Polarity Items (NPIs): 전혀, 별로, etc.
 	for (const npi of state.ALL_NPI_WORDS) {
+		if (!text.includes(npi)) continue;   // the regex needs this literal word (plain Hangul): skip compiling it when absent
 		const npiRegex = new RegExp(`(^|[^가-힣])${npi}(?=[^가-힣]|$)`, 'g');
 		let match;
 		while ((match = npiRegex.exec(text)) !== null) {
@@ -152,6 +153,7 @@ function validateAdverbConcord(text, context = {}) {
 	// 2. Manner Adverbs paired with Descriptive Verbs
 	for (const [mannerKo, info] of state.MANNER_ADVERBS.entries()) {
 		if (info.target_pos !== K.ACTION_VERB) continue;
+		if (!text.includes(mannerKo)) continue;   // the regex needs this literal word (plain Hangul): skip compiling it when absent
 		const mannerRegex = new RegExp(`(^|[^가-힣])${mannerKo}\\s+([가-힣]+)(?:\\[[^\\]]+\\])?(?=[^가-힣]|$)`, 'g');
 		let match;
 		while ((match = mannerRegex.exec(text)) !== null) {
@@ -187,6 +189,7 @@ function applyAdverbConcord(input, options = {}) {
 	// 1. Repair Manner Adverb with Descriptive Verb
 	for (const [mannerKo, info] of state.MANNER_ADVERBS.entries()) {
 		if (info.target_pos !== K.ACTION_VERB) continue;
+		if (!str.includes(mannerKo)) continue;   // the regex needs this literal word (plain Hangul): skip compiling it when absent
 		const mannerRegex = new RegExp(`(^|[^가-힣])${mannerKo}\\s+([가-힣]+)(?:\\[[^\\]]+\\])?(?=[^가-힣]|$)`, 'g');
 		str = str.replace(mannerRegex, (m, p1, targetWord) => {
 			const dvUnit = state.DESCRIPTIVE_SURFACE_MAP.get(targetWord);
@@ -202,6 +205,7 @@ function applyAdverbConcord(input, options = {}) {
 
 	// 2. Repair NPI without negative predicate
 	for (const npi of state.ALL_NPI_WORDS) {
+		if (!str.includes(npi)) continue;   // the regex needs this literal word (plain Hangul): skip compiling it when absent
 		const npiRegex = new RegExp(`(^|[^가-힣])${npi}\\s+([가-힣]+)(?=[^가-힣]|$)`, 'g');
 		str = str.replace(npiRegex, (m, p1, targetWord, offset) => {
 			if (targetWord === "안" || targetWord === "못" || isNegativePredicate(targetWord)) return m;
