@@ -3427,6 +3427,75 @@ function findMatchingTemplatesForUnit(unitOrId) {
 	return [...exactMatches, ...tagMatches];
 }
 
+/** Canonical unit id for any id (a merged alias stands for its target). */
+function canonicalUnitId(id) {
+	const units = getUnitsArray();
+	const u = typeof id === 'number' ? units[id] : null;
+	return u ? resolveAliasUnit(u, units)[DATA_SCHEMA.Id] : id;
+}
+
+/**
+ * Units a sentence needs besides the card's own unit: in the generator's default mode every other slot keeps the verified word,
+ * and every grammar unit of the template must be known. Returns canonical ids, no duplicates.
+ */
+function getTemplateRequiredUnitIds(template, targetUnitId, targetSlotIndex) {
+	const need = new Set(), self = canonicalUnitId(targetUnitId);
+	const add = id => { if (typeof id !== 'number') return; const c = canonicalUnitId(id); if (c !== self) need.add(c); };
+	(template.slots || []).forEach((slot, i) => {
+		if (i !== targetSlotIndex) add(slot.originalUnitId);
+		for (const g of (slot.grammar || [])) add(g.unitId);
+	});
+	return [...need];
+}
+
+/**
+ * Every verified template that can teach `unitId`, one row each, with what it needs beyond the unit.
+ * ownedIds (Set) decides `missing`; rows keep the matcher's order (exact matches first). Used by the queue view in fc2.
+ * row: { templateId, title, ko, source, slotIndex, matchType, slots: [{ index, unitId, role: 'target'|'word'|'grammar' }], needed, missing }
+ */
+function listVerifiedFitsForUnit(unitId, ownedIds = new Set()) {
+	const units = getUnitsArray(), rows = [], seen = new Set();
+	const owned = id => ownedIds.has(id) || ownedIds.has(canonicalUnitId(id));
+	for (const m of findMatchingTemplatesForUnit(unitId)) {
+		const tpl = m.template;
+		if (seen.has(tpl.id)) continue;
+		seen.add(tpl.id);
+		const needed = getTemplateRequiredUnitIds(tpl, unitId, m.slotIndex);
+		const chips = [];
+		tpl.slots.forEach((slot, i) => {
+			if (typeof slot.originalUnitId !== 'number') return;
+			chips.push({ index: i, unitId: i === m.slotIndex ? unitId : canonicalUnitId(slot.originalUnitId), role: i === m.slotIndex ? 'target' : 'word' });
+		});
+		rows.push({
+			templateId: tpl.id, title: tpl.title || tpl.id, ko: tpl.originalKo || '', source: tpl.source || '',
+			slotIndex: m.slotIndex, matchType: m.matchType, slots: chips,
+			needed, missing: needed.filter(id => !owned(id) && units[id])
+		});
+	}
+	return rows;
+}
+
+/**
+ * Order matches by the "time to use it" queue: one match per template, templates fully usable with the allowed units first
+ * (only when the caller restricts to a set), then front of the queue first. Templates the queue has never seen count as front.
+ */
+function orderMatchesByQueue(matches, options) {
+	const rank = new Map();
+	options.queueOrder.forEach((id, i) => rank.set(id, i));
+	const allowed = options.onlyFromSet && options.allowedUnitIds instanceof Set ? options.allowedUnitIds : null;
+	const best = new Map();   // template id -> first/best match (exact word matches beat tag matches)
+	matches.forEach((m, i) => {
+		const cur = best.get(m.template.id);
+		if (!cur || (cur.m.matchType === 'lexical_tags' && m.matchType !== 'lexical_tags')) best.set(m.template.id, { m, i: cur ? cur.i : i });
+	});
+	const rows = [...best.values()].map(({ m, i }) => {
+		const missing = allowed ? getTemplateRequiredUnitIds(m.template, options.targetUnitId, m.slotIndex).filter(id => !allowed.has(id)).length : 0;
+		return { m, i, group: missing ? 1 : 0, r: rank.has(m.template.id) ? rank.get(m.template.id) : -1 };
+	});
+	rows.sort((a, b) => a.group - b.group || a.r - b.r || a.i - b.i);
+	return rows.map(x => x.m);
+}
+
 /**
  * Generates a single sentence for `unitOrId`, prioritizing Verified Sentence
  * structures and falling back to the random AST generator if no template matches.
@@ -3549,6 +3618,14 @@ function generateVerifiedSentencesForUnit(unitOrId, count = 3, options = {}) {
 	// Shorter templates first (fewer slots = easier to read in a quick quiz), then grammar difficulty, then id.
 	scoredMatches.sort((a, b) => a.template.slots.length - b.template.slots.length || a.diff.difficultyScore - b.diff.difficultyScore || a.template.id.localeCompare(b.template.id));
 
+	// "Time to use it" queue (fc2): the front of the queue is generated first, so every template gets its turn.
+	const queueMode = Array.isArray(options.queueOrder);
+	if (queueMode) {
+		const ordered = orderMatchesByQueue(scoredMatches, { ...options, targetUnitId: targetId });
+		scoredMatches.length = 0;
+		scoredMatches.push(...ordered);
+	}
+
 	const sentences = [];
 	const seenKo = new Set();
 	const seedOff = typeof options.seedOffset === 'number' ? options.seedOffset : 0;
@@ -3560,7 +3637,9 @@ function generateVerifiedSentencesForUnit(unitOrId, count = 3, options = {}) {
 			const tier = getTierForIndex(targetIdx, numSentences);
 
 			let matchItem;
-			if (tier === 'easiest') {
+			if (queueMode) {
+				matchItem = scoredMatches[attempt];
+			} else if (tier === 'easiest') {
 				matchItem = scoredMatches[seedOff % Math.min(3, scoredMatches.length)];
 			} else if (tier === 'challenging' && scoredMatches.length > 2) {
 				matchItem = scoredMatches[scoredMatches.length - 1 - (seedOff % Math.min(3, scoredMatches.length))];
@@ -3712,6 +3791,8 @@ const verifiedGeneratorExports = {
 	findMatchingTemplatesForUnit,
 	generateVerifiedSentenceForUnit,
 	generateVerifiedSentencesForUnit,
+	getTemplateRequiredUnitIds,
+	listVerifiedFitsForUnit,
 	buildPosDecks,
 	getPosDecks,
 	getPosDeck,

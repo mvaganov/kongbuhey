@@ -177,6 +177,16 @@ assert(G.decay(est(0, 5 * HOUR), NOW) === 0 && G.decay(est(0, 13 * HOUR), NOW) =
 	assert(f.owned.join() === '1,5,2,3' && f.notes[1] === 'b\n\na' && f.notes[3] === 'c' && !('10' in f.notes), 'owned units map to canonical ids without repeats; notes are carried over');
 	assert(S.foldAliases({ prog: new Map([[1, mk(1, 0, 1, 1)]]), owned: [1] }, new Map()).owned.join() === '1', 'no aliases: state passes through');
 }
+{ // the verified-sentence "time to use it" queue
+	const Q = require('../fc2/queue.js'), ids = ['a', 'b', 'c', 'd'];
+	assert(Q.normalize([], ids).join() === 'a,b,c,d' && Q.normalize(undefined, ids).join() === 'a,b,c,d', 'an empty queue holds every id in the given order');
+	assert(Q.normalize(['c', 'a'], ids).join() === 'b,d,c,a', 'ids never used are ahead of used ones; used ones keep their order');
+	assert(Q.normalize(['c', 'x', 'c', 'a'], ids).join() === 'b,d,c,a', 'unknown and repeated ids are dropped');
+	assert(Q.toBack([], ids, 'a').join() === 'b,c,d,a' && Q.toBack(['b', 'a'], ids, 'b').join() === 'c,d,a,b', 'a used id moves to the back; used again, it goes behind the others');
+	assert(Q.toFront(['c', 'a'], ids, 'a').join() === 'a,b,d,c' && Q.toFront([], ids, 'd').join() === 'd,a,b,c', 'move to front puts the id ahead of never-used ids too');
+	assert(Q.moveNear([], ids, 'd', 'b').join() === 'a,d,b,c' && Q.moveNear([], ids, 'a', 'c', true).join() === 'b,c,a,d' && Q.moveNear([], ids, 'a', 'a').join() === 'a,b,c,d' && Q.moveNear([], ids, 'a', 'zz').join() === 'a,b,c,d', 'moveNear places before/after a reference and ignores bad input');
+	assert(Q.toBack([], ids, 'zz').join() === 'a,b,c,d' && Q.rankMap(['b'], ids).get('b') === 3 && Q.rankMap(['b'], ids).get('a') === 0, 'unknown ids change nothing; rankMap gives positions');
+}
 { // fc2/index.html loads the same engine scripts as flashcards/index.html
 	const srcs = dir => [...fs.readFileSync(path.join(__dirname, '..', dir, 'index.html'), 'utf8').matchAll(/<script src="([^"]+)"/g)].map(m => m[1].replace(/\?.*$/, ""));
 	const eng = l => l.filter(s => s.startsWith('../data/') || s.startsWith('../korean/'));

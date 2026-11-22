@@ -460,14 +460,111 @@ class FC2App {
 		// Lean toward the units you know least: a slot filler stronger than the owned average is redrawn up to twice. Every unit stays possible.
 		const now = nowSec(), strength = id => { const u = this.unitOf(id); if (!u) return 0; return G.effectiveScore(u, now) + u.tier; };
 		const owned = this.g.owned, mean = owned.length ? owned.reduce((n, id) => n + strength(id), 0) / owned.length : 0;
+		if (window.FC2Queue && window.getAllVerifiedSentences) options.queueOrder = window.FC2Queue.normalize(this.g.vq, this.vqIds());
 		options.slotBias = { retries: 2, reject: unit => strength(unit[C.Id]) > mean };
 		return options;
+	}
+
+	// ---------- verified-sentence queue ("time to use it"): the front of the queue is generated first; a generated template goes to the back ----------
+	vqIds() { return window.getAllVerifiedSentences().map(t => t.id); }
+
+	vqUsed(sentences) {
+		const Q = window.FC2Queue;
+		if (!Q || !window.getAllVerifiedSentences) return;
+		const ids = this.vqIds(), used = sentences.map(s => s.verifiedTemplateId).filter(Boolean);
+		if (!used.length) return;
+		this.g.vq = used.reduce((q, tid) => Q.toBack(q, ids, tid), this.g.vq);
+		this.save();
+	}
+
+	/** Verified sentences that fit the unit: ones the owned units can build first, then ones that still need an unlock; each group in queue order. */
+	vqRows() {
+		const rank = window.FC2Queue.rankMap(this.g.vq, this.vqIds());
+		return window.listVerifiedFitsForUnit(this.vqUnit, new Set(this.g.owned))
+			.sort((a, b) => (a.missing.length > 0) - (b.missing.length > 0) || rank.get(a.templateId) - rank.get(b.templateId));
+	}
+
+	vqChip(id, cls = '') {
+		const u = this.units.get(id);
+		return u ? `<span class="vq-chip ${cls}">${escapeHtml(u[C.Korean])}<small>${escapeHtml(u[C.English])}</small></span>` : '';
+	}
+
+	vqHtml() {
+		const rows = this.vqRows();
+		if (!rows.length) return '<p class="muted">No verified sentence uses this unit. Its examples come from the generator.</p>';
+		const body = rows.map((r, i) => {
+			const miss = new Set(r.missing);
+			const status = !miss.size ? '<span class="vq-ok">✓ ready</span>'
+				: miss.size === 1 ? `<span class="vq-lock">🔒 needs ${this.vqChip(r.missing[0], 'need')}</span>`
+				: `<span class="vq-lock many" title="${escapeHtml('needs: ' + r.missing.map(id => this.units.get(id)[C.Korean]).join(', '))}">🔒 2+</span>`;
+			const chips = r.slots.map(s => this.vqChip(s.unitId, s.role === 'target' ? 'tgt' : miss.has(s.unitId) ? 'need' : '')).join('');
+			return `<li class="vq-row${miss.size ? ' locked' : ''}" data-tid="${escapeHtml(r.templateId)}"><span class="vq-grip" aria-label="Drag to reorder" title="Drag to reorder">⠿</span>
+				<div class="vq-main"><div class="vq-title"><b>${i + 1}</b> ${escapeHtml(r.ko || r.title)}</div><div class="vq-chips">${chips}</div><div class="vq-status">${status}</div></div>
+				<div class="vq-btns"><button type="button" class="btn small" data-act="vq-front" data-tid="${escapeHtml(r.templateId)}">⇧ Front</button><button type="button" class="btn small" data-act="vq-back" data-tid="${escapeHtml(r.templateId)}">⇩ Back</button></div></li>`;
+		}).join('');
+		const ready = rows.filter(r => !r.missing.length).length;
+		return `<p class="muted">${ready} ready, ${rows.length - ready} locked. Top of the list is used first; a sentence goes to the back after it is generated. Drag ⠿ or use the buttons.</p><ol class="vq-list">${body}</ol>`;
+	}
+
+	vqOpen() {
+		if (!this.card || !window.listVerifiedFitsForUnit || !window.FC2Queue) return;
+		this.vqUnit = this.card.id;
+		this.openModal(`Sentence queue: ${this.units.get(this.vqUnit)[C.Korean]}`, this.vqHtml(), 'vq');
+	}
+
+	vqRefresh() {
+		const body = this.$('#modal .modal-body');
+		if (!body || this.vqUnit == null) return;
+		const y = body.scrollTop;
+		body.innerHTML = this.vqHtml();
+		body.scrollTop = y;
+	}
+
+	/** how: 'front' | 'back' | 'near' (before ref, or after it when after is true). */
+	vqMove(tid, how, ref = null, after = false) {
+		const Q = window.FC2Queue, ids = this.vqIds(), q = this.g.vq;
+		this.g.vq = how === 'front' ? Q.toFront(q, ids, tid) : how === 'back' ? Q.toBack(q, ids, tid) : Q.moveNear(q, ids, tid, ref, after);
+		this.save();
+		this.vqRefresh();
+	}
+
+	/** Touch-friendly drag of a queue row by its grip (HTML5 drag-and-drop does not work on phones). */
+	vqDrag(ev) {
+		let d = this.vqD;
+		const clear = () => this.root.querySelectorAll('.vq-row.drop-before, .vq-row.drop-after').forEach(r => r.classList.remove('drop-before', 'drop-after'));
+		if (ev.type === 'pointerdown') {
+			const grip = ev.target.closest && ev.target.closest('.vq-grip');
+			if (!grip) return;
+			const row = grip.closest('.vq-row');
+			d = this.vqD = { tid: row.dataset.tid, row, target: null, after: false };
+			row.classList.add('dragging');
+			try { grip.setPointerCapture(ev.pointerId); } catch (_) { /* no capture: moves still reach the root */ }
+			ev.preventDefault();
+		} else if (!d) {
+			return;
+		} else if (ev.type === 'pointermove') {
+			const over = document.elementFromPoint(ev.clientX, ev.clientY), row = over && over.closest && over.closest('.vq-row');
+			clear();
+			d.target = null;
+			if (row && row !== d.row) {
+				const r = row.getBoundingClientRect();
+				d.target = row.dataset.tid; d.after = ev.clientY > r.top + r.height / 2;
+				row.classList.add(d.after ? 'drop-after' : 'drop-before');
+			}
+			const body = this.$('#modal .modal-body');
+			if (body) { const b = body.getBoundingClientRect(); if (ev.clientY < b.top + 40) body.scrollTop -= 14; else if (ev.clientY > b.bottom - 40) body.scrollTop += 14; }
+		} else {   // pointerup / pointercancel
+			clear();
+			d.row.classList.remove('dragging');
+			this.vqD = null;
+			if (ev.type === 'pointerup' && d.target) this.vqMove(d.tid, 'near', d.target, d.after);
+		}
 	}
 
 	generateFor(id) {
 		try {
 			const list = window.generateSentencesForUnit(id, this.opts.count, this.genOptions()), sentences = Array.from(list);
-			if (sentences.length) this.prefetchSoon(id, sentences);
+			if (sentences.length) { this.vqUsed(sentences); this.prefetchSoon(id, sentences); }
 			return { sentences, msg: sentences.length ? '' : this.opts.onlyOwned ? 'No examples from your unlocked units yet. They appear as you unlock more, or allow all units in the Menu.' : (list.message || 'No example sentences are available for this unit yet.') };
 		} catch (_) { return { sentences: [], msg: 'Could not generate sentences for this unit.' }; }
 	}
@@ -518,7 +615,7 @@ class FC2App {
 	cardHtml() {
 		const k = this.card, u = this.units.get(k.id), p = this.unitOf(k.id), rev = this.opts.reverse, rar = G.rarity(u[C.PriorityScore]);
 		const head = `<div class="card-tags"><span class="pill r${rar}">${RARITY[rar]}</span><span class="pill">${STARS[p.tier]}</span><span class="pill">${escapeHtml(u[C.Source])}</span></div>`;
-		const regen = '<button type="button" class="btn ghost" data-act="regen">↻ New examples</button>';
+		const regen = '<div class="regen-row"><button type="button" class="btn ghost" data-act="regen">↻ New examples</button><button type="button" class="btn ghost" data-act="vq-open" aria-label="Sentence queue" title="Which verified sentences fit this unit, and in what order they come up">☰ Queue</button></div>';
 		if (k.mode === 'trial' && k.side === 'front') return this.trialHtml();
 		const verdict = k.mode !== 'trial' ? '' : k.passed ? `<div class="verdict pass">⚔ Trial passed: ${STARS[p.tier]} ${TIER_LABEL[p.tier]}</div>`
 			: '<div class="verdict fail">⚔ Not yet. Relearn it now; the trial returns the next time it is ripe.</div>';
@@ -1253,6 +1350,7 @@ class FC2App {
 			if (ev.target.id === 'modal') { this.closeModal(); return; }
 			if (this.tab === 'play' && ev.target.closest('#card') && !ev.target.closest('button, a, textarea, select, input, label, .notes')) this.flip();
 		});
+		for (const t of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel']) this.root.addEventListener(t, ev => this.vqDrag(ev));
 		this.root.addEventListener('change', ev => {
 			const t = ev.target;
 			if (t.matches('[data-pack]')) { this.pullPack = t.value; return; }
@@ -1305,6 +1403,9 @@ class FC2App {
 			case 'speak-unit': if (this.card) window.speakKorean(this.units.get(this.card.id)[C.Korean], el); break;
 			case 'speak-sent': { const s = this.card && this.card.sentences[Number(el.dataset.i)]; if (s) { window.speakKorean(s.ko, el); this.markSeen(R.unitIdsOf(s)); } break; }
 			case 'flag': el.classList.toggle('flagged', this.toggleFlag(Number(el.dataset.i))); break;
+			case 'vq-open': this.vqOpen(); break;
+			case 'vq-front': this.vqMove(el.dataset.tid, 'front'); break;
+			case 'vq-back': this.vqMove(el.dataset.tid, 'back'); break;
 			case 'regen': Object.assign(this.card, this.generateFor(this.card.id)); this.renderScreen(false); break;
 			case 'notes-toggle': this.editingNotes = !this.editingNotes; this.renderScreen(false); break;
 			case 'pull': this.pull(); break;

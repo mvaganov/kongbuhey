@@ -63,7 +63,7 @@ const blankUnit = () => ({ score: 0, tier: 0, lastCorrect: 0, lastSeen: 0 });
 const blankGame = now => ({
 	v: 1, games: {}, coins: 0, xp: 0, level: 1, owned: [], h: {}, up: {}, pulls: 0, lastCollect: now,
 	streak: { day: '', n: 0 }, cos: { owned: ['midnight', 'sparks'], theme: 'midnight', particle: 'sparks' },
-	totals: { answers: 0, harvests: 0, rounds: 0, earned: 0, trials: 0 }, seals: 0, starsBanked: 0, ascensions: 0, quests: null
+	totals: { answers: 0, harvests: 0, rounds: 0, earned: 0, trials: 0 }, seals: 0, starsBanked: 0, ascensions: 0, quests: null, vq: []
 });
 
 const NUMBER_COST = 10;

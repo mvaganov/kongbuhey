@@ -171,6 +171,64 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(typeof orig === 'function' && cleared >= 3, `every tab switch clears the effects canvas (${cleared} clears for 3 switches)`);
 	});
 
+	await step('verified sentence queue', async () => {
+		const V = w.verifiedSentenceGenerator, ids = V.getAllVerifiedSentences().map(t => t.id), Q = w.FC2Queue;
+		const unit = 79;   // 공책: two verified templates fit it
+		const fits = V.listVerifiedFitsForUnit(unit, new Set());
+		assert(fits.length >= 2 && fits.every(r => r.slots.some(s => s.role === 'target' && s.unitId === unit)), `the unit has several fitting verified templates (${fits.length})`);
+		const prefetch = app.prefetchSoon; app.prefetchSoon = () => {};   // each generateFor would queue background quiz building that starves the next steps' timers
+		app.opts.onlyOwned = false; app.opts.count = 3;
+		// 1. the front of the queue is generated first, and a generated template goes to the back
+		for (const front of [fits[0].templateId, fits[1].templateId]) {
+			app.g.vq = Q.toFront([], ids, front);
+			const first = app.generateFor(unit).sentences[0];
+			assert(first && first.verifiedTemplateId === front, `the template at the front of the queue is generated first (${front})`);
+			assert(app.g.vq.indexOf(front) > app.g.vq.length - 5, `a generated template moves to the back of the queue (${front} at ${app.g.vq.indexOf(front)}/${app.g.vq.length})`);
+		}
+		assert(app.g.vq.length === ids.length && new Set(app.g.vq).size === ids.length, 'the stored queue holds every template exactly once');
+		// 2. repeated cards rotate through the templates instead of repeating one
+		app.g.vq = [];
+		const seen = new Set();
+		for (let i = 0; i < 4; i++) for (const s of app.generateFor(unit).sentences) if (s.verifiedTemplateId) seen.add(s.verifiedTemplateId);
+		assert(fits.every(r => seen.has(r.templateId)), 'every fitting template shows up across a few cards');
+		// 3. the list view: ready sentences first, locked after; a single missing unit is highlighted, several show 2+
+		app.card = { id: unit, mode: 'learn', st: 'new', side: 'front', shownAt: Date.now(), trial: null, ...app.generateFor(unit) };
+		app.go('play');
+		const rowsOf = fitList => fitList.map(r => ({ ...r, need: r.needed.slice() }));
+		const target = rowsOf(fits).sort((a, b) => a.need.length - b.need.length)[0];
+		app.g.owned = [unit, ...target.need.slice(0, -1)];
+		app.vqUnit = unit;
+		click('[data-act="vq-open"]');
+		assert(!d.querySelector('#modal').classList.contains('hidden') && d.querySelectorAll('.vq-row').length === fits.length, 'the Queue button opens one row per fitting verified sentence');
+		let rows = [...d.querySelectorAll('.vq-row')];
+		assert(rows.every(r => r.querySelector('.vq-ok, .vq-lock')) && d.querySelector('.vq-grip') && d.querySelector('[data-act="vq-front"]') && d.querySelector('[data-act="vq-back"]'), 'rows show a status, a drag grip and Front / Back buttons');
+		const lockedAfterReady = rows.map(r => r.classList.contains('locked')).every((l, i, a) => !l || a.slice(i).every(Boolean));
+		assert(lockedAfterReady, 'sentences the owned units can build come before the ones that need an unlock');
+		const one = rows.find(r => r.querySelector('.vq-lock:not(.many) .vq-chip.need'));
+		assert(one && one.dataset.tid === target.templateId, 'a sentence missing exactly one unit highlights that unit');
+		assert(rows.some(r => r.querySelector('.vq-lock.many') && /2\+/.test(r.querySelector('.vq-lock.many').textContent)) || fits.length < 2, 'a sentence missing several units is marked 2+');
+		// 4. reordering: Front / Back buttons and the drag move
+		const tids = () => [...d.querySelectorAll('.vq-row')].map(r => r.dataset.tid);
+		const group = r => r.classList.contains('locked');
+		const sameGroup = [...d.querySelectorAll('.vq-row')].filter(r => group(r) === group([...d.querySelectorAll('.vq-row')].at(-1)));
+		assert(sameGroup.length >= 2, 'two sentences share a group (needed to test reordering)');
+		const [a, b] = sameGroup.map(r => r.dataset.tid), before = tids();
+		click(`[data-act="vq-front"][data-tid="${b}"]`);
+		assert(tids().indexOf(b) < tids().indexOf(a) && app.g.vq.indexOf(b) === 0, 'Front puts the sentence first in the queue and in the list');
+		click(`[data-act="vq-back"][data-tid="${b}"]`);
+		assert(tids().indexOf(b) > tids().indexOf(a) && app.g.vq.at(-1) === b, 'Back puts the sentence last in the queue');
+		app.vqMove(b, 'near', a, false);
+		assert(tids().indexOf(b) === tids().indexOf(a) - 1, 'a drag drop before another row puts it directly ahead');
+		app.vqMove(b, 'near', a, true);
+		assert(tids().indexOf(b) === tids().indexOf(a) + 1, 'a drop after another row puts it directly behind');
+		assert(before.length === tids().length, 'reordering never adds or drops rows');
+		// 5. the queue order is what the next generation uses
+		app.g.vq = Q.toFront(app.g.vq, ids, b);
+		assert(app.generateFor(unit).sentences[0].verifiedTemplateId === b, 'the order set in the list decides the next generated sentence');
+		app.prefetchSoon = prefetch; app.opts.onlyOwned = true;
+		app.closeModal();
+	});
+
 	await step('number board', async () => {
 		app.closeModal();
 		app.g.coins = 25; app.go('shop');
