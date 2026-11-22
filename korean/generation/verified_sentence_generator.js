@@ -416,6 +416,9 @@ function serializeCompactTemplate(tpl) {
 
 let cachedHydratedStatic = null;
 let templateEdits = 0;   // bumped on every template edit; the availability cache (further down) drops its entries when it changes
+// Work counters: deterministic for a given seed, code and data, so tools/bench_generation.js can assert on them (timings are noise).
+const workStats = { snapshotBuilds: 0, difficultyComputes: 0, slotContextBuilds: 0, slotListComputes: 0, matchComputes: 0, baselineChecks: 0, templateAttempts: 0, astFallbackCalls: 0 };
+function getWorkStats() { return { ...workStats }; }
 
 function resetHardcodedVerifiedCache() {
 	cachedHydratedStatic = null;
@@ -1235,13 +1238,14 @@ function unitsByPos(units) {
 const _slotMemo = new WeakMap();
 function slotMemo(slot, units) {
 	let m = _slotMemo.get(slot);
-	if (!m || m.units !== units) { m = { units, ctx: buildSlotMatchContext(slot, units), lists: [null, null] }; _slotMemo.set(slot, m); }
+	if (!m || m.units !== units) { workStats.slotContextBuilds++; m = { units, ctx: buildSlotMatchContext(slot, units), lists: [null, null] }; _slotMemo.set(slot, m); }
 	return m;
 }
 function cachedSlotContext(slot, units) { return slotMemo(slot, units).ctx; }
 function slotEligibleUnits(slot, units, negative) {
 	const m = slotMemo(slot, units), k = negative ? 1 : 0;
 	if (!m.lists[k]) {
+		workStats.slotListComputes++;
 		const opts = negative ? { isNegativeClause: true } : {};
 		m.lists[k] = (unitsByPos(units).get(m.ctx.requiredPos) || []).filter(u => isUnitEligibleForSlot(u, slot, m.ctx, opts));
 	}
@@ -2552,6 +2556,7 @@ function waiveBaselineErrors(template, valResult, sentences) {
  * Generates a complete Korean sentence from a Verified Sentence template.
  */
 function generateSentenceFromTemplate(templateOrId, options = {}) {
+	if (options._baselineCheck) workStats.baselineChecks++; else workStats.templateAttempts++;   // baseline checks fill a per-template cache
 	const template = (typeof templateOrId === 'string')
 		? (getVerifiedSnapshot().byId.get(templateOrId) || null)
 		: templateOrId;
@@ -2989,6 +2994,7 @@ function computeTemplateDifficulty(tpl) {
 	if (!tpl) return { difficultyScore: 2.5, mandatoryElements: [], mandatoryElementsCount: 0 };
 	const units = getUnitsArray(), hit = _difficultyMemo.get(tpl);
 	if (hit && hit.units === units) return hit.value;
+	workStats.difficultyComputes++;
 	const value = computeTemplateDifficultyUncached(tpl);
 	_difficultyMemo.set(tpl, { units, value });
 	return value;
@@ -3143,6 +3149,7 @@ function getVerifiedSnapshot() {
 	ensureRuntimeInitialized();
 	const hard = getHardcodedVerifiedArray();
 	if (_snapshot && _snapshot.ver === templateEdits && _snapshot.hard === hard) return _snapshot;
+	workStats.snapshotBuilds++;
 	const list = [
 		...hard.map(t => (_hardcodedOverrides.has(t.id) ? applyOverridesToHardcoded(t) : t)),
 		..._customTemplates.map(t => ({ ...deepCloneTemplate(t), isHardcoded: false }))
@@ -3433,16 +3440,25 @@ function addRuntimeVerifiedSentences(templates, sourceName = null) {
  * Finds all Verified Sentence templates (with matching slot indices) that can
  * showcase the given target Language Unit.
  */
+// Matches depend only on the unit and the templates: cached per unit until a template is edited (a new snapshot) or the unit data reloads.
+let _matchCache = { of: null, units: null, byUnit: new Map() };
 function findMatchingTemplatesForUnit(unitOrId) {
 	const units = getUnitsArray();
 	const targetUnit = resolveAliasUnit(Array.isArray(unitOrId)
 		? unitOrId
 		: (typeof unitOrId === 'number' ? units[unitOrId] : null), units);
 	if (!targetUnit) return [];
+	const allTemplates = getVerifiedTemplatesShared();
+	if (_matchCache.of !== allTemplates || _matchCache.units !== units) _matchCache = { of: allTemplates, units, byUnit: new Map() };
+	const key = targetUnit[DATA_SCHEMA.Id];
+	let hit = _matchCache.byUnit.get(key);
+	if (!hit) { workStats.matchComputes++; hit = matchTemplatesForUnit(targetUnit, units, allTemplates); _matchCache.byUnit.set(key, hit); }
+	return hit.slice();   // callers may reorder the array; the match objects themselves are read-only
+}
 
+function matchTemplatesForUnit(targetUnit, units, allTemplates) {
 	const targetId = targetUnit[DATA_SCHEMA.Id];
 	const targetPos = targetUnit[DATA_SCHEMA.PartofSpeech];
-	const allTemplates = getVerifiedTemplatesShared();
 
 	const exactMatches = [];
 	const tagMatches = [];
@@ -3890,6 +3906,7 @@ function generateVerifiedSentencesForUnit(unitOrId, count = 3, options = {}) {
 		for (let a = 0; a < needed * 4 && sentences.length < numSentences; a++) {
 			const targetIdx = sentences.length;
 			const tier = getTierForIndex(targetIdx, numSentences);
+			workStats.astFallbackCalls++;
 			const fallback = generateSentenceForUnit(targetUnit, {
 				...options,
 				difficultyTier: tier,
@@ -3964,6 +3981,7 @@ const verifiedGeneratorExports = {
 	syncOwnedUnits,
 	availabilityStep,
 	getAvailabilityStats,
+	getWorkStats,
 	listVerifiedFitsForUnit,
 	buildPosDecks,
 	getPosDecks,

@@ -1,6 +1,6 @@
 # Kongbuhey (공부해): Handoff
 
-Updated 2026-11-20. Rules, commands and the flag-review loop are in `CLAUDE.md`; this file is state and priorities.
+Updated 2026-11-22. Rules, commands and the flag-review loop are in `CLAUDE.md`; how the system is built and why is in `docs/architecture.md`; this file is state and priorities.
 
 ## State
 **Flashcards (`flashcards/`, the study app, untested on a phone):** localStorage state `kb.fc.v1.*` (deck, notes, opts, flags, stats).
@@ -12,8 +12,7 @@ Updated 2026-11-20. Rules, commands and the flag-review loop are in `CLAUDE.md`;
 - Deploy: repo Settings > Pages > branch `main`, `/ (root)`; open `https://mvaganov.github.io/kongbuhey/flashcards/`. Scores are per browser.
 
 **fc2 (`fc2/`, the study game, slices 1-3 built 2026-11-16/17; slice 3 untested on a phone):** keeps `flashcards/` as the comparison.
-- Rules: `fc2/game.js` (pure; `test/fc2_game_test.js`, a `test.js` stage). Effects: `fx.js`. UI: `app.js`.
-  All tuning numbers are the `T` table at the top of `game.js`.
+- Module layout, storage layers and debug scenes: `docs/architecture.md` section 4. All tuning numbers are the `T` table at the top of `game.js`.
 - Loop: Shop pull unlocks units in course order (class packs first, PriorityScore low to high: easiest first) -> learn in-session until
   RecognitionScore 3 -> the unit "grows" and earns idle coins -> ripe after an interval set by LongTermRecognition
   (4h / 20h / 3d / 7d) -> harvest (the spaced review) banks progress to the next tier -> wilts after 3 intervals (miss = lose a tier,
@@ -22,17 +21,21 @@ Updated 2026-11-20. Rules, commands and the flag-review loop are in `CLAUDE.md`;
   listening -> meaning (6, falls back to reading without speech synthesis), meaning -> Korean (6). Pass promotes and pays a bonus; fail sends
   the unit back to learning and the trial returns when it is next ripe. Distractors: unlocked units of the same part of speech first.
 - Daily quests (3 per local day plus a chest) and Ascend (bank 10+ new stars as seals: +2% coins each, resets coins and upgrades).
-- Data: unit progress and notes go to the webapp unit store (`KongbuheyAppDB`, via `webapp/db.js`), so the spreadsheet shows them.
-  Game state (coins, xp, owned, upgrades, cosmetics, flags) is localStorage `kb.fc2.v1.*`. First launch imports `kb.fc.v1.*`.
+- First launch imports the old flashcards state (`kb.fc.v1.*`).
 - Sentence test: examples are built from unlocked units only by default (Menu option). Each example has a 🎯 test: forward = Korean enlarged + 4
   English choices, reverse = English + 4 Korean sentences; distractors are other sentences from the same units. Right = 2 "Correct" answers for every unlocked
   unit in the sentence and 3 for the card's unit (units waiting on a promotion trial are skipped; a second answer on a ripe unit pays as practice), with a
   sentence-clear show (coin and XP particles, learning pill counting up, a sliding chip per unit; `bonusShow` in `app.js`); wrong = "Missed it" for the card.
 - Number sound board: Lv 0 shop unlock (10 냥), hear 0-12 native or Sino-Korean, tap it; a tapped number is spoken in the question's system (native 0 = 공).
-- **Checking screens fast:** `fc2/index.html?debug` lists scenes, `?debug=trial-listen` etc. opens a ready-made state (separate storage `kb.fc2.dbg.*`, real
-  save untouched). Scenes are in `fc2/debug.js`; `test/fc2_ui_test.js` (jsdom, runs in the default `node test.js`) renders every scene. New screen = new scene.
 - Listening trial: unlocked by play, not by a setting. A unit must reach ★ (meaning trial passed), be harvested once at ★ (20 h interval), then be ripe again:
-  the next review is the listening trial (about 2 days after earning ★). Needs the "Listening trials" option and speech synthesis. Fast path: `?debug=trial-listen`.
+  the next review is the listening trial (about 2 days after earning ★). Needs the "Listening trials" option and speech synthesis.
+- Sentence-test wrong answers share the sentence's nouns where possible; when the card's unit is a noun it never appears in a wrong answer
+  and each wrong answer swaps in a different noun. Opening a test marks lastSeen for every unit shown. Quizzes are pre-built while the card
+  is read, and taps are ignored for 450 ms after a quiz opens. Wrong answers do not follow the sentence queue (variety).
+- Sentence queue: "☰ Queue" beside "New examples" shows the verified sentences that fit the card, ready first, reorderable.
+- Recovery and testing tools: Menu > Data has Recover progress, Force save (write + read back), backup/restore (flags export separately).
+  Map > tap a unit > 🛠 Edit values sets score, star, harvests to next star and the timestamps. Map cheat mode: tap = +1 score, "Mature all"
+  moves every timestamp back N minutes. The Map offers "Found saved progress" when another copy has far more units.
 - Not built: a free-play sound board, undo, Units picker.
 - Deploy: same Pages site, `https://mvaganov.github.io/kongbuhey/fc2/`.
 
@@ -49,10 +52,8 @@ templates), Decks view. Its Practice tab is legacy (Gemini-built), superseded by
   that jsdom does not report.
 
 ## Private text overlay (copyright)
-Textbook `OriginalKo`/Title text lives in gitignored `local/verified_originals.js` (keyed by template id); `verified_sentences.js` rows
-are label-only. Loader: `korean/generation/verified_originals.js`. `tools/text_analyzer.js` splits private text into the overlay on ingest.
-Guard: `test/verified_originals_test.js`. Remaining exposure: slot `Surface` strings still encode textbook sentences eojeol by eojeol (a
-hygiene test caps known leaks). History was rewritten with `git filter-repo`; old commits may survive in GitHub caches and forks.
+Mechanism: `docs/architecture.md` section 2. Remaining exposure: slot `Surface` strings still encode textbook sentences eojeol by eojeol
+(a hygiene test caps known leaks). History was rewritten with `git filter-repo`; old commits may survive in GitHub caches and forks.
 
 ## Non-obvious files
 ```
@@ -92,14 +93,10 @@ tools/merge_units.js    merge duplicate units: alias=canonical pairs -> alias ro
 - Keep the free AST generator (`korean/generation/unit_sentence_generator.js`); its large functions may be replaced, refactored or deleted
   later, decided once verified-sentence generation is strong. Do not refactor it before then.
 - `data/verified_sentences.js` drives generation today; its data will improve as sentences are tested and semantic tag constraints relax.
-- Duplicate units (2026-11-20): ids are array positions and progress is keyed by id, so duplicates are not deleted. `tools/merge_units.js`
-  turns each into an alias row (PartofSpeech `Alias`, SemanticData.aliasOf); POS-filtered pools skip it, the analyzer indexer skips it,
-  fc2 folds its progress/owned/notes into the canonical unit on load (`FC2Store.foldAliases`), flashcards drops it. The canonical keeps its
-  own tags (a union passes AND-filters neither duplicate passed), gains missing SemanticData keys, and takes the earliest pack Source.
-  Sense splits the analyzer cannot tell apart were merged into the unit it emits (는데 893/894/956/957/1044/1045 -> 620; 거예요 1019/1020 -> 460).
-  Kept separate as true homonyms: 내다 1216/1281, 찾다 554/1306, 보다 149/976, 겠다 837/838, 는데요 1292/1293. Stage 1 fails on any reference
-  to an alias. The webapp still lists alias rows (POS Alias) so they stay inspectable.
-- Template order for a unit: fewest slots first, then grammar difficulty (`generateVerifiedSentencesForUnit`).
+- Duplicate units (2026-11-20) became alias rows (`tools/merge_units.js`; design in `docs/architecture.md` section 2). The canonical keeps
+  its own tags, gains missing SemanticData keys and takes the earliest pack Source. Sense splits the analyzer cannot tell apart were merged
+  into the unit it emits (는데 893/894/956/957/1044/1045 -> 620; 거예요 1019/1020 -> 460). Kept separate as true homonyms: 내다 1216/1281,
+  찾다 554/1306, 보다 149/976, 겠다 837/838, 는데요 1292/1293.
 
 ## Verified-sentence tuning workflow (agreed 2026-11-20)
 Goal: varied, short, not-wrong sentences in fc2. The game varies ONE slot at a time with the rest of the template fixed, so each slot is
@@ -166,39 +163,13 @@ temporal check misses some time words; extend it rather than adding a second one
 Ingestion of minimal sentences (one short sentence per grammar unit) is a separate track, blocked on the analyzer: it rejects -자,
 -(으)ㄹ게요, -니, 줘요, 고파서 (12 of 15 pilot sentences in `local/minimal_pilot.txt`). One Opus task, then `vs_tune.js ingest`.
 
-## fc2 reload safety, error panel, sentence steering (2026-11-19)
-- `fc2/store.js` (pure, tested in `test/fc2_game_test.js`): unit progress is mirrored to localStorage (`kb.fc2.v1.prog`) and merged with the IndexedDB copy on load (newer timestamp wins, DB healed). The session (combo, round, learning queue) is saved and restored if under 3 h old. `save()` is debounced for the mirror; `flush()` runs on pagehide/visibilitychange.
-- Errors from storage/DB/global handlers show a copyable `#errbox` (`window.fc2ReportError`); corrupt saves are kept under `<key>.corrupt`. Debug scene `error-box`.
-- Sentence generation options: `preferUnitIds` (Set) and `slotBias {retries, reject(unit)}`. Honored by the verified generator (`pickCandidateFromPool`) and the AST generator (`setPickSteering` in `argument_concord.js`, applied to unit-row picks only). fc2 passes a bias that redraws a slot up to twice when the unit is stronger than the owned-set mean.
-- Sentence-test distractors share the sentence's nouns (Noun/Pronoun units) where possible; opening a test marks lastSeen for every unit in the target and choices.
-- Quiz speed (2026-11-19): profiling showed the slot-bias redraws cost ~0 ms; time is candidate generation (~0.35 s per quiz now, was ~0.6 s). Quizzes are pre-built in idle gaps (`prefetchSoon`, cached as `sentence.preTest`), and taps are ignored for `STEST_GUARD_MS` (450 ms) after a quiz opens (tests set `app.stest.readyAt = 0`).
-
-## Progress safety and recovery (2026-11-19)
-- Incident: a player lost all unit progress on refresh (units stayed unlocked, scores reset). Leading suspect: the `?debug` page has its own save with no unit database, and a stale-cache fallback wrote an empty mirror over it. Not confirmed. Fixes: the mirror is never written when `store.js` is missing and never replaced by an empty one; rolling automatic snapshots (`kb.fc2.*.snaps`, 6 kept, richest pinned) in `store.js`.
-- Menu > Data > Recover progress lists every source (unit database, this page's copy, snapshots, the other save: normal vs `?debug`, old flashcards) with counts; Restore keeps the more advanced copy of each unit (`FC2Store.bestOf`).
-- Map > tap a unit > 🛠 Edit values: score (field), star level (dropdown), harvests to next star (field), Set-to-now buttons for last correct / last seen. Idle income is derived from the star level, so it is read only.
-- Cheat mode (Map, run-time only): tap a unit = +1 score (stamps never-answered units), "Mature all" shifts every unit's TimeStampLastCorrect/LastSeen back N minutes. Menu > Data > Force save writes and reads back game, progress copy, session and the unit database. The backup no longer includes flagged sentences (separate ⬇ Flags export); quiz/card sentences are never persisted (only flagged ones are).
-
-## Root cause of the progress wipe (2026-11-20)
-- Not an init-order race: opening `?debug` or `?debug=<scene>` ran the scene setup (`reset`/`setUnit`), which replaces the game and unit progress, and the debug page then SAVED that staged state (mirror + snapshots in `kb.fc2.dbg.*`) over the real one. The Recovery panel showed it: snapshots with 80 scored units, then one with 1 scored unit (the `harvest-card` scene). Fix: `EPHEMERAL` in `fc2/app.js` (`?debug` without `&persist` makes `ls.set` a no-op); regression test 'debug pages never save'.
-- Snapshots now also carry the game state (coins, level, unlocks, upgrades); the Recovery panel offers "+ game" for those. Snapshots taken before this change hold unit progress only.
-- Quiz: when the tested unit is a noun it never appears in a wrong answer, and each wrong answer swaps in a different noun.
-
-## The real cause of unit progress not persisting (2026-11-20)
-- `webapp/db.js saveBulkUnitCellValues` did one get+put PER CELL inside a single IndexedDB transaction. Every get sees the record as it was before any put, so when fc2 saved a unit's four cells (score, star, last correct, last seen) only the LAST cell survived in the database (lastSeen). On reload the database copy had no score/star/last-correct. The localStorage progress copy was ignored because merge only let it win with a strictly newer timestamp, and lastSeen made them equal. Fixed: one read-modify-write per unit (test with a faithful fake IndexedDB in `test/spreadsheet_ui_test.js`), and records missing progress columns are healed from the progress copy (`mergeProg` `preferMirror`).
-- Force save (Menu) reads the database back and reports mismatches with samples. jsdom cannot run IndexedDB; the real browser path is covered only by the faithful fake.
-- The normal page offers "Found saved progress" on the Map when another copy (the old ?debug save, snapshots) has far more units. The Menu shows the page mode and full URL. The `?debug` bar is red and full-width.
-
-## Verified-sentence "time to use it" queue (2026-11-22)
-- `fc2/queue.js` (pure, tested in `test/fc2_game_test.js`): one ordered list of template ids, front = longest unused. Stored as `g.vq` in the game state. Never-used templates count as front; ids that no longer exist are dropped.
-- `generateFor` (fc2/app.js) passes `options.queueOrder`; `generateVerifiedSentencesForUnit` then walks matches in queue order (one per template; with an allowed set, templates the owned units can fully build come first). Each generated template moves to the back (`vqUsed`). The old easiest→challenging pick order applies only when `queueOrder` is absent (webapp/, flashcards/). Tier labels on sentences are still set by position, so they no longer mean difficulty in fc2.
-- "☰ Queue" button next to "New examples" opens the list: `listVerifiedFitsForUnit(unitId, ownedSet)` in the generator gives rows with `needed`/`missing` units (every other slot's word plus all grammar units, aliases resolved). Ready rows first, locked after, each in queue order; one missing unit is highlighted, several show "2+". Reorder with ⇧ Front / ⇩ Back or by dragging ⠿ (pointer events, so it works on phones).
-- **Availability (2026-11-22):** a verified sentence is buildable when every grammar unit is unlocked and every other word slot has ANY unlocked unit that fits it (not only the textbook word); fixed slots need their own unit. Generation (with an allowed set) varies slots whose textbook word is locked but another unlocked word fits (`slotsToRelax`); templates that are not buildable still come after the buildable ones with textbook words, as before.
-  Cache (`avail` in `verified_sentence_generator.js`): per template id, per slot `{ok, fixed}`, computed on first read with an early-exit scan of the unlocked units. `syncOwnedUnits(ids)` logs newly unlocked units (a removed unit resets everything); a read catches the entry up by checking ONLY the new units against its locked slots, so answers are always exact. `availabilityStep(budgetMs)` does the same for all templates in time slices; fc2 starts it from `save()` via `syncAvail`/`availPump` (6 ms slices, 40 ms apart). Entries are dropped when a template is edited (`templateEdits`). Measured: a 15-unit unlock re-checks everything in ~2 ms; a cold sweep with 500 unlocked units takes ~60 ms in 6 ms slices.
-- Not covered yet: the single-sentence `generateVerifiedSentenceForUnit` and the quiz distractor generators ignore the queue. Rows show `OriginalKo` only where `local/verified_originals.js` exists; the public build shows the template title and the unit chips.
-
-## Generation performance (2026-11-22)
-Bench scripts are not in the repo (they lived in /tmp); numbers are node on the dev laptop, owned = units 0..699, 3 sentences per card.
-- Done (output byte-identical on an 818-generation seeded comparison): shared read-only template snapshot `getVerifiedTemplatesShared()` (rebuilt only on template edits; `getAllVerifiedSentences()` still returns editable copies for the editor and `vs_tune`); difficulty memoized per template; per-slot eligible-unit lists and match contexts cached (cold scan only over the slot's POS); POS decks and difficulty ranking built on demand instead of at startup; mood/adverb concord skip a forbidden form unless the text contains it literally (pinned by plain-text checks in `grammar_mood_test.js` / `adverb_test.js`); fc2 quiz builder computes `genOptions()` once per quiz.
-- Result: warm card 21.7 -> 3.3 ms, cold card 24 -> 7 ms, first-use startup 244 -> 7 ms, fc2 quiz build (jsdom) ~990 -> ~40 ms, `node test.js` ~50 -> ~23 s.
-- Measured, not done (warm sweep of 1,400 cards = 2.75 s): AST fallback 46% (0.57 ms per call, 1.6 calls per card); template attempts that fail validation 30%, 86% of it from 94 template+unit pairs that never succeed (e.g. 둘/셋/넷 in a 쓰다 template, 얼마나 in degree-adverb templates: also a content signal for the flag loop); successful template generation 11%. Startup: `state.initSemanticSets` builds ~2,900 forbidden forms through `resolvePureMorphology` (~40% of module load); `PRONOUN_REPLACEMENTS` (35 data-driven regexes) runs on every morphology call and is the hottest single line at load and ~9% of quiz build.
+## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
+Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:
+- 2026-11-19: localStorage progress mirror, session restore, snapshots, error panel, Recovery panel, unit editor, cheat mode, Force save.
+- 2026-11-20: two causes of lost progress, both fixed with tests: `?debug` scenes saved their staged state over the real one (debug pages
+  now never save), and `webapp/db.js` bulk save kept only the last cell per unit (one read-modify-write per unit now; damaged records heal).
+- 2026-11-22: "time to use it" queue and Queue view; relaxed availability (any fitting unlocked word opens a slot) with an incremental,
+  time-sliced cache; generation caches (warm card 21.7 -> 3.3 ms, quiz build ~1 s -> ~50 ms); `tools/bench_generation.js` in `--full`.
+  Measured but deliberately not done: architecture doc section 6.
+- Open: one unexplained stage-6 failure in 1 of 4 full runs on 2026-11-22 (not reproduced in 13 UI-suite runs); suspect the old
+  random-pack flake in the UI test's "sentence test" step.

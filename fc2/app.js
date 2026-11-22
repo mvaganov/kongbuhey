@@ -970,7 +970,10 @@ class FC2App {
 		const shuffle = a => a.sort(() => Math.random() - 0.5), owned = this.g.owned;
 		const inIt = [...mine].filter(id => id !== k.id && owned.includes(id));
 		const sources = [...(cardNoun ? [] : [k.id]), ...shuffle(inIt.filter(id => !isNoun(id))), ...shuffle(owned.filter(id => id !== k.id && !mine.has(id) && !isNoun(id))).slice(0, 5), ...shuffle(inIt.filter(isNoun))].slice(0, 10);
-		const genBase = this.genOptions();   // owned set, strength mean and queue order once per quiz, not once per generation call (~30)
+		// Owned set and strength mean once per quiz, not once per generation call (~30). No queue order: wrong answers follow the queue's
+		// front templates every time (they never rotate it), so they come from the random seeded pick instead, which varies more.
+		const genBase = this.genOptions();
+		delete genBase.queueOrder;
 		let perfect = 0;   // candidates with exactly the sentence's nouns: enough of them and we stop generating
 		// A cheap budget first (fast); only when it finds fewer than 3 distinct wrong answers (small unlock sets) retry with a generous one.
 		for (const budget of [{ n: 4, deep: 3, passes: 2, perfect: 3 }, { n: 6, deep: 4, passes: 3, perfect: 6 }]) {

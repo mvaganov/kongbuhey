@@ -5,6 +5,8 @@ Purpose: study Korean from the course material. The sentence generator's quality
 Korean himself, so correctness comes from flagged-sentence fixtures, not from the generator checking itself.
 Phone-first: study happens in `flashcards/` (GitHub Pages); `webapp/` is the desktop test/admin tool. Android packaging later, not iOS.
 Experiment in a small separate project, not in a branch.
+**Read `docs/architecture.md` before changing generation, fc2 storage or the test harness**: runtime model, data model, generation
+caches and the invariants that keep them exact, fc2 persistence layers, test architecture, performance record. Update it when a design changes.
 
 ## Commands
 - `node test.js`: default suite, ~30 s on a local disk (ESLint, data integrity, smoke generation, all test/ suites, then the fc2 build stamp if all passed). Run before every commit.
@@ -12,13 +14,14 @@ Experiment in a small separate project, not in a branch.
   `mkdir -p /tmp/kb && [ -d /tmp/kb/node_modules ] || cp -r node_modules /tmp/kb/` (once per session, ~45 s), then
   `rsync -a --delete --exclude .git --exclude node_modules ./ /tmp/kb/ && (cd /tmp/kb && node test.js)` (sync 0.3 s), then `node tools/stamp.js` in the real repo (the stamp inside the copy is discarded).
   Edit only in the real repo; never copy files back from `/tmp/kb`.
-- `node test.js --full`: adds the every-unit generation sweep (~20 s), the jsdom browser load test (slow on some disks) and the CLI `--help` check (~2 s); the fc2 UI playthrough already runs by default.
+- `node test.js --full`: adds the every-unit generation sweep (~20 s), the jsdom browser load test (slow on some disks), the CLI `--help` check (~2 s) and the generation bench (~10 s); the fc2 UI playthrough already runs by default.
+- `node tools/bench_generation.js`: generation timings (report only) plus deterministic checks against `test/bench_baseline.json`: work counters (caches stay warm, work does not grow) and a seeded output fingerprint. Run it before and after any generation refactor; `--save` only when the change is intended.
 - `npm run lint`: ESLint only. 0 errors required; `no-unused-vars` warnings are a dead-code cleanup backlog.
 - `node test/<name>_test.js`: one suite, 1-3 s. `node test/browser_load_test.js`: jsdom check of `webapp/index.html`.
 - State what you ran. Done means named tests pass and lint is clean.
 - Agent shells: start compound commands with `set -o pipefail` and check exit codes (`cmd | tail` reports tail's status; a failed
   step in `a && b` silently skips b). `node test.js` lists every CLI that exited non-zero since its last run.
-- fc2 screens: `fc2/index.html?debug` lists scenes; `?debug=trial-listen` (etc.) opens a ready-made state in seconds, that NEVER SAVES (scenes replace the whole game; a `?debug` page that saved once wiped a player's progress, see handoff.md). Tests load `?debug&persist` to exercise saving. Never send the owner to a `?debug` URL for real play.
+- fc2 screens: `fc2/index.html?debug` lists scenes; `?debug=trial-listen` (etc.) opens a ready-made state in seconds, that NEVER SAVES (scenes replace the whole game; a `?debug` page that saved once wiped a player's progress, see docs/architecture.md). Tests load `?debug&persist` to exercise saving. Never send the owner to a `?debug` URL for real play.
   Scenes live in `fc2/debug.js`; `test/fc2_ui_test.js` renders every one in jsdom. A new fc2 screen gets a scene (with an `expect` selector) instead of a hand-built test setup or a phone check.
 - A new script in `fc2/` must be added to `fc2/index.html`; `test/fc2_pages_test.js` (default suite, <1 s) fails if a tag is missing, duplicated or dangling, or if a `window.FC2*` global is used but never defined. A phone can cache a stale `index.html` next to a fresh `app.js`, so keep `app.js` tolerant of a missing optional module.
 - Build stamp: `tools/stamp.js` hashes everything `fc2/index.html` loads, writes `?v=<hash>` onto every local script/css tag (so a phone never mixes stale and fresh files) and generates `fc2/version.js` (hash + build time, shown at the bottom of the Menu and in the error panel). `node test.js` runs it as its last step, only when every stage passed (the stamp of approval), so run the suite right before committing; `test/fc2_pages_test.js` checks the tags agree with `version.js`. Never hand-edit `version.js` or the `?v=` values. Add new fc2 script tags without `?v=`: the stamp adds it.
@@ -44,6 +47,7 @@ statement. `test/cli_help_test.js` (in `node test.js --full`) finds CLIs by text
 - `tools/tatoeba_prefilter.js`: deterministic Tatoeba candidate filter.
 - `tools/merge_units.js`: merge duplicate language units.
 - `tools/stamp.js`: fc2 build stamp.
+- `tools/bench_generation.js`: generation speed and output-unchanged check (baseline `test/bench_baseline.json`).
 - `tools/only_expansion.js` (library): INSERT queues words that may fit `only`-list slots (`vs_tune.js expansions`).
 - `tools/exit_log.js` (library): logs every CLI's non-zero exit; `node test.js` prints them (a new CLI copies the `watch()` line).
 - External APIs (OpenAI-compatible, keys in gitignored `local/keys.env`): `https://api.exaone.ai/v1` model `k-exaone_v2.5`
@@ -67,7 +71,7 @@ The app has a "⚐ Bad sentence" button; "⬇ Flags" exports JSON into `flagged/
 Do not fix a flagged bug without a fixture. Do not mark a flag confirmed from memory: use the report.
 
 ## Rules
-- No Hangul literals or unit IDs in generator/concord logic: put linguistic knowledge in `data.js` tags/SemanticData (Stage 0 enforces IDs).
+- No NEW Hangul literals or unit IDs in generator/concord logic: put linguistic knowledge in `data.js` tags/SemanticData. Existing ones are code debt (`docs/architecture.md` section 1): move a rule into the data when a change already touches it. Stage 0 catches only some id patterns.
 - Multi-word grammar is declared in `SyntaxFrame` as `/*js:matcher*/` closures, compiled by `korean/analyzer/indexer.js`.
 - Judge refactors by behaviour and fixtures, not by grep counts.
 - TTS uses a native Korean voice only. English transliteration rules are pinned by `test/english_phonemes_test.js`.

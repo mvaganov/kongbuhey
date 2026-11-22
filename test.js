@@ -27,7 +27,7 @@ const { K } = (typeof require !== 'undefined') ? require('./data/constants.js') 
  *
  * Usage:
  *   node test.js                 # Fast default (about a minute): lint + data + sampled generation + suites
- *   node test.js --full          # Also sweep generation over every unit (slower)
+ *   node test.js --full          # Also sweep generation over every unit, CLI --help, generation bench (tools/bench_generation.js)
  *   node test.js <source>        # Validate specific source (e.g. node test.js studytext21)
  *   node test.js -v, --verbose   # Display detailed breakdown per stage
  */
@@ -503,11 +503,12 @@ function runTests(options = {}) {
 			{ name: "Flashcard Deck Logic", path: path.resolve(__dirname, 'test', 'flashcard_deck_test.js') },
 			{ name: "Spreadsheet UI & Database", path: path.resolve(__dirname, 'test', 'spreadsheet_ui_test.js') },
 			{ name: "select.js API (temp data copy)", path: path.resolve(__dirname, 'test', 'select_test.js') },
-			...(full ? [{ name: "CLI --help (fast, exit 0, no writes)", path: path.resolve(__dirname, 'test', 'cli_help_test.js') }] : [])
+			...(full ? [{ name: "CLI --help (fast, exit 0, no writes)", path: path.resolve(__dirname, 'test', 'cli_help_test.js') }] : []),
+			...(full ? [{ name: "Generation bench (speed + output unchanged)", path: path.resolve(__dirname, 'tools', 'bench_generation.js'), echo: /^ {2}\S/ }] : [])
 		];
 
 		let totalAssertions = 0;
-		const timings = [];
+		const timings = [], echoed = [];
 		for (const suite of suiteScripts) {
 			const t0 = Date.now();
 			const out = child_process.execFileSync(process.execPath, [suite.path, ...(suite.args || [])], {
@@ -516,6 +517,7 @@ function runTests(options = {}) {
 			});
 
 			timings.push({ name: suite.name, ms: Date.now() - t0 });
+			if (suite.echo) echoed.push(...out.split('\n').filter(l => suite.echo.test(l)));   // e.g. the bench's timing table
 			const countMatch = out.match(/TOTAL TESTS:\s*(\d+)/);
 			if (countMatch) {
 				totalAssertions += parseInt(countMatch[1], 10);
@@ -534,6 +536,7 @@ function runTests(options = {}) {
 		const slow = timings.filter(t => t.ms >= 1000).sort((a, b) => b.ms - a.ms), rest = timings.length - slow.length;
 		for (const t of slow) console.log(`        ${t.name.padEnd(46, '.')} ${(t.ms / 1000).toFixed(1)}s`);
 		if (slow.length) console.log(`        (${rest} other suites under 1 s)`);
+		if (echoed.length) { console.log('        Generation bench (ms; "was" = tools/bench_generation.js baseline):'); for (const l of echoed.filter(l => !/\[PASS\]/.test(l))) console.log('      ' + l); }
 	} catch (err) {
 		failFast("Stage 6 (Semantic & Honorific Concord)", err.stdout || err.stderr || err.message);
 	}
