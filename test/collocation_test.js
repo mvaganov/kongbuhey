@@ -169,6 +169,19 @@ assert(readCandidates.every(n => hasTag(n, "reading")), "All 읽다 candidates h
 // 보다 (visual media)
 const visualCandidates = getNounCandidatesForVerb(watchVerb);
 assert(visualCandidates.length > 0, "보다 has matching noun candidates", `Found ${visualCandidates.length}`);
+// A small unlocked set: when no unlocked verb takes the noun as its object, the fallback must not use a verb whose data restricts
+// its objects (시계를 사귀었어요, 옷걸이를 그만뒀어요; flagged 2026-11-23). It returns no action verb, so a descriptive frame is used.
+{
+	const { selectActionVerbForNoun } = require('../korean/concord/argument_concord.js');
+	const byKo = (k) => KR_EN_languageUnits.find(u => u && u[KoreanWord] === k && /Verb|Noun/.test(u[DATA_SCHEMA.PartofSpeech]));
+	const clock = byKo('시계'), restricted = ['사귀다', '그만두다', '전공하다'].map(byKo);
+	const set = new Set([clock, ...restricted].map(u => u[DATA_SCHEMA.Id]));
+	const got = selectActionVerbForNoun(clock, { onlyFromSet: true, allowedUnitIds: set }, clock[DATA_SCHEMA.Id]);
+	assert(got === null, "no restricted verb is forced onto an object it does not take", got ? `got ${got[KoreanWord]}` : 'null');
+	const major = byKo('전공하다'), cands = getNounCandidatesForVerb(major).map(n => n[KoreanWord]);
+	assert(cands.includes('경영학') && !cands.includes('학생') && !cands.includes('시간표'), "전공하다 takes fields of study, not 학생 or 시간표", cands.slice(0, 6).join(' '));
+}
+
 // Reading material is also looked at (신문을 보다, 책을 보다; slot fixture g029, 2026-11-20).
 assert(visualCandidates.every(n => hasTag(n, "visual_media", "reading")), "All 보다 candidates have 'visual_media' or 'reading' tag (영화, 드라마, 뉴스, 신문, 책)");
 assert(visualCandidates.some(n => n[DATA_SCHEMA.Korean] === "신문") && !visualCandidates.some(n => n[DATA_SCHEMA.Korean] === "밥"), "보다 takes 신문 but not 밥");

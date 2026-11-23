@@ -15,7 +15,8 @@ if (typeof require === 'function' && typeof module !== 'undefined' && require.ma
  *                              replay N cards of example generation as the game does (each card: one unlocked unit, opts.count
  *                              sentences, unlocked-only filter, slot bias, "time to use it" queue) and tally sentence endings,
  *                              predicates, templates and generator paths. --show prints N sample sentences.
-                              What-ifs: --no-bias (no slot bias), --all-units (as if onlyOwned were off).
+                              What-ifs: --no-bias (no slot bias), --all-units (as if onlyOwned were off), --no-recent (no
+                              recently-used penalty), --as-saved (without the always-unlocked units the app adds on load).
  *   fields                     what each backup field means (from fc2/store.js)
  */
 require('./cli_help.js').exitWithHeaderHelp(__filename);
@@ -102,13 +103,17 @@ function cmdGen(save, flags) {
 	let rnd = seed;
 	const random = () => { rnd = (rnd * 1103515245 + 12345) % 2147483648; return rnd / 2147483648; };
 	const sents = [];
+	const core = UNITS.filter(u => u && u[D.SemanticData] && u[D.SemanticData].alwaysUnlocked).map(u => u[D.Id]);
+	if (!flags['as-saved']) G.ensureUnlocked(save.game, core);   // the app adds these on load
+	let recent = [];
 	for (let c = 0; c < cards; c++) {
 		const id = flags.unit !== undefined ? Number(flags.unit) : owned[Math.floor(random() * owned.length)];
 		korean.setRandomSeed(seed * 1000 + c);
 		const opts = flags['all-units'] ? { ...save.opts, onlyOwned: false } : save.opts;
-		const options = G.sentenceOptions({ owned, opts, unitOf: unitOf(save), now: save.now, queue, idOf: u => u[D.Id], random });
+		const options = G.sentenceOptions({ owned: save.game.owned, opts, unitOf: unitOf(save), now: save.now, queue, idOf: u => u[D.Id], random, recent: flags['no-recent'] ? [] : recent, targetId: id });
 		if (flags['no-bias']) delete options.slotBias;
 		const list = Array.from(generateSentencesForUnit(id, Number(save.opts.count) || 3, options) || []);
+		recent = G.pushRecent(recent, G.contentUnitIds(list));   // app.js generateFor
 		for (const s of list) {
 			sents.push({ card: id, ...s });
 			if (s.verifiedTemplateId) queue = Q.toBack(queue, tplIds, s.verifiedTemplateId);   // app.js vqUsed

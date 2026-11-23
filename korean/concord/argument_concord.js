@@ -547,9 +547,18 @@ function selectActionVerbForNoun(nounUnit, options = {}, targetId = null) {
 		if (bodyAVs.length > 0) return pickRandom(bodyAVs);
 	}
 
+	// Fallbacks never use a verb whose data restricts its objects (collocation_filter, a specific req, a person object): the noun
+	// already failed that verb's candidate check above, so it would read as 시계를 사귀었어요 / 옷걸이를 그만뒀어요. With a small
+	// unlocked set those restricted verbs can be the only transitive ones; then no action verb is returned and the caller uses a
+	// descriptive verb or another frame.
+	const restrictsObject = av => {
+		const sd = parseSemanticData(av);
+		return Boolean(sd && (sd.collocation_filter || (sd.req && sd.req !== 'any' && sd.req !== K.OBJECT))) || hasTag(av, "transitive_person");
+	};
 	const cleanTransitiveAVs = allAVs.filter(av => {
 		const ko = av[DATA_SCHEMA.Korean];
 		if (!ko || ko.includes(" ")) return false;
+		if (restrictsObject(av)) return false;
 		if (ko === "말씀하다" || state.HONORIFIC_WORDS.has(ko) || state.HUMBLE_WORDS.has(ko)) return false;
 		if (isIntransitiveVerb(av)) return false;
 		return getVerbParticleType(av) === K.OBJECT;
@@ -564,8 +573,8 @@ function selectActionVerbForNoun(nounUnit, options = {}, targetId = null) {
 		return pickRandom(cleanTransitiveAVs);
 	}
 
-	const fallbackTransitive = allAVs.filter(v => !isIntransitiveVerb(v) && !(v[DATA_SCHEMA.Korean] || "").includes(" "));
-	return pickRandom(fallbackTransitive) || pickRandom(allAVs);
+	const fallbackTransitive = allAVs.filter(v => !isIntransitiveVerb(v) && !restrictsObject(v) && !(v[DATA_SCHEMA.Korean] || "").includes(" "));
+	return pickRandom(fallbackTransitive) || null;
 }
 
 function selectDescriptiveVerbForNoun(nounUnit, options = {}, targetId = null) {

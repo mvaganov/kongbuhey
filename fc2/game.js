@@ -331,17 +331,40 @@ const modeOf = st => (st === 'new' || st === 'learning') ? 'learn' : (st === 'gr
  * two stay identical. onlyOwned -> sentences use unlocked units only. slotBias leans toward the units you know least: a slot filler
  * stronger than the owned average is redrawn up to twice. queue: the normalized "time to use it" template order, or null.
  */
-function sentenceOptions({ owned, opts, unitOf, now, queue, idOf, random = Math.random }) {
+function sentenceOptions({ owned, opts, unitOf, now, queue, idOf, random = Math.random, recent = [], targetId = null }) {
 	const options = { seedOffset: Math.floor(random() * 997) };
 	if (opts && opts.onlyOwned) { options.onlyFromSet = true; options.allowedUnitIds = new Set(owned); }
 	const strength = id => { const u = unitOf(id); return u ? effectiveScore(u, now) + u.tier : 0; };
 	const mean = owned.length ? owned.reduce((n, id) => n + strength(id), 0) / owned.length : 0;
 	if (queue) options.queueOrder = queue;
-	options.slotBias = { retries: 2, reject: unit => strength(idOf(unit)) > mean };
+	// recent: content units of the last few cards' sentences (pushRecent). They are redrawn like strong units, so a small unlock set
+	// does not repeat the same verb in every sentence. The card's own unit is never held back.
+	const recentSet = new Set(recent);
+	options.slotBias = { retries: 2, reject: unit => { const id = idOf(unit); return strength(id) > mean || (id !== targetId && recentSet.has(id)); } };
 	return options;
 }
 
-const api = { sentenceOptions, NUMBER_COST, NUMBER_WORDS, numberWord, numberQuestion, T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
+/** How many content units the "recently used" list keeps (about the last 3 cards of 3 sentences). */
+const RECENT_KEEP = 24;
+/** Append ids (most recent last), dropping older copies; keep the newest `keep`. */
+function pushRecent(recent, ids, keep = RECENT_KEEP) {
+	const add = [...new Set(ids)];
+	return [...(recent || []).filter(x => !add.includes(x)), ...add].slice(-keep);
+}
+/** Content (non-grammar) unit ids used in generated sentences, from their unitsUsed lists. */
+function contentUnitIds(sentences) {
+	const out = [];
+	for (const s of sentences || []) for (const u of (s && s.unitsUsed) || []) if (typeof u.unitId === 'number' && String(u.kind).toLowerCase() !== 'grammar') out.push(u.unitId);
+	return out;
+}
+/** Units marked always unlocked (SemanticData.alwaysUnlocked in data.js) join game.owned. Returns true when something was added. */
+function ensureUnlocked(g, ids) {
+	const have = new Set(g.owned), add = ids.filter(id => !have.has(id));
+	if (add.length) g.owned = [...g.owned, ...add];
+	return add.length > 0;
+}
+
+const api = { sentenceOptions, RECENT_KEEP, pushRecent, contentUnitIds, ensureUnlocked, NUMBER_COST, NUMBER_WORDS, numberWord, numberQuestion, T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
 	idleEarned, idleRate, touchStreak, isTrial, answerTrial, sealMult, totalStars, sealsAvailable, ascend, ensureQuests, questEvent, claimQuest, packRank, rarity, pickPull, nextCard, modeOf, upLevel, upCost, comboCap, critChance, pullSize, pullCost,
 	nurseryCap, offlineCapH, streakMult };
 if (typeof window !== 'undefined') window.FC2Game = api;

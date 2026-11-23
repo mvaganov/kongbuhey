@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-20T13:55:39.526Z",
+  "generatedAt": "2026-11-23T09:07:22.385Z",
   "totalUnits": 2045,
   "validVectorCount": 2045,
   "partsOfSpeech": [
@@ -1563,6 +1563,7 @@
       "allomorph_pair",
       "allomorph_patterns",
       "allows_teeth",
+      "alwaysUnlocked",
       "attribute",
       "beverage_type",
       "classifier_spec",
@@ -2003,6 +2004,9 @@
       "allows_teeth": [
         true
       ],
+      "alwaysUnlocked": [
+        true
+      ],
       "attribute": [
         "sky",
         "temperature"
@@ -2151,6 +2155,7 @@
         "{\"allow\":[\"탑\",\"벽돌\",\"짐\",\"상자\",\"경험\",\"지식\",\"실력\",\"눈\"],\"notTags\":[\"measureWord\"]}",
         "{\"allow\":[\"표\",\"기차표\",\"비행기 표\",\"영화표\",\"항공권\",\"영화\",\"콘서트\",\"연극\",\"음악회\",\"자리\"],\"notTags\":[\"measureWord\"]}",
         "{\"allow\":[\"하늘\",\"바다\",\"산\",\"숲\",\"호수\",\"강\",\"봄\",\"물\",\"구름\"],\"notTags\":[\"measureWord\"]}",
+        "{\"allTags\":[\"academic\",\"concept\"],\"notTags\":[\"activity\",\"document\",\"person\",\"time\",\"temporal\",\"place\",\"institution\"],\"deny\":[\"ㅎ동사\",\"ㅅ동사\"]}",
         "{\"allTags\":[\"vehicle\"],\"allow\":[\"차\",\"자동차\",\"택시\",\"버스\",\"고속버스\"]}",
         "{\"anyTag\":[\"academic\",\"concept\",\"language\",\"activity\"],\"allow\":[\"일\",\"생활\"],\"notTags\":[\"object\",\"place\",\"clothing\",\"furniture\",\"food\",\"measureWord\"]}",
         "{\"anyTag\":[\"academic\",\"language\"],\"notTags\":[\"measureWord\",\"place\",\"time\",\"document\"],\"deny\":[\"시험\"]}",

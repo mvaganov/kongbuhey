@@ -150,6 +150,7 @@ class FC2App {
 		const blank = G.blankGame(nowSec());
 		this.g = { ...blank, ...g, cos: { ...blank.cos, ...g.cos }, totals: { ...blank.totals, ...g.totals } };
 		this.g.owned = fold({ prog: [], owned: this.g.owned }, this.alias).owned.filter(id => this.units.has(id));
+		this.ensureCoreUnlocked();
 		for (const id of new Set([...merged.healed, ...folded.moved])) this.saveUnit(id);
 		for (const [id, text] of Object.entries(this.notes)) if (text !== notesBefore[id]) this.saveCell(Number(id), 'notes', text);
 		const sess = store().unpackSession(ls.get(LS + 'session', null), nowSec(), 3 * 3600);
@@ -187,7 +188,7 @@ class FC2App {
 		return g;
 	}
 
-	save() { this.syncAvail(); ls.set(LS + 'game', this.g); if (window.FC2Store) ls.set(LS + 'session', window.FC2Store.packSession(this.session, nowSec())); else store(); this.queueMirror(); }
+	save() { this.ensureCoreUnlocked(); this.syncAvail(); ls.set(LS + 'game', this.g); if (window.FC2Store) ls.set(LS + 'session', window.FC2Store.packSession(this.session, nowSec())); else store(); this.queueMirror(); }
 	/** Write the progress mirror soon (debounced); flush() writes everything now (page hide, tab switch). */
 	queueMirror() { if (this.mirrorTimer) return; this.mirrorTimer = setTimeout(() => { this.mirrorTimer = null; this.writeMirror(); }, 250); }
 	/**
@@ -456,9 +457,16 @@ class FC2App {
 	}
 
 	// G.sentenceOptions (game.js) is shared with tools/save_inspect.js, which replays a save's generation.
-	genOptions() {
+	genOptions(targetId = null) {
 		const queue = window.FC2Queue && window.getAllVerifiedSentences ? window.FC2Queue.normalize(this.g.vq, this.vqIds()) : null;
-		return G.sentenceOptions({ owned: this.g.owned, opts: this.opts, unitOf: id => this.unitOf(id), now: nowSec(), queue, idOf: u => u[C.Id] });
+		return G.sentenceOptions({ owned: this.g.owned, opts: this.opts, unitOf: id => this.unitOf(id), now: nowSec(), queue, idOf: u => u[C.Id], recent: this.recent || [], targetId });
+	}
+
+	/** Units marked SemanticData.alwaysUnlocked (core grammar such as ~아요, ~습니다, 은/는) are always unlocked. */
+	ensureCoreUnlocked() {
+		if (!this.g || !this.units) return;
+		if (!this.coreIds) this.coreIds = [...this.units.values()].filter(u => u[C.SemanticData] && u[C.SemanticData].alwaysUnlocked).map(u => u[C.Id]);
+		G.ensureUnlocked(this.g, this.coreIds);
 	}
 
 	// ---------- verified-sentence queue ("time to use it"): the front of the queue is generated first; a generated template goes to the back ----------
@@ -581,8 +589,8 @@ class FC2App {
 
 	generateFor(id) {
 		try {
-			const list = window.generateSentencesForUnit(id, this.opts.count, this.genOptions()), sentences = Array.from(list);
-			if (sentences.length) { this.vqUsed(sentences); this.prefetchSoon(id, sentences); }
+			const list = window.generateSentencesForUnit(id, this.opts.count, this.genOptions(id)), sentences = Array.from(list);
+			if (sentences.length) { this.recent = G.pushRecent(this.recent, G.contentUnitIds(sentences)); this.vqUsed(sentences); this.prefetchSoon(id, sentences); }
 			return { sentences, msg: sentences.length ? '' : this.opts.onlyOwned ? 'No examples from your unlocked units yet. They appear as you unlock more, or allow all units in the Menu.' : (list.message || 'No example sentences are available for this unit yet.') };
 		} catch (_) { return { sentences: [], msg: 'Could not generate sentences for this unit.' }; }
 	}
