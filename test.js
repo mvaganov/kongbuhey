@@ -505,6 +505,7 @@ function runTests(options = {}) {
 			{ name: "fc2 Page Wiring", path: path.resolve(__dirname, 'test', 'fc2_pages_test.js') },
 			{ name: "fc2 UI (jsdom playthrough)", path: path.resolve(__dirname, 'test', 'fc2_ui_test.js') },
 			{ name: "fc2 effect trace (golden)", path: path.resolve(__dirname, 'test', 'fc2_trace_test.js') },
+			{ name: "fc2 headless simulator", path: path.resolve(__dirname, 'test', 'fc2_sim_test.js'), args: full ? ['--full'] : [] },
 			{ name: "Golden Sentences (flag + slot fixtures, tuning ledger)", path: path.resolve(__dirname, 'test', 'golden_sentences_test.js') },
 			{ name: "Content Hygiene (textbook text stays local)", path: path.resolve(__dirname, 'test', 'verified_originals_test.js') },
 			{ name: "Flashcard Deck Logic", path: path.resolve(__dirname, 'test', 'flashcard_deck_test.js') },

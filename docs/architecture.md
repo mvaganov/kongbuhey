@@ -131,8 +131,28 @@ Rules that keep them exact:
   Enforced: plain-text checks in `test/grammar_mood_test.js` and `test/adverb_test.js`.
 
 ## 4. fc2 (the game)
-- **Layering:** `game.js` (pure rules, tuning table `T`), `store.js` (pure persistence helpers), `queue.js` (pure queue), `fx.js` (effects
-  canvas, sound, haptics), `debug.js` (scenes), `app.js` (UI and wiring). Pure modules are tested directly in `test/fc2_game_test.js`.
+- **Layering:** `game.js` (pure rules, tuning table `T`), `store.js` (pure persistence helpers), `queue.js` (pure queue), `controller.js`
+  (game flow, no DOM), `fx.js` (effects canvas, sound, haptics), `debug.js` (scenes), `app.js` (the view). Pure modules are tested directly
+  in `test/fc2_game_test.js`.
+- **Controller and view.** `FC2Core` (`controller.js`) owns the state (`g`, `prog`, `session`, `card`, `opts`, `notes`, `recent`) and every
+  game-flow step: picking cards, self-scores (`answerSelf`: -2 "much more practice", -1 wrong, 0 "one more practice", +1 right, +2 "boring,
+  move on"), trials, sentence tests, rounds, idle coins, pulls, upgrades, quests, ascension, the number board, backup/restore. Its
+  environment is injected: units, clock (`sec`/`ms`/`day`), `random`, `generate`, `templateIds`, `canSpeak`, `persist` hooks,
+  `onSentences`. Core methods return what happened (coins, level-ups, events); `app.js` only renders and plays effects
+  (`settleEffects`). Reason: one copy of the game rules for the phone and for headless QA. Enforced: `test/fc2_trace_test.js` replays a
+  scripted game in jsdom with a fixed clock and seed and compares every state change and effect call to `test/fc2_trace_golden.json`
+  (`--record` rewrites it after an intended change).
+- **Headless simulator** (`tools/fc2_sim.js`): the same `FC2Core` with a simulated clock, seeded random, the Node sentence generator and no
+  persistence. `run` plays a batch with a policy (`correct`, `wrong`, `mixed` = a seeded learner who improves with practice) and prints a
+  summary (level/coins/stars over time, pulls in order, trials, quizzes, repeated sentences, endings, final words, failed checks), one JSON
+  line per card to `--log`; `step`/`script` drive it by commands; `--save` writes a backup the phone restores (Menu > Backup / restore);
+  `--state` carries a game between calls. Every sentence goes through `validateSentenceString` and every state through invariants (coins,
+  score/tier ranges, unique owned ids, xp). ~1 s per 200 cards, so use it before asking the owner to play-test.
+  Enforced: `test/fc2_sim_test.js` (default: determinism, scripted session, backup round trip, policies, checks; `--full`: 200-card runs
+  for every policy with zero check failures).
+- **Parity rule:** a new gameplay feature goes into `FC2Core` (not `app.js`), gets a simulator command or batch behaviour, and a
+  `test/fc2_sim_test.js` case. Exempt from full parity: speech, sound, haptics, animation, layout. Stub them instead (e.g. `canSpeak`
+  decides whether listening trials exist; the simulator answers them like reading trials).
 - **Persistence (three layers, because one was not enough):**
   1. Unit progress goes to the webapp unit database (IndexedDB `KongbuheyAppDB` via `webapp/db.js`) so the spreadsheet shows it.
      `saveBulkUnitCellValues` does ONE read-modify-write per unit: the old per-cell get+put inside one transaction kept only the last

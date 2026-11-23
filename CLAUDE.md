@@ -48,6 +48,8 @@ statement. `test/cli_help_test.js` (in `node test.js --full`) finds CLIs by text
 - `tools/merge_units.js`: merge duplicate language units.
 - `tools/stamp.js`: fc2 build stamp.
 - `tools/save_inspect.js`: fc2 save file (Backup / restore text) questions; `gen` replays the game's sentence generation.
+- `tools/fc2_sim.js`: headless fc2 (same `fc2/controller.js`), seeded, simulated time. QA a game change here before asking the owner to play:
+  `node tools/fc2_sim.js run --cards 200 --days 3 --policy mixed [--load save.json] [--save out.json]`, or `step --do "pull; card; answer 1"`.
 - `tools/bench_generation.js`: generation speed and output-unchanged check (baseline `test/bench_baseline.json`).
 - `tools/hangul_literals.js`: Hangul literals and magic unit ids in engine code (list, `--summary`, `--by-file`, `--by-function`, `--compare`, `--tables`); `--check` is a Stage 0 ratchet. New Hangul goes in `data/hangul_constants.js`.
 - `tools/only_expansion.js` (library): INSERT queues words that may fit `only`-list slots (`vs_tune.js expansions`).
@@ -83,6 +85,8 @@ Do not fix a flagged bug without a fixture. Do not mark a flag confirmed from me
 - `flashcards/index.html` is a standalone page (own localStorage state) whose `korean/` script list must match `webapp/index.html` (browser_load_test checks it).
 - `webapp/index.html` loads `korean/` as classic scripts. A new module must be wrapped in an IIFE `(function() { ... })();`
   (top-level `const` collides across scripts) and added to index.html in dependency order. `test/browser_load_test.js` checks both.
+- fc2 game flow lives in `fc2/controller.js` (`FC2Core`); `app.js` is the view. New gameplay goes in the core with a `tools/fc2_sim.js`
+  command and a `test/fc2_sim_test.js` case (speech, sound, visuals: stubs only). See `docs/architecture.md` section 4.
 - Work on `main` with small commits; ask before `git push`. No branches or worktrees unless asked.
 - Textbook-derived content stays in gitignored `local/` (`studytexts.js`, `verified_originals.js`). Never commit textbook text verbatim.
   `docs/kor_sentences.tsv` is open-licensed (Tatoeba, CC BY): keep the attribution when using it.
