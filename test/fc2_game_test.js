@@ -227,7 +227,7 @@ assert(G.decay(est(0, 5 * HOUR), NOW) === 0 && G.decay(est(0, 13 * HOUR), NOW) =
 	assert(G.ensureUnlocked(g, [7, 49]) === true && g.owned.join() === '7,49' && G.ensureUnlocked(g, [49]) === false, 'ensureUnlocked adds missing core units once');
 	const { KR_EN_languageUnits: UNITS, DATA_SCHEMA: DS } = require('../data/data.js');
 	const core = UNITS.filter(u => u && u[DS.SemanticData] && u[DS.SemanticData].alwaysUnlocked).map(u => u[DS.Korean]);
-	assert(core.length >= 3 && core.every(k => /^(~아요|~습니다|은 \/ 는)/.test(k)), `core always-unlocked units are ~아요, ~습니다, 은/는 (${core.join(', ')})`);
+	assert(core.length === 5 && core.every(k => /^(~아요|~습니다|은 \/ 는|이 \/ 가|을 \/ 를)/.test(k)), `core always-unlocked units are ~아요, ~습니다, 은/는, 이/가, 을/를 (${core.join(', ')})`);
 }
 
 console.log(`\nfc2 game rules: ${passed} passed, ${failed} failed`);

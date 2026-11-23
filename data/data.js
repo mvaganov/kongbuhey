@@ -367,7 +367,7 @@ const KR_EN_languageUnits = [
 
 	// Grammar from SUOBI02
 	[95, "이/가 아니에요", "to not be", G, [K.DECLARATIVE, K.NEGATIVE], "", ["{N}이/가 아니에요"], SUOBI02, 1, POLITE_INFORMAL, "Replace with 께서 for respected subjects", {"logic":"negative_identity","domain":"identify","polarity":-1,"en":{"kind":"copula_neg","lit":"-[subj] not-be","nat":"be not","tense":"present","formality":"polite"}}, ""],
-	[96, "이 / 가", "subject marker", G, [PARTICLE, K.SUBJECT], "Marks the grammatical subject", ["{N}이/가"], SUOBI02, 0.5, "", "Replace with 께서 for respected subjects", {"logic":"subject_marker","allomorph_pair":["이","가"],"allomorph_patterns":["이/가","이 / 가"],"honorific_suppletion":"께서","en":{"kind":"particle","role":"SUBJECT","lit":"-[subj]","nat":""}}, "{Noun}\\+(_|이|가)"],
+	[96, "이 / 가", "subject marker", "Grammar", ["particle", "subject"], "Marks the grammatical subject", ["{N}이/가"], "SUOBI02", 0.5, "", "Replace with 께서 for respected subjects", {"logic":"subject_marker","allomorph_pair":["이","가"],"allomorph_patterns":["이/가","이 / 가"],"honorific_suppletion":"께서","en":{"kind":"particle","role":"SUBJECT","lit":"-[subj]","nat":""},"alwaysUnlocked":true}, "{Noun}\\+(_|이|가)"],
 
 	// Vocabulary from SUOBI03
 	[97, "도서관", "library", N, [PLACE, FACILITY, SINOROOT, K.INANIMATE_INSTITUTION], "", "", SUOBI03, 2, "", "", {"domain":"place","en":{"lit":"library","nat":"library","count":"c"},"venue_allowed_verbs":["공부하다","읽다","쓰다","빌리다","찾다","쉬다","가다","오다","들어가다","나오다","만나다","있다"]}, ""],
@@ -452,7 +452,7 @@ const KR_EN_languageUnits = [
 	[172, "일하다", "to work", AV, [INTRANSITIVE_GENERAL, "volitional_human"], "", HADA, SUOBI04, 1, "", "", {"domain":"action","en":{"lit":"work","base":"work","past":"worked"}}, ""],
 
 	// Grammar from SUOBI04
-	[173, "을 / 를", "object marker", G, [PARTICLE, OBJECT], "", ["{N}을/를"], SUOBI04, 0.5, "", "", {"logic":"object","allomorph_pair":["을","를"],"allomorph_patterns":["을/를","을 / 를"],"en":{"kind":"particle","role":"OBJECT","lit":"-[obj]","nat":""}}, "{Noun}\\+(_|을|를)"],
+	[173, "을 / 를", "object marker", "Grammar", ["particle", "object"], "", ["{N}을/를"], "SUOBI04", 0.5, "", "", {"logic":"object","allomorph_pair":["을","를"],"allomorph_patterns":["을/를","을 / 를"],"en":{"kind":"particle","role":"OBJECT","lit":"-[obj]","nat":""},"alwaysUnlocked":true}, "{Noun}\\+(_|을|를)"],
 
 	// Vocabulary from SUOBI05
 	[174, "고향", "hometown", N, [PLACE, "origin"], "", "", SUOBI05, 2, "", "", {"domain":"place","en":{"lit":"hometown","nat":"hometown","count":"c"}}, ""],

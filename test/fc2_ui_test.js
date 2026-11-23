@@ -69,7 +69,7 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 	await step('pull', async () => {
 		app.go('shop');
 		const coins0 = app.g.coins, owned0 = app.g.owned.length;
-		assert(owned0 > 0 && app.g.owned.every(id => app.units.get(id)[w.DATA_SCHEMA.SemanticData].alwaysUnlocked), 'a new game starts with only the always-unlocked core units (~아요, ~습니다, 은/는)');
+		assert(owned0 > 0 && app.g.owned.every(id => app.units.get(id)[w.DATA_SCHEMA.SemanticData].alwaysUnlocked), 'a new game starts with only the always-unlocked core units (~아요, ~습니다, 은/는, 이/가, 을/를)');
 		click('[data-act="pull"]');
 		assert(app.g.owned.length === owned0 + G.pullSize(app.g) && app.g.pulls === 1 && app.g.coins === coins0, 'the first pull is free and unlocks a pack of units');
 		app.closeModal();
