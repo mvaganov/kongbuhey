@@ -26,7 +26,6 @@ const PARTICLES = { sparks: ['Sparks', 0], stars: ['Stars', 250], petals: ['Peta
 const SPEAK_MODES = [['none', "Don't speak"], ['front', 'When the front is shown'], ['back', 'When the back is shown'], ['both', 'Front and back']];
 const DEFAULT_OPTS = { reverse: false, speak: 'front', count: 3, onlyOwned: true, v: 2, sound: true, haptics: true, audioTrials: true, names: { off: [], custom: [] } };
 const nowSec = () => Math.floor(Date.now() / 1000);
-const dayKey = (offset = 0) => { const d = new Date(Date.now() + offset * 864e5); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 const fmt = n => Math.round(n).toLocaleString();
 const dur = s => s < 90 ? `${Math.max(1, Math.round(s))}s` : s < 5400 ? `${Math.round(s / 60)}m` : s < 129600 ? `${Math.round(s / 3600)}h` : `${Math.round(s / 86400)}d`;
 const hangulOf = text => String(text).replace(/[^가-힣]/g, '');
@@ -104,7 +103,20 @@ class FC2App {
 		// Merged duplicates (alias rows, tools/merge_units.js) are not playable units; their saved state folds into the canonical unit in init().
 		this.alias = window.buildAliasMap ? window.buildAliasMap(window.KR_EN_languageUnits) : new Map();
 		this.units = new Map(window.KR_EN_languageUnits.filter(u => !this.alias.has(u[C.Id])).map(u => [u[C.Id], u]));
-		this.nameRows = [...this.units.values()].filter(u => G.isNameRow(u, C));
+		// The game state and flow live in controller.js (FC2Core, shared with tools/fc2_sim.js); this class is the view. A stale cached
+		// index.html can lack the controller.js tag: say so loudly instead of failing silently.
+		if (!window.FC2Controller) {
+			reportError('Reload needed', new Error('controller.js did not load, so index.html is probably an old cached copy. Reload the page (or clear this site\'s cache).'));
+			throw new Error('fc2: controller.js is missing');
+		}
+		this.core = new window.FC2Controller.FC2Core({
+			units: this.units, C, clock: this.clock, random: () => this.rand(),
+			generate: (id, n, options) => window.generateSentencesForUnit(id, n, options),
+			templateIds: () => (window.FC2Queue && window.getAllVerifiedSentences ? this.vqIds() : null),
+			canSpeak: () => 'speechSynthesis' in window,
+			persist: { game: () => this.save(), unit: id => this.saveUnit(id), cell: (id, col, value) => this.saveCell(id, col, value) },
+			onSentences: (id, sentences) => this.prefetchSoon(id, sentences)
+		});
 		this.prog = new Map();   // id -> { score, tier, lastCorrect, lastSeen }
 		this.notes = {};
 		const savedOpts = ls.get(LS + 'opts', {});
@@ -121,8 +133,18 @@ class FC2App {
 		this.ready = this.init();
 	}
 
-	newSession() { return { n: 0, due: new Map(), last: null, front: [], combo: 0, round: this.newRound() }; }
-	newRound() { return { n: 0, coins: 0, xp: 0, est: 0, promo: 0, harvest: 0, lapsed: 0, trials: 0 }; }
+	// State lives in the controller (this.core); these keep the view's reads and writes unchanged.
+	get g() { return this.core.g; } set g(v) { this.core.g = v; }
+	get prog() { return this.core.prog; } set prog(v) { this.core.prog = v; }
+	get session() { return this.core.session; } set session(v) { this.core.session = v; }
+	get card() { return this.core.card; } set card(v) { this.core.card = v; }
+	get opts() { return this.core.opts; } set opts(v) { this.core.opts = v; }
+	get notes() { return this.core.notes; } set notes(v) { this.core.notes = v; }
+	get recent() { return this.core.recent; } set recent(v) { this.core.recent = v; }
+	get nameRows() { return this.core.nameRows; }
+
+	newSession() { return this.core.newSession(); }
+	newRound() { return this.core.newRound(); }
 
 	// ---------- storage ----------
 	async init() {
@@ -219,7 +241,7 @@ class FC2App {
 		if (window.FC2Store) ls.set(LS + 'session', window.FC2Store.packSession(this.session, this.clock.sec()));
 	}
 	debugScene(name) { if (DEBUG === null) throw new Error('debug scenes need ?debug in the URL'); this.debug = name; window.FC2Debug.apply(this, name); }
-	unitOf(id) { return this.prog.get(id) || G.blankUnit(); }
+	unitOf(id) { return this.core.unitOf(id); }
 	saveCell(id, colKey, value) { this.queueMirror(); if (this.db) this.db.saveBulkUnitCellValues([{ unitId: id, colKey, value }]).catch(e => reportError('Saving unit data failed', e)); }
 	saveUnit(id) {
 		this.queueMirror();
@@ -237,12 +259,9 @@ class FC2App {
 		return this.db.saveBulkUnitCellValues(cells).then(() => true, e => { reportError('Saving unit progress failed', e); return false; });
 	}
 
-	markSeen(ids) {
-		const t = this.clock.sec();
-		for (const id of ids) if (this.units.has(id)) { this.prog.set(id, { ...this.unitOf(id), lastSeen: t }); this.saveCell(id, 'TimeStampLastSeen', t); }
-	}
-	classify() { return G.classify(this.prog, this.g.owned, this.clock.sec()); }
-	counts(st = this.classify()) { const c = { new: 0, learning: 0, growing: 0, ripe: 0, wilted: 0, dormant: 0 }; for (const s of st.values()) c[s]++; return c; }
+	markSeen(ids) { this.core.markSeen(ids); }
+	classify() { return this.core.classify(); }
+	counts(st) { return this.core.counts(st); }
 	applyCosmetics() {
 		document.body.dataset.theme = this.g.cos.theme;
 		Object.assign(FX.opts, { sound: this.opts.sound, haptics: this.opts.haptics, particle: this.g.cos.particle });
@@ -463,11 +482,7 @@ class FC2App {
 	}
 
 	// G.sentenceOptions (game.js) is shared with tools/save_inspect.js, which replays a save's generation.
-	genOptions(targetId = null) {
-		const queue = window.FC2Queue && window.getAllVerifiedSentences ? window.FC2Queue.normalize(this.g.vq, this.vqIds()) : null;
-		return G.sentenceOptions({ owned: this.g.owned, opts: this.opts, unitOf: id => this.unitOf(id), now: this.clock.sec(), queue, idOf: u => u[C.Id], recent: this.recent || [], targetId,
-			names: G.nameUse(this.nameRows || [], this.opts.names, C) });
-	}
+	genOptions(targetId = null) { return this.core.genOptions(targetId); }
 
 	// ---------- personal names (Menu > Names) ----------
 	/** Runtime units for the player's custom names (data.js addLearningUnit appends them after the data's units). Returns their ids. */
@@ -476,7 +491,7 @@ class FC2App {
 		return G.normalizeNames(namesOpt).custom.map(c => { const row = G.customNameRow(c, C); window.addLearningUnit(row); return row[C.Id]; });
 	}
 	/** Units that can be pulled, owned and shown: everything except runtime custom names. */
-	playableUnits() { return [...this.units.values()].filter(u => u[C.Source] !== G.CUSTOM_NAME_SOURCE); }
+	playableUnits() { return this.core.playableUnits(); }
 
 	namesHtml(msg = '') {
 		const nm = G.normalizeNames(this.opts.names), off = new Set(nm.off);
@@ -511,11 +526,7 @@ class FC2App {
 	}
 
 	/** Units marked SemanticData.alwaysUnlocked (core grammar such as ~아요, ~습니다, 은/는) are always unlocked. */
-	ensureCoreUnlocked() {
-		if (!this.g || !this.units) return;
-		if (!this.coreIds) this.coreIds = [...this.units.values()].filter(u => u[C.SemanticData] && u[C.SemanticData].alwaysUnlocked).map(u => u[C.Id]);
-		G.ensureUnlocked(this.g, this.coreIds);
-	}
+	ensureCoreUnlocked() { if (this.core) this.core.ensureCoreUnlocked(); }
 
 	// ---------- verified-sentence queue ("time to use it"): the front of the queue is generated first; a generated template goes to the back ----------
 	vqIds() { const V = window.verifiedSentenceGenerator; return (V && V.getVerifiedTemplatesShared ? V.getVerifiedTemplatesShared() : window.getAllVerifiedSentences()).map(t => t.id); }
@@ -542,14 +553,7 @@ class FC2App {
 		this.availTimer = setTimeout(run, 300);
 	}
 
-	vqUsed(sentences) {
-		const Q = window.FC2Queue;
-		if (!Q || !window.getAllVerifiedSentences) return;
-		const ids = this.vqIds(), used = sentences.map(s => s.verifiedTemplateId).filter(Boolean);
-		if (!used.length) return;
-		this.g.vq = used.reduce((q, tid) => Q.toBack(q, ids, tid), this.g.vq);
-		this.save();
-	}
+	vqUsed(sentences) { this.core.vqUsed(sentences); }
 
 	/** Verified sentences that fit the unit: ones the owned units can build first, then ones that still need an unlock; each group in queue order. */
 	vqRows() {
@@ -643,13 +647,7 @@ class FC2App {
 		}
 	}
 
-	generateFor(id) {
-		try {
-			const list = window.generateSentencesForUnit(id, this.opts.count, this.genOptions(id)), sentences = Array.from(list);
-			if (sentences.length) { this.recent = G.pushRecent(this.recent, G.contentUnitIds(sentences)); this.vqUsed(sentences); this.prefetchSoon(id, sentences); }
-			return { sentences, msg: sentences.length ? '' : this.opts.onlyOwned ? 'No examples from your unlocked units yet. They appear as you unlock more, or allow all units in the Menu.' : (list.message || 'No example sentences are available for this unit yet.') };
-		} catch (_) { return { sentences: [], msg: 'Could not generate sentences for this unit.' }; }
-	}
+	generateFor(id) { return this.core.generateFor(id); }
 
 	/** Building a quiz generates dozens of candidate sentences (~0.3 s). Do it in idle gaps while the card is read, one sentence at a time. */
 	prefetchSoon(id, sentences) {
@@ -824,24 +822,7 @@ class FC2App {
 		this.updateHud();
 	}
 
-	buildTrial(id, tier) {
-		let type = T.TRIAL_TYPES[tier];
-		if (type === 'listen' && !(this.opts.audioTrials && 'speechSynthesis' in window)) type = 'meaning';
-		const u = this.units.get(id), n = T.TRIAL_CHOICES[tier], label = x => String(type === 'recall' ? x[C.Korean] : x[C.English]);
-		// Two answers that differ only by case, whitespace or a parenthetical ("who" vs "who (subject)") are the same answer to the player.
-		const key = x => { const t = label(x).replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase(); return t || label(x).trim().toLowerCase(); };
-		const owned = new Set(this.g.owned), seen = new Set([key(u)]), picks = [], all = this.playableUnits();
-		const pos = x => x[C.PartofSpeech] === u[C.PartofSpeech];
-		const ok = x => x[C.Id] !== id && x[C.Korean] !== u[C.Korean] && x[C.English] !== u[C.English] && !seen.has(key(x));
-		// Distractors: unlocked units of the same part of speech first, then the same pack, then anything.
-		for (const pool of [all.filter(x => owned.has(x[C.Id]) && pos(x)), all.filter(x => pos(x) && x[C.Source] === u[C.Source]), all.filter(pos), all]) {
-			for (const x of pool.sort(() => this.rand() - 0.5)) {
-				if (picks.length >= n - 1) break;
-				if (ok(x)) { seen.add(key(x)); picks.push(x); }
-			}
-		}
-		return { type, tier, choices: [u, ...picks].map(x => ({ id: x[C.Id], label: label(x) })).sort(() => this.rand() - 0.5) };
-	}
+	buildTrial(id, tier) { return this.core.buildTrial(id, tier); }
 
 	trialHtml() {
 		const k = this.card, u = this.units.get(k.id), t = k.trial;
@@ -928,10 +909,7 @@ class FC2App {
 	flagPayload() { return { app: 'kongbuhey', kind: 'flagged-sentences', version: 1, exportedAt: new Date().toISOString(), items: this.flags }; }
 
 	// ---------- shop ----------
-	pullCandidates() {
-		const owned = new Set(this.g.owned);
-		return this.playableUnits().filter(u => !owned.has(u[C.Id])).map(u => ({ id: u[C.Id], pack: String(u[C.Source]), priority: Number(u[C.PriorityScore]) || 0 }));
-	}
+	pullCandidates() { return this.core.pullCandidates(); }
 
 	shopHtml() {
 		const g = this.g, c = this.counts(), cost = G.pullCost(g), nursery = c.new + c.learning, cap = G.nurseryCap(g), left = this.playableUnits().length - g.owned.length;
@@ -1013,58 +991,14 @@ class FC2App {
 	}
 
 	// ---------- sentence comprehension test ----------
-	enOf(s) { return String(s.enNatural || s.en || '').trim(); }
+	enOf(s) { return this.core.enOf(s); }
 
 	/**
 	 * The sentence's translation (or, when rev, its Korean) plus 3 close wrong ones. Close = the same nouns: candidates are generated with those
 	 * nouns preferred, then ranked by how many of the sentence's nouns they share (and how few extra nouns they bring), so only the verb,
 	 * tense or other details differ. Each choice carries the unit ids of its sentence.
 	 */
-	buildSentenceTest(s, rev = false, cardId = null) {
-		const k = { id: cardId === null ? this.card.id : cardId }, mine = new Set(R.unitIdsOf(s)), right = this.enOf(s);
-		const norm = t => t.toLowerCase().replace(/[^\p{L}\p{N} ]/gu, '').replace(/\s+/g, ' ').trim();
-		const isNoun = id => { const p = (this.units.get(id) || [])[C.PartofSpeech]; return p === 'Noun' || p === 'Pronoun'; };
-		const nounsOf = ids => new Set(ids.filter(isNoun));
-		const cardNoun = isNoun(k.id), nouns = nounsOf([...mine].filter(id => !(cardNoun && id === k.id)));   // when the tested unit is a noun, its slot must differ in every option
-		const seen = new Set([norm(right), norm(String(s.enLiteral || ''))]), pool = [];
-		const shuffle = a => a.sort(() => this.rand() - 0.5), owned = this.g.owned;
-		const inIt = [...mine].filter(id => id !== k.id && owned.includes(id));
-		const sources = [...(cardNoun ? [] : [k.id]), ...shuffle(inIt.filter(id => !isNoun(id))), ...shuffle(owned.filter(id => id !== k.id && !mine.has(id) && !isNoun(id))).slice(0, 5), ...shuffle(inIt.filter(isNoun))].slice(0, 10);
-		// Owned set and strength mean once per quiz, not once per generation call (~30). No queue order: wrong answers follow the queue's
-		// front templates every time (they never rotate it), so they come from the random seeded pick instead, which varies more.
-		const genBase = this.genOptions();
-		delete genBase.queueOrder;
-		let perfect = 0;   // candidates with exactly the sentence's nouns: enough of them and we stop generating
-		// A cheap budget first (fast); only when it finds fewer than 3 distinct wrong answers (small unlock sets) retry with a generous one.
-		for (const budget of [{ n: 4, deep: 3, passes: 2, perfect: 3 }, { n: 6, deep: 4, passes: 3, perfect: 6 }]) {
-			if (pool.length >= 3 && (!cardNoun || new Set(pool.map(p => p.repl.slice().sort().join())).size >= 3)) break;   // noun cards also want 3 different replacement nouns
-			for (const [si, id] of sources.entries()) {
-				if (perfect >= budget.perfect) break;
-				let list = [];
-				try { for (let pass = 0; pass < (si < budget.deep ? budget.passes : 1); pass++) list.push(...Array.from(window.generateSentencesForUnit(id, budget.n, { ...genBase, seedOffset: Math.floor(this.rand() * 997), preferUnitIds: nouns }))); } catch (_) { /* fewer candidates */ }
-				for (const c of list) {
-					const en = this.enOf(c), key = norm(en);
-					if (!en || c.ko === s.ko || seen.has(key)) continue;
-					const ids = R.unitIdsOf(c);
-					if (cardNoun && ids.includes(k.id)) continue;   // the tested noun itself never appears in a wrong answer
-					seen.add(key);
-					const cn = nounsOf(ids), same = [...nouns].filter(x => cn.has(x)).length, repl = [...cn].filter(x => !nouns.has(x)), off = Math.abs(repl.length - (cardNoun ? 1 : 0));
-					if (same === nouns.size && off === 0) perfect++;
-					pool.push({ text: rev ? String(c.ko) : en, ids, repl, score: same * 10 - off * 6 + ids.filter(x => mine.has(x)).length, r: this.rand() });
-				}
-			}
-		}
-		if (!right || pool.length < 3) return null;
-		pool.sort((a, b) => b.score - a.score || a.r - b.r);
-		let picked = pool.slice(0, 3);
-		if (cardNoun) {   // each wrong answer swaps in a different noun: best-ranked first, no replacement noun used twice, then fill from the rest
-			const used = new Set(), by = [];
-			for (const p of pool) { if (by.length >= 3) break; if (p.repl.some(x => used.has(x))) continue; p.repl.forEach(x => used.add(x)); by.push(p); }
-			for (const p of pool) { if (by.length >= 3) break; if (!by.includes(p)) by.push(p); }
-			picked = by;
-		}
-		return [{ text: rev ? String(s.ko) : right, ok: true, ids: [...mine] }, ...picked.map(p => ({ text: p.text, ok: false, ids: p.ids }))].sort(() => this.rand() - 0.5);
-	}
+	buildSentenceTest(s, rev = false, cardId = null) { return this.core.buildSentenceTest(s, rev, cardId); }
 
 	get STEST_GUARD_MS() { return this.guardMs === undefined ? 450 : this.guardMs; }
 
@@ -1138,23 +1072,7 @@ class FC2App {
 	}
 
 	/** One right answer for a unit that is not the card being settled: everything an answer pays, without per-answer effects. */
-	creditAnswer(id, st) {
-		const g = this.g, ss = this.session, now = this.clock.sec(), u = this.unitOf(id), h = g.h[id] || 0;
-		const res = G.answer(u, h, 1, now, st), ev = res.ev;
-		this.prog.set(id, res.unit);
-		if (res.h) g.h[id] = res.h; else delete g.h[id];
-		this.saveUnit(id);
-		ss.combo++;
-		const coins = G.payout(g, ev, u.tier, { combo: ss.combo, swift: false, crit: false }), xp = G.xpFor(ev);
-		g.coins += coins; g.totals.earned += coins; g.totals.answers++;
-		if (ev.harvested) g.totals.harvests++;
-		const ups = G.addXp(g, xp);
-		if (res.unit.score < T.ESTABLISHED) ss.due.set(id, ss.n + 1 + T.LEARN_GAP[1]); else ss.due.delete(id);
-		const r = ss.round;
-		r.coins += coins; r.xp += xp; r.est += ev.established ? 1 : 0; r.harvest += ev.harvested ? 1 : 0; r.lapsed += ev.lapsed ? 1 : 0;
-		G.questEvent(g, { answers: 1, established: ev.established ? 1 : 0, harvests: ev.harvested ? 1 : 0, combo: ss.combo });
-		return { coins, xp, ups, ev };
-	}
+	creditAnswer(id, st) { return this.core.creditAnswer(id, st); }
 
 	/** The sentence-clear show: coin and XP particles into the HUD, the card's learning pill counting up, a sliding chip per unit. Returns ms until the next card. */
 	bonusShow(el, rows, coins, xp) {
