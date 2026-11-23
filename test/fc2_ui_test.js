@@ -66,6 +66,22 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		app.go('map');
 	});
 
+	await step('names in examples', async () => {
+		app.go('menu');
+		click('[data-act="names-open"]');
+		const box = d.querySelector('[data-name-id]');
+		assert(box && box.checked, 'Menu > Names lists the course names, ticked');
+		box.checked = false; box.dispatchEvent(new w.Event('change', { bubbles: true }));
+		assert(app.opts.names.off.includes(Number(box.dataset.nameId)), 'unticking a name switches it off in the options');
+		d.querySelector('#name-ko').value = '민지'; d.querySelector('#name-en').value = 'Minji';
+		click('[data-act="name-add"]');
+		assert(app.opts.names.custom.some(c => c.ko === '민지') && d.querySelector('[data-act="reload"]'), 'adding a name saves it and offers a reload to use it');
+		click('[data-act="name-rm"]');
+		assert(!app.opts.names.custom.length, 'removing a custom name deletes it');
+		app.opts.names = { off: [], custom: [] };
+		app.closeModal();
+	});
+
 	await step('pull', async () => {
 		app.go('shop');
 		const coins0 = app.g.coins, owned0 = app.g.owned.length;

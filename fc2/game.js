@@ -331,9 +331,11 @@ const modeOf = st => (st === 'new' || st === 'learning') ? 'learn' : (st === 'gr
  * two stay identical. onlyOwned -> sentences use unlocked units only. slotBias leans toward the units you know least: a slot filler
  * stronger than the owned average is redrawn up to twice. queue: the normalized "time to use it" template order, or null.
  */
-function sentenceOptions({ owned, opts, unitOf, now, queue, idOf, random = Math.random, recent = [], targetId = null }) {
+function sentenceOptions({ owned, opts, unitOf, now, queue, idOf, random = Math.random, recent = [], targetId = null, names = null }) {
 	const options = { seedOffset: Math.floor(random() * 997) };
-	if (opts && opts.onlyOwned) { options.onlyFromSet = true; options.allowedUnitIds = new Set(owned); }
+	// names (nameUse): personal names on the Menu > Names list are always usable; names switched off are never used (except as the card).
+	if (opts && opts.onlyOwned) { options.onlyFromSet = true; options.allowedUnitIds = new Set([...owned, ...(names ? names.usable : [])]); }
+	if (names && names.off.size) options.excludeUnitIds = names.off;
 	const strength = id => { const u = unitOf(id); return u ? effectiveScore(u, now) + u.tier : 0; };
 	const mean = owned.length ? owned.reduce((n, id) => n + strength(id), 0) / owned.length : 0;
 	if (queue) options.queueOrder = queue;
@@ -342,6 +344,39 @@ function sentenceOptions({ owned, opts, unitOf, now, queue, idOf, random = Math.
 	const recentSet = new Set(recent);
 	options.slotBias = { retries: 2, reject: unit => { const id = idOf(unit); return strength(id) > mean || (id !== targetId && recentSet.has(id)); } };
 	return options;
+}
+
+// ---------- Personal names (Menu > Names): the hosts of 씨 and other name slots ----------
+// A personal name is a unit tagged name + person (the generators use the same test). The player can switch data names off and add
+// custom names; custom names become runtime units (Source CUSTOM_NAME_SOURCE) that are never pulled, owned or shown on the Map.
+const CUSTOM_NAME_SOURCE = 'custom_name';
+const tagSetHas = (t, x) => (t instanceof Set ? t.has(x) : Array.isArray(t) && t.includes(x));
+function isNameRow(u, C) { return Boolean(u) && tagSetHas(u[C.SemanticTags], 'name') && tagSetHas(u[C.SemanticTags], 'person'); }
+/** opts.names -> { off: [ids], custom: [{ ko, en }] }, cleaned: trimmed, non-empty, short, no duplicate Korean. */
+function normalizeNames(n) {
+	const off = [...new Set(((n && n.off) || []).map(Number).filter(Number.isInteger))];
+	const seen = new Set(), custom = [];
+	for (const c of (n && n.custom) || []) {
+		const ko = String((c && c.ko) || '').trim().slice(0, 12), en = String((c && c.en) || '').trim().slice(0, 30);
+		if (!ko || !en || seen.has(ko)) continue;
+		seen.add(ko); custom.push({ ko, en });
+	}
+	return { off, custom };
+}
+/** A unit row for a custom name, in data.js column order (C = DATA_SCHEMA). The Id is assigned by data.js addLearningUnit. */
+function customNameRow({ ko, en }, C) {
+	const row = new Array(Object.keys(C).filter(k => /^\d+$/.test(k)).length).fill('');
+	row[C.Korean] = ko; row[C.English] = `${en} (name)`; row[C.PartofSpeech] = 'Noun';
+	row[C.SemanticTags] = new Set(['name', 'person', 'proper_noun']); row[C.Disambiguation] = `${en} (your name)`;
+	row[C.Source] = CUSTOM_NAME_SOURCE; row[C.PriorityScore] = 1; row[C.FormalityLevel] = 'Universal';
+	row[C.SemanticData] = { domain: 'person', customName: true, en: { lit: en, nat: en, count: 'p' } };
+	delete row[C.Id];
+	return row;
+}
+/** { usable: ids of names that may be used, off: Set of ids that must not be } for the name units and opts.names. */
+function nameUse(nameRows, namesOpt, C) {
+	const off = new Set(normalizeNames(namesOpt).off);
+	return { usable: nameRows.map(u => u[C.Id]).filter(id => !off.has(id)), off };
 }
 
 /** How many content units the "recently used" list keeps (about the last 3 cards of 3 sentences). */
@@ -364,7 +399,7 @@ function ensureUnlocked(g, ids) {
 	return add.length > 0;
 }
 
-const api = { sentenceOptions, RECENT_KEEP, pushRecent, contentUnitIds, ensureUnlocked, NUMBER_COST, NUMBER_WORDS, numberWord, numberQuestion, T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
+const api = { sentenceOptions, CUSTOM_NAME_SOURCE, isNameRow, normalizeNames, customNameRow, nameUse, RECENT_KEEP, pushRecent, contentUnitIds, ensureUnlocked, NUMBER_COST, NUMBER_WORDS, numberWord, numberQuestion, T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
 	idleEarned, idleRate, touchStreak, isTrial, answerTrial, sealMult, totalStars, sealsAvailable, ascend, ensureQuests, questEvent, claimQuest, packRank, rarity, pickPull, nextCard, modeOf, upLevel, upCost, comboCap, critChance, pullSize, pullCost,
 	nurseryCap, offlineCapH, streakMult };
 if (typeof window !== 'undefined') window.FC2Game = api;

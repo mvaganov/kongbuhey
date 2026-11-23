@@ -230,5 +230,27 @@ assert(G.decay(est(0, 5 * HOUR), NOW) === 0 && G.decay(est(0, 13 * HOUR), NOW) =
 	assert(core.length === 5 && core.every(k => /^(~아요|~습니다|은 \/ 는|이 \/ 가|을 \/ 를)/.test(k)), `core always-unlocked units are ~아요, ~습니다, 은/는, 이/가, 을/를 (${core.join(', ')})`);
 }
 
+// Personal names (Menu > Names): course names switchable, custom names as runtime units; 씨 uses names only
+{
+	const nm = G.normalizeNames({ off: ['3', 3, 'x'], custom: [{ ko: ' 민지 ', en: 'Minji' }, { ko: '민지', en: 'dup' }, { ko: '', en: 'x' }] });
+	assert(nm.off.join() === '3' && nm.custom.length === 1 && nm.custom[0].ko === '민지', 'normalizeNames trims, drops empty and duplicate names');
+	const data = require('../data/data.js'), DS = data.DATA_SCHEMA, UNITS = data.KR_EN_languageUnits;
+	const korean = require('../korean/index.js'), { generateSentencesForUnit } = require('../shared/sentence_adapter.js');
+	const ssi = UNITS.find(u => u && u[DS.PartofSpeech] === 'Grammar' && data.hasTag(u, 'proper_noun') && data.hasTag(u, 'honorific'));
+	const row = G.customNameRow({ ko: '민지', en: 'Minji' }, DS);
+	data.addLearningUnit(row);
+	const customId = row[DS.Id];
+	assert(customId === UNITS.length - 1 && G.isNameRow(row, DS) && row[DS.Source] === G.CUSTOM_NAME_SOURCE, 'a custom name becomes a runtime unit tagged name + person');
+	const nameRows = UNITS.filter(u => G.isNameRow(u, DS));
+	const lesson = UNITS.filter(u => u && u[DS.Source] === 'SUOBI01' && !G.isNameRow(u, DS)).map(u => u[DS.Id]);   // verbs etc. to build with
+	const opts = (names) => G.sentenceOptions({ owned: [ssi[DS.Id], ...lesson], opts: { onlyOwned: true }, unitOf: () => G.blankUnit(), now: 0, queue: null, idOf: u => u[DS.Id], names, targetId: ssi[DS.Id] });
+	const gen = (names) => { const out = []; for (let s = 1; s <= 6; s++) { korean.setRandomSeed(s); out.push(...generateSentencesForUnit(ssi[DS.Id], 3, { ...opts(names), seedOffset: s, useAstOnly: true }).map(x => x.ko)); } return out; };
+	const none = gen(null);
+	assert(!none.some(ko => / 씨/.test(ko)), `no unlocked or listed name -> no 씨 sentence from a non-name (${none.slice(0, 2).join(' / ') || 'none'})`);
+	const onlyMine = G.nameUse(nameRows, { off: nameRows.filter(u => u[DS.Id] !== customId).map(u => u[DS.Id]) }, DS);
+	const mine = gen(onlyMine);
+	assert(mine.length > 0 && mine.every(ko => ko.includes('민지 씨')), `with only a custom name on the list, 씨 attaches to it (${mine.slice(0, 2).join(' / ')})`);
+}
+
 console.log(`\nfc2 game rules: ${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

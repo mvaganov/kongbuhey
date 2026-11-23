@@ -128,6 +128,7 @@ const BACKUP_VERSION = 1;
  *            h (id -> harvests toward the next star), up (upgrade levels), pulls, streak, cos (cosmetics), totals, seals,
  *            starsBanked, ascensions, quests, vq ("time to use it" queue of verified template ids, front = longest unused)
  *   opts     options (app.js DEFAULT_OPTS): onlyOwned (examples from unlocked units only), count (examples per card), speak,
+ *            names ({ off: unit ids switched off, custom: [{ ko, en }] } personal names, Menu > Names),
  *            reverse, sound, haptics, audioTrials
  *   units    id -> [RecognitionScore, star tier, TimeStampLastCorrect, TimeStampLastSeen] for the unlocked units (epoch seconds)
  *   notes    id -> markdown notes

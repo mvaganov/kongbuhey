@@ -520,7 +520,6 @@ const HANGUL_CONSTANTS = Object.freeze({
 	UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_N_DATA_SCHEMA_KOREAN_ONE_OF_5: new Set(["말씀", "진지", "연세", "성함", "생신", "댁", "병환", "약주"]),
 
 	// AUTONAMED (korean/generation/unit_sentence_generator.js, expandFormulaIntoClause): table that was inline in code. Unclassified: rename to the rule it implements; Data fix if a word class.
-	UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_N_DATA_SCHEMA_KOREAN_ONE_OF_4: new Set(["마리", "민수", "지훈", "수진", "영수", "유키", "올리비아", "미진", "리타오", "흐엉", "에릭", "민준"]),
 
 	// AUTONAMED (korean/generation/unit_sentence_generator.js, expandFormulaIntoClause): table that was inline in code. Unclassified: rename to the rule it implements; Data fix if a word class.
 	UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_N_DATA_SCHEMA_KOREAN_ONE_OF_3: new Set(["한국어", "영어", "일본어", "중국어", "요리", "노래", "운전", "컴퓨터", "수영", "태권도", "말"]),

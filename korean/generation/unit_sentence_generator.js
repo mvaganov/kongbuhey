@@ -2497,9 +2497,17 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
  * "{DVst}으/ㄹ 때 {Clause}", "{Noun:place}에다가 {VP_AVst}아/어요") into a structured SentenceAST
  * with full eojeol & morpheme segment provenance.
  */
+// 씨 and the like: a grammar unit tagged proper_noun + honorific attaches to a personal name only (data tags name + person).
+const isNameSuffixGrammar = (g) => hasTag(g, K.PROPER_NOUN) && hasTag(g, K.HONORIFIC);
+const isPersonalName = (n) => hasTag(n, "name") && hasTag(n, K.PERSON);
+
 function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 	const targetId = grammarUnit[DATA_SCHEMA.Id];
 	const ko = grammarUnit[DATA_SCHEMA.Korean];
+	// With no name available (e.g. none unlocked), there is no sentence for a name suffix: never 학생증 씨 / 저것 씨.
+	if (isNameSuffixGrammar(grammarUnit) && !getAllUnitsOfPos(K.NOUN, options, targetId).some(isPersonalName)) {
+		return { ok: false, insufficientSet: true, missingRoles: ["a personal name (e.g. 민수)"], message: "This suffix needs a personal name, and none is available." };
+	}
 	const formulas = Array.isArray(grammarUnit[DATA_SCHEMA.Conjugation]) ? grammarUnit[DATA_SCHEMA.Conjugation] : [];
 
 	const isNegativeGrammar = hasTag(grammarUnit, K.NEGATIVE, K.INABILITY, K.PROHIBITION) || formulas.some(f => HC.UNITGEN_AST_GRAMMAR_UNIT_F_INCLUDES_ONE_OF.some(_w => f.includes(_w)));
@@ -3230,12 +3238,8 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 			}
 		} else if (tokenType === "N" || tokenType === K.NOUN || tokenType === "N_Phrase") {
 			let pool = allNouns;
-			if (grammarUnit[DATA_SCHEMA.Korean] === "씨" || targetId === 23) {
-				const personalNames = allNouns.filter(
-					n => (HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_N_DATA_SCHEMA_KOREAN_ONE_OF_4).has(n[DATA_SCHEMA.Korean])
-						|| (hasTag(n, "properNoun", K.PROPER_NOUN) && hasTag(n, K.PERSON))
-				);
-				if (personalNames.length > 0) pool = personalNames;
+			if (isNameSuffixGrammar(grammarUnit)) {
+				pool = allNouns.filter(isPersonalName);   // never any other noun (buildASTForGrammarUnit fails first when there is none)
 			} else {
 				const isHonParticle = hasTag(grammarUnit, K.HONORIFIC) || (grammarUnit[DATA_SCHEMA.Korean] || "").includes("께서") || (grammarUnit[DATA_SCHEMA.Korean] || "").includes("께");
 				if (isHonParticle) {

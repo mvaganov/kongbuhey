@@ -24,7 +24,7 @@ const STATUS_LABEL = { new: '✨ New', learning: '🌱 Learning', growing: '🌿
 const THEMES = { midnight: ['Midnight', 0], jade: ['Jade', 300], sunset: ['Sunset', 800], neon: ['Neon', 2000] };
 const PARTICLES = { sparks: ['Sparks', 0], stars: ['Stars', 250], petals: ['Petals', 600], hangul: ['Hangul burst', 1200] };
 const SPEAK_MODES = [['none', "Don't speak"], ['front', 'When the front is shown'], ['back', 'When the back is shown'], ['both', 'Front and back']];
-const DEFAULT_OPTS = { reverse: false, speak: 'front', count: 3, onlyOwned: true, v: 2, sound: true, haptics: true, audioTrials: true };
+const DEFAULT_OPTS = { reverse: false, speak: 'front', count: 3, onlyOwned: true, v: 2, sound: true, haptics: true, audioTrials: true, names: { off: [], custom: [] } };
 const nowSec = () => Math.floor(Date.now() / 1000);
 const dayKey = (offset = 0) => { const d = new Date(Date.now() + offset * 864e5); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 const fmt = n => Math.round(n).toLocaleString();
@@ -96,9 +96,12 @@ const ls = {
 class FC2App {
 	constructor(root) {
 		this.root = root;
+		// Custom names (Menu > Names) become runtime units before anything reads the unit list; changes apply on the next load.
+		this.customNameIds = this.injectCustomNames((ls.get(LS + 'opts', {}) || {}).names);
 		// Merged duplicates (alias rows, tools/merge_units.js) are not playable units; their saved state folds into the canonical unit in init().
 		this.alias = window.buildAliasMap ? window.buildAliasMap(window.KR_EN_languageUnits) : new Map();
 		this.units = new Map(window.KR_EN_languageUnits.filter(u => !this.alias.has(u[C.Id])).map(u => [u[C.Id], u]));
+		this.nameRows = [...this.units.values()].filter(u => G.isNameRow(u, C));
 		this.prog = new Map();   // id -> { score, tier, lastCorrect, lastSeen }
 		this.notes = {};
 		const savedOpts = ls.get(LS + 'opts', {});
@@ -302,7 +305,7 @@ class FC2App {
 	// ---------- map ----------
 	packsShown() {
 		const owned = new Set(this.g.owned), packs = new Map();
-		for (const u of this.units.values()) {
+		for (const u of this.playableUnits()) {
 			const p = String(u[C.Source]);
 			if (!packs.has(p)) packs.set(p, { name: p, ids: [], owned: 0 });
 			const e = packs.get(p);
@@ -459,7 +462,49 @@ class FC2App {
 	// G.sentenceOptions (game.js) is shared with tools/save_inspect.js, which replays a save's generation.
 	genOptions(targetId = null) {
 		const queue = window.FC2Queue && window.getAllVerifiedSentences ? window.FC2Queue.normalize(this.g.vq, this.vqIds()) : null;
-		return G.sentenceOptions({ owned: this.g.owned, opts: this.opts, unitOf: id => this.unitOf(id), now: nowSec(), queue, idOf: u => u[C.Id], recent: this.recent || [], targetId });
+		return G.sentenceOptions({ owned: this.g.owned, opts: this.opts, unitOf: id => this.unitOf(id), now: nowSec(), queue, idOf: u => u[C.Id], recent: this.recent || [], targetId,
+			names: G.nameUse(this.nameRows || [], this.opts.names, C) });
+	}
+
+	// ---------- personal names (Menu > Names) ----------
+	/** Runtime units for the player's custom names (data.js addLearningUnit appends them after the data's units). Returns their ids. */
+	injectCustomNames(namesOpt) {
+		if (typeof window.addLearningUnit !== 'function' || !G.customNameRow) return [];
+		return G.normalizeNames(namesOpt).custom.map(c => { const row = G.customNameRow(c, C); window.addLearningUnit(row); return row[C.Id]; });
+	}
+	/** Units that can be pulled, owned and shown: everything except runtime custom names. */
+	playableUnits() { return [...this.units.values()].filter(u => u[C.Source] !== G.CUSTOM_NAME_SOURCE); }
+
+	namesHtml(msg = '') {
+		const nm = G.normalizeNames(this.opts.names), off = new Set(nm.off);
+		const course = this.nameRows.filter(u => u[C.Source] !== G.CUSTOM_NAME_SOURCE).map(u => `<label class="row"><input type="checkbox" data-name-id="${u[C.Id]}" ${off.has(u[C.Id]) ? '' : 'checked'}> ${escapeHtml(u[C.Korean])} <small class="muted">${escapeHtml(u[C.English])}</small></label>`).join('');
+		const mine = nm.custom.map((c, i) => `<div class="row">${escapeHtml(c.ko)} <small class="muted">${escapeHtml(c.en)}</small> <button type="button" class="btn small" data-act="name-rm" data-i="${i}">✕ Remove</button></div>`).join('') || '<p class="muted">None yet.</p>';
+		return `<p class="muted">The names example sentences use with 씨 and wherever a person's name fits. Names on this list are usable before you unlock them; unticked ones are never used.</p>
+			<h3>From the course</h3><div class="names-list">${course}</div>
+			<h3>Your names</h3><div class="names-list">${mine}</div>
+			<div class="row"><input id="name-ko" placeholder="Korean (민지)" maxlength="12"> <input id="name-en" placeholder="English (Minji)" maxlength="30"> <button type="button" class="btn" data-act="name-add">Add</button></div>
+			<p id="names-msg" class="muted">${escapeHtml(msg)}</p>${this.namesDirty ? '<div class="btn-row"><button type="button" class="btn" data-act="reload">Reload to use your names</button></div>' : ''}`;
+	}
+	namesRefresh(msg) { const b = this.$('#modal .modal-body'); if (b) b.innerHTML = this.namesHtml(msg); }
+	namesSave(nm) { this.opts.names = nm; ls.set(LS + 'opts', this.opts); }
+	nameToggle(id, on) {
+		const nm = G.normalizeNames(this.opts.names);
+		nm.off = on ? nm.off.filter(x => x !== id) : [...nm.off, id];
+		this.namesSave(nm);
+	}
+	nameAdd() {
+		const ko = (this.$('#name-ko') || {}).value || '', en = (this.$('#name-en') || {}).value || '';
+		const nm = G.normalizeNames(this.opts.names), before = nm.custom.length;
+		const clean = G.normalizeNames({ off: nm.off, custom: [...nm.custom, { ko, en }] });
+		if (clean.custom.length === before) { this.namesRefresh('Type the name in Korean and in English (and not one you already added).'); return; }
+		if (this.nameRows.some(u => u[C.Korean] === ko.trim() && u[C.Source] !== G.CUSTOM_NAME_SOURCE)) { this.namesRefresh(`${ko.trim()} is already a course name: tick it above.`); return; }
+		this.namesSave(clean); this.namesDirty = true;
+		this.namesRefresh(`Added ${ko.trim()}. It is used after a reload.`);
+	}
+	nameRemove(i) {
+		const nm = G.normalizeNames(this.opts.names), [gone] = nm.custom.splice(i, 1);
+		this.namesSave(nm); this.namesDirty = true;
+		this.namesRefresh(gone ? `Removed ${gone.ko}. Reload to stop using it.` : '');
 	}
 
 	/** Units marked SemanticData.alwaysUnlocked (core grammar such as ~아요, ~습니다, 은/는) are always unlocked. */
@@ -782,7 +827,7 @@ class FC2App {
 		const u = this.units.get(id), n = T.TRIAL_CHOICES[tier], label = x => String(type === 'recall' ? x[C.Korean] : x[C.English]);
 		// Two answers that differ only by case, whitespace or a parenthetical ("who" vs "who (subject)") are the same answer to the player.
 		const key = x => { const t = label(x).replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase(); return t || label(x).trim().toLowerCase(); };
-		const owned = new Set(this.g.owned), seen = new Set([key(u)]), picks = [], all = [...this.units.values()];
+		const owned = new Set(this.g.owned), seen = new Set([key(u)]), picks = [], all = this.playableUnits();
 		const pos = x => x[C.PartofSpeech] === u[C.PartofSpeech];
 		const ok = x => x[C.Id] !== id && x[C.Korean] !== u[C.Korean] && x[C.English] !== u[C.English] && !seen.has(key(x));
 		// Distractors: unlocked units of the same part of speech first, then the same pack, then anything.
@@ -882,11 +927,11 @@ class FC2App {
 	// ---------- shop ----------
 	pullCandidates() {
 		const owned = new Set(this.g.owned);
-		return [...this.units.values()].filter(u => !owned.has(u[C.Id])).map(u => ({ id: u[C.Id], pack: String(u[C.Source]), priority: Number(u[C.PriorityScore]) || 0 }));
+		return this.playableUnits().filter(u => !owned.has(u[C.Id])).map(u => ({ id: u[C.Id], pack: String(u[C.Source]), priority: Number(u[C.PriorityScore]) || 0 }));
 	}
 
 	shopHtml() {
-		const g = this.g, c = this.counts(), cost = G.pullCost(g), nursery = c.new + c.learning, cap = G.nurseryCap(g), left = this.units.size - g.owned.length;
+		const g = this.g, c = this.counts(), cost = G.pullCost(g), nursery = c.new + c.learning, cap = G.nurseryCap(g), left = this.playableUnits().length - g.owned.length;
 		const { all, next } = this.packsShown();
 		const blocked = !left ? 'Everything is unlocked' : nursery >= cap ? 'Nursery full: establish some units first' : cost > g.coins ? `Need ${fmt(cost - g.coins)} more 냥` : '';
 		const packOpts = ['<option value="">Next in course order' + (next ? ` (${escapeHtml(next.name)})` : '') + '</option>']
@@ -1205,13 +1250,13 @@ class FC2App {
 		const select = (key, list, cur) => `<select data-opt="${key}">${list.map(([v, l]) => `<option value="${v}" ${String(cur) === String(v) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
 		const check = (key, label) => `<label class="row"><input type="checkbox" data-opt="${key}" ${o[key] ? 'checked' : ''}> ${label}</label>`;
 		const stars = g.owned.reduce((n, id) => n + this.unitOf(id).tier, 0);
-		return `<section class="panel"><h2>Progress</h2><table class="kv"><tr><th>Units unlocked</th><td>${g.owned.length} / ${this.units.size}</td></tr><tr><th>Stars · trials passed</th><td>${stars} ★ · ${fmt(t.trials || 0)}</td></tr><tr><th>Seals</th><td>${g.seals || 0} (+${Math.round((G.sealMult(g) - 1) * 100)}% coins)</td></tr>
+		return `<section class="panel"><h2>Progress</h2><table class="kv"><tr><th>Units unlocked</th><td>${g.owned.length} / ${this.playableUnits().length}</td></tr><tr><th>Stars · trials passed</th><td>${stars} ★ · ${fmt(t.trials || 0)}</td></tr><tr><th>Seals</th><td>${g.seals || 0} (+${Math.round((G.sealMult(g) - 1) * 100)}% coins)</td></tr>
 				<tr><th>Growing / ripe / wilted</th><td>${c.growing} / ${c.ripe} / ${c.wilted + c.dormant}</td></tr><tr><th>Answers · harvests · rounds</th><td>${fmt(t.answers)} · ${fmt(t.harvests)} · ${fmt(t.rounds)}</td></tr>
 				<tr><th>Coins earned</th><td>${fmt(t.earned)} 냥</td></tr><tr><th>Day streak</th><td>${g.streak.n} (+${Math.round((G.streakMult(g) - 1) * 100)}% coins)</td></tr></table></section>
 			<section class="panel"><h2>Options</h2>${check('reverse', 'Test the Korean: show English on the front')}
 				<label class="row">Speak the Korean unit ${select('speak', SPEAK_MODES, o.speak)}</label>
 				<label class="row">Example sentences per card ${select('count', [1, 2, 3, 4, 5, 6].map(n => [n, n]), o.count)}</label>
-				${check('onlyOwned', 'Build examples only from unlocked units')}${check('audioTrials', 'Listening trials (hear the Korean, pick the meaning)')}${check('sound', 'Sound effects')}${check('haptics', 'Vibration')}</section>
+				${check('onlyOwned', 'Build examples only from unlocked units')}<div class="btn-row"><button type="button" class="btn" data-act="names-open">Names in examples (씨)</button></div>${check('audioTrials', 'Listening trials (hear the Korean, pick the meaning)')}${check('sound', 'Sound effects')}${check('haptics', 'Vibration')}</section>
 			<section class="panel"><h2>Data</h2><div class="btn-row"><button type="button" class="btn" data-act="flags-open">Flagged sentences (${this.flags.length})</button>
 				<button type="button" class="btn" data-act="backup-open">Backup / restore</button>
 				<button type="button" class="btn" data-act="recover-open">Recover progress</button>
@@ -1393,6 +1438,7 @@ class FC2App {
 			const t = ev.target;
 			if (t.matches('[data-pack]')) { this.pullPack = t.value; return; }
 			if (t.dataset && t.dataset.edit) { this.applyUnitEdit(Number(t.dataset.id), t.dataset.edit, t.value); return; }
+			if (t.dataset && t.dataset.nameId) { this.nameToggle(Number(t.dataset.nameId), t.checked); return; }
 			const opt = t.dataset && t.dataset.opt;
 			if (!opt) return;
 			this.opts[opt] = t.type === 'checkbox' ? t.checked : (opt === 'count' ? parseInt(t.value, 10) : t.value);
@@ -1451,6 +1497,10 @@ class FC2App {
 			case 'cosmetic': this.cosmetic(el.dataset.kind, el.dataset.key, el); break;
 			case 'close-modal': this.closeModal(); break;
 			case 'flags-open': this.openModal('Flagged sentences', this.flagsHtml()); break;
+			case 'names-open': this.namesDirty = false; this.openModal('Names in examples', this.namesHtml()); break;
+			case 'name-add': this.nameAdd(); break;
+			case 'name-rm': this.nameRemove(Number(el.dataset.i)); break;
+			case 'reload': location.reload(); break;
 			case 'backup-open': this.openModal('Backup / restore', `<p class="muted">Game state, options, notes and the scores of unlocked units.</p>
 				<textarea id="backup-text" class="export" rows="10">${escapeHtml(this.backupJson())}</textarea><div class="btn-row"><button type="button" class="btn" data-act="copy" data-target="backup-text">Copy</button>
 				<button type="button" class="btn danger" data-act="restore">Restore from text</button></div><p id="backup-msg" class="muted"></p>`); break;

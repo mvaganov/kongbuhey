@@ -104,13 +104,17 @@ function cmdGen(save, flags) {
 	const random = () => { rnd = (rnd * 1103515245 + 12345) % 2147483648; return rnd / 2147483648; };
 	const sents = [];
 	const core = UNITS.filter(u => u && u[D.SemanticData] && u[D.SemanticData].alwaysUnlocked).map(u => u[D.Id]);
+	// The app's custom names (Menu > Names) are runtime units added at load; add them the same way, then the name lists.
+	const { addLearningUnit } = require('../data/data.js');
+	for (const c of G.normalizeNames(save.opts.names).custom) addLearningUnit(G.customNameRow(c, D));
+	const names = G.nameUse(UNITS.filter(u => G.isNameRow(u, D)), save.opts.names, D);
 	if (!flags['as-saved']) G.ensureUnlocked(save.game, core);   // the app adds these on load
 	let recent = [];
 	for (let c = 0; c < cards; c++) {
 		const id = flags.unit !== undefined ? Number(flags.unit) : owned[Math.floor(random() * owned.length)];
 		korean.setRandomSeed(seed * 1000 + c);
 		const opts = flags['all-units'] ? { ...save.opts, onlyOwned: false } : save.opts;
-		const options = G.sentenceOptions({ owned: save.game.owned, opts, unitOf: unitOf(save), now: save.now, queue, idOf: u => u[D.Id], random, recent: flags['no-recent'] ? [] : recent, targetId: id });
+		const options = G.sentenceOptions({ owned: save.game.owned, opts, unitOf: unitOf(save), now: save.now, queue, idOf: u => u[D.Id], random, recent: flags['no-recent'] ? [] : recent, targetId: id, names });
 		if (flags['no-bias']) delete options.slotBias;
 		const list = Array.from(generateSentencesForUnit(id, Number(save.opts.count) || 3, options) || []);
 		recent = G.pushRecent(recent, G.contentUnitIds(list));   // app.js generateFor

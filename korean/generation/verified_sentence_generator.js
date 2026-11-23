@@ -1185,9 +1185,10 @@ function getSlotCandidates(slot, options = {}) {
 	const allowedUnitIds = options.allowedUnitIds instanceof Set ? options.allowedUnitIds : null;
 	const targetUnitId = typeof options.targetUnitId === 'number' ? options.targetUnitId : null;
 
+	const ex = options.excludeUnitIds instanceof Set && options.excludeUnitIds.size ? options.excludeUnitIds : null;   // switched off by the player
 	const candidates = (onlyFromSet && allowedUnitIds)
-		? base.filter(u => { const uId = u[DATA_SCHEMA.Id]; return uId === targetUnitId || allowedUnitIds.has(uId); })
-		: base.slice();
+		? base.filter(u => { const uId = u[DATA_SCHEMA.Id]; return uId === targetUnitId || (allowedUnitIds.has(uId) && !(ex && ex.has(uId))); })
+		: (ex ? base.filter(u => u[DATA_SCHEMA.Id] === targetUnitId || !ex.has(u[DATA_SCHEMA.Id])) : base.slice());
 
 	return {
 		candidates,

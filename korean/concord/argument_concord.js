@@ -186,6 +186,9 @@ function pickRandom(arr, seedOffset = null, options = null) {
 
 function filterBySet(candidates, options = {}, targetId = null) {
 	if (!candidates || candidates.length === 0) return [];
+	// excludeUnitIds (Set): units the player switched off (e.g. names); the target unit is never excluded.
+	const ex = options && options.excludeUnitIds instanceof Set && options.excludeUnitIds.size ? options.excludeUnitIds : null;
+	if (ex) candidates = candidates.filter(u => !u || u[DATA_SCHEMA.Id] === targetId || !ex.has(u[DATA_SCHEMA.Id]));
 	if (!options || !options.onlyFromSet) return candidates;
 	const allowed = options.allowedUnitIds;
 	if (!allowed || !(allowed instanceof Set)) return [];
