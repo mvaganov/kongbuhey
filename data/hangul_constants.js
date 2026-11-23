@@ -1358,6 +1358,8 @@ const HANGUL_CONSTANTS = Object.freeze({
 
 	// AUTONAMED chain (korean/core/morphology.js, validateTemporalConcord): ch is one of these. Unclassified: rename to the rule; Data fix if a word class.
 	MORPH_VALIDATE_TEMPORAL_CONCORD_CH_ONE_OF: Object.freeze(['있','없','겠']),
+	// Endings that embed a clause: a future time word there may go with a past main verb (내일 만나기로 했어요, 내일 간다고 했어요).
+	MORPH_TEMPORAL_EMBEDDING_ENDINGS: ["기로", "려고", "다고", "라고", "자고", "냐고"],
 
 	// AUTONAMED chain (korean/core/morphology.js, applyHonorificConcord): part is one of these. Unclassified: rename to the rule; Data fix if a word class.
 	MORPH_APPLY_HONORIFIC_CONCORD_PART_ONE_OF: Object.freeze(['은','는']),

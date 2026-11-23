@@ -458,6 +458,34 @@ console.log(`PASSED:      ${passedTests}`);
 console.log(`FAILED:      ${failedTests}`);
 console.log("======================================================");
 
+// -----------------------------------------------------------------------------
+// Finished sentences: a future time word never goes with a past main verb (flagged in play 2026-11-23: 내일 ... 다녔어요).
+// validateSentenceString runs the check for both generators; a time word may carry a particle (다음주에, 내년에는); embedded
+// clauses (-기로/-다고 했어요) and wishes (-았으면 좋겠다) are fine.
+// -----------------------------------------------------------------------------
+{
+	const { validateSentenceString } = require('../korean/generation/sentence_validator.js');
+	const ok = t => validateSentenceString(t).valid;
+	for (const t of ['요리사는 내일 도서관에 다녔어요.', '다음주에 갔어요.', '내년에는 공부했어요.', '어제 갈 거예요.']) assert(!ok(t), `rejected: ${t}`);
+	for (const t of ['내일 갈 거예요.', '내일 갔으면 좋겠어요.', '내일 만나기로 했어요.', '내일 간다고 했어요.', '어제 갔어요.', '내일이 생일이에요.']) assert(ok(t), `accepted: ${t}`);
+	// Generation regression: verb cards with a small unlocked set used to put 내일 before a past verb (80 of 240 sentences).
+	const { generateSentencesForUnit } = require('../shared/sentence_adapter.js');
+	const byKo = k => KR_EN_languageUnits.find(u => u && u[DATA_SCHEMA.Korean] === k && u[DATA_SCHEMA.PartofSpeech] !== 'Alias');
+	const verbs = ['다니다', '출근하다'].map(byKo).filter(Boolean), tomorrow = byKo('내일');
+	const set = new Set([...KR_EN_languageUnits.filter(u => u && u[DATA_SCHEMA.Source] === 'SUOBI01').map(u => u[DATA_SCHEMA.Id]), ...verbs.map(u => u[DATA_SCHEMA.Id]), tomorrow[DATA_SCHEMA.Id]]);
+	let n = 0, withTomorrow = 0;
+	const clashes = [];
+	for (const v of verbs) for (let seed = 1; seed <= 30; seed++) {
+		korean.setRandomSeed(seed);
+		for (const sent of generateSentencesForUnit(v[DATA_SCHEMA.Id], 3, { seedOffset: seed, onlyFromSet: true, allowedUnitIds: set })) {
+			n++;
+			if (sent.ko.includes(tomorrow[DATA_SCHEMA.Korean])) withTomorrow++;
+			if (!validateSentenceString(sent.ko).valid && sent.ko.includes(tomorrow[DATA_SCHEMA.Korean])) clashes.push(sent.ko);
+		}
+	}
+	assert(n > 0 && clashes.length === 0, `no generated sentence puts a future time word before a past verb (${n} sentences, ${withTomorrow} with 내일${clashes.length ? '; e.g. ' + clashes[0] : ''})`);
+}
+
 if (failedTests > 0) {
 	console.error(`\n>>> FAILED: ${failedTests} assertion(s) failed in Feature 5 test suite. <<<`);
 	process.exit(1);

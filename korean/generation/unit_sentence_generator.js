@@ -3535,6 +3535,9 @@ function generateSentenceForUnitImpl(unitOrId, options = {}) {
 	}
 	if (sentenceValidatorModule && typeof sentenceValidatorModule.validateSentenceAST === 'function') {
 		const valRes = sentenceValidatorModule.validateSentenceAST(buildRes.ast, realized);
+		// The string checks too (time word vs tense etc.), as the verified generator already runs them.
+		const strRes = typeof sentenceValidatorModule.validateSentenceString === 'function' && realized && realized.ko ? sentenceValidatorModule.validateSentenceString(realized.ko) : null;
+		if (strRes && !strRes.valid && strRes.errors.length > 0) valRes.errors.push(...strRes.errors), valRes.valid = false;
 		if (valRes && !valRes.valid && valRes.errors.length > 0) {
 			return {
 				ok: false,

@@ -1558,14 +1558,16 @@ function validateTemporalConcord(input, context = {}) {
 
 	const foundPast = [];
 	const foundFuture = [];
+	// A time word may carry a short particle (내년에, 내일은, 다음주에도): allow up to two syllables after it.
 	for (const word of state.PAST_TIME_WORDS) {
-		const reg = new RegExp(`(^|[^가-힣])${word}([^가-힣]|$)`);
+		const reg = new RegExp(`(^|[^가-힣])${word}[가-힣]{0,2}([^가-힣]|$)`);
 		if (reg.test(text)) foundPast.push(word);
 	}
 	for (const word of state.FUTURE_TIME_WORDS) {
-		const reg = new RegExp(`(^|[^가-힣])${word}([^가-힣]|$)`);
+		const reg = new RegExp(`(^|[^가-힣])${word}[가-힣]{0,2}([^가-힣]|$)`);
 		if (reg.test(text)) foundFuture.push(word);
 	}
+	const embedsClause = (HC.MORPH_TEMPORAL_EMBEDDING_ENDINGS || []).some(e => new RegExp(`${e}(\\s|$)`).test(text));
 
 	let hasPastPredicate = false;
 	for (let i = 0; i < text.length; i++) {
@@ -1589,7 +1591,7 @@ function validateTemporalConcord(input, context = {}) {
 	if (foundPast.length > 0 && hasFuturePredicate) {
 		errors.push(`Past temporal word(s) [${foundPast.join(', ')}] clash with prospective/future predicate in: "${text}"`);
 	}
-	if (foundFuture.length > 0 && hasPastPredicate) {
+	if (foundFuture.length > 0 && hasPastPredicate && !embedsClause) {
 		errors.push(`Future temporal word(s) [${foundFuture.join(', ')}] clash with past predicate in: "${text}"`);
 	}
 

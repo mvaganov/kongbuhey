@@ -327,6 +327,13 @@ function validateSentenceString(ko, context = {}) {
 		}
 	}
 
+	// 1b. Time word vs tense: a future time word with a past main verb (내일 ... 다녔어요) or a past one with a future verb.
+	const morph = (typeof require !== 'undefined') ? require('../core/morphology.js') : (typeof window !== 'undefined' ? window : {});
+	if (typeof morph.validateTemporalConcord === 'function') {
+		const tc = morph.validateTemporalConcord(ko);
+		if (tc && !tc.valid) for (const msg of tc.errors) errors.push({ code: "TEMPORAL_CONCORD_MISMATCH", message: msg });
+	}
+
 	// 2. Double negation anomaly
 	if (/(?:^|\s)안\s+안(?:\s|$|[.,?!])|(?:^|\s)못\s+못(?:\s|$|[.,?!])/.test(ko)) {
 		errors.push({ code: "REDUNDANT_DOUBLE_NEGATION", message: `Duplicate negation particles detected in: "${ko}"` });
