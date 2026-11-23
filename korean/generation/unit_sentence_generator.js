@@ -1505,8 +1505,10 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 		const arg = (verbUnit && verbUnit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB)
 			? selectArgumentForActionVerb(verbUnit, options, targetId)
 			: { nounUnit: null, role: null, particleType: null };
+		// A descriptive verb describes the place itself (학생회관이 조용해요), never a person at it (*우리는 학생회관에 조용했어요).
+		const placeIsSubject = Boolean(verbUnit && verbUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB);
 
-		if (arg.role !== K.SUBJECT) {
+		if (arg.role !== K.SUBJECT && !placeIsSubject) {
 			let subj = selectSubjectUnit(options, targetId, false);
 			if (subj && arg.nounUnit && (HC.UNITGEN_AST_NOMINAL_ARG_NOUNUNIT_DATA_SCHEMA_K_ONE_OF).has(arg.nounUnit[DATA_SCHEMA.Korean]) && (HC.UNITGEN_AST_NOMINAL_SUBJ_DATA_SCHEMA_KOREAN_ONE_OF).has(subj[DATA_SCHEMA.Korean])) {
 				const fSubjs = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_24).has(n[DATA_SCHEMA.Korean]));
@@ -1522,7 +1524,7 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 		}
 
 		const isKyesida = verbUnit && (HC.UNITGEN_AST_NOMINAL_VERBUNIT_DATA_SCHEMA_KOREA_ONE_OF_3.includes(verbUnit[DATA_SCHEMA.Korean]));
-		constituents.push({
+		constituents.push(placeIsSubject ? { role: K.SUBJECT, nounUnit: nominalUnit, particleType: K.SUBJECT } : {
 			role: K.LOCATION,
 			nounUnit: nominalUnit,
 			particleType: (!isDynamicMotionOrOrigin && (isMotionOrStatic || isKyesida)) ? "location_static" : "location_dynamic"
@@ -3561,11 +3563,22 @@ function generateSentenceForUnitImpl(unitOrId, options = {}) {
 /**
  * A verb whose SemanticData has needsAdv (unit ids) is incomplete without one of those adverbs (지내다 needs 잘: "X는 지내요" is not
  * a sentence). Every clause with such a predicate gets one (replacing any other adverb); with none usable, the build fails.
+ * Also drops adverbs the predicate rejects (adverb concord); the card's own adverb failing fails the build (the caller retries).
  */
 function ensureRequiredAdverbs(ast, options, targetId) {
 	const units = dataModule.KR_EN_languageUnits || [];
 	for (const clause of (ast && ast.clauses) || []) {
 		const verb = clause.predicate && clause.predicate.verbUnit;
+		// An adverb picked before the predicate was known (a grammar formula's {Adv}) must still fit it (*열심히 직장을 그만둡시다).
+		if (verb && typeof canAdverbPrecede === 'function' && Array.isArray(clause.constituents)) {
+			const neg = clause.predicate.polarity === K.NEGATIVE;
+			for (let i = clause.constituents.length - 1; i >= 0; i--) {
+				const c = clause.constituents[i];
+				if (c.role !== K.ADVERB || !c.unit || c.unit[DATA_SCHEMA.PartofSpeech] !== K.POS_ADVERB || canAdverbPrecede(c.unit, verb, { isNegative: neg })) continue;
+				if (c.unit[DATA_SCHEMA.Id] === targetId) return { ok: false, insufficientSet: false, missingRoles: [], message: 'The adverb does not fit the chosen verb.' };
+				clause.constituents.splice(i, 1);
+			}
+		}
 		const need = verb ? parseSemanticData(verb).needsAdv : null;
 		if (!Array.isArray(need) || !need.length) continue;
 		const cons = clause.constituents || (clause.constituents = []);

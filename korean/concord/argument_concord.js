@@ -642,7 +642,10 @@ function selectDescriptiveVerbForNoun(nounUnit, options = {}, targetId = null) {
 	}
 
 	const isNonPhysicalAttr = hasTag(nounUnit, "language", K.ABSTRACT, "attribute", K.ACTIVITY, "quantity", "time_amount") || NON_PHYSICAL_ATTR_NOUNS.has(nounKo);
-	const cleanDVs = allDVs.filter(dv => {
+	// Fallbacks never use a verb whose data restricts its subjects (collocation_filter): the noun did not match it above
+	// (저게 많아요 came from here although 많다 excludes deictic subjects), as selectActionVerbForNoun does for objects.
+	const unrestricted = allDVs.filter(dv => !(parseSemanticData(dv) || {}).collocation_filter);
+	const cleanDVs = unrestricted.filter(dv => {
 		const ko = dv[DATA_SCHEMA.Korean];
 		if (!ko || ko.includes(" ")) return false;
 		if (HUMAN_APPEARANCE_DVS.has(ko)) return false;
@@ -657,7 +660,7 @@ function selectDescriptiveVerbForNoun(nounUnit, options = {}, targetId = null) {
 		return pickRandom(cleanDVs, options.seedOffset, options);
 	}
 
-	return pickRandom(allDVs, options.seedOffset, options);
+	return pickRandom(unrestricted.length ? unrestricted : allDVs, options.seedOffset, options);
 }
 
 function selectPutInContainerNoun(objectNounUnit, options = {}, targetId = null) {

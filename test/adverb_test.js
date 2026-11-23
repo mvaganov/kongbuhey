@@ -465,6 +465,31 @@ for (const npi of npiList) {
 	assert(n > 0 && missing.length === 0, `generated sentences with a needsAdv verb carry the adverb (${n} sentences)`, missing.slice(0, 3).join(' | '));
 }
 
+// denyVerbs on 열심히: no "diligently" with a one-time event (*열심히 직장을 그만둡시다; found by tools/fc2_sim.js).
+{
+	const usg = require('../korean/generation/unit_sentence_generator.js'), korean = require('../korean/index.js');
+	const D_ = require('../data/data.js'), U_ = D_.KR_EN_languageUnits, C_ = D_.DATA_SCHEMA;
+	const byKo = k => U_.findIndex(u => u && u[C_.Korean] === k && u[C_.PartofSpeech] !== 'Alias');
+	const core = ['은 / 는', '이 / 가', '을 / 를', '~아요 / ~어요 / ~해요', '~습니다 / ~ㅂ니다', '~았/었어요', '~(으)ㄹ 거예요'].map(byKo).filter(i => i >= 0);
+	const run = (target, words, seeds = 40) => {
+		const set = new Set([...core, ...words.map(byKo).filter(i => i >= 0), byKo(target)]), out = [];
+		for (let seed = 1; seed <= seeds; seed++) {
+			korean.setRandomSeed(seed);
+			const r = usg.generateSentenceForUnit(byKo(target), { onlyFromSet: true, allowedUnitIds: set, variationIndex: seed % 3, seedOffset: seed });
+			if (r && r.ok) out.push(r);
+		}
+		return out;
+	};
+	const bad = [];
+	let n = 0;
+	for (const target of ['열심히', '-(으)ㅂ시다', '그만두다']) for (const r of run(target, ['열심히', '그만두다', '졸업하다', '전공하다', '직장', '경제학', '친구'])) {
+		n++;
+		const ids = new Set((r.unitsUsed || []).map(u => u.unitId));
+		if (ids.has(byKo('열심히')) && (ids.has(byKo('그만두다')) || ids.has(byKo('졸업하다')))) bad.push(r.ko);
+	}
+	assert(n > 0 && bad.length === 0, `열심히 never modifies a one-time event (${n} sentences)`, bad.slice(0, 2).join(' | '));
+}
+
 console.log("\n======================================================");
 console.log(`TOTAL TESTS: ${totalTests}`);
 console.log(`PASSED:      ${passedTests}`);

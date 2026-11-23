@@ -612,6 +612,29 @@ assert(unregisteredDVTags.length === 0, "All descriptive_* tags are registered i
 // -----------------------------------------------------------------------------
 // Summary
 // -----------------------------------------------------------------------------
+// A descriptive verb's collocation_filter holds in the fallback too: 많다 excludes deictic subjects (*저게 많아요;
+// found by tools/fc2_sim.js).
+{
+	const usg = require('../korean/generation/unit_sentence_generator.js'), korean = require('../korean/index.js');
+	const D_ = require('../data/data.js'), U_ = D_.KR_EN_languageUnits, C_ = D_.DATA_SCHEMA;
+	const byKo = k => U_.findIndex(u => u && u[C_.Korean] === k && u[C_.PartofSpeech] !== 'Alias');
+	const core = ['은 / 는', '이 / 가', '을 / 를', '~아요 / ~어요 / ~해요', '~습니다 / ~ㅂ니다', '~았/었어요', '~(으)ㄹ 거예요'].map(byKo).filter(i => i >= 0);
+	const run = (target, words, seeds = 40) => {
+		const set = new Set([...core, ...words.map(byKo).filter(i => i >= 0), byKo(target)]), out = [];
+		for (let seed = 1; seed <= seeds; seed++) {
+			korean.setRandomSeed(seed);
+			const r = usg.generateSentenceForUnit(byKo(target), { onlyFromSet: true, allowedUnitIds: set, variationIndex: seed % 3, seedOffset: seed });
+			if (r && r.ok) out.push(r);
+		}
+		return out;
+	};
+	for (const pron of ['저것', '저거', '이것']) {
+		const got = run(pron, ['많다', '좋다', '작다']);
+		const bad = got.filter(r => (r.unitsUsed || []).some(u => u.unitId === byKo('많다')));
+		assert(got.length > 0 && bad.length === 0, `${pron} never takes 많다 (${got.length} sentences)`, bad.length ? bad[0].ko : '');
+	}
+}
+
 console.log("\n======================================================");
 console.log(`TOTAL TESTS: ${totalTests}`);
 console.log(`PASSED:      ${passedTests}`);
