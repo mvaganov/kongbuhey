@@ -31,8 +31,8 @@ Usage:
   node tools/hangul_literals.js --tables        every table: size, file:lines, name, free-floating (module level) or which function
   Filters: --file <substring>  --kind <kind>  --include-exempt (also list exempt error text)  --quiet (no footer)
   node tools/hangul_literals.js --check         ratchet, run by node test.js Stage 0: fails if any file's count differs from
-                                                test/hangul_literals_baseline.json (new files must be 0). Fewer = good: lock it in with
-  node tools/hangul_literals.js --save-baseline`);
+                                                test/hangul_literals_baseline.json (new files must be 0). Fewer = good: lock it in by hand with
+  node tools/hangul_literals.js --save-baseline (see docs/architecture.md, "Lowering the baseline")`);
 }
 
 if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('./exit_log.js').watch('tools/hangul_literals.js'); // failed runs -> test.js report
@@ -254,7 +254,7 @@ function main() {
 			if (b > a) up.push(`${f}: ${a} -> ${b}`); else if (b < a) down.push(`${f}: ${a} -> ${b}`);
 		}
 		if (up.length) console.log(`New Hangul literals or magic unit ids in engine code (put them in data/hangul_constants.js under a use-specific name, or in data.js; see docs/architecture.md section 1):\n  ${up.join('\n  ')}\n  Find them: node tools/hangul_literals.js --file <file>`);
-		if (down.length) console.log(`Fewer literals than the baseline (good): lock it in with node tools/hangul_literals.js --save-baseline\n  ${down.join('\n  ')}`);
+		if (down.length) console.log(`Fewer literals than the baseline (good). Lock the gain in by hand, once the tests that matter pass: node tools/hangul_literals.js --save-baseline, then commit test/hangul_literals_baseline.json with the change (docs/architecture.md section 1, "Lowering the baseline"). There is deliberately no flag that accepts a lower count automatically.\n  ${down.join('\n  ')}`);
 		if (!up.length && !down.length) console.log(`OK: ${Object.values(now).reduce((a, b) => a + b, 0)} literals in ${Object.keys(now).length} files, matching the baseline.`);
 		return up.length || down.length ? 1 : 0;
 	}

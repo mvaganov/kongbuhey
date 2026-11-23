@@ -44,8 +44,11 @@ Last reviewed 2026-11-22.
     marks a run of single-value tests on the same subject (`a === 'x' || a === 'y'`, or consecutive ifs with identical bodies): a
     ready-made table.
   - **Enforcement:** `--check` runs in `node test.js` Stage 0 as a per-file ratchet against `test/hangul_literals_baseline.json`: a file
-    with more literals than its baseline fails (a new file must have none); a file with fewer also fails until you lock the gain in with
-    `--save-baseline`, so the numbers only go down.
+    with more literals than its baseline fails (a new file must have none); a file with fewer also fails until the gain is locked in.
+  - **Lowering the baseline (manual, on purpose).** After a cleanup, verify (`node test.js --full`: the bench's output fingerprint proves
+    behavior is unchanged), then run `node tools/hangul_literals.js --save-baseline` yourself and commit `test/hangul_literals_baseline.json`
+    in the same commit as the cleanup. The failing message says this. There is no `--accept-lower` flag and none should be added: an
+    automatic accept lets a regression hide behind an unrelated drop. Never run `--save-baseline` to silence a rise.
   - **Migration order, per function or table group** (each step verified by `node tools/bench_generation.js` and `node test.js`):
     1. Chains -> a table: rewrite `a === 'x' || a === 'y'` / repeated identical ifs as one array or Set lookup. Do this first whenever the
        code can be refactored to use a table instead of individual constants.
@@ -59,13 +62,19 @@ Last reviewed 2026-11-22.
     Stage 5 and the analyzer suites, not the bench.
   - **This file and the tool are the place to look for quick code-quality wins:** read the entry names, pick one marked `Data fix`,
     add the tag to the units, replace the spelling test with a tag test, delete the entry, lower the baseline.
-  - **Scale on 2026-11-22** (after the pilot and moving three rule-table files to `data/`; current numbers:
-    `node tools/hangul_literals.js --summary`): 5,797 literals in 29 files (60 more are exempt error text). compare 1,137 (503 of them in
-    209 chains), table 3,475 in 380 tables (85 module-level holding 968; most of the rest are anonymous inline lists inside functions),
-    regex 262, unit-id 130, other 793. Largest: `unit_sentence_generator.js` 2,194 (1,956 in tables), `argument_concord.js` 691 (72
-    module-level word lists such as `DRINKABLE_NOUNS`: semantic classes that are really missing data.js tags), `verified_sentence_generator.js`
-    643. Mixed files with a big spec table (`PARTICLE_SPECS` in `analyzer/particles.js`, `CLAUSAL_QUIZ_BANKS` in
-    `concord/clausal_generator.js`) can have the table extracted to `data/` the same way.
+  - **Scale on 2026-11-22** (after the pilot, moving rule tables to `data/`, moving 84 module-level tables whole into
+    `hangul_constants.js`, and hoisting 221 inline tables plus 92 chains out of `unit_sentence_generator.js`, `verified_sentence_generator.js`
+    and `morphology.js`; current numbers: `node tools/hangul_literals.js --summary`): 2,461 literals in 28 files (47 more are exempt error
+    text), down from 7,030. What remains is mostly `compare` (about 980: one word tested against one value, in `if` chains with
+    different bodies) and `other` (793: return values, arguments, replacements), then regex 260 and unit-id 130. The tables are done
+    except 2 that reference `K`.
+  - **AUTONAMED entries are a backlog for a cheaper agent.** Hoisted entries named `<FILE>_<FUNCTION>_<SUBJECT>_ONE_OF` (and `_LIST_<METHOD>`)
+    carry an `AUTONAMED` comment: the name is mechanical (file, function, the variable tested), not the rule. Renaming one means reading
+    its words and use, choosing `<AREA>_<RULE>_<ROLE>`, and replacing the `Unclassified` note with `Data fix` or `Mechanics`.
+    `grep -c AUTONAMED data/hangul_constants.js` is the count left. Entries that came from a named constant keep that name.
+  - **Chains.** `a === 'x' || a === 'y'` and `s.endsWith('x') || s.endsWith('y')` (also the `!`/`&&` forms) became
+    `HC.NAME.includes(a)` / `HC.NAME.some(w => s.endsWith(w))`. Not converted: consecutive `if`s with identical bodies, chains with an
+    inline comment, and one chain in `unit_sentence_generator.js`.
 
 ## 2. Data model
 - `data/data.js`: one array of unit rows, columns named by `DATA_SCHEMA`. **A unit id is its array position**, and progress everywhere is

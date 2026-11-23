@@ -1,4 +1,5 @@
 (function() {
+const { HANGUL_CONSTANTS: HC } = (typeof require !== 'undefined') ? require('../../data/hangul_constants.js') : window;
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('../../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
@@ -172,24 +173,7 @@ const CURRICULUM_TAXONOMY_TAGS = Object.freeze([
  *   - rationale: Detailed written justification for why the tag exists and its functional role.
  *   - checkedBy: Exact module or location where the deterministic engine queries this tag.
  */
-const SEMANTIC_TAG_SELECTION_WHITELIST = Object.freeze({
-	"SUPPRESS_SEMANTIC_DIVERSITY_WARNING": {
-		rationale: "Directive tag on verbs with < 3 curriculum arguments (e.g. 닦다, 부르다, 차다, 끼다, 누르다, 긋다, 벌다) to explicitly exempt them from diversity starvation alerts when curriculum vocabulary is inherently bounded.",
-		checkedBy: "select.js (auditSemanticRules / validateLanguageUnitSemanticSelection)"
-	},
-	"cosmetics": {
-		rationale: "Selection constraint tag queried by collocation_filter on topical hygiene and beauty verbs such as 바르다 (to apply/smear lotion, cream, makeup).",
-		checkedBy: "data.js (collocation_filter on unit 1440 바르다 via filter_evaluator.js / lexicon_index.js)"
-	},
-	"liquid": {
-		rationale: "Selection constraint tag queried by collocation_filter on fluid manipulation verbs such as 붓다 (to pour liquid).",
-		checkedBy: "data.js (collocation_filter on unit 1420 붓다 via filter_evaluator.js / lexicon_index.js)"
-	},
-	"computing": {
-		rationale: "Selection constraint tag queried by collocation_filter on digital technology verbs such as 다운로드하다 (to download) and 클릭하다 (to click).",
-		checkedBy: "data.js (collocation_filter on units 1919 and 1926 via filter_evaluator.js / lexicon_index.js)"
-	}
-});
+const SEMANTIC_TAG_SELECTION_WHITELIST = HC.TAGS_SEMANTIC_TAG_SELECTION_WHITELIST;
 
 if (typeof window !== "undefined") {
 	window.GRAMMAR_TAGS = GRAMMAR_TAGS;

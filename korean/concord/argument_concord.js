@@ -1,4 +1,5 @@
 (function() {
+const { HANGUL_CONSTANTS: HC } = (typeof require !== 'undefined') ? require('../../data/hangul_constants.js') : window;
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('../../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
@@ -45,116 +46,88 @@ const {
 // ============================================================================
 // TODO generate these sets automatically at load time. language units should have semantic data or a semantic tag (or tags) that prompts inclusion in a set like this (though a common way of checking for a set requirement like this in the language unit might make the set obsolete, since the language unit can also be checked at O(1) speed). if there are missing language units, create them.
 
-const NON_SUBJECT_DEICTICS = new Set([
-	"누구", "누가", "무엇", "뭐", "어디", "언제", "얼마", "몇",
-	"이곳", "그곳", "저곳", "이거", "그거", "저거", "이것", "그것", "저것"
-]);
+const NON_SUBJECT_DEICTICS = HC.ARG_NON_SUBJECT_DEICTICS;
 
-const SUBJECT_PERSONAL_PRONOUNS = new Set(["나", "저", "우리", "저희", "그", "그녀"]);
-const COLLOQUIAL_NON_SUBJECT_PERSONS = new Set(["얘들", "놈", "녀석"]);
+const SUBJECT_PERSONAL_PRONOUNS = HC.ARG_SUBJECT_PERSONAL_PRONOUNS;
+const COLLOQUIAL_NON_SUBJECT_PERSONS = HC.ARG_COLLOQUIAL_NON_SUBJECT_PERSONS;
 
-const NON_AGENT_PERSON_WORDS = new Set([
-	"사람", "나이", "이름", "성함", "연세", "생일", "생신", "고향", "주소", "전화번호", "번호",
-	"취미", "전공", "성별", "국적", "키", "몸무게", "얼굴", "마음", "성격", "버릇", "습관",
-	"목소리", "눈물", "땀", "피", "꿈", "생각", "기분", "감정", "말씀", "진지", "댁", "병환", "약주"
-]);
+const NON_AGENT_PERSON_WORDS = HC.ARG_NON_AGENT_PERSON_WORDS;
 
-const NO_DIRECT_OBJECT_VERBS = new Set(["말씀하다", "끓다", "식다", "터지다", "들어있다"]);
-const PLACEMENT_VERBS = new Set(["놓다", "올려놓다", "두다", "담다", "넣다"]);
-const ORIGIN_MOTION_VERBS = new Set(["출발하다", "나가다", "나오다", "출국하다", "떠나다"]);
-const STATIC_POSTURE_VERBS = new Set(["눕다", "앉다", "살다"]);
-const DYNAMIC_ACTIVITY_MOTION_VERBS = new Set(["달리다", "걷다", "뛰다", "산책하다", "조깅하다", "수영하다", "등산하다"]);
-const PATH_MOTION_NOUNS = new Set(["길", "거리", "횡단보도", "다리", "공원", "학교"]);
-const DEPARTURE_ORIGIN_NOUNS = new Set(["공항", "인천공항", "김포공항", "한국", "미국", "일본", "중국", "서울"]);
-const BROAD_WORLD_REGIONS = new Set(["서양", "동양", "세계"]);
-const STATIC_REST_PLACES = new Set(["침대", "방", "집", "소파", "의자"]);
-const RESIDENTIAL_LIVING_PLACES = new Set(["집", "아파트", "기숙사", "하숙집", "원룸", "한국", "서울", "부산", "제주도", "미국", "일본", "중국", "고향", "시골", "도시", "동네"]);
-const SEATING_SURFACE_PLACES = new Set(["의자", "자리", "소파", "벤치", "바닥"]);
-const LYING_SURFACE_PLACES = new Set(["침대", "소파", "바닥", "방"]);
-const DAILY_ROUTINE_POSTURE_VERBS = new Set(["샤워하다", "세수하다", "목욕하다", "닦다", "자다", "일어나다", "앉다", "눕다"]);
-const DAILY_DEICTIC_TIME_WORDS = new Set(["아침", "오전", "오후", "저녁", "밤", "오늘", "어제", "내일", "매일", "날마다", "일찍"]);
-const MEDIA_WORK_NOUNS = new Set(["액션영화", "코미디 영화", "영화", "드라마", "프로그램"]);
-const MOVING_RESIDENCE_PLACES = new Set(["집", "원룸", "아파트", "기숙사", "하숙집", "방", "서울", "부산", "대구", "인천", "한국", "고향", "동네"]);
-const ATTENDANCE_VENUES = new Set(["학교", "수업", "학원", "모임", "회의", "대학교"]);
-const RUNNING_VENUES = new Set(["공원", "한강공원", "운동장", "길", "거리", "산", "바다"]);
+const NO_DIRECT_OBJECT_VERBS = HC.ARG_NO_DIRECT_OBJECT_VERBS;
+const PLACEMENT_VERBS = HC.ARG_PLACEMENT_VERBS;
+const ORIGIN_MOTION_VERBS = HC.ARG_ORIGIN_MOTION_VERBS;
+const STATIC_POSTURE_VERBS = HC.ARG_STATIC_POSTURE_VERBS;
+const DYNAMIC_ACTIVITY_MOTION_VERBS = HC.ARG_DYNAMIC_ACTIVITY_MOTION_VERBS;
+const PATH_MOTION_NOUNS = HC.ARG_PATH_MOTION_NOUNS;
+const DEPARTURE_ORIGIN_NOUNS = HC.ARG_DEPARTURE_ORIGIN_NOUNS;
+const BROAD_WORLD_REGIONS = HC.ARG_BROAD_WORLD_REGIONS;
+const STATIC_REST_PLACES = HC.ARG_STATIC_REST_PLACES;
+const RESIDENTIAL_LIVING_PLACES = HC.ARG_RESIDENTIAL_LIVING_PLACES;
+const SEATING_SURFACE_PLACES = HC.ARG_SEATING_SURFACE_PLACES;
+const LYING_SURFACE_PLACES = HC.ARG_LYING_SURFACE_PLACES;
+const DAILY_ROUTINE_POSTURE_VERBS = HC.ARG_DAILY_ROUTINE_POSTURE_VERBS;
+const DAILY_DEICTIC_TIME_WORDS = HC.ARG_DAILY_DEICTIC_TIME_WORDS;
+const MEDIA_WORK_NOUNS = HC.ARG_MEDIA_WORK_NOUNS;
+const MOVING_RESIDENCE_PLACES = HC.ARG_MOVING_RESIDENCE_PLACES;
+const ATTENDANCE_VENUES = HC.ARG_ATTENDANCE_VENUES;
+const RUNNING_VENUES = HC.ARG_RUNNING_VENUES;
 
-const SOLID_COOKING_VERBS = new Set(["삶다", "굽다", "볶다", "튀기다", "다지다", "썰다"]);
-const SOLID_COOKING_NOUNS = new Set(["고기", "생선", "채소", "라면", "돼지고기", "소고기", "닭고기", "달걀", "감자", "양파"]);
-const NON_SOLID_COOKING_NOUNS = new Set(["물", "주스", "콜라", "사이다", "커피", "차", "술", "맥주", "우유", "뷔페", "식당", "설렁탕", "미역국", "된장찌개", "김치찌개"]);
-const BOILABLE_NOUNS = new Set(["물", "라면", "찌개", "국", "탕", "차", "보리차", "설렁탕", "미역국", "된장찌개", "김치찌개"]);
-const DRINKABLE_NOUNS = new Set(["물", "주스", "콜라", "사이다", "커피", "차", "술", "맥주", "우유"]);
-const FRAGILE_BREAKABLE_NOUNS = new Set(["유리", "거울", "접시", "컵", "그릇", "달걀", "잠"]);
-const QUITTABLE_NOUNS = new Set(["일", "직장", "회사", "공부", "운동", "아르바이트", "담배", "술"]);
+const SOLID_COOKING_VERBS = HC.ARG_SOLID_COOKING_VERBS;
+const SOLID_COOKING_NOUNS = HC.ARG_SOLID_COOKING_NOUNS;
+const NON_SOLID_COOKING_NOUNS = HC.ARG_NON_SOLID_COOKING_NOUNS;
+const BOILABLE_NOUNS = HC.ARG_BOILABLE_NOUNS;
+const DRINKABLE_NOUNS = HC.ARG_DRINKABLE_NOUNS;
+const FRAGILE_BREAKABLE_NOUNS = HC.ARG_FRAGILE_BREAKABLE_NOUNS;
+const QUITTABLE_NOUNS = HC.ARG_QUITTABLE_NOUNS;
 
-const GENERAL_TRANSITIVE_FALLBACK_KOREAN = new Set([
-	"사다", "보다", "찾다", "기다리다", "준비하다", "바꾸다",
-	"사용하다", "이용하다", "배우다", "기억하다", "좋아하다", "원하다", "고르다"
-]);
+const GENERAL_TRANSITIVE_FALLBACK_KOREAN = HC.ARG_GENERAL_TRANSITIVE_FALLBACK_KOREAN;
 
-const GENERAL_EVALUATIVE_FALLBACK_KOREAN = new Set([
-	"좋다", "많다", "괜찮다", "필요하다", "중요하다", "유명하다",
-	"편하다", "어렵다", "쉽다", "비싸다", "싸다", "크다", "작다"
-]);
+const GENERAL_EVALUATIVE_FALLBACK_KOREAN = HC.ARG_GENERAL_EVALUATIVE_FALLBACK_KOREAN;
 
-const POSSESSION_CALQUE_VERBS = new Set(["가지다", "사다", "구매하다", "주문하다", "선물하다", "만들다", "빌리다", "얻다", "줍다"]);
-const SOUP_STEW_NOUNS = new Set(["설렁탕", "미역국", "된장찌개", "김치찌개"]);
-const SOUP_STEW_ACTION_VERBS = new Set(["먹다", "끓이다", "데우다", "주문하다", "좋아하다", "맛보다"]);
-const DRINK_ACTION_VERBS = new Set(["마시다", "사다", "주문하다", "따르다", "좋아하다"]);
-const LANGUAGE_ACTION_VERBS = new Set(["공부하다", "배우다", "가르치다", "잘하다", "연습하다", "알다", "모르다", "좋아하다"]);
-const TRANSITIVE_PLACE_VERBS = new Set(["방문하다", "찾다", "청소하다", "구경하다"]);
-const BODY_CARE_ACTION_VERBS = new Set(["닦다", "씻다", "치료하다", "보다", "만지다"]);
-const COMMERCIAL_TRANSACTION_VERBS = new Set(["사다", "팔다", "바꾸다", "주문하다", "이용하다", "사용하다"]);
-const NON_COMMODITY_NOUNS = new Set([
-	"잠", "휴대", "길이", "소화", "기온", "기분", "마음", "성격",
-	"손", "코", "얼굴", "허리", "강남스타일", "주차 금지", "경치", "생활", "대화", "태권도", "반", "제목"
-]);
+const POSSESSION_CALQUE_VERBS = HC.ARG_POSSESSION_CALQUE_VERBS;
+const SOUP_STEW_NOUNS = HC.ARG_SOUP_STEW_NOUNS;
+const SOUP_STEW_ACTION_VERBS = HC.ARG_SOUP_STEW_ACTION_VERBS;
+const DRINK_ACTION_VERBS = HC.ARG_DRINK_ACTION_VERBS;
+const LANGUAGE_ACTION_VERBS = HC.ARG_LANGUAGE_ACTION_VERBS;
+const TRANSITIVE_PLACE_VERBS = HC.ARG_TRANSITIVE_PLACE_VERBS;
+const BODY_CARE_ACTION_VERBS = HC.ARG_BODY_CARE_ACTION_VERBS;
+const COMMERCIAL_TRANSACTION_VERBS = HC.ARG_COMMERCIAL_TRANSACTION_VERBS;
+const NON_COMMODITY_NOUNS = HC.ARG_NON_COMMODITY_NOUNS;
 
-const FIRST_PERSON_SUBJECT_PRONOUNS = new Set(["저", "나", "우리", "저희"]);
-const PRICING_ELIGIBLE_NOUNS = new Set(["물건", "선물", "음식", "옷", "표", "가방", "모자", "신발", "시계", "자동차"]);
-const RELATIONAL_OR_FORMULAIC_DVS = new Set(["안녕하다", "싶다", "결과 다르다", "같다", "비슷하다", "다르다", "어울리다", "오랜만이다", "친하다"]);
-const RESTRICTED_NON_TARGET_DVS = new Set(["정숙하다", "웬만하다", "울퉁불퉁하다", "따사롭다", "야하다", "고맙다", "감사하다", "미안하다", "죄송하다", "낫다", "싫다"]);
-const INTERROGATIVE_DVS = new Set(["어떻다", "어떠하다"]);
-const INTERPERSONAL_ATTITUDE_DVS = new Set(["감사하다", "죄송하다", "미안하다", "고맙다"]);
-const SUBJECTIVE_EXPERIENCER_DVS = new Set([
-	"즐겁다", "기쁘다", "슬프다", "부럽다", "그립다", "부끄럽다", "외롭다", "불안하다",
-	"무섭다", "힘들다", "졸리다", "창피하다", "심심하다", "행복하다", "섭섭하다", "피곤하다"
-]);
-const NON_PERSON_ATTRIBUTE_DVS = new Set([
-	"울퉁불퉁하다", "매끄럽다", "비싸다", "싸다", "맑다", "흐리다",
-	"따뜻하다", "시원하다", "춥다", "덥다", "적다", "야하다", "빠르다"
-]);
-const PRICING_DVS = new Set(["비싸다", "싸다"]);
-const SMALL_STATIONERY_NOUNS = new Set(["거울", "필통", "지우개", "볼펜", "연필", "휴지", "가위", "자"]);
-const ERGONOMIC_INTEREST_DVS = new Set(["편하다", "불편하다", "재미없다", "재미있다", "간단하다"]);
-const TICKET_CREDENTIAL_NOUNS = new Set(["기차표", "표", "명함", "엽서", "우표", "카드", "신분증", "학생증", "여권"]);
-const SIZE_THICKNESS_DVS = new Set(["작다", "크다", "얇다", "두껍다"]);
-const PHYSICAL_DIMENSION_DVS = new Set(["작다", "크다", "얇다", "두껍다", "무겁다", "가볍다", "길다", "짧다"]);
-const AGE_COMPATIBLE_DVS = new Set(["많다", "적다", "어리다"]);
-const RESULTATIVE_PAST_DVS = new Set(["잘생기다", "못생기다", "오래되다"]);
-const SOUP_STEW_DVS = new Set(["맛있다", "뜨겁다", "따뜻하다", "싱겁다", "짜다", "얼큰하다"]);
-const RULE_PROHIBITION_DVS = new Set(["필요하다", "중요하다", "엄격하다", "있다", "없다"]);
-const LANGUAGE_DVS = new Set(["어렵다", "쉽다", "재미있다", "중요하다", "좋다", "필요하다"]);
-const BODY_PART_DVS = new Set(["아프다", "시리다", "좋다", "튼튼하다", "괜찮다", "하얗다"]);
-const NON_PHYSICAL_ATTR_NOUNS = new Set(["나이", "게임", "날씨", "생활"]);
-const HUMAN_APPEARANCE_DVS = new Set(["날씬하다", "뚱뚱하다", "잘생기다", "못생기다", "마르다", "정숙하다", "웬만하다"]);
-const WEATHER_TEMPERATURE_DVS = new Set(["맑다", "흐리다", "쌀쌀하다", "화창하다", "무덥다", "춥다", "덥다", "따뜻하다", "시원하다"]);
-const CONCRETE_PHYSICAL_DVS = new Set([
-	"크다", "작다", "넓다", "좁다", "길다", "짧다", "높다", "낮다",
-	"있다", "없다", "오래되다", "필요하다", "비싸다", "싸다", "무겁다", "가볍다", "편하다", "불편하다"
-]);
+const FIRST_PERSON_SUBJECT_PRONOUNS = HC.ARG_FIRST_PERSON_SUBJECT_PRONOUNS;
+const PRICING_ELIGIBLE_NOUNS = HC.ARG_PRICING_ELIGIBLE_NOUNS;
+const RELATIONAL_OR_FORMULAIC_DVS = HC.ARG_RELATIONAL_OR_FORMULAIC_DVS;
+const RESTRICTED_NON_TARGET_DVS = HC.ARG_RESTRICTED_NON_TARGET_DVS;
+const INTERROGATIVE_DVS = HC.ARG_INTERROGATIVE_DVS;
+const INTERPERSONAL_ATTITUDE_DVS = HC.ARG_INTERPERSONAL_ATTITUDE_DVS;
+const SUBJECTIVE_EXPERIENCER_DVS = HC.ARG_SUBJECTIVE_EXPERIENCER_DVS;
+const NON_PERSON_ATTRIBUTE_DVS = HC.ARG_NON_PERSON_ATTRIBUTE_DVS;
+const PRICING_DVS = HC.ARG_PRICING_DVS;
+const SMALL_STATIONERY_NOUNS = HC.ARG_SMALL_STATIONERY_NOUNS;
+const ERGONOMIC_INTEREST_DVS = HC.ARG_ERGONOMIC_INTEREST_DVS;
+const TICKET_CREDENTIAL_NOUNS = HC.ARG_TICKET_CREDENTIAL_NOUNS;
+const SIZE_THICKNESS_DVS = HC.ARG_SIZE_THICKNESS_DVS;
+const PHYSICAL_DIMENSION_DVS = HC.ARG_PHYSICAL_DIMENSION_DVS;
+const AGE_COMPATIBLE_DVS = HC.ARG_AGE_COMPATIBLE_DVS;
+const RESULTATIVE_PAST_DVS = HC.ARG_RESULTATIVE_PAST_DVS;
+const SOUP_STEW_DVS = HC.ARG_SOUP_STEW_DVS;
+const RULE_PROHIBITION_DVS = HC.ARG_RULE_PROHIBITION_DVS;
+const LANGUAGE_DVS = HC.ARG_LANGUAGE_DVS;
+const BODY_PART_DVS = HC.ARG_BODY_PART_DVS;
+const NON_PHYSICAL_ATTR_NOUNS = HC.ARG_NON_PHYSICAL_ATTR_NOUNS;
+const HUMAN_APPEARANCE_DVS = HC.ARG_HUMAN_APPEARANCE_DVS;
+const WEATHER_TEMPERATURE_DVS = HC.ARG_WEATHER_TEMPERATURE_DVS;
+const CONCRETE_PHYSICAL_DVS = HC.ARG_CONCRETE_PHYSICAL_DVS;
 
-const BULKY_OR_MEDIUM_OBJECTS = new Set([
-	"컴퓨터", "텔레비전", "책상", "의자", "소파", "침대", "가방", "신발", "구두", "운동화",
-	"옷", "코트", "바지", "치마", "책", "공책", "우산", "옷걸이", "거울", "칠판"
-]);
-const FOOD_OR_DRINK_ITEMS = new Set(["우유", "물", "음료", "주스", "김치", "고기", "과일", "달걀", "음식", "사과", "빵", "반찬"]);
-const PUT_IN_CONTAINERS = new Set(["가방", "주머니", "상자", "냉장고", "서랍", "봉투", "지갑"]);
-const TINY_CONTAINERS = new Set(["봉투", "주머니", "지갑", "필통", "컵", "그릇"]);
-const FALLBACK_CONTAINERS = new Set(["가방", "상자", "서랍"]);
+const BULKY_OR_MEDIUM_OBJECTS = HC.ARG_BULKY_OR_MEDIUM_OBJECTS;
+const FOOD_OR_DRINK_ITEMS = HC.ARG_FOOD_OR_DRINK_ITEMS;
+const PUT_IN_CONTAINERS = HC.ARG_PUT_IN_CONTAINERS;
+const TINY_CONTAINERS = HC.ARG_TINY_CONTAINERS;
+const FALLBACK_CONTAINERS = HC.ARG_FALLBACK_CONTAINERS;
 
-const PLURAL_SUBJECT_WORDS = new Set(["우리", "저희", "가족", "친구들", "학생들", "사람들", "아이들", "부모님"]);
-const EXCLUDED_TIME_ADVERBS = new Set(["아직", "벌써", "이미", "언제", "금방", "이제", "방금", "아까", "새로", "드디어", "미리", "오래"]);
-const DAILY_HABIT_ADVERBS = new Set(["날마다", "매일"]);
+const PLURAL_SUBJECT_WORDS = HC.ARG_PLURAL_SUBJECT_WORDS;
+const EXCLUDED_TIME_ADVERBS = HC.ARG_EXCLUDED_TIME_ADVERBS;
+const DAILY_HABIT_ADVERBS = HC.ARG_DAILY_HABIT_ADVERBS;
 
 // ============================================================================
 // Core Selection & Concordance Functions

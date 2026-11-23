@@ -1,4 +1,5 @@
 (function() {
+const { HANGUL_CONSTANTS: HC } = (typeof require !== 'undefined') ? require('../../data/hangul_constants.js') : window;
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('../../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
@@ -44,11 +45,7 @@ const {
 	resolvePureMorphology
 } = (typeof require !== 'undefined' ? require('./stem_engine.js') : window);
 
-const INANIMATE_PERSON_ATTR_NOUNS = new Set([
-	"나이", "이름", "성함", "연세", "생일", "생신", "고향", "주소",
-	"전화번호", "번호", "취미", "전공", "성별", "국적", "키", "몸무게",
-	"말씀", "진지", "댁", "병환", "약주"
-]);
+const INANIMATE_PERSON_ATTR_NOUNS = HC.MORPH_INANIMATE_PERSON_ATTR_NOUNS;
 
 function filterAnimatePersonSubjects(candidates) {
 	const filtered = candidates.filter(n => {
@@ -167,7 +164,7 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 	const nounKo = typeof noun === 'string' ? noun : (nounUnit ? nounUnit[DATA_SCHEMA.Korean] : "");
 	if (!nounKo) return "";
 	// Pronoun clitic allomorphy (저/제, 나/내, 너/네)
-	if (nounKo === "저" || nounKo === "제") {
+	if (HC.MORPH_ATTACH_PARTICLE_NOUNKO_ONE_OF_3.includes(nounKo)) {
 		if (particleType === K.SUBJECT || particleType === "nominative" || particleType === "sub") {
 			return "제가";
 		}
@@ -180,7 +177,7 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 		if (particleType === K.DATIVE || particleType === K.DATIVE_PERSON || particleType === "dative_animate") {
 			return (options.spoken === true || options.formality === "spoken") ? "저한테" : "저에게";
 		}
-	} else if (nounKo === "나" || nounKo === "내") {
+	} else if (HC.MORPH_ATTACH_PARTICLE_NOUNKO_ONE_OF_2.includes(nounKo)) {
 		if (particleType === K.SUBJECT || particleType === "nominative" || particleType === "sub") {
 			return "내가";
 		}
@@ -193,7 +190,7 @@ function attachParticle(noun, particleType, verb = null, options = {}) {
 		if (particleType === K.DATIVE || particleType === K.DATIVE_PERSON || particleType === "dative_animate") {
 			return (options.spoken === true || options.formality === "spoken") ? "나한테" : "나에게";
 		}
-	} else if (nounKo === "너" || nounKo === "네") {
+	} else if (HC.MORPH_ATTACH_PARTICLE_NOUNKO_ONE_OF.includes(nounKo)) {
 		if (particleType === K.SUBJECT || particleType === "nominative" || particleType === "sub") {
 			return "네가";
 		}
@@ -407,7 +404,7 @@ function canTakeMood(verbOrKo, mood) {
 	}
 
 	const isInvoluntary = (verbUnit && hasTag(verbUnit, "involuntary", "passive", K.WEATHER) && ko !== "우산을 쓰다")
-		|| ["끝나다", "시작되다", "고장 나다", "죽다", "생기다", "열리다", "닫히다"].some(k => ko.includes(k));
+		|| HC.MORPH_CAN_TAKE_MOOD_K_KO_INCLUDES_K_LIST_SOME.some(k => ko.includes(k));
 
 	if (normalizedMood === K.IMPERATIVE || normalizedMood === K.PROHIBITION || normalizedMood === K.PROPOSITIVE || normalizedMood === "suggestion") {
 		return isAction && !isDescriptive && !isInvoluntary;
@@ -443,7 +440,7 @@ function conjugatePredicate(verbOrKo, formality = "polite", tense = K.PRESENT) {
 	const ko = typeof verbOrKo === 'string' ? verbOrKo : (verbUnit ? verbUnit[DATA_SCHEMA.Korean] : "");
 	if (!ko) return "";
 
-	if (ko === "뵙다" || ko === "뵈다") {
+	if (HC.MORPH_CONJUGATE_PREDICATE_KO_ONE_OF.includes(ko)) {
 		if (tense === K.PAST) {
 			return (formality === "formal" || formality === "formal_polite") ? "뵀습니다" : "뵀어요";
 		}
@@ -732,7 +729,7 @@ function isForbiddenForElder(wordOrKo) {
 
 function isElderNoun(nounUnit, nounKo = "") {
 	// TODO is this already a set defined somewhere? could it be made into a set automatically generated on init?
-	const NON_PERSON_HONORIFICS = new Set(["말씀", "진지", "연세", "댁", "생신", "병환", "약주", "치하", "성함", "존함", "이름", "나이"]);
+	const NON_PERSON_HONORIFICS = HC.MORPH_IS_ELDER_NOUN_NON_PERSON_HONORIFICS;
 	const name = nounKo || (nounUnit ? nounUnit[DATA_SCHEMA.Korean] : "");
 	if (name && NON_PERSON_HONORIFICS.has(name)) return false;
 
@@ -803,7 +800,7 @@ function filterWordsByTense(words, tense) {
 	if (tense === K.PAST) {
 		filtered = words.filter(w => {
 			const ko = typeof w === 'string' ? w : (Array.isArray(w) ? w[DATA_SCHEMA.Korean] : "");
-			if (ko === "요즘" || ko === "지금") return false;
+			if (HC.MORPH_FILTER_WORDS_BY_TENSE_KO_ONE_OF.includes(ko)) return false;
 			const pol = getTemporalPolarity(w);
 			return pol !== K.FUTURE;
 		});
@@ -1376,7 +1373,7 @@ function applyHonorificConcord(input, options = {}) {
 		for (const [plain, hon] of state.HONORIFIC_NOUN_SUPPLETIONS.entries()) {
 			const nounRegex = new RegExp(`(^|[^가-힣])(${plain})([을를이가은는의도]?)([^가-힣]|$)`, 'g');
 			str = str.replace(nounRegex, (m, pre, base, part, post) => {
-				const attached = part ? attachParticle(hon, part === '을' || part === '를' ? K.OBJECT : part === '이' || part === '가' ? K.SUBJECT : part === '은' || part === '는' ? K.TOPIC : part === '의' ? 'genitive' : 'additive') : hon;
+				const attached = part ? attachParticle(hon, HC.MORPH_APPLY_HONORIFIC_CONCORD_PART_ONE_OF_3.includes(part) ? K.OBJECT : HC.MORPH_APPLY_HONORIFIC_CONCORD_PART_ONE_OF_2.includes(part) ? K.SUBJECT : HC.MORPH_APPLY_HONORIFIC_CONCORD_PART_ONE_OF.includes(part) ? K.TOPIC : part === '의' ? 'genitive' : 'additive') : hon;
 				return pre + attached + post;
 			});
 		}
@@ -1573,7 +1570,7 @@ function validateTemporalConcord(input, context = {}) {
 	let hasPastPredicate = false;
 	for (let i = 0; i < text.length; i++) {
 		const ch = text[i];
-		if (ch === '있' || ch === '없' || ch === '겠') continue;
+		if (HC.MORPH_VALIDATE_TEMPORAL_CONCORD_CH_ONE_OF.includes(ch)) continue;
 		const d = decomposeHangul(ch);
 		if (d && d.final === 20) {
 			const rest = text.slice(i + 1);

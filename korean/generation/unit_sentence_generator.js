@@ -1,4 +1,5 @@
 (function() {
+const { HANGUL_CONSTANTS: HC } = (typeof require !== 'undefined') ? require('../../data/hangul_constants.js') : window;
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('../../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
@@ -108,24 +109,24 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
 	const arg = selectArgumentForActionVerb(verbUnit, options, targetId);
 	const isNominativeSubjectVerb = arg.role === K.SUBJECT;
 	const verbKo = verbUnit[DATA_SCHEMA.Korean] || "";
-	const isInvoluntary = hasTag(verbUnit, "involuntary", "passive", "symptom", K.WEATHER, "state", "existential") || ["끝나다", "시작되다", "고장 나다", "죽다", "생기다", "열리다", "닫히다", "끓다", "식다", "터지다", "말씀하다", "들어있다"].some(k => verbKo.includes(k));
+	const isInvoluntary = hasTag(verbUnit, "involuntary", "passive", "symptom", K.WEATHER, "state", "existential") || HC.UNITGEN_AST_ACTION_VERB_K_VERBKO_INCLUDES_K_LIST_SOME.some(k => verbKo.includes(k));
 	const modality = (variationIndex === 1 && !isHonVerb && !isNominativeSubjectVerb && !isInvoluntary && !options.onlyFromSet) ? "desire" : null;
 
 	let subjUnit = null;
 	// TODO should the Sets in these conditionals be generated in argument_concord.js? can the associated language units flag inclusion in these Sets?
 	if (verbKo === "끓다") {
-		const liquids = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["물", "라면", "찌개", "국", "탕", "보리차"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "liquid", "soup", "stew"));
+		const liquids = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "liquid", "soup", "stew"));
 		subjUnit = pickRandom(liquids) || null;
 	} else if (verbKo === "식다") {
 		const hotItems = getAllUnitsOfPos(K.NOUN, options, targetId).filter(
 			n => !hasTag(n, K.MEASUREWORD, K.COUNTER)
 				&& !hasTag(n, K.TRANSPORTATION, K.VEHICLE)
 				&& parseSemanticData(n).domain !== K.TRANSPORTATION
-				&& ((new Set(["밥", "국", "찌개", "커피", "차", "피자", "음식"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, K.FOOD, K.DRINK))
+				&& ((HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF_2).has(n[DATA_SCHEMA.Korean]) || hasTag(n, K.FOOD, K.DRINK))
 		);
 		subjUnit = pickRandom(hotItems) || null;
 	} else if (verbKo === "터지다") {
-		const inflatables = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["풍선", "타이어"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, K.OBJECT));
+		const inflatables = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF_3).has(n[DATA_SCHEMA.Korean]) || hasTag(n, K.OBJECT));
 		subjUnit = pickRandom(inflatables) || null;
 	} else if (verbKo === "말씀하다") {
 		subjUnit = selectSubjectUnit(options, targetId, true);
@@ -133,8 +134,8 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
 		subjUnit = null;
 	} else {
 		subjUnit = isNominativeSubjectVerb ? null : selectSubjectUnit(options, targetId, isHonVerb);
-		if (subjUnit && (new Set(["할인하다", "팔다", "배달하다"])).has(verbKo) && (new Set(["아랫사람", "윗사람", "노인", "어른", "아이", "얘들", "사나이", "놈"])).has(subjUnit[DATA_SCHEMA.Korean])) {
-			const merchantPool = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["가게", "마트", "백화점", "식당", "카페", "회사원", "종업원", "사장님", "선배", "친구"])).has(n[DATA_SCHEMA.Korean]));
+		if (subjUnit && (HC.UNITGEN_AST_ACTION_VERB_VERBKO_ONE_OF_2).has(verbKo) && (HC.UNITGEN_AST_ACTION_VERB_SUBJUNIT_DATA_SCHEMA_KOREA_ONE_OF).has(subjUnit[DATA_SCHEMA.Korean])) {
+			const merchantPool = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF_4).has(n[DATA_SCHEMA.Korean]));
 			if (merchantPool.length > 0) subjUnit = pickRandom(merchantPool);
 		}
 	}
@@ -148,8 +149,8 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
 		};
 	}
 
-	if (subjUnit && arg.nounUnit && (new Set(["치마", "원피스"])).has(arg.nounUnit[DATA_SCHEMA.Korean]) && (new Set(["오빠", "형", "남동생", "아버지", "아빠", "할아버지", "작은아버지", "큰아버지", "삼촌", "아저씨", "남자", "사나이"])).has(subjUnit[DATA_SCHEMA.Korean])) {
-		const femaleOrNeutralSubjs = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["언니", "누나", "여동생", "어머니", "엄마", "친구", "여자", "학생", "선생님"])).has(n[DATA_SCHEMA.Korean]));
+	if (subjUnit && arg.nounUnit && (HC.UNITGEN_AST_ACTION_VERB_ARG_NOUNUNIT_DATA_SCHEMA_K_ONE_OF).has(arg.nounUnit[DATA_SCHEMA.Korean]) && (HC.UNITGEN_AST_ACTION_VERB_SUBJUNIT_DATA_SCHEMA_KOREA_ONE_OF_2).has(subjUnit[DATA_SCHEMA.Korean])) {
+		const femaleOrNeutralSubjs = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF_5).has(n[DATA_SCHEMA.Korean]));
 		const femalePronoun = getAllUnitsOfPos(K.PRONOUN, options, targetId).find(p => p[DATA_SCHEMA.Korean] === "저");
 		const replacement = pickRandom(femaleOrNeutralSubjs) || femalePronoun;
 		if (replacement) subjUnit = replacement;
@@ -177,8 +178,8 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
 	}
 
 	if (verbKo === "놓다") {
-		const furnitureOrPlace = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["책상", "탁자", "식탁", "의자", "바닥", "침대"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "furniture", K.PLACE)));
-		const smallObj = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["책", "가방", "모자", "휴대전화", "컵", "그릇", "열쇠"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, K.OBJECT)));
+		const furnitureOrPlace = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF_6).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "furniture", K.PLACE)));
+		const smallObj = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF_7).has(n[DATA_SCHEMA.Korean]) || hasTag(n, K.OBJECT)));
 		if (furnitureOrPlace && smallObj) {
 			constituents.push({
 				role: K.LOCATION,
@@ -192,7 +193,7 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
 			});
 		}
 	} else if (verbKo === "담다") {
-		const container = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => n[DATA_SCHEMA.Korean] !== "쓰레기통" && ((new Set(["접시", "그릇", "상자", "가방", "냉장고", "바구니"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "container", "dish"))));
+		const container = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => n[DATA_SCHEMA.Korean] !== "쓰레기통" && ((HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF_8).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "container", "dish"))));
 		if (container) {
 			constituents.push({
 				role: K.LOCATION,
@@ -224,8 +225,8 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
 			});
 		}
 	} else if (verbKo === "들어있다") {
-		const container = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["가방", "상자", "주머니", "지갑", "방"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "container")));
-		const content = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["책", "돈", "지갑", "열쇠", "편지"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, K.OBJECT)));
+		const container = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF_9).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "container")));
+		const content = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF_10).has(n[DATA_SCHEMA.Korean]) || hasTag(n, K.OBJECT)));
 		if (container && content) {
 			constituents.push({
 				role: K.LOCATION,
@@ -238,8 +239,8 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
 				particleType: K.SUBJECT
 			});
 		}
-	} else if ((new Set(["결석하다", "출석하다", "입학하다"])).has(verbKo)) {
-		const instNoun = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["수업", "학교", "대학교", "학원", "회의", "모임"])).has(n[DATA_SCHEMA.Korean])));
+	} else if ((HC.UNITGEN_AST_ACTION_VERB_VERBKO_ONE_OF_3).has(verbKo)) {
+		const instNoun = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF_11).has(n[DATA_SCHEMA.Korean])));
 		if (instNoun) {
 			constituents.push({
 				role: K.LOCATION,
@@ -247,8 +248,8 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
 				particleType: "location_static"
 			});
 		}
-	} else if (verbKo === "잘하다" || verbKo === "못하다") {
-		const skillNoun = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["운동", "요리", "공부", "노래", "춤", "수영", "축구", "농구", "테니스", "태권도", "피아노", "운전", "한국어", "영어", "일본어", "중국어", "한국말", "일본말", "중국말"])).has(n[DATA_SCHEMA.Korean])));
+	} else if (HC.UNITGEN_AST_ACTION_VERB_VERBKO_ONE_OF.includes(verbKo)) {
+		const skillNoun = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF_12).has(n[DATA_SCHEMA.Korean])));
 		if (skillNoun) {
 			constituents.push({
 				role: K.OBJECT,
@@ -263,7 +264,7 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
 			particleType: arg.particleType
 		});
 		if (verbKo === "가르치다") {
-			const subjMatter = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["한국어", "영어", "일본어", "중국어", "수학", "음악", "태권도", "요리", "한국말"])).has(n[DATA_SCHEMA.Korean])));
+			const subjMatter = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF_13).has(n[DATA_SCHEMA.Korean])));
 			if (subjMatter) {
 				constituents.push({
 					role: K.OBJECT,
@@ -271,8 +272,8 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
 					particleType: K.OBJECT
 				});
 			}
-		} else if ((new Set(["묻다", "물어보다", "여쭙다"])).has(verbKo)) {
-			const askObj = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["질문", "길", "시간", "장소", "이유", "이름", "뜻", "전화번호", "나이", "생일", "약속 시간", "주소"])).has(n[DATA_SCHEMA.Korean])));
+		} else if ((HC.UNITGEN_AST_ACTION_VERB_VERBKO_ONE_OF_4).has(verbKo)) {
+			const askObj = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF_14).has(n[DATA_SCHEMA.Korean])));
 			if (askObj) {
 				constituents.push({
 					role: K.OBJECT,
@@ -280,8 +281,8 @@ function buildASTForActionVerb(verbUnit, variationIndex = 0, options = {}) {
 					particleType: K.OBJECT
 				});
 			}
-		} else if ((new Set(["주다", "드리다", "보내다", "선물하다", "빌려주다"])).has(verbKo)) {
-			const giveObj = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["선물", "책", "사과", "꽃", "용돈", "과자", "우산", "모자", "가방", "시계", "편지", "공책"])).has(n[DATA_SCHEMA.Korean])));
+		} else if ((HC.UNITGEN_AST_ACTION_VERB_VERBKO_ONE_OF_5).has(verbKo)) {
+			const giveObj = pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_ACTION_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF_15).has(n[DATA_SCHEMA.Korean])));
 			if (giveObj) {
 				constituents.push({
 					role: K.OBJECT,
@@ -340,7 +341,7 @@ function buildASTForDescriptiveVerb(dvUnit, variationIndex = 0, options = {}) {
 	const dvKo = dvUnit[DATA_SCHEMA.Korean] || "";
 	const tenses = [K.PRESENT, K.PAST, K.PRESENT];
 	let tense = options.tense || tenses[variationIndex % tenses.length];
-	if ((new Set(["잘생기다", "못생기다", "오래되다"])).has(dvKo) && !options.tense) tense = K.PAST;
+	if ((HC.UNITGEN_AST_DESCRIPTIVE_VERB_DVKO_ONE_OF).has(dvKo) && !options.tense) tense = K.PAST;
 	const politeness = options.politeness || (variationIndex === 2 ? K.FORMAL_HIGH : "polite");
 
 	// Greeting formula 안녕하다 (Unit 5) -> strictly polite formulaic greeting frame
@@ -349,7 +350,7 @@ function buildASTForDescriptiveVerb(dvUnit, variationIndex = 0, options = {}) {
 			n => isElderNoun(n)
 				&& !hasTag(n, "attribute", "honorific_noun", K.CONCEPT)
 				&& (!hasTag(n, K.PROFESSION) || (n[DATA_SCHEMA.Korean] || "").endsWith("님"))
-				&& !(new Set(["부장", "교수", "과장", "사장", "선배"])).has(n[DATA_SCHEMA.Korean])
+				&& !(HC.UNITGEN_AST_DESCRIPTIVE_VERB_N_DATA_SCHEMA_KOREAN_ONE_OF).has(n[DATA_SCHEMA.Korean])
 		);
 		const addressee = (variationIndex % 2 === 1 && elderNouns.length > 0) ? pickRandom(elderNouns) : null;
 		const constituents = [];
@@ -399,10 +400,10 @@ function buildASTForDescriptiveVerb(dvUnit, variationIndex = 0, options = {}) {
 
 		let subjUnit = null;
 		if (isHumanComp) {
-			const humanPronouns = getAllUnitsOfPos(K.PRONOUN, options, targetId).filter(p => (new Set(["저", "나", "우리"])).has(p[DATA_SCHEMA.Korean]));
+			const humanPronouns = getAllUnitsOfPos(K.PRONOUN, options, targetId).filter(p => (HC.UNITGEN_AST_DESCRIPTIVE_VERB_P_DATA_SCHEMA_KOREAN_ONE_OF).has(p[DATA_SCHEMA.Korean]));
 			subjUnit = pickRandom(humanPronouns) || selectSubjectUnit(options, targetId, false);
 		} else {
-			const thingPronouns = getAllUnitsOfPos(K.PRONOUN, options, targetId).filter(p => (new Set(["이것", "그것", "저것", "이거", "그거", "저거"])).has(p[DATA_SCHEMA.Korean]));
+			const thingPronouns = getAllUnitsOfPos(K.PRONOUN, options, targetId).filter(p => (HC.UNITGEN_AST_DESCRIPTIVE_VERB_P_DATA_SCHEMA_KOREAN_ONE_OF_2).has(p[DATA_SCHEMA.Korean]));
 			subjUnit = pickRandom(thingPronouns);
 		}
 		if (subjUnit && complementNoun && subjUnit[DATA_SCHEMA.Id] === complementNoun[DATA_SCHEMA.Id]) {
@@ -445,23 +446,23 @@ function buildASTForDescriptiveVerb(dvUnit, variationIndex = 0, options = {}) {
 	}
 
 	let subjUnit = null;
-	if ((new Set(["감사하다", "죄송하다", "미안하다", "고맙다"])).has(dvKo)) {
-		const allowedPros = (new Set(["죄송하다", "감사하다"])).has(dvKo) ? ["저", "저희"] : ["저", "우리", "저희"];
+	if ((HC.UNITGEN_AST_DESCRIPTIVE_VERB_DVKO_ONE_OF_2).has(dvKo)) {
+		const allowedPros = (HC.UNITGEN_AST_DESCRIPTIVE_VERB_DVKO_ONE_OF_3).has(dvKo) ? ["저", "저희"] : ["저", "우리", "저희"];
 		const speakerPronouns = getAllUnitsOfPos(K.PRONOUN, options, targetId).filter(
 			p => allowedPros.includes(p[DATA_SCHEMA.Korean])
 		);
-		if ((variationIndex % 2 === 0 || (new Set(["죄송하다", "감사하다"])).has(dvKo)) && speakerPronouns.length > 0) {
+		if ((variationIndex % 2 === 0 || (HC.UNITGEN_AST_DESCRIPTIVE_VERB_DVKO_ONE_OF_4).has(dvKo)) && speakerPronouns.length > 0) {
 			subjUnit = pickRandom(speakerPronouns);
 		}
 	} else {
 		let subjCandidates = filterBySet(getSubjectCandidatesForDescriptiveVerb(dvUnit), options, targetId);
-		if ((new Set(["피곤하다", "섭섭하다", "졸리다", "배고프다", "목마르다"])).has(dvKo)) {
+		if ((HC.UNITGEN_AST_DESCRIPTIVE_VERB_DVKO_ONE_OF_5).has(dvKo)) {
 			const firstPersonPronouns = getAllUnitsOfPos(K.PRONOUN, options, targetId).filter(
-				p => (new Set(["저", "나", "우리", "저희"])).has(p[DATA_SCHEMA.Korean])
+				p => (HC.UNITGEN_AST_DESCRIPTIVE_VERB_P_DATA_SCHEMA_KOREAN_ONE_OF_3).has(p[DATA_SCHEMA.Korean])
 			);
 			if (firstPersonPronouns.length > 0) subjCandidates = firstPersonPronouns;
 		}
-		if (!(new Set(["아프다", "시리다", "좋다", "튼튼하다"])).has(dvKo) && !hasTag(dvUnit, "teeth")) {
+		if (!(HC.UNITGEN_AST_DESCRIPTIVE_VERB_DVKO_ONE_OF_6).has(dvKo) && !hasTag(dvUnit, "teeth")) {
 			subjCandidates = subjCandidates.filter(u => u[DATA_SCHEMA.Korean] !== "이");
 		}
 		const dvSd = parseSemanticData(dvUnit);
@@ -492,7 +493,7 @@ function buildASTForDescriptiveVerb(dvUnit, variationIndex = 0, options = {}) {
 		});
 	}
 
-	if (variationIndex > 0 && !(new Set(["있다", "없다"])).has(dvKo)) {
+	if (variationIndex > 0 && !(HC.UNITGEN_AST_DESCRIPTIVE_VERB_DVKO_ONE_OF_7).has(dvKo)) {
 		const isPluralSubj = isPluralSubjectUnit(subjUnit);
 		const degAdv = selectAdverbUnit(true, K.AFFIRMATIVE, { ...options, pluralSubject: isPluralSubj }, targetId, dvUnit);
 		if (degAdv && !(subjUnit && isElderNoun(subjUnit) && degAdv[DATA_SCHEMA.Korean] === "완전") && (typeof canAdverbPrecede !== 'function' || canAdverbPrecede(degAdv, dvUnit, { isNegative: false, pluralSubject: isPluralSubj }))) {
@@ -502,7 +503,7 @@ function buildASTForDescriptiveVerb(dvUnit, variationIndex = 0, options = {}) {
 				particleType: null
 			});
 		}
-	} else if ((new Set(["있다", "없다"])).has(dvKo) && variationIndex % 2 === 1) {
+	} else if ((HC.UNITGEN_AST_DESCRIPTIVE_VERB_DVKO_ONE_OF_8).has(dvKo) && variationIndex % 2 === 1) {
 		const placeNouns = getAllUnitsOfPos(K.NOUN, options, targetId).filter(
 			n => hasTag(n, K.PLACE, K.LOCATION, K.ROOM) && !hasTag(n, K.MEASUREWORD, K.COUNTER, K.POSITION)
 		);
@@ -558,9 +559,9 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 			n => n[DATA_SCHEMA.PartofSpeech] === K.NOUN &&
 			!(hasTag(n, "colloquial") && parseSemanticData(n).polarity === -1) &&
 			!hasTag(n, K.MEASUREWORD, K.COUNTER, K.TIME, K.POSITION, K.QUESTION_WORD, K.PROPER_NOUN, K.NATURE, K.WEATHER, "station", "symptom", "bodily_process", "language", K.DISEASE, "landmark", "tourism", "transitFacility", "pronoun") &&
-			!(new Set(["이", "얼마", "누구", "무엇", "뭐", "어디", "언제", "몇", "너희", "하늘", "바다", "소화", "기온", "프랑스말", "한국말", "영어", "일본어", "중국어", "비", "눈", "바람", "태풍", "서양", "동양", "한국", "점"])).has(n[DATA_SCHEMA.Korean]) &&
+			!(HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF).has(n[DATA_SCHEMA.Korean]) &&
 			(
-				(new Set(["집", "방", "학교", "회사", "고향", "나라", "교실", "사무실", "이름", "전화번호", "이메일", "주소", "직업", "취미", "전공", "생일", "생각", "마음", "기분", "계획", "약속", "시간", "돈"])).has(n[DATA_SCHEMA.Korean]) ||
+				(HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_2).has(n[DATA_SCHEMA.Korean]) ||
 				(
 					hasTag(n, K.PERSON, K.FAMILY, K.OBJECT, K.CLOTHING, K.WEARABLE, "furniture", K.ROOM, "bag", "stationery", "electronics") &&
 					!hasTag(n, K.PLACE, K.FACILITY, "restaurant", "store", "company", "region", K.ABSTRACT, K.CONCEPT, K.ACADEMIC)
@@ -572,7 +573,7 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 		const chosenVerb = isAction
 			? (headNoun ? selectActionVerbForNoun(headNoun, { ...options, excludePossessionCalque: true }, targetId) : null)
 			: (headNoun ? selectDescriptiveVerbForNoun(headNoun, { ...options, tense }, targetId) : null);
-		if (chosenVerb && (new Set(["잘생기다", "못생기다", "오래되다"])).has(chosenVerb[DATA_SCHEMA.Korean]) && !options.tense) {
+		if (chosenVerb && (HC.UNITGEN_AST_NOMINAL_CHOSENVERB_DATA_SCHEMA_KOR_ONE_OF).has(chosenVerb[DATA_SCHEMA.Korean]) && !options.tense) {
 			tense = K.PAST;
 		}
 		if (headNoun && chosenVerb) {
@@ -612,14 +613,14 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 	if (ko === "무슨" || (pos === K.NOUN && hasTag(nominalUnit, K.DETERMINER) && !hasTag(nominalUnit, K.TIME, "time_modifier"))) {
 		const isInterrogativeDet = ko === "무슨" || hasTag(nominalUnit, K.QUESTION_WORD, K.INTERROGATIVE);
 		const detHeadNouns = getAllUnitsOfPos(K.NOUN, options, targetId).filter(
-			n => (new Set(["영화", "음식", "책", "노래", "운동", "공부", "일", "선물", "옷", "과일", "음악", "커피", "차", "빵", "고기"])).has(n[DATA_SCHEMA.Korean])
+			n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_3).has(n[DATA_SCHEMA.Korean])
 		);
 		const headNoun = pickRandom(detHeadNouns);
 		const chosenVerb = headNoun ? selectActionVerbForNoun(headNoun, { ...options, excludePossessionCalque: true }, targetId) : null;
 		const subjUnit = selectSubjectUnit(options, targetId, false);
 		if (headNoun && chosenVerb) {
 			const constituents = [];
-			if (subjUnit && !(new Set(["저", "나", "우리", "저희"])).has(subjUnit[DATA_SCHEMA.Korean])) {
+			if (subjUnit && !(HC.UNITGEN_AST_NOMINAL_SUBJUNIT_DATA_SCHEMA_KOREA_ONE_OF).has(subjUnit[DATA_SCHEMA.Korean])) {
 				constituents.push({
 					role: K.TOPIC,
 					nounUnit: subjUnit,
@@ -661,16 +662,16 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 	// 0.7. Contracted Accusative WH-Pronoun (#355 뭘) & Calendar Question Pronoun (#340 며칠)
 	if (ko === "뭘") {
 		const nonFirstPersonSubjs = getAllUnitsOfPos(K.NOUN, options, targetId).filter(
-			n => (new Set(["학생", "친구", "동생", "형", "오빠", "누나", "언니", "아이", "손님", "요리사"])).has(n[DATA_SCHEMA.Korean])
+			n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_4).has(n[DATA_SCHEMA.Korean])
 		);
 		const subjUnit = pickRandom(nonFirstPersonSubjs) || selectSubjectUnit(options, targetId, false);
 		const whActionVerbs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(
-			v => (new Set(["먹다", "마시다", "사다", "보다", "읽다", "만들다", "준비하다", "찾다", "배우다", "듣다", "고르다", "공부하다", "요리하다"])).has(v[DATA_SCHEMA.Korean])
+			v => (HC.UNITGEN_AST_NOMINAL_V_DATA_SCHEMA_KOREAN_ONE_OF).has(v[DATA_SCHEMA.Korean])
 		);
 		const chosenVerb = pickRandom(whActionVerbs);
 		if (chosenVerb) {
 			const constituents = [];
-			if (subjUnit && !(new Set(["저", "나", "우리", "저희"])).has(subjUnit[DATA_SCHEMA.Korean])) {
+			if (subjUnit && !(HC.UNITGEN_AST_NOMINAL_SUBJUNIT_DATA_SCHEMA_KOREA_ONE_OF_2).has(subjUnit[DATA_SCHEMA.Korean])) {
 				constituents.push({ role: K.TOPIC, nounUnit: subjUnit, particleType: K.TOPIC });
 			}
 			constituents.push({ role: K.OBJECT, nounUnit: nominalUnit, particleType: null });
@@ -701,16 +702,16 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 	}
 	if (ko === "며칠") {
 		const nonFirstPersonSubjs = getAllUnitsOfPos(K.NOUN, options, targetId).filter(
-			n => (new Set(["학생", "친구", "동생", "형", "오빠", "누나", "언니", "가족", "언니", "회사원"])).has(n[DATA_SCHEMA.Korean])
+			n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_5).has(n[DATA_SCHEMA.Korean])
 		);
 		const subjUnit = pickRandom(nonFirstPersonSubjs) || selectSubjectUnit(options, targetId, false);
 		const scheduleVerbs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(
-			v => (new Set(["만나다", "출발하다", "도착하다", "가다", "오다", "이사하다", "입학하다", "졸업하다", "방학하다", "모이다", "예약하다", "쉬다", "여행하다"])).has(v[DATA_SCHEMA.Korean])
+			v => (HC.UNITGEN_AST_NOMINAL_V_DATA_SCHEMA_KOREAN_ONE_OF_2).has(v[DATA_SCHEMA.Korean])
 		);
 		const chosenVerb = pickRandom(scheduleVerbs);
 		if (chosenVerb) {
 			const constituents = [];
-			if (subjUnit && !(new Set(["저", "나", "우리", "저희"])).has(subjUnit[DATA_SCHEMA.Korean])) {
+			if (subjUnit && !(HC.UNITGEN_AST_NOMINAL_SUBJUNIT_DATA_SCHEMA_KOREA_ONE_OF_3).has(subjUnit[DATA_SCHEMA.Korean])) {
 				constituents.push({ role: K.TOPIC, nounUnit: subjUnit, particleType: K.TOPIC });
 			}
 			constituents.push({ role: K.TIME, nounUnit: nominalUnit, particleType: K.TIME });
@@ -742,13 +743,13 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 
 	// 1. Classifier / Measure Word Noun (e.g. 개, 명, 마리, 잔, 권, 번, 살, 시, 월, 일)
 	if (hasTag(nominalUnit, K.MEASUREWORD, K.COUNTER) || state.CLASSIFIER_UNITS.has(ko)) {
-		if (ko === "월" || ko === "일") {
+		if (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_8.includes(ko)) {
 			const calVals = ko === "월" ? [1, 2, 3, 4, 5, 7, 8, 9, 11, 12] : [1, 2, 3, 5, 7, 10, 15, 20, 25, 30];
 			const calVal = calVals[variationIndex % calVals.length];
 			const sinoStr = getSinoNumber(calVal);
 			const matchedNumUnit = getAllUnitsOfPos(K.NUMBER, options, targetId).find(u => u[DATA_SCHEMA.Korean] === sinoStr) || null;
 			const calVerbs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(
-				v => (new Set(["입학하다", "졸업하다", "출발하다", "도착하다", "여행하다", "만나다", "이사하다", "방학하다", "운동하다", "쉬다", "가다", "오다"])).has(v[DATA_SCHEMA.Korean])
+				v => (HC.UNITGEN_AST_NOMINAL_V_DATA_SCHEMA_KOREAN_ONE_OF_3).has(v[DATA_SCHEMA.Korean])
 			);
 			const calVerb = pickRandom(calVerbs) || pickRandom(getAllUnitsOfPos(K.ACTION_VERB, options, targetId));
 			const calSubj = selectSubjectUnit(options, targetId, false);
@@ -792,7 +793,7 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 		if (ko === "번") {
 			const freqCount = (variationIndex % 3) + 2;
 			const freqNumUnit = getAllUnitsOfPos(K.NUMBER, options, targetId).find(u => u[DATA_SCHEMA.Korean] === getKoreanNumber(freqCount, true)) || null;
-			const freqVerbs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => (new Set(["보다", "읽다", "만나다", "가다", "먹다"])).has(v[DATA_SCHEMA.Korean]));
+			const freqVerbs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => (HC.UNITGEN_AST_NOMINAL_V_DATA_SCHEMA_KOREAN_ONE_OF_4).has(v[DATA_SCHEMA.Korean]));
 			const freqVerb = pickRandom(freqVerbs) || pickRandom(getAllUnitsOfPos(K.ACTION_VERB, options, targetId));
 			const freqObj = freqVerb ? selectArgumentForActionVerb(freqVerb, options, targetId) : { nounUnit: null, role: null, particleType: null };
 			const freqSubj = selectSubjectUnit(options, targetId, false);
@@ -846,16 +847,16 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 		let compatibleNouns = filterBySet(getMatchingNounsForClassifier(ko), options, targetId);
 		if (ko === "쪽") {
 			const allN = getAllUnitsOfPos(K.NOUN, options, targetId);
-			compatibleNouns = allN.filter(n => (new Set(["책", "교과서", "잡지", "신문", "사전", "만화책"])).has(n[DATA_SCHEMA.Korean]));
+			compatibleNouns = allN.filter(n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_6).has(n[DATA_SCHEMA.Korean]));
 		} else if (compatibleNouns.length === 0) {
 			const allN = getAllUnitsOfPos(K.NOUN, options, targetId);
 			if (ko === "권") {
-				compatibleNouns = allN.filter(n => (new Set(["책", "잡지", "공책", "사전"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "book", "publication"));
-			} else if (ko === "명" || ko === "분") {
+				compatibleNouns = allN.filter(n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_7).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "book", "publication"));
+			} else if (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_7.includes(ko)) {
 				compatibleNouns = allN.filter(n => hasTag(n, K.PERSON, "human", K.FAMILY, K.PROFESSION, "job"));
 			} else if (ko === "마리") {
 				compatibleNouns = allN.filter(n => hasTag(n, "animal", "pet", "fish", "bird"));
-			} else if (ko === "잔" || ko === "병") {
+			} else if (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_6.includes(ko)) {
 				compatibleNouns = allN.filter(n => hasTag(n, K.DRINK, "beverage", "liquid") && !hasTag(n, K.MEASUREWORD, K.COUNTER));
 			} else if (ko === "대") {
 				compatibleNouns = allN.filter(n => hasTag(n, K.VEHICLE, "electronics", "machine", "appliance") && !hasTag(n, "ticket", K.TRAVEL, K.ACTIVITY));
@@ -863,18 +864,18 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 				compatibleNouns = allN.filter(n => hasTag(n, K.CLOTHING, "clothes"));
 			} else if (ko === "켤레") {
 				compatibleNouns = allN.filter(n => hasTag(n, "footwear", "shoes"));
-			} else if (ko === "살" || ko === "세") {
-				compatibleNouns = allN.filter(n => (new Set(["아이", "아기", "학생", "동생", "조카", "친구"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "child", "junior"));
+			} else if (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_5.includes(ko)) {
+				compatibleNouns = allN.filter(n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_8).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "child", "junior"));
 			} else if (ko === "채") {
-				compatibleNouns = allN.filter(n => (new Set(["집", "하숙집", "빌딩", "건물", "아파트"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "building", "housing"));
+				compatibleNouns = allN.filter(n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_9).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "building", "housing"));
 			} else if (ko === "호") {
-				compatibleNouns = allN.filter(n => (new Set(["방", "교실", "사무실", "호실"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, K.ROOM, "office"));
+				compatibleNouns = allN.filter(n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_10).has(n[DATA_SCHEMA.Korean]) || hasTag(n, K.ROOM, "office"));
 			} else if (ko === "학년") {
-				compatibleNouns = allN.filter(n => (new Set(["초등학교", "중학교", "고등학교", "대학교", "대학원", "학생"])).has(n[DATA_SCHEMA.Korean]) || (hasTag(n, "school") && !hasTag(n, K.PLACE, K.FACILITY, K.ROOM, "hall") && !(new Set(["대강당", "강당", "교실", "학원"])).has(n[DATA_SCHEMA.Korean])));
+				compatibleNouns = allN.filter(n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_11).has(n[DATA_SCHEMA.Korean]) || (hasTag(n, "school") && !hasTag(n, K.PLACE, K.FACILITY, K.ROOM, "hall") && !(HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_12).has(n[DATA_SCHEMA.Korean])));
 			} else if (ko === "편") {
-				compatibleNouns = allN.filter(n => (new Set(["영화", "드라마", "시", "소설", "비디오"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "media_work", "film", "literature"));
+				compatibleNouns = allN.filter(n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_13).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "media_work", "film", "literature"));
 			} else if (ko === "%") {
-				compatibleNouns = allN.filter(n => (new Set(["할인", "이자율", "확률", "비율", "성공률"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "rate_proportion", "discount", K.FINANCE));
+				compatibleNouns = allN.filter(n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_14).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "rate_proportion", "discount", K.FINANCE));
 			}
 			if (compatibleNouns.length === 0) {
 				compatibleNouns = allN.filter(
@@ -893,7 +894,7 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 		const dvs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId);
 		const existVerb = ko === "쪽"
 			? (avs.find(v => v[DATA_SCHEMA.Korean] === "읽다") || avs.find(v => v[DATA_SCHEMA.Korean] === "보다") || pickRandom(avs) || pickRandom(dvs))
-			: (dvs.find(v => v[DATA_SCHEMA.Korean] === "있다") || avs.find(v => v[DATA_SCHEMA.Korean] === "사다" || v[DATA_SCHEMA.Korean] === "먹다") || pickRandom(avs) || pickRandom(dvs));
+			: (dvs.find(v => v[DATA_SCHEMA.Korean] === "있다") || avs.find(v => HC.UNITGEN_AST_NOMINAL_V_DATA_SCHEMA_KOREAN_ONE_OF_10.includes(v[DATA_SCHEMA.Korean])) || pickRandom(avs) || pickRandom(dvs));
 
 		if (options.onlyFromSet && (compatibleNouns.length === 0 || !existVerb)) {
 			const missing = [];
@@ -929,7 +930,7 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 			}
 		} else if (!options.onlyFromSet && compatibleNouns.length <= 3 && variationIndex >= 4) {
 			const locPlaces = getAllUnitsOfPos(K.NOUN, options, targetId).filter(
-				n => (new Set(["식당", "집", "가게", "방", "교실", "학교", "카페", "부엌", "식탁", "책상"])).has(n[DATA_SCHEMA.Korean])
+				n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_15).has(n[DATA_SCHEMA.Korean])
 			);
 			const locPlace = locPlaces[variationIndex % locPlaces.length];
 			if (locPlace) {
@@ -980,11 +981,11 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 	// 1.4. Quantity Noun 반 ("half")
 	if (ko === "반" && hasTag(nominalUnit, "time_amount", "quantity")) {
 		const subjUnit = selectSubjectUnit(options, targetId, false);
-		const portionPool = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["사과", "케이크", "피자", "빵", "우유", "책", "숙제", "물"])).has(n[DATA_SCHEMA.Korean]));
+		const portionPool = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_16).has(n[DATA_SCHEMA.Korean]));
 		const portionObj = pickRandom(portionPool);
-		const verbChoices = portionObj && (new Set(["책", "숙제"])).has(portionObj[DATA_SCHEMA.Korean])
+		const verbChoices = portionObj && (HC.UNITGEN_AST_NOMINAL_PORTIONOBJ_DATA_SCHEMA_KOR_ONE_OF).has(portionObj[DATA_SCHEMA.Korean])
 			? (portionObj[DATA_SCHEMA.Korean] === "책" ? ["읽다", "보다"] : ["끝내다", "하다"])
-			: (portionObj && (new Set(["우유", "물"])).has(portionObj[DATA_SCHEMA.Korean]) ? ["마시다", "남기다"] : ["먹다", "사다", "남기다"]);
+			: (portionObj && (HC.UNITGEN_AST_NOMINAL_PORTIONOBJ_DATA_SCHEMA_KOR_ONE_OF_2).has(portionObj[DATA_SCHEMA.Korean]) ? ["마시다", "남기다"] : ["먹다", "사다", "남기다"]);
 		const actionVerb = pickRandom(getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => verbChoices.includes(v[DATA_SCHEMA.Korean]))) || selectActionVerbForNoun(portionObj || nominalUnit, options, targetId);
 		if (subjUnit && portionObj && actionVerb && !options.onlyFromSet) {
 			return {
@@ -1019,16 +1020,16 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 
 	// 1.5. Bound Noun 데 (Unit 2025)
 	if (ko === "데" || (hasTag(nominalUnit, K.BOUND_NOUN) && ko === "데")) {
-		const actionVerbs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => (new Set(["가다", "살다", "쉬다", "만나다", "공부하다"])).has(v[DATA_SCHEMA.Korean]));
-		const descriptiveVerbs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId).filter(v => (new Set(["좋다", "조용하다", "깨끗하다", "편하다", "따뜻하다"])).has(v[DATA_SCHEMA.Korean]));
+		const actionVerbs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => (HC.UNITGEN_AST_NOMINAL_V_DATA_SCHEMA_KOREAN_ONE_OF_5).has(v[DATA_SCHEMA.Korean]));
+		const descriptiveVerbs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId).filter(v => (HC.UNITGEN_AST_NOMINAL_V_DATA_SCHEMA_KOREAN_ONE_OF_6).has(v[DATA_SCHEMA.Korean]));
 		const modVerb = (variationIndex % 2 === 0 ? pickRandom(descriptiveVerbs) : pickRandom(actionVerbs)) || pickRandom(descriptiveVerbs);
 		const modStem = modVerb ? getConjugatedStem(modVerb[DATA_SCHEMA.Korean], modVerb[DATA_SCHEMA.Conjugation]) : "좋";
 		const modEnding = (modVerb && modVerb[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB) ? "는" : "으/ㄴ";
 		const modKo = resolvePureMorphology(modStem + modEnding, state);
 		const subjUnit = selectSubjectUnit(options, targetId, false);
-		const mainVerb = pickRandom(getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => (new Set(["찾다", "가다", "좋아하다", "원하다", "알아보다"])).has(v[DATA_SCHEMA.Korean]))) || pickRandom(getAllUnitsOfPos(K.ACTION_VERB, options, targetId));
+		const mainVerb = pickRandom(getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => (HC.UNITGEN_AST_NOMINAL_V_DATA_SCHEMA_KOREAN_ONE_OF_7).has(v[DATA_SCHEMA.Korean]))) || pickRandom(getAllUnitsOfPos(K.ACTION_VERB, options, targetId));
 		const mainVerbKo = mainVerb ? mainVerb[DATA_SCHEMA.Korean] : "";
-		const isMotion = (new Set(["가다", "오다", "다니다", "살다"])).has(mainVerbKo);
+		const isMotion = (HC.UNITGEN_AST_NOMINAL_MAINVERBKO_ONE_OF).has(mainVerbKo);
 		const deRole = isMotion ? K.LOCATION : K.OBJECT;
 		const deParticle = isMotion ? "location_static" : K.OBJECT;
 
@@ -1106,7 +1107,7 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 						predicate: {
 							role: K.PREDICATE,
 							predType: K.ACTION,
-							verbUnit: pickRandom(getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => (new Set(["좋아하다", "원하다", "찾다", "바라다", "생각하다"])).has(v[DATA_SCHEMA.Korean]))) || selectActionVerbForNoun(headNoun, options, targetId),
+							verbUnit: pickRandom(getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => (HC.UNITGEN_AST_NOMINAL_V_DATA_SCHEMA_KOREAN_ONE_OF_8).has(v[DATA_SCHEMA.Korean]))) || selectActionVerbForNoun(headNoun, options, targetId),
 							tense,
 							politeness,
 							speechAct: K.DECLARATIVE,
@@ -1156,20 +1157,20 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 		const groundNouns = getAllUnitsOfPos(K.NOUN, options, targetId).filter(
 			n => n[DATA_SCHEMA.Id] !== targetId &&
 			(isBelow
-				? (new Set(["책상", "의자", "식탁", "탁자", "침대", "소파", "나무", "창문"])).has(n[DATA_SCHEMA.Korean])
+				? (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_17).has(n[DATA_SCHEMA.Korean])
 				: (isOutside
-					? (new Set(["집", "학교", "도서관", "교실", "방", "식당", "카페", "건물", "빌딩", "병원", "은행", "기숙사"])).has(n[DATA_SCHEMA.Korean])
+					? (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_18).has(n[DATA_SCHEMA.Korean])
 					: (isAbove
-						? (new Set(["책상", "탁자", "식탁", "침대", "의자", "소파", "바닥", "가방", "책", "공책", "상자"])).has(n[DATA_SCHEMA.Korean])
-						: (hasTag(n, "furniture", K.ROOM, "building", "housing", "container") || (new Set(["학교", "도서관", "식당", "집", "방", "책상", "의자", "식탁", "탁자", "침대", "소파", "가방", "상자", "나무", "건물", "빌딩", "공원", "문"])).has(n[DATA_SCHEMA.Korean]))))) &&
+						? (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_19).has(n[DATA_SCHEMA.Korean])
+						: (hasTag(n, "furniture", K.ROOM, "building", "housing", "container") || (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_20).has(n[DATA_SCHEMA.Korean]))))) &&
 			!hasTag(n, K.MEASUREWORD, K.COUNTER, K.POSITION, "language", K.ABSTRACT, "traffic", "city", K.COUNTRY, "region", "deictic", K.DEMONSTRATIVE, "landmark", K.NATURE) &&
-			!(new Set(["이", "나이", "말", "한국말", "베트남말", "중국말", "일본말", "영어", "서울", "부산", "호주", "러시아", "한국", "미국", "일본", "중국", "저기", "그곳", "여기", "거기", "산", "바다", "강", "호수", "한강공원", "스키장", "온천", "농구장", "고속도로", "뷔페", "극장", "노약자석", "횡단보도", "방석"])).has(n[DATA_SCHEMA.Korean])
+			!(HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_21).has(n[DATA_SCHEMA.Korean])
 		);
 		const allSubjNouns = getAllUnitsOfPos(K.NOUN, options, targetId).filter(
 			n => n[DATA_SCHEMA.Id] !== targetId &&
 			!hasTag(n, K.MEASUREWORD, K.COUNTER, K.POSITION, K.TIME, K.ABSTRACT, "attribute", "metric", K.EMOTION, "psychological_state", "bodily_process", K.CONCEPT, "language", "fee", "expense", "currency_resource", K.DIRECTION, "deictic", K.DEMONSTRATIVE, "number", "bodyPart", "body", "sport", K.ACTIVITY, "entertainment", "digital_media", "computing", "food_ingredient", K.QUESTION_WORD, K.INTERROGATIVE, "honorific_noun") &&
 			!(isBelow && hasTag(n, K.PERSON, K.FAMILY)) &&
-			!(new Set(["이", "나이", "기분", "소화", "기온", "길이", "성격", "마음", "스트레스", "여유", "잠", "베트남말", "한국말", "배달비", "천", "이쪽", "저쪽", "여기", "거기", "무릎", "손", "발", "눈", "코", "귀", "입", "머리", "목", "테니스", "수영", "축구", "인사", "계산", "앱", "어플", "프로그램", "참기름", "설탕", "소금", "간장", "변비약", "냉동식품", "초밥", "얼마", "덱", "댁", "구경거리", "롤러코스터"])).has(n[DATA_SCHEMA.Korean])
+			!(HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_22).has(n[DATA_SCHEMA.Korean])
 		);
 		const dvs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId);
 		const allAvs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId);
@@ -1196,32 +1197,32 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 
 		const ground = pickRandom(groundNouns);
 		const groundKo = ground ? (ground[DATA_SCHEMA.Korean] || "") : "";
-		const isIndoorRoom = Boolean(ground && (hasTag(ground, K.ROOM) || (new Set(["방", "교실", "서재", "욕실", "화장실", "거실", "부엌", "안방", "연구실", "사무실", "강의실"])).has(groundKo)));
-		const isBuildingOrOutdoorGround = Boolean(ground && !isIndoorRoom && (hasTag(ground, K.PLACE, K.FACILITY, "building") || (new Set(["학교", "도서관", "식당", "건물", "빌딩", "공원", "집", "나무", "기숙사", "카페", "병원", "은행"])).has(groundKo)));
+		const isIndoorRoom = Boolean(ground && (hasTag(ground, K.ROOM) || (HC.UNITGEN_AST_NOMINAL_GROUNDKO_ONE_OF).has(groundKo)));
+		const isBuildingOrOutdoorGround = Boolean(ground && !isIndoorRoom && (hasTag(ground, K.PLACE, K.FACILITY, "building") || (HC.UNITGEN_AST_NOMINAL_GROUNDKO_ONE_OF_2).has(groundKo)));
 		const isVehicleCar = n => (n[DATA_SCHEMA.Korean] !== "차" || hasTag(n, K.VEHICLE, K.TRANSPORTATION)) && !hasTag(n, K.DRINK, "tea", K.FOOD);
 		const scaleFilteredSubjs = allSubjNouns.filter(n => {
 			if (ground && n[DATA_SCHEMA.Id] === ground[DATA_SCHEMA.Id]) return false;
 			if (!isVehicleCar(n)) return false;
 			const nKo = n[DATA_SCHEMA.Korean] || "";
 			if (isOutside) {
-				return (hasTag(n, K.PERSON, K.FAMILY, "animal") && !hasTag(n, K.ELDER_NOUN, K.HONORIFIC)) || (new Set(["사람", "학생", "친구", "아이", "고양이", "강아지", "나무", "차", "버스", "자전거", "택시", "벤치"])).has(nKo);
+				return (hasTag(n, K.PERSON, K.FAMILY, "animal") && !hasTag(n, K.ELDER_NOUN, K.HONORIFIC)) || (HC.UNITGEN_AST_NOMINAL_NKO_ONE_OF).has(nKo);
 			}
 			if (isInside) {
 				if (isIndoorRoom || isBuildingOrOutdoorGround) {
-					return (hasTag(n, K.PERSON, K.FAMILY) && !hasTag(n, K.ELDER_NOUN, K.HONORIFIC)) || (new Set(["책상", "의자", "탁자", "침대", "소파", "학생", "친구", "사람", "선생님"])).has(nKo);
+					return (hasTag(n, K.PERSON, K.FAMILY) && !hasTag(n, K.ELDER_NOUN, K.HONORIFIC)) || (HC.UNITGEN_AST_NOMINAL_NKO_ONE_OF_2).has(nKo);
 				}
-				return !hasTag(n, K.PLACE, K.FACILITY, "building", "housing", "city", K.COUNTRY, K.VEHICLE, K.TRANSPORTATION, "furniture", "appliance", "amusement") && !(new Set(["팩스", "프린터"])).has(nKo) && (hasTag(n, K.OBJECT, "stationery", "book", "tool") || (new Set(["책", "공책", "가방", "지갑", "열쇠", "사과", "연필", "볼펜", "안경", "휴대전화", "우산"])).has(nKo));
+				return !hasTag(n, K.PLACE, K.FACILITY, "building", "housing", "city", K.COUNTRY, K.VEHICLE, K.TRANSPORTATION, "furniture", "appliance", "amusement") && !(HC.UNITGEN_AST_NOMINAL_NKO_ONE_OF_3).has(nKo) && (hasTag(n, K.OBJECT, "stationery", "book", "tool") || (HC.UNITGEN_AST_NOMINAL_NKO_ONE_OF_4).has(nKo));
 			}
 			if (isIndoorRoom) {
 				// Behind/beside an indoor room: furniture, people, or adjacent rooms (never external buildings like 서점/백화점 or 나라!)
-				return (hasTag(n, K.PERSON, K.FAMILY) && !hasTag(n, K.ELDER_NOUN, K.HONORIFIC)) || (new Set(["책상", "의자", "탁자", "침대", "소파", "창문", "문", "거실", "화장실", "부엌", "방", "서재", "교실", "사람", "친구", "학생"])).has(nKo);
+				return (hasTag(n, K.PERSON, K.FAMILY) && !hasTag(n, K.ELDER_NOUN, K.HONORIFIC)) || (HC.UNITGEN_AST_NOMINAL_NKO_ONE_OF_5).has(nKo);
 			}
 			if (isBuildingOrOutdoorGround) {
 				// Outside/beside/behind/in-front-of a building requires person, tree, vehicle, or nearby external place/facility (never country/room/region/amusement!)
-				return !hasTag(n, "amusement", "landmark", "district", "region", K.COUNTRY, K.ROOM) && !(new Set(["나라", "외국", "세계", "방", "서재", "욕실"])).has(nKo) && ((hasTag(n, K.PERSON, K.FAMILY, K.VEHICLE, K.FACILITY, K.PLACE, "animal") && !hasTag(n, K.ELDER_NOUN, K.HONORIFIC)) || (new Set(["사람", "학생", "친구", "차", "자전거", "버스", "나무", "공원", "정류장", "카페", "서점", "빵집", "식당", "고양이", "강아지", "의자", "벤치"])).has(nKo));
+				return !hasTag(n, "amusement", "landmark", "district", "region", K.COUNTRY, K.ROOM) && !(HC.UNITGEN_AST_NOMINAL_NKO_ONE_OF_6).has(nKo) && ((hasTag(n, K.PERSON, K.FAMILY, K.VEHICLE, K.FACILITY, K.PLACE, "animal") && !hasTag(n, K.ELDER_NOUN, K.HONORIFIC)) || (HC.UNITGEN_AST_NOMINAL_NKO_ONE_OF_7).has(nKo));
 			}
 			// On/under/beside furniture or small objects: small physical objects, pets, or stationery (not vehicles, cities, appliances, furniture, or districts!)
-			return !hasTag(n, K.PLACE, K.FACILITY, "building", "housing", "city", K.COUNTRY, K.VEHICLE, K.TRANSPORTATION, "amusement", "furniture", "appliance", "electronics", "machine", "landmark", "district", "region") && !(new Set(["팩스", "프린터", "텔레비전", "컴퓨터", "냉장고", "세탁기"])).has(nKo) && (hasTag(n, "stationery", "book", "tool", "device", "fruit") || (new Set(["책", "공책", "가방", "컵", "시계", "열쇠", "우산", "신발", "인형", "고양이", "강아지", "사과", "연필", "볼펜", "안경", "휴대전화", "모자", "지갑"])).has(nKo));
+			return !hasTag(n, K.PLACE, K.FACILITY, "building", "housing", "city", K.COUNTRY, K.VEHICLE, K.TRANSPORTATION, "amusement", "furniture", "appliance", "electronics", "machine", "landmark", "district", "region") && !(HC.UNITGEN_AST_NOMINAL_NKO_ONE_OF_8).has(nKo) && (hasTag(n, "stationery", "book", "tool", "device", "fruit") || (HC.UNITGEN_AST_NOMINAL_NKO_ONE_OF_9).has(nKo));
 		});
 		const figure = pickRandom(scaleFilteredSubjs.length > 0 ? scaleFilteredSubjs : allSubjNouns.filter(n => !ground || n[DATA_SCHEMA.Id] !== ground[DATA_SCHEMA.Id])) || ground;
 		const constituents = [
@@ -1270,8 +1271,8 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 		if (isTimeModifier) tense = K.PAST;
 		const pol = getTemporalPolarity(nominalUnit);
 		if (pol) tense = pol;
-		const EXCLUDED_TIME_AVS = new Set(["때리다", "검사하다", "전하다", "밀다", "당기다", "말다", "포장하다", "세다", "올려놓다", "내려놓다", "붓다", "뜨거워지다", "낫다", "피다", "늘다", "줄다", "돌아가시다", "넘어지다", "떨리다", "바르다", "깎다", "소독하다", "묶다", "매다", "접다", "걸레질하다", "세일하다", "할인하다", "좌회전하다", "우회전하다", "썰다", "볶다", "굽다", "끓이다", "삶다", "튀기다", "다지다", "뿌리다", "가지다"]);
-		const PREFERRED_TIME_AVS = new Set(["일어나다", "자다", "출근하다", "퇴근하다", "가다", "오다", "도착하다", "출발하다", "공부하다", "일하다", "운동하다", "산책하다", "쉬다", "먹다", "마시다", "식사하다", "요리하다", "만나다", "전화하다", "이야기하다", "읽다", "쓰다", "보다", "듣다", "청소하다", "쇼핑하다", "사다", "준비하다", "연습하다", "운전하다"]);
+		const EXCLUDED_TIME_AVS = HC.UNITGEN_AST_NOMINAL_EXCLUDED_TIME_AVS;
+		const PREFERRED_TIME_AVS = HC.UNITGEN_AST_NOMINAL_PREFERRED_TIME_AVS;
 		const allAvs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId);
 		const filteredAvs = allAvs.filter(v => {
 			const vKo = v[DATA_SCHEMA.Korean] || "";
@@ -1284,13 +1285,13 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 		});
 		const prefTimeAvs = filteredAvs.filter(v => PREFERRED_TIME_AVS.has(v[DATA_SCHEMA.Korean]));
 		const avs = prefTimeAvs.length > 0 ? prefTimeAvs : filteredAvs;
-		const isMealTimeWord = (new Set(["아침", "점심", "저녁"])).has(ko);
-		const TRANSIENT_TIME_DVS = new Set(["바쁘다", "한가하다", "조용하다", "시끄럽다", "복잡하다", "피곤하다", "배고프다", "춥다", "덥다", "따뜻하다", "시원하다", "쌀쌀하다", "맑다", "흐리다", "화창하다", "무덥다"]);
+		const isMealTimeWord = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_9).has(ko);
+		const TRANSIENT_TIME_DVS = HC.UNITGEN_AST_NOMINAL_TRANSIENT_TIME_DVS;
 		const dvs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId).filter(v => {
 			const vKo = v[DATA_SCHEMA.Korean] || "";
 			if (vKo.includes(" ")) return false;
 			if (!TRANSIENT_TIME_DVS.has(vKo)) return false;
-			if (isMealTimeWord && (hasTag(v, K.WEATHER, "descriptive_weather") || (new Set(["맑다", "흐리다", "쌀쌀하다", "화창하다", "무덥다", "춥다", "덥다", "따뜻하다", "시원하다"])).has(vKo))) return false;
+			if (isMealTimeWord && (hasTag(v, K.WEATHER, "descriptive_weather") || (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_2).has(vKo))) return false;
 			if (hasTag(v, K.QUESTION_WORD, K.INTERROGATIVE, K.HONORIFIC) || state.HONORIFIC_WORDS.has(vKo)) return false;
 			const sc = filterBySet(getSubjectCandidatesForDescriptiveVerb(v), options, targetId).filter(n => n[DATA_SCHEMA.Id] !== targetId && n[DATA_SCHEMA.Id] !== 361);
 			if (sc.length === 0) return false;
@@ -1312,7 +1313,7 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 		let determinerForSlot = null;
 		if (isTimeModifier) {
 			const timeNounCandidates = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n =>
-				(new Set(["달", "주", "해", "번", "학기", "겨울", "여름"])).has(n[DATA_SCHEMA.Korean])
+				(HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_23).has(n[DATA_SCHEMA.Korean])
 			);
 			if (timeNounCandidates.length > 0) {
 				timeNounForSlot = pickRandom(timeNounCandidates);
@@ -1385,10 +1386,10 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 	}
 
 	// 4. Place / Location Noun (학교, 도서관, 집, 한국, 식당, 여기, 거기, 어디, 이곳, 저곳...)
-	if (hasTag(nominalUnit, K.PLACE, K.LOCATION, "institution", K.FACILITY) || (new Set(["여기", "거기", "저기", "어디", "이곳", "그곳", "저곳"])).has(ko)) {
+	if (hasTag(nominalUnit, K.PLACE, K.LOCATION, "institution", K.FACILITY) || (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_10).has(ko)) {
 		if (ko === "나라" && !hasTag(nominalUnit, K.PROPER_NOUN)) {
 			const dvs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId);
-			const naturalCountryDVs = dvs.filter(v => (new Set(["크다", "작다", "아름답다", "많다", "좋다", "유명하다"])).has(v[DATA_SCHEMA.Korean]));
+			const naturalCountryDVs = dvs.filter(v => (HC.UNITGEN_AST_NOMINAL_V_DATA_SCHEMA_KOREAN_ONE_OF_9).has(v[DATA_SCHEMA.Korean]));
 			const countryDv = pickRandom(naturalCountryDVs);
 			if (countryDv) {
 				return {
@@ -1421,52 +1422,52 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 			}
 		}
 		const isInterrogative = ko === "어디";
-		const nonKitchenPlace = (new Set(["교실", "도서관", "은행", "우체국", "병원", "약국", "학교", "사무실", "서점", "공항", "박물관", "미술관", "지하철역", "버스 정류장", "꽃집", "문구점", "찜질방", "산", "바다", "강", "호수", "공원", "한강공원", "노래방", "피시방", "영화관", "극장", "체육관", "백화점", "마트", "시장", "미용실", "세탁소"])).has(ko);
-		const nonDomesticPlace = nonKitchenPlace || (new Set(["학생회관", "식당", "카페", "편의점", "저기", "거기", "여기", "그곳"])).has(ko);
-		const isResidentialPlace = (new Set(["집", "원룸", "아파트", "기숙사", "하숙집", "고향", "서울", "부산", "대구", "속초", "한국", "미국", "일본", "중국", "독일", "베트남", "프랑스", "외국", "도시", "동네"])).has(ko) || hasTag(nominalUnit, "housing", "residence", "city", K.COUNTRY);
-		const isWorkplace = (new Set(["회사", "사무실", "은행", "병원", "학교", "공장", "가게", "식당", "카페", "서점", "빵집", "마트", "백화점", "약국"])).has(ko);
-		const isAcademicInst = (new Set(["학교", "초등학교", "중학교", "고등학교", "대학교", "대학원", "유치원", "학원"])).has(ko);
-		const isCommuteDest = (new Set(["학교", "초등학교", "중학교", "고등학교", "대학교", "회사", "학원", "병원", "교회", "은행"])).has(ko);
-		const isTransitStop = (new Set(["버스", "지하철", "택시", "기차", "정류장", "버스 정류장", "지하철역", "역", "터미널", "공항", "서울역", "부산역", "이촌역", "홍대입구역", "광화문역"])).has(ko);
-		const isDiningVenue = (new Set(["식당", "학생식당", "카페", "빵집", "집", "기숙사", "맛집", "뷔페", "북경반점"])).has(ko);
-		const isRetailStore = (new Set(["꽃집", "문구점", "백화점", "마트", "가게", "서점", "빵집", "편의점", "약국", "시장"])).has(ko);
-		const isStudyVenue = (new Set(["도서관", "교실", "학교", "대학교", "학원", "집", "기숙사", "원룸", "서재", "방", "서점"])).has(ko);
-		const isParkingVenue = (new Set(["주차장", "길", "집", "회사", "학교", "백화점", "마트"])).has(ko);
+		const nonKitchenPlace = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_11).has(ko);
+		const nonDomesticPlace = nonKitchenPlace || (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_12).has(ko);
+		const isResidentialPlace = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_13).has(ko) || hasTag(nominalUnit, "housing", "residence", "city", K.COUNTRY);
+		const isWorkplace = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_14).has(ko);
+		const isAcademicInst = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_15).has(ko);
+		const isCommuteDest = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_16).has(ko);
+		const isTransitStop = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_17).has(ko);
+		const isDiningVenue = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_18).has(ko);
+		const isRetailStore = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_19).has(ko);
+		const isStudyVenue = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_20).has(ko);
+		const isParkingVenue = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_21).has(ko);
 		const isPostalVenue = ko === "우체국";
-		const isDeicticPlace = (new Set(["저기", "거기", "여기", "이곳", "그곳", "저곳"])).has(ko);
-		const isOutdoorNature = hasTag(nominalUnit, K.NATURE) || (new Set(["산", "바다", "강", "호수", "공원", "한강공원", "스키장", "온천", "농구장"])).has(ko);
+		const isDeicticPlace = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_22).has(ko);
+		const isOutdoorNature = hasTag(nominalUnit, K.NATURE) || (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_23).has(ko);
 		const allAvs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => {
 			const vKo = v[DATA_SCHEMA.Korean] || "";
 			if (vKo.includes(" ")) return false;
-			if (hasTag(v, "involuntary", "passive", K.WEATHER) || state.HONORIFIC_WORDS.has(vKo) || (new Set(["걸리다", "지내다", "되다", "나다", "죽다", "생기다", "터지다", "끓다", "식다", "놓다", "두다", "담다", "넣다", "보이다", "끼다", "개다", "싸다", "쌓다", "알다", "모르다", "기억하다", "원하다", "생각하다", "사랑하다", "남다", "붓다", "낫다", "뜨거워지다", "피다", "늘다", "줄다", "돌아가시다", "넘어지다", "떨리다", "눕다", "서다", "앉다", "잘하다", "못하다", "올려놓다", "보여주다", "보여드리다", "때리다", "지나가다", "빌려주다", "나빠하다", "배달시키다", "걸레질하다", "좌회전하다", "우회전하다", "세일하다", "할인하다", "바르다", "깎다", "소독하다", "묶다", "매다", "접다", "당기다", "밀다", "세다", "확인하다", "섞다", "버리다", "서명하다", "전하다", "짓다", "잡다", "예약하다", "건너다", "출국하다", "지각하다", "등산하다", "민박하다"])).has(vKo) && !(new Set(["산", "바다", "강", "호수", "공원", "한강공원", "공항", "인천공항", "김포공항", "학교", "대학교", "학원", "회사", "한국", "미국", "일본", "중국", "서울", "시골", "제주도", "속초"])).has(ko)) return false;
-			if (vKo === "출국하다" && !(new Set(["공항", "인천공항", "김포공항", "한국", "미국", "일본", "중국", "서울", "외국"])).has(ko)) return false;
-			if (vKo === "등산하다" && !(new Set(["산", "설악산", "백두산", "한라산"])).has(ko)) return false;
-			if (vKo === "지각하다" && !(new Set(["학교", "수업", "학원", "회사", "모임", "회의", "대학교"])).has(ko)) return false;
-			if (vKo === "민박하다" && !(new Set(["바다", "산", "시골", "제주도", "속초"])).has(ko)) return false;
-			if (vKo === "수영하다" && !(new Set(["수영장", "바다", "강", "운동장"])).has(ko)) return false;
-			if (vKo === "낚시하다" && !(new Set(["바다", "강", "호수"])).has(ko)) return false;
-			if ((ko === "저기" || ko === "저곳") && (new Set(["오다", "올라오다", "내려오다", "들어오다", "나오다"])).has(vKo)) return false;
+			if (hasTag(v, "involuntary", "passive", K.WEATHER) || state.HONORIFIC_WORDS.has(vKo) || (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_3).has(vKo) && !(HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_24).has(ko)) return false;
+			if (vKo === "출국하다" && !(HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_25).has(ko)) return false;
+			if (vKo === "등산하다" && !(HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_26).has(ko)) return false;
+			if (vKo === "지각하다" && !(HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_27).has(ko)) return false;
+			if (vKo === "민박하다" && !(HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_28).has(ko)) return false;
+			if (vKo === "수영하다" && !(HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_29).has(ko)) return false;
+			if (vKo === "낚시하다" && !(HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_30).has(ko)) return false;
+			if ((HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_4.includes(ko)) && (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_4).has(vKo)) return false;
 			const venueAllowed = parseSemanticData(nominalUnit).venue_allowed_verbs;
 			if (Array.isArray(venueAllowed) && !(new Set(venueAllowed)).has(vKo)) return false;
 			if (state.HUMBLE_WORDS.has(vKo) || (state.HUMBLE_DATIVE_VERBS && state.HUMBLE_DATIVE_VERBS.has(vKo)) || vKo.includes("드리")) return false;
-			if (!isResidentialPlace && (vKo === "이사하다" || vKo === "살다" || vKo === "생활하다")) return false;
-			if (!(new Set(["집", "기숙사", "하숙집", "원룸", "아파트", "고향"])).has(ko) && (new Set(["생활하다", "초대하다", "설거지하다", "키우다", "정리하다", "신다", "벗다", "입다"])).has(vKo)) return false;
-			if (!isWorkplace && (new Set(["출근하다", "퇴근하다", "벌다"])).has(vKo)) return false;
-			if (!isAcademicInst && (new Set(["입학하다", "결석하다", "출석하다"])).has(vKo)) return false;
+			if (!isResidentialPlace && (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF.includes(vKo))) return false;
+			if (!(HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_31).has(ko) && (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_5).has(vKo)) return false;
+			if (!isWorkplace && (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_6).has(vKo)) return false;
+			if (!isAcademicInst && (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_7).has(vKo)) return false;
 			if (!isCommuteDest && vKo === "다니다") return false;
-			if (!isTransitStop && (new Set(["내리다", "하차하다", "타다", "갈아타다"])).has(vKo)) return false;
-			if (!isDiningVenue && (new Set(["먹다", "마시다", "시키다", "주문하다", "말다", "씹다", "덜다"])).has(vKo)) return false;
-			if (!isRetailStore && (new Set(["사다", "고르다", "팔다", "준비하다"])).has(vKo)) return false;
-			if (!isStudyVenue && (new Set(["공부하다", "읽다", "쓰다", "배우다", "빌리다", "가르치다", "필기하다"])).has(vKo)) return false;
-			if ((new Set(["꽃집", "문구점", "빵집", "학생회관", "학생식당"])).has(ko) && (new Set(["사귀다", "안내하다", "모으다", "올리다", "올려놓다", "보여주다", "바르다", "깎다", "소독하다", "주고받다", "연기하다", "낚시하다", "서명하다", "부르다", "발표하다", "질문하다", "내려오다", "올라오다", "세우다", "물어보다"])).has(vKo)) return false;
+			if (!isTransitStop && (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_8).has(vKo)) return false;
+			if (!isDiningVenue && (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_9).has(vKo)) return false;
+			if (!isRetailStore && (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_10).has(vKo)) return false;
+			if (!isStudyVenue && (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_11).has(vKo)) return false;
+			if ((HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_32).has(ko) && (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_12).has(vKo)) return false;
 			if (!isParkingVenue && vKo === "주차하다") return false;
 			if (!isPostalVenue && vKo === "부치다") return false;
-			if (vKo === "세배하다" && !(new Set(["집", "할아버지 댁", "고향"])).has(ko)) return false;
-			if ((nonDomesticPlace || isDeicticPlace || isOutdoorNature) && (new Set(["세수하다", "목욕하다", "샤워하다", "자다", "낮잠 자다", "졸다", "일어나다"])).has(vKo) && ko !== "찜질방") return false;
-			if ((nonKitchenPlace || isDeicticPlace || isOutdoorNature) && (hasTag(v, "cooking") || (new Set(["자르다", "튀기다", "썰다", "볶다", "굽다", "끓이다", "삶다", "말다", "부치다", "양념하다", "내리다", "다지다", "뿌리다", "깎다"])).has(vKo))) return false;
-			if ((isOutdoorNature || (new Set(["꽃집", "문구점", "찜질방", "도서관", "병원", "약국", "은행", "백화점", "빵집", "체육관", "학생식당", "학생회관", "서울", "부산"])).has(ko)) && (new Set(["치다", "녹음하다", "다운로드하다", "원하다", "기억하다", "사용하다", "찾다", "바르다", "소독하다", "깎다", "덜다", "연기하다", "서명하다", "발표하다", "주고받다", "세우다", "올려놓다", "보여주다", "부르다", "내려오다", "올라오다", "사귀다", "모으다", "안내하다", "질문하다", "빌리다", "설거지하다"])).has(vKo)) return false;
-			if ((ko === "여기" || ko === "이곳") && (new Set(["가다", "소풍을 가다", "여행하다", "출발하다", "나가다", "돌아가다"])).has(vKo)) return false;
-			const isMotionOrStat = hasTag(v, K.INTRANSITIVE_MOTION, K.INTRANSITIVE_PLACE, K.LOCATIVE_GOAL, K.LOCATIVE_ORIGIN, "existence") || (new Set(["출근하다", "도착하다", "입학하다", "출국하다", "떠나다"])).has(vKo);
+			if (vKo === "세배하다" && !(HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_33).has(ko)) return false;
+			if ((nonDomesticPlace || isDeicticPlace || isOutdoorNature) && (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_13).has(vKo) && ko !== "찜질방") return false;
+			if ((nonKitchenPlace || isDeicticPlace || isOutdoorNature) && (hasTag(v, "cooking") || (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_14).has(vKo))) return false;
+			if ((isOutdoorNature || (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_34).has(ko)) && (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_15).has(vKo)) return false;
+			if ((HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_3.includes(ko)) && (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_16).has(vKo)) return false;
+			const isMotionOrStat = hasTag(v, K.INTRANSITIVE_MOTION, K.INTRANSITIVE_PLACE, K.LOCATIVE_GOAL, K.LOCATIVE_ORIGIN, "existence") || (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_17).has(vKo);
 			if (!isMotionOrStat && !isIntransitiveVerb(v)) {
 				if (getVerbParticleType(v) === K.DATIVE) return false;
 				const argPreview = selectArgumentForActionVerb(v, options, targetId);
@@ -1493,11 +1494,11 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 		}
 
 		const verbKoPlace = verbUnit ? (verbUnit[DATA_SCHEMA.Korean] || "") : "";
-		const isDynamicMotionOrOrigin = (new Set(["달리다", "걷다", "뛰다", "산책하다", "조깅하다", "수영하다", "등산하다", "떠나다", "출국하다", "출발하다", "나오다", "지나가다"])).has(verbKoPlace) || hasTag(verbUnit, K.LOCATIVE_ORIGIN);
+		const isDynamicMotionOrOrigin = (HC.UNITGEN_AST_NOMINAL_VERBKOPLACE_ONE_OF).has(verbKoPlace) || hasTag(verbUnit, K.LOCATIVE_ORIGIN);
 		const isMotionOrStatic = verbUnit && (
 			verbUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB ||
 			hasTag(verbUnit, K.INTRANSITIVE_MOTION, K.INTRANSITIVE_PLACE, K.LOCATIVE_GOAL, K.LOCATIVE_ORIGIN, "existence") ||
-			(new Set(["출근하다", "도착하다", "입학하다", "출국하다", "떠나다"])).has(verbKoPlace)
+			(HC.UNITGEN_AST_NOMINAL_VERBKOPLACE_ONE_OF_2).has(verbKoPlace)
 		);
 
 		const constituents = [];
@@ -1507,8 +1508,8 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 
 		if (arg.role !== K.SUBJECT) {
 			let subj = selectSubjectUnit(options, targetId, false);
-			if (subj && arg.nounUnit && (new Set(["치마", "원피스"])).has(arg.nounUnit[DATA_SCHEMA.Korean]) && (new Set(["오빠", "형", "남동생", "아버지", "아빠", "할아버지", "작은아버지", "큰아버지", "삼촌", "아저씨", "남자", "사나이"])).has(subj[DATA_SCHEMA.Korean])) {
-				const fSubjs = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["언니", "누나", "여동생", "어머니", "엄마", "친구", "여자", "학생"])).has(n[DATA_SCHEMA.Korean]));
+			if (subj && arg.nounUnit && (HC.UNITGEN_AST_NOMINAL_ARG_NOUNUNIT_DATA_SCHEMA_K_ONE_OF).has(arg.nounUnit[DATA_SCHEMA.Korean]) && (HC.UNITGEN_AST_NOMINAL_SUBJ_DATA_SCHEMA_KOREAN_ONE_OF).has(subj[DATA_SCHEMA.Korean])) {
+				const fSubjs = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_24).has(n[DATA_SCHEMA.Korean]));
 				if (fSubjs.length > 0) subj = pickRandom(fSubjs);
 			}
 			if (subj && subj[DATA_SCHEMA.Id] !== targetId) {
@@ -1520,7 +1521,7 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 			}
 		}
 
-		const isKyesida = verbUnit && (verbUnit[DATA_SCHEMA.Korean] === "계시다" || verbUnit[DATA_SCHEMA.Korean] === "있다");
+		const isKyesida = verbUnit && (HC.UNITGEN_AST_NOMINAL_VERBUNIT_DATA_SCHEMA_KOREA_ONE_OF_3.includes(verbUnit[DATA_SCHEMA.Korean]));
 		constituents.push({
 			role: K.LOCATION,
 			nounUnit: nominalUnit,
@@ -1561,14 +1562,14 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 	}
 
 	// 5. Person / Animate Noun or Personal Pronoun -> Subject / Topic
-	const isPersonalPronoun = (new Set(["나", "저", "우리", "저희", "너", "너희", "그", "그녀", "당신", "누구", "누가", "제", "내", "네"])).has(ko);
+	const isPersonalPronoun = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_35).has(ko);
 	const isPerson = isPersonalPronoun || hasTag(nominalUnit, K.PERSON, K.FAMILY, K.PROFESSION, "animal", "subject_animate");
-	const isNonPersonDeictic = (new Set(["이것", "그것", "저것", "이거", "그거", "저거", "무엇", "뭐", "얼마", "몇", "여기", "거기", "저기", "어디", "이곳", "그곳", "저곳", "언제", "며칠"])).has(ko);
+	const isNonPersonDeictic = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_36).has(ko);
 	if (isPerson && !isNonPersonDeictic) {
 		const isElder = isElderNoun(nominalUnit);
-		const isFirstPerson = (new Set(["저", "나", "우리", "저희", "제", "내"])).has(ko);
-		const isJunior = hasTag(nominalUnit, "child", "junior") || (new Set(["아이", "조카", "동생", "남동생", "여동생", "사나이", "놈"])).has(ko);
-		const isInterrogative = ko === "누구" || ko === "누가";
+		const isFirstPerson = (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_37).has(ko);
+		const isJunior = hasTag(nominalUnit, "child", "junior") || (HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_38).has(ko);
+		const isInterrogative = HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_2.includes(ko);
 		const allAvs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId);
 		const avs = allAvs.filter(v => {
 			const vKo = v[DATA_SCHEMA.Korean] || "";
@@ -1576,7 +1577,7 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 			if (isIntransitiveVerb(v)) return false;
 			if (getVerbParticleType(v) !== K.OBJECT) return false;
 			if ((!isElder || isFirstPerson || isJunior) && state.HONORIFIC_WORDS.has(vKo)) return false;
-			if ((new Set(["아랫사람", "노인", "어른", "아이", "학생", "조카", "남동생", "여동생", "얘들", "사나이", "놈"])).has(ko) && (new Set(["할인하다", "팔다"])).has(vKo)) return false;
+			if ((HC.UNITGEN_AST_NOMINAL_KO_ONE_OF_39).has(ko) && (HC.UNITGEN_AST_NOMINAL_VKO_ONE_OF_18).has(vKo)) return false;
 			return true;
 		});
 		const matchedDV = selectDescriptiveVerbForNoun(nominalUnit, { ...options, tense }, targetId);
@@ -1586,7 +1587,7 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 		}
 		const verbUnit = (variationIndex % 2 === 0 && avs.length > 0) ? pickRandom(avs, options.seedOffset, options) : (chosenDV || pickRandom(avs, options.seedOffset, options));
 		let clauseTensePerson = tense;
-		if (verbUnit && (new Set(["잘생기다", "못생기다", "오래되다"])).has(verbUnit[DATA_SCHEMA.Korean]) && !options.tense) {
+		if (verbUnit && (HC.UNITGEN_AST_NOMINAL_VERBUNIT_DATA_SCHEMA_KOREA_ONE_OF).has(verbUnit[DATA_SCHEMA.Korean]) && !options.tense) {
 			clauseTensePerson = K.PAST;
 		}
 
@@ -1640,9 +1641,9 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 
 		if (verbUnit[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB) {
 			const arg = selectArgumentForActionVerb(verbUnit, options, targetId);
-			if (verbUnit[DATA_SCHEMA.Korean] === "넣다" || verbUnit[DATA_SCHEMA.Korean] === "담다") {
+			if (HC.UNITGEN_AST_NOMINAL_VERBUNIT_DATA_SCHEMA_KOREA_ONE_OF_2.includes(verbUnit[DATA_SCHEMA.Korean])) {
 				const container = verbUnit[DATA_SCHEMA.Korean] === "담다"
-					? pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => !hasTag(n, K.HONORIFIC, "honorific_noun") && ((new Set(["접시", "그릇", "바구니", "상자"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "container", "dish"))))
+					? pickRandom(getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => !hasTag(n, K.HONORIFIC, "honorific_noun") && ((HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_25).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "container", "dish"))))
 					: selectPutInContainerNoun(arg.nounUnit, options, targetId);
 				if (container && container[DATA_SCHEMA.Id] !== targetId) {
 					constituents.push({
@@ -1694,8 +1695,8 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 	const matchedDV = selectDescriptiveVerbForNoun(nominalUnit, { ...options, tense }, targetId);
 	const useAV = variationIndex % 2 === 0 ? Boolean(matchedAV) : !matchedDV;
 	const chosenVerb = useAV ? (matchedAV || matchedDV) : (matchedDV || matchedAV);
-	const isInterrogative = ko === "무엇" || ko === "뭐" || Boolean(
-		chosenVerb && ((new Set(["어떻다", "어떠하다"])).has(chosenVerb[DATA_SCHEMA.Korean]) || hasTag(chosenVerb, K.QUESTION_WORD, K.INTERROGATIVE))
+	const isInterrogative = HC.UNITGEN_AST_NOMINAL_KO_ONE_OF.includes(ko) || Boolean(
+		chosenVerb && ((HC.UNITGEN_AST_NOMINAL_CHOSENVERB_DATA_SCHEMA_KOR_ONE_OF_2).has(chosenVerb[DATA_SCHEMA.Korean]) || hasTag(chosenVerb, K.QUESTION_WORD, K.INTERROGATIVE))
 	);
 
 	if (!chosenVerb) {
@@ -1718,12 +1719,12 @@ function buildASTForNominal(nominalUnit, variationIndex = 0, options = {}) {
 			});
 		}
 		const chosenKo = chosenVerb[DATA_SCHEMA.Korean];
-		if (chosenKo === "담다" || chosenKo === "놓다" || chosenKo === "두다" || chosenKo === "넣다") {
+		if (HC.UNITGEN_AST_NOMINAL_CHOSENKO_ONE_OF.includes(chosenKo)) {
 			const locPool = chosenKo === "담다"
-				? getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => !hasTag(n, K.HONORIFIC, "honorific_noun") && ((new Set(["접시", "그릇", "상자", "가방", "냉장고", "바구니"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "container", "dish")))
+				? getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => !hasTag(n, K.HONORIFIC, "honorific_noun") && ((HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_26).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "container", "dish")))
 				: chosenKo === "넣다"
 					? null
-					: getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["책상", "탁자", "식탁", "의자", "바닥", "침대"])).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "furniture", K.PLACE));
+					: getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_NOMINAL_N_DATA_SCHEMA_KOREAN_ONE_OF_27).has(n[DATA_SCHEMA.Korean]) || hasTag(n, "furniture", K.PLACE));
 			const containerLoc = chosenKo === "넣다"
 				? selectPutInContainerNoun(nominalUnit, options, targetId)
 				: pickRandom(locPool);
@@ -1792,8 +1793,8 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 
 	// 1. Determiner (이, 그, 저, 어느, 무슨, 어떤, 새, 헌, 모든, 다른...)
 	if (pos === K.DETERMINER) {
-		const isInterrogative = (new Set(["어느", "무슨", "어떤", "몇"])).has(ko);
-		const isTemporalDet = (new Set(["지난", "이번", "다음", "올"])).has(ko);
+		const isInterrogative = (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_KO_ONE_OF).has(ko);
+		const isTemporalDet = (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_KO_ONE_OF_2).has(ko);
 		let nouns = [];
 		if (isTemporalDet) {
 			nouns = getAllUnitsOfPos(K.NOUN, options, targetId).filter(
@@ -1803,11 +1804,11 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 		if (nouns.length === 0) {
 			nouns = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => {
 				if (hasTag(n, K.MEASUREWORD, K.COUNTER, K.TIME, K.POSITION, K.QUESTION_WORD)) return false;
-				if ((new Set(["이", "얼마", "누구", "무엇", "뭐", "어디", "언제", "몇"])).has(n[DATA_SCHEMA.Korean])) return false;
+				if ((HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_N_DATA_SCHEMA_KOREAN_ONE_OF).has(n[DATA_SCHEMA.Korean])) return false;
 				if (ko === "어느") {
 					if (hasTag(n, K.PROPER_NOUN, K.FAMILY, "landmark", "tourism", "cultural_concept", "anatomy", "body_fluid", "maneuver")) return false;
-					if ((new Set(["직진", "좌회전", "우회전", "유턴", "스크린도어"])).has(n[DATA_SCHEMA.Korean])) return false;
-					return (new Set(["나라", "고향", "도시", "학교", "회사", "집", "방", "가게", "식당", "카페", "은행", "병원", "공원", "친구", "사람", "선생님", "버스", "지하철", "계절", "요일", "쪽", "음식", "색깔", "책", "영화", "노래", "신발"])).has(n[DATA_SCHEMA.Korean])
+					if ((HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_N_DATA_SCHEMA_KOREAN_ONE_OF_2).has(n[DATA_SCHEMA.Korean])) return false;
+					return (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_N_DATA_SCHEMA_KOREAN_ONE_OF_3).has(n[DATA_SCHEMA.Korean])
 						|| hasTag(n, K.PLACE, K.FACILITY, K.COUNTRY, "city", K.PERSON, K.TRANSPORTATION, "season", K.CLOTHING, "book", K.DIRECTION);
 				}
 				return true;
@@ -1815,7 +1816,7 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 			if (ko === "어느" && nouns.length === 0) {
 				nouns = getAllUnitsOfPos(K.NOUN, options, targetId).filter(
 					n => !hasTag(n, K.MEASUREWORD, K.COUNTER, K.TIME, K.POSITION, K.QUESTION_WORD, "cultural_concept", "anatomy", "body_fluid") &&
-					!(new Set(["이", "얼마", "누구", "무엇", "뭐", "어디", "언제", "몇"])).has(n[DATA_SCHEMA.Korean])
+					!(HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_N_DATA_SCHEMA_KOREAN_ONE_OF_4).has(n[DATA_SCHEMA.Korean])
 				);
 			}
 		}
@@ -1886,7 +1887,7 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 		// must appear in their exact cardinal form rather than being converted to attributive 한/두/세/네/스무!
 		if (!isSino && hasTag(unit, "counting") && getKoreanNumber(numVal, true) !== ko && !options.onlyFromSet) {
 			const cardNouns = getAllUnitsOfPos(K.NOUN, options, targetId).filter(
-				n => (new Set(["사과", "빵", "공책", "책", "연필", "볼펜", "지우개", "가방", "상자", "의자", "선물", "컵", "우산", "모자"])).has(n[DATA_SCHEMA.Korean])
+				n => (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_N_DATA_SCHEMA_KOREAN_ONE_OF_5).has(n[DATA_SCHEMA.Korean])
 			);
 			const cardNoun = pickRandom(cardNouns);
 			const isCardAction = variationIndex % 2 === 1;
@@ -1959,9 +1960,9 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 		}
 
 		let nouns = chosenClassifierKo === "원"
-			? getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["돈", "현금", "용돈", "배달비", "버스비", "교통비", "입장료", "요금"])).has(n[DATA_SCHEMA.Korean]))
+			? getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_N_DATA_SCHEMA_KOREAN_ONE_OF_6).has(n[DATA_SCHEMA.Korean]))
 			: (chosenClassifierKo === "쪽"
-				? getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["책", "교과서", "소설책", "만화책", "동화책", "전공책", "잡지", "공책"])).has(n[DATA_SCHEMA.Korean]))
+				? getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_N_DATA_SCHEMA_KOREAN_ONE_OF_7).has(n[DATA_SCHEMA.Korean]))
 				: filterBySet(getMatchingNounsForClassifier(chosenClassifierKo), options, targetId));
 		if (nouns.length === 0) {
 			nouns = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => !hasTag(n, K.MEASUREWORD, K.COUNTER, K.TIME, K.PLACE));
@@ -1975,8 +1976,8 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 			return true;
 		});
 		const dvs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId);
-		const pageVerbs = avs.filter(v => (new Set(["읽다", "보다", "쓰다", "공부하다"])).has(v[DATA_SCHEMA.Korean]));
-		const wonVerbs = avs.filter(v => (new Set(["내다", "쓰다", "받다", "주다"])).has(v[DATA_SCHEMA.Korean]));
+		const pageVerbs = avs.filter(v => (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_V_DATA_SCHEMA_KOREAN_ONE_OF).has(v[DATA_SCHEMA.Korean]));
+		const wonVerbs = avs.filter(v => (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_V_DATA_SCHEMA_KOREAN_ONE_OF_2).has(v[DATA_SCHEMA.Korean]));
 		const chosenVerb = chosenClassifierKo === "쪽"
 			? (pickRandom(pageVerbs) || avs.find(v => v[DATA_SCHEMA.Korean] === "읽다") || pickRandom(avs) || pickRandom(dvs))
 			: (chosenClassifierKo === "원"
@@ -2058,7 +2059,7 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 		});
 		const dvs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId).filter(v => {
 			const vKo = v[DATA_SCHEMA.Korean] || "";
-			if ((new Set(["싶다", "안녕하다", "죄송하다", "어떻다", "이렇다", "그렇다", "저렇다"])).has(vKo)) return false;
+			if ((HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_VKO_ONE_OF).has(vKo)) return false;
 			if (hasTag(v, K.AUXILIARY, K.CONNECTIVE, "greeting")) return false;
 			return true;
 		});
@@ -2113,7 +2114,7 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 		} else {
 			const chosenVerb = pickRandom(dvs) || pickRandom(avs);
 			const subjCandidates = chosenVerb ? filterBySet(getSubjectCandidatesForDescriptiveVerb(chosenVerb), options, targetId)
-				.filter(u => u[DATA_SCHEMA.Id] !== 361 && !(new Set(["인형", "드라마", "자전거", "오토바이", "햇빛"])).has(u[DATA_SCHEMA.Korean])) : [];
+				.filter(u => u[DATA_SCHEMA.Id] !== 361 && !(HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_U_DATA_SCHEMA_KOREAN_ONE_OF).has(u[DATA_SCHEMA.Korean])) : [];
 			const subj = (subjCandidates.length > 0 ? pickRandom(subjCandidates) : selectSubjectUnit(options, targetId, false));
 			if (subj) {
 				constituents.push({
@@ -2151,7 +2152,7 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 	// 4. Adverb (Degree, Manner, Time, Discourse, NPI, Short Negation)
 	if (ko === "아무리") {
 		const avs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => !state.FORBIDDEN_NEGATIVE_ROOTS.has(v[DATA_SCHEMA.Korean]) && !(v[DATA_SCHEMA.Korean] || "").includes(" "));
-		const dvs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId).filter(v => !state.FORBIDDEN_NEGATIVE_ROOTS.has(v[DATA_SCHEMA.Korean]) && !(new Set(["안녕하다", "싶다", "어떠하다"])).has(v[DATA_SCHEMA.Korean]));
+		const dvs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId).filter(v => !state.FORBIDDEN_NEGATIVE_ROOTS.has(v[DATA_SCHEMA.Korean]) && !(HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_V_DATA_SCHEMA_KOREAN_ONE_OF_3).has(v[DATA_SCHEMA.Korean]));
 		const dv1 = pickRandom(dvs) || dvs[0];
 		const dvSubjs = dv1 ? filterBySet(getSubjectCandidatesForDescriptiveVerb(dv1), options, targetId).filter(u => u[DATA_SCHEMA.Id] !== 361) : [];
 		const subj1 = dvSubjs.length > 0 ? pickRandom(dvSubjs) : selectSubjectUnit(options, targetId, false);
@@ -2208,7 +2209,7 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 
 	if (ko === "왜냐하면") {
 		const avs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => !state.FORBIDDEN_NEGATIVE_ROOTS.has(v[DATA_SCHEMA.Korean]) && !(v[DATA_SCHEMA.Korean] || "").includes(" "));
-		const dvs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId).filter(v => !state.FORBIDDEN_NEGATIVE_ROOTS.has(v[DATA_SCHEMA.Korean]) && !(new Set(["안녕하다", "싶다", "어떠하다"])).has(v[DATA_SCHEMA.Korean]));
+		const dvs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId).filter(v => !state.FORBIDDEN_NEGATIVE_ROOTS.has(v[DATA_SCHEMA.Korean]) && !(HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_V_DATA_SCHEMA_KOREAN_ONE_OF_4).has(v[DATA_SCHEMA.Korean]));
 		const chosenVerb = (variationIndex % 2 === 0 && avs.length > 0) ? pickRandom(avs) : (pickRandom(dvs) || pickRandom(avs));
 		const isAction = chosenVerb[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB;
 		const subj = isAction ? selectSubjectUnit(options, targetId, false) : (filterBySet(getSubjectCandidatesForDescriptiveVerb(chosenVerb), options, targetId)[0] || selectSubjectUnit(options, targetId, false));
@@ -2254,7 +2255,7 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 	}
 
 	if (ko === "한" && (hasTag(unit, "approximation", "number_unit") || targetId === 1521)) {
-		const counters = ["명", "개", "권", "잔", "병", "시간", "달", "마리"];
+		const counters = HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_COUNTERS;
 		const cKo = counters[variationIndex % counters.length];
 		const counterUnit = state.CLASSIFIER_UNITS.get(cKo) || getAllUnitsOfPos(K.NOUN, options, targetId).find(n => n[DATA_SCHEMA.Korean] === cKo) || null;
 		let compatibleNouns = filterBySet(getMatchingNounsForClassifier(cKo), options, targetId);
@@ -2321,13 +2322,13 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 	const isQuestionWord = hasTag(unit, K.QUESTION_WORD, K.INTERROGATIVE);
 	const pol = getTemporalPolarity(unit);
 	if (pol) tense = pol;
-	if ((new Set(["가끔", "자주", "항상", "늘", "언제나", "보통", "매일", "매주", "매달", "매년", "날마다"])).has(ko) && tense === K.FUTURE && !options.tense) {
+	if ((HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_KO_ONE_OF_3).has(ko) && tense === K.FUTURE && !options.tense) {
 		tense = K.PRESENT;
 	}
 	const isAdvNeg = isNPI || isShortAn || isShortMot;
-	const isFreqHabit = (new Set(["가끔", "자주", "항상", "늘", "언제나", "보통", "매달", "매주", "매년", "날마다", "매일"])).has(ko);
-	const requiresVolitionOrFreq = isFreqHabit || (new Set(["열심히", "천천히", "빨리"])).has(ko);
-	const isDailyHabit = (new Set(["날마다", "매일"])).has(ko);
+	const isFreqHabit = (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_KO_ONE_OF_4).has(ko);
+	const requiresVolitionOrFreq = isFreqHabit || (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_KO_ONE_OF_5).has(ko);
+	const isDailyHabit = (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_KO_ONE_OF_6).has(ko);
 
 	const avs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => {
 		const k = v[DATA_SCHEMA.Korean] || "";
@@ -2337,9 +2338,9 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 		if (state.HONORIFIC_WORDS && state.HONORIFIC_WORDS.has(k)) return false;
 		if (state.HUMBLE_WORDS && state.HUMBLE_WORDS.has(k)) return false;
 		if (hasTag(v, K.HONORIFIC, "honorificVerb", "humble", "humbleVerb")) return false;
-		if (isAdvNeg && (k.endsWith("있다") || k.endsWith("알다"))) return false;
-		if (requiresVolitionOrFreq && (hasTag(v, "involuntary", "passive") || (new Set(["생기다", "방학하다", "시작되다", "태어나다", "졸업하다", "입학하다", "이사하다", "죽다", "결혼하다", "고장 나다", "끝나다", "터지다", "내리다", "끓다", "식다", "말다", "사먹다", "여쭙다", "돌아가시다"])).has(k))) return false;
-		if (isDailyHabit && (new Set(["알아보다", "고치다", "물어보다", "키우다", "이사하다", "입학하다", "졸업하다", "결혼하다", "세다", "빌리다", "바꾸다"])).has(k)) return false;
+		if (isAdvNeg && (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_K_ENDSWITH_ONE_OF_2.some(_w => k.endsWith(_w)))) return false;
+		if (requiresVolitionOrFreq && (hasTag(v, "involuntary", "passive") || (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_K_ONE_OF).has(k))) return false;
+		if (isDailyHabit && (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_K_ONE_OF_2).has(k)) return false;
 		if (typeof canAdverbPrecede === 'function' && !canAdverbPrecede(unit, v, { isNegative: isAdvNeg, tense })) return false;
 		return true;
 	});
@@ -2349,8 +2350,8 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 		if (state.FORBIDDEN_NEGATIVE_ROOTS.has(k)) return false;
 		if (state.HONORIFIC_WORDS && state.HONORIFIC_WORDS.has(k)) return false;
 		if (hasTag(v, K.HONORIFIC, "honorificVerb")) return false;
-		if (isAdvNeg && (k.endsWith("있다") || k.endsWith("알다"))) return false;
-		if (tense !== K.PAST && (new Set(["잘생기다", "못생기다", "오래되다"])).has(k)) return false;
+		if (isAdvNeg && (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_K_ENDSWITH_ONE_OF.some(_w => k.endsWith(_w)))) return false;
+		if (tense !== K.PAST && (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_K_ONE_OF_3).has(k)) return false;
 		if (typeof canAdverbPrecede === 'function' && !canAdverbPrecede(unit, v, { isNegative: isAdvNeg, tense })) return false;
 		return true;
 	});
@@ -2359,7 +2360,7 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 	if (isShortMot) {
 		const volitionalAVs = avs.filter(v => {
 			const vKo = v[DATA_SCHEMA.Korean] || "";
-			if (["낫다", "걸리다", "끝나다", "시작되다", "고장 나다", "죽다", "생기다", "열리다", "닫히다"].some(k => vKo.includes(k))) return false;
+			if (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_K_VKO_INCLUDES_K_LIST_SOME.some(k => vKo.includes(k))) return false;
 			if (hasTag(v, "involuntary", "passive", K.WEATHER)) return false;
 			return true;
 		});
@@ -2398,12 +2399,12 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 	if (ko === "얼마나" && hasTag(chosenVerb, "scalable_duration", "scalable_quantity")) {
 		const resourceNouns = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => hasTag(n, "resource"));
 		subj = resourceNouns.length > 0 ? (hasTag(chosenVerb, "scalable_quantity") && resourceNouns.length > 1 ? pickRandom(resourceNouns) : resourceNouns[0]) : selectSubjectUnit(options, targetId, false);
-	} else if ((new Set(["모두", "다"])).has(ko)) {
-		const pluralPool = getAllUnitsOfPos(K.PRONOUN, options, targetId).filter(p => (new Set(["우리", "저희"])).has(p[DATA_SCHEMA.Korean]));
+	} else if ((HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_KO_ONE_OF_7).has(ko)) {
+		const pluralPool = getAllUnitsOfPos(K.PRONOUN, options, targetId).filter(p => (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_P_DATA_SCHEMA_KOREAN_ONE_OF).has(p[DATA_SCHEMA.Korean]));
 		const pluralNouns = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => isPluralSubjectUnit(n));
 		subj = pickRandom([...pluralPool, ...pluralNouns]) || selectSubjectUnit(options, targetId, false);
 	} else if (!isAction) {
-		const dvSubjs = filterBySet(getSubjectCandidatesForDescriptiveVerb(chosenVerb), options, targetId).filter(u => u[DATA_SCHEMA.Id] !== 361 && !hasTag(u, K.QUESTION_WORD, K.INTERROGATIVE) && !(new Set(["누구", "누가", "무엇", "뭐", "언제", "어디"])).has(u[DATA_SCHEMA.Korean]));
+		const dvSubjs = filterBySet(getSubjectCandidatesForDescriptiveVerb(chosenVerb), options, targetId).filter(u => u[DATA_SCHEMA.Id] !== 361 && !hasTag(u, K.QUESTION_WORD, K.INTERROGATIVE) && !(HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_U_DATA_SCHEMA_KOREAN_ONE_OF_2).has(u[DATA_SCHEMA.Korean]));
 		subj = dvSubjs.length > 0 ? pickRandom(dvSubjs) : selectSubjectUnit(options, targetId, false);
 	} else {
 		subj = selectSubjectUnit(options, targetId, false);
@@ -2412,11 +2413,11 @@ function buildASTForModifierOrParticleLike(unit, variationIndex = 0, options = {
 	const arg = (isAction && !hasTag(chosenVerb, "scalable_duration", "scalable_quantity"))
 		? selectArgumentForActionVerb(chosenVerb, options, targetId)
 		: { nounUnit: null };
-	if (isAction && arg.nounUnit && (new Set(["통화하다", "이야기하다", "인사하다", "싸우다", "결혼하다", "사귀다"])).has(chosenVerb[DATA_SCHEMA.Korean])) {
+	if (isAction && arg.nounUnit && (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_CHOSENVERB_DATA_SCHEMA_KOR_ONE_OF).has(chosenVerb[DATA_SCHEMA.Korean])) {
 		arg.particleType = "comitative";
 		arg.role = "comitative";
 		if (!hasTag(arg.nounUnit, K.PERSON, K.FAMILY, K.PROFESSION)) {
-			const personPool = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["친구", "동생", "형", "오빠", "누나", "언니", "학생", "부모님", "어머니", "아버지"])).has(n[DATA_SCHEMA.Korean]));
+			const personPool = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_AST_MODIFIER_OR_PARTICLE_LIKE_N_DATA_SCHEMA_KOREAN_ONE_OF_8).has(n[DATA_SCHEMA.Korean]));
 			if (personPool.length > 0) arg.nounUnit = pickRandom(personPool);
 		}
 	}
@@ -2501,7 +2502,7 @@ function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 	const ko = grammarUnit[DATA_SCHEMA.Korean];
 	const formulas = Array.isArray(grammarUnit[DATA_SCHEMA.Conjugation]) ? grammarUnit[DATA_SCHEMA.Conjugation] : [];
 
-	const isNegativeGrammar = hasTag(grammarUnit, K.NEGATIVE, K.INABILITY, K.PROHIBITION) || formulas.some(f => f.includes("못") || f.includes("안"));
+	const isNegativeGrammar = hasTag(grammarUnit, K.NEGATIVE, K.INABILITY, K.PROHIBITION) || formulas.some(f => HC.UNITGEN_AST_GRAMMAR_UNIT_F_INCLUDES_ONE_OF.some(_w => f.includes(_w)));
 	const isInability = hasTag(grammarUnit, K.INABILITY) || formulas.some(f => f.includes("못"));
 	const isImperativeOrPropositive = hasTag(grammarUnit, K.IMPERATIVE, K.PROPOSITIVE);
 	const avs = getAllUnitsOfPos(K.ACTION_VERB, options, targetId).filter(v => {
@@ -2522,7 +2523,7 @@ function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 		const missing = [];
 		if (needsAV && avs.length === 0) missing.push(K.ACTION_VERB);
 		if (needsDV && dvs.length === 0) missing.push(K.DESCRIPTIVE_VERB);
-		if (!needsAV && !needsDV && avs.length === 0 && dvs.length === 0 && !ko.includes("이에요") && !ko.includes("입니다") && !ko.includes("이야")) {
+		if (!needsAV && !needsDV && avs.length === 0 && dvs.length === 0 && !HC.UNITGEN_AST_GRAMMAR_UNIT_KO_INCLUDES_NONE_OF.some(_w => ko.includes(_w))) {
 			missing.push("Action or Descriptive Verb");
 		}
 		if (nouns.length === 0) missing.push(K.NOUN);
@@ -2568,14 +2569,8 @@ function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 	const clauses = [];
 
 	// Special handling for Noun-Conjunction + DV patterns (#276 (이)랑, #367 하고)
-	if (!options.onlyFromSet && (targetId === 276 || targetId === 367 || ko === "(이)랑" || ko === "하고")) {
-		const conjDomainSpecs = [
-			{ nouns: ["불고기", "비빔밥", "김밥", "냉면", "삼겹살", "피자", "자장면", "짬뽕", "우동", "초밥", "빵", "사과", "딸기", "과일", "김치"], dvs: ["맛있다", "좋다", "비싸다", "싸다", "많다"] },
-			{ nouns: ["커피", "녹차", "차", "우유", "주스", "물", "맥주"], dvs: ["맛있다", "따뜻하다", "시원하다", "좋다", "싸다"] },
-			{ nouns: ["책", "공책", "가방", "모자", "시계", "우산", "볼펜", "연필", "사전", "교과서"], dvs: ["좋다", "많다", "비싸다", "싸다", "작다", "크다", "필요하다"] },
-			{ nouns: ["교실", "도서관", "방", "집", "기숙사", "식당", "카페", "사무실", "공원"], dvs: ["깨끗하다", "조용하다", "넓다", "크다", "좋다", "가깝다"] },
-			{ nouns: ["친구", "동생", "학생", "요리사", "가수", "의사", "간호사"], dvs: ["친절하다", "바쁘다", "좋다", "유명하다"] }
-		];
+	if (!options.onlyFromSet && (targetId === 276 || targetId === 367 || HC.UNITGEN_AST_GRAMMAR_UNIT_KO_ONE_OF.includes(ko))) {
+		const conjDomainSpecs = HC.UNITGEN_AST_GRAMMAR_UNIT_CONJ_DOMAIN_SPECS;
 		const spec = conjDomainSpecs[variationIndex % conjDomainSpecs.length];
 		const domainNounSet = new Set(spec.nouns);
 		const domainDvSet = new Set(spec.dvs);
@@ -2639,7 +2634,7 @@ function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 			const minVal = minVals[variationIndex % minVals.length];
 			const hourKo = getKoreanNumber(hourVal, true);
 			const minKo = getSinoNumber(minVal);
-			const schedVerbs = avs.filter(v => (new Set(["일어나다", "출발하다", "도착하다", "만나다", "시작하다", "끝나다", "자다", "출근하다", "퇴근하다", "식사하다", "운동하다", "공부하다"])).has(v[DATA_SCHEMA.Korean]));
+			const schedVerbs = avs.filter(v => (HC.UNITGEN_AST_GRAMMAR_UNIT_V_DATA_SCHEMA_KOREAN_ONE_OF).has(v[DATA_SCHEMA.Korean]));
 			const schedVerb = schedVerbs[variationIndex % schedVerbs.length] || pickRandom(schedVerbs) || pickRandom(avs);
 			if (patSubj && schedVerb) {
 				return {
@@ -2676,7 +2671,7 @@ function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 			const freqKo = getKoreanNumber(freqVal, true);
 			const freqNumUnit = getAllUnitsOfPos(K.NUMBER, options, targetId).find(u => u[DATA_SCHEMA.Korean] === freqKo) || null;
 			const bunUnit = state.CLASSIFIER_UNITS.get("번") || getAllUnitsOfPos(K.NOUN, options, targetId).find(n => n[DATA_SCHEMA.Korean] === "번") || null;
-			const freqVerbs = avs.filter(v => (new Set(["읽다", "보다", "먹다", "만나다", "가다", "연습하다", "운동하다", "듣다", "부르다", "쓰다"])).has(v[DATA_SCHEMA.Korean]));
+			const freqVerbs = avs.filter(v => (HC.UNITGEN_AST_GRAMMAR_UNIT_V_DATA_SCHEMA_KOREAN_ONE_OF_2).has(v[DATA_SCHEMA.Korean]));
 			const freqVerb = freqVerbs[variationIndex % freqVerbs.length] || pickRandom(freqVerbs) || pickRandom(avs);
 			const freqArg = freqVerb ? selectArgumentForActionVerb(freqVerb, options, targetId) : { nounUnit: null };
 			if (patSubj && freqVerb) {
@@ -2730,16 +2725,16 @@ function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 			const counterKo = sinoVal >= 100 ? "원" : (variationIndex % 2 === 0 && sinoVal <= 5 ? "인분" : "쪽");
 			const cUnit = state.CLASSIFIER_UNITS.get(counterKo) || getAllUnitsOfPos(K.NOUN, options, targetId).find(n => n[DATA_SCHEMA.Korean] === counterKo) || null;
 			const itemPool = counterKo === "인분"
-				? nouns.filter(n => (new Set(["불고기", "삼겹살", "비빔밥", "냉면", "삼계탕"])).has(n[DATA_SCHEMA.Korean]))
+				? nouns.filter(n => (HC.UNITGEN_AST_GRAMMAR_UNIT_N_DATA_SCHEMA_KOREAN_ONE_OF).has(n[DATA_SCHEMA.Korean]))
 				: (counterKo === "원"
-					? nouns.filter(n => (new Set(["돈", "현금", "용돈", "배달비", "버스비"])).has(n[DATA_SCHEMA.Korean]))
-					: nouns.filter(n => (new Set(["책", "교과서", "소설책", "만화책", "잡지", "공책"])).has(n[DATA_SCHEMA.Korean])));
+					? nouns.filter(n => (HC.UNITGEN_AST_GRAMMAR_UNIT_N_DATA_SCHEMA_KOREAN_ONE_OF_2).has(n[DATA_SCHEMA.Korean]))
+					: nouns.filter(n => (HC.UNITGEN_AST_GRAMMAR_UNIT_N_DATA_SCHEMA_KOREAN_ONE_OF_3).has(n[DATA_SCHEMA.Korean])));
 			const itemNoun = itemPool[variationIndex % itemPool.length] || pickRandom(itemPool);
 			const verbPool = counterKo === "인분"
-				? avs.filter(v => (new Set(["시키다", "주문하다", "먹다", "사다"])).has(v[DATA_SCHEMA.Korean]))
+				? avs.filter(v => (HC.UNITGEN_AST_GRAMMAR_UNIT_V_DATA_SCHEMA_KOREAN_ONE_OF_3).has(v[DATA_SCHEMA.Korean]))
 				: (counterKo === "원"
-					? avs.filter(v => (new Set(["내다", "받다", "쓰다", "주다"])).has(v[DATA_SCHEMA.Korean]))
-					: avs.filter(v => (new Set(["읽다", "보다", "공부하다"])).has(v[DATA_SCHEMA.Korean])));
+					? avs.filter(v => (HC.UNITGEN_AST_GRAMMAR_UNIT_V_DATA_SCHEMA_KOREAN_ONE_OF_4).has(v[DATA_SCHEMA.Korean]))
+					: avs.filter(v => (HC.UNITGEN_AST_GRAMMAR_UNIT_V_DATA_SCHEMA_KOREAN_ONE_OF_5).has(v[DATA_SCHEMA.Korean])));
 			const qVerb = verbPool[variationIndex % verbPool.length] || pickRandom(verbPool);
 			if (patSubj && itemNoun && cUnit && qVerb) {
 				return {
@@ -2786,13 +2781,7 @@ function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 			const korVal = korVals[variationIndex % korVals.length];
 			const korAttrKo = getKoreanNumber(korVal, true);
 			const korNumUnit = getAllUnitsOfPos(K.NUMBER, options, targetId).find(u => u[DATA_SCHEMA.Korean] === korAttrKo) || null;
-			const korSpecs = [
-				{ c: "개", n: ["사과", "빵", "선물", "모자", "우산", "가방"], v: ["사다", "먹다", "주다", "받다"] },
-				{ c: "잔", n: ["커피", "녹차", "차", "우유", "주스", "물"], v: ["마시다", "사다", "시키다", "주문하다"] },
-				{ c: "병", n: ["물", "맥주", "우유", "주스"], v: ["마시다", "사다", "시키다"] },
-				{ c: "권", n: ["책", "공책", "교과서", "잡지"], v: ["읽다", "사다", "빌리다"] },
-				{ c: "마리", n: ["강아지", "고양이"], v: ["키우다", "보다", "좋아하다"] }
-			];
+			const korSpecs = HC.UNITGEN_AST_GRAMMAR_UNIT_KOR_SPECS;
 			const kSpec = korSpecs[variationIndex % korSpecs.length];
 			const cUnit = state.CLASSIFIER_UNITS.get(kSpec.c) || getAllUnitsOfPos(K.NOUN, options, targetId).find(n => n[DATA_SCHEMA.Korean] === kSpec.c) || null;
 			const nSet = new Set(kSpec.n);
@@ -2844,7 +2833,7 @@ function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 			const cardVal = cardVals[variationIndex % cardVals.length];
 			const cardKo = getKoreanNumber(cardVal, false);
 			const cardNumUnit = getAllUnitsOfPos(K.NUMBER, options, targetId).find(u => u[DATA_SCHEMA.Korean] === cardKo) || null;
-			const cardPool = nouns.filter(n => (new Set(["사과", "빵", "공책", "책", "연필", "볼펜", "지우개", "가방", "상자", "의자", "선물", "컵", "우산", "모자"])).has(n[DATA_SCHEMA.Korean]));
+			const cardPool = nouns.filter(n => (HC.UNITGEN_AST_GRAMMAR_UNIT_N_DATA_SCHEMA_KOREAN_ONE_OF_4).has(n[DATA_SCHEMA.Korean]));
 			const cardNoun = cardPool[variationIndex % cardPool.length] || pickRandom(cardPool);
 			const existDv = dvs.find(v => v[DATA_SCHEMA.Korean] === "있다");
 			if (cardNoun && existDv) {
@@ -2889,22 +2878,22 @@ function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 			const cleanAdverbCandidates = getAllUnitsOfPos(K.POS_ADVERB, options, targetId).filter(a => {
 				if (a[DATA_SCHEMA.PartofSpeech] !== K.POS_ADVERB) return false;
 				const aKo = a[DATA_SCHEMA.Korean];
-				if (aKo === "안" || aKo === "못") return false;
+				if (HC.UNITGEN_AST_GRAMMAR_UNIT_AKO_ONE_OF.includes(aKo)) return false;
 				if (!isNegativeGrammar && state.ALL_NPI_WORDS && state.ALL_NPI_WORDS.has(aKo)) return false;
 				if (hasTag(a, K.DISCOURSE, "conjunction", K.CONNECTIVE, "greeting", "interjection", "exclamation", "hesitation", K.TIME, "temporal", K.QUESTION_WORD, K.INTERROGATIVE, K.DEMONSTRATIVE, "concessive", "approximation", "number_unit")) return false;
-				if ((new Set(["그렇게", "이렇게", "저렇게", "다함께", "따로"])).has(aKo)) return false;
+				if ((HC.UNITGEN_AST_GRAMMAR_UNIT_AKO_ONE_OF_2).has(aKo)) return false;
 				if (isImperativeOrPropositive && parseSemanticData(a).target_pos === K.DESCRIPTIVE_VERB) return false;
 				return true;
 			});
 			const cleanAVs = avs.filter(v => {
 				const vKo = v[DATA_SCHEMA.Korean];
-				return !vKo.includes(" ") && !(new Set(["죽다", "걸리다", "지내다", "빌리다", "들다", "되다", "나다", "태어나다", "줄다", "늘다", "걱정되다", "들어주다", "대다", "도와드리다", "여쭙다"])).has(vKo) && !hasTag(v, "involuntary");
+				return !vKo.includes(" ") && !(HC.UNITGEN_AST_GRAMMAR_UNIT_VKO_ONE_OF).has(vKo) && !hasTag(v, "involuntary");
 			});
 			const cleanDVs = dvs.filter(v => {
 				const vKo = v[DATA_SCHEMA.Korean];
-				return !(new Set(["비슷하다", "다르다", "같다", "이다", "아니다", "태어나다", "줄다", "늘다", "걱정되다", "어떻다", "어떠하다", "어울리다", "오랜만이다", "행복하다", "외롭다", "불안하다", "부끄럽다", "슬프다", "기쁘다", "즐겁다", "부럽다", "그립다", "무섭다", "힘들다", "졸리다", "창피하다", "심심하다"])).has(vKo)
+				return !(HC.UNITGEN_AST_GRAMMAR_UNIT_VKO_ONE_OF_2).has(vKo)
 					&& !hasTag(v, K.DEMONSTRATIVE, K.QUESTION_WORD, K.INTERROGATIVE, "greeting", K.DISCOURSE)
-					&& !(tense !== K.PAST && (new Set(["잘생기다", "못생기다", "오래되다"])).has(vKo));
+					&& !(tense !== K.PAST && (HC.UNITGEN_AST_GRAMMAR_UNIT_VKO_ONE_OF_3).has(vKo));
 			});
 			const advPool = cleanAdverbCandidates.length > 0 ? cleanAdverbCandidates : getAllUnitsOfPos(K.POS_ADVERB, options, targetId).filter(a => a[DATA_SCHEMA.PartofSpeech] === K.POS_ADVERB);
 			const chosenAdv = pickRandom(advPool);
@@ -2944,7 +2933,7 @@ function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 							nounUnit: arg.nounUnit,
 							particleType: arg.particleType
 						});
-						if (arg.particleType === "location_static" && (new Set(["놓다", "올려놓다", "두다", "담다", "넣다"])).has(mainVerb[DATA_SCHEMA.Korean])) {
+						if (arg.particleType === "location_static" && (HC.UNITGEN_AST_GRAMMAR_UNIT_MAINVERB_DATA_SCHEMA_KOREA_ONE_OF).has(mainVerb[DATA_SCHEMA.Korean])) {
 							const objCands = filterBySet(getNounCandidatesForVerb(mainVerb), options, targetId).filter(n => !hasTag(n, K.MEASUREWORD, K.COUNTER, K.PLACE, K.FACILITY, "building", "furniture", K.VEHICLE, K.PROPER_NOUN));
 							const objNoun = pickRandom(objCands, options.seedOffset, options);
 							if (objNoun) {
@@ -2959,7 +2948,7 @@ function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 				} else {
 					const isColloquialAdv = Boolean(chosenAdv && chosenAdv[DATA_SCHEMA.Korean] === "완전");
 					const dvSubjPool = filterBySet(getSubjectCandidatesForDescriptiveVerb(mainVerb), options, targetId).filter(
-						n => !isColloquialAdv || (!isElderNoun(n) && !(new Set(["할아버지", "할머니"])).has(n[DATA_SCHEMA.Korean]))
+						n => !isColloquialAdv || (!isElderNoun(n) && !(HC.UNITGEN_AST_GRAMMAR_UNIT_N_DATA_SCHEMA_KOREAN_ONE_OF_5).has(n[DATA_SCHEMA.Korean]))
 					);
 					const subj = pickRandom(dvSubjPool.length > 0 ? dvSubjPool : filterBySet(getSubjectCandidatesForDescriptiveVerb(mainVerb), options, targetId));
 					if (subj) {
@@ -2990,7 +2979,7 @@ function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 			clauses.push({ constituents: mainClauseConstituents, predicate: mainPred });
 		} else {
 			const subRes = expandFormulaIntoClause(subFormula, grammarUnit, tense, politeness, options, targetId, true);
-			const EXCLUDED_CAUSAL_MAIN_VERBS = new Set(["돌아가시다", "기뻐하다", "몸이 떨리다"]);
+			const EXCLUDED_CAUSAL_MAIN_VERBS = HC.UNITGEN_AST_GRAMMAR_UNIT_EXCLUDED_CAUSAL_MAIN_VERBS;
 			const subSubjCon = (subRes && Array.isArray(subRes.constituents))
 				? subRes.constituents.find(c => (c.role === K.SUBJECT || c.role === K.TOPIC) && (c.nounUnit || c.unit))
 				: null;
@@ -3001,7 +2990,7 @@ function buildASTForGrammarUnit(grammarUnit, variationIndex = 0, options = {}) {
 			));
 			const isNominalReason = !subFormula.includes("VP_") && subFormula.includes("때문에");
 			const isClauseReasonWithDV = subFormula.includes("때문에") && subRes && subRes.predicate && subRes.predicate.predType === K.DESCRIPTIVE;
-			const NOMINAL_CAUSE_MAIN_VERBS = new Set(["피곤하다", "바쁘다", "힘들다", "늦다", "기쁘다", "슬프다", "건강하다", "괜찮다", "좋다", "나쁘다", "걱정되다", "쉬다", "일하다", "공부하다", "기다리다", "만나다", "가다", "오다", "먹다", "사다", "준비하다"]);
+			const NOMINAL_CAUSE_MAIN_VERBS = HC.UNITGEN_AST_GRAMMAR_UNIT_NOMINAL_CAUSE_MAIN_VERBS;
 			const mainAvPool = avs.filter(v => (v[DATA_SCHEMA.Id] === targetId || !EXCLUDED_CAUSAL_MAIN_VERBS.has(v[DATA_SCHEMA.Korean])) && (!(isNominalReason || isClauseReasonWithDV) || NOMINAL_CAUSE_MAIN_VERBS.has(v[DATA_SCHEMA.Korean])));
 			const compatibleDvPool = dvs.filter(v => {
 				if (v[DATA_SCHEMA.Id] !== targetId && EXCLUDED_CAUSAL_MAIN_VERBS.has(v[DATA_SCHEMA.Korean])) return false;
@@ -3095,7 +3084,7 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 	let predicate = null;
 
 	const isInterrogative = formula.includes("?") || hasTag(grammarUnit, K.INTERROGATIVE);
-	const isClauseNeg = hasTag(grammarUnit, K.NEGATIVE, K.INABILITY, K.PROHIBITION) || formula.includes("못") || formula.includes("안");
+	const isClauseNeg = hasTag(grammarUnit, K.NEGATIVE, K.INABILITY, K.PROHIBITION) || HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_FORMULA_INCLUDES_ONE_OF.some(_w => formula.includes(_w));
 	const isClauseInability = hasTag(grammarUnit, K.INABILITY) || formula.includes("못");
 	const isClauseImperative = hasTag(grammarUnit, K.IMPERATIVE);
 	const isClausePropositive = hasTag(grammarUnit, K.PROPOSITIVE);
@@ -3106,22 +3095,22 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 		if (isClauseInability && !canTakeMood(v, K.INABILITY)) return false;
 		if (isClauseImperative && !canTakeMood(v, K.IMPERATIVE)) return false;
 		if (isClausePropositive && !canTakeMood(v, K.PROPOSITIVE)) return false;
-		if ((isClausePropositive || isClauseImperative) && (new Set(["전화가 오다", "화가 나다", "비가 오다", "눈이 오다", "바람이 불다", "못하다", "잘하다", "방학하다", "나빠하다", "좋아하다", "싫어하다", "부러워하다", "슬퍼하다", "기뻐하다", "결석하다", "지각하다", "실수하다", "잊어버리다", "잃어버리다", "넘어지다", "때리다"])).has(v[DATA_SCHEMA.Korean])) return false;
-		if (isClausePropositive && ((new Set(["오다", "올라오다", "내려오다", "들어오다", "나오다", "돌아오다"])).has(v[DATA_SCHEMA.Korean]) || state.HONORIFIC_WORDS.has(v[DATA_SCHEMA.Korean]) || hasTag(v, K.HONORIFIC, "honorificVerb"))) return false;
+		if ((isClausePropositive || isClauseImperative) && (HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_V_DATA_SCHEMA_KOREAN_ONE_OF).has(v[DATA_SCHEMA.Korean])) return false;
+		if (isClausePropositive && ((HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_V_DATA_SCHEMA_KOREAN_ONE_OF_2).has(v[DATA_SCHEMA.Korean]) || state.HONORIFIC_WORDS.has(v[DATA_SCHEMA.Korean]) || hasTag(v, K.HONORIFIC, "honorificVerb"))) return false;
 		return true;
 	});
 	const dvs = getAllUnitsOfPos(K.DESCRIPTIVE_VERB, options, targetId).filter(v => {
 		if (v[DATA_SCHEMA.Id] === targetId) return true;
 		if (!isInterrogative && hasTag(v, K.QUESTION_WORD, K.INTERROGATIVE)) return false;
 		if (isClauseNeg && state.FORBIDDEN_NEGATIVE_ROOTS.has(v[DATA_SCHEMA.Korean])) return false;
-		if (tense !== K.PAST && (new Set(["잘생기다", "못생기다", "오래되다"])).has(v[DATA_SCHEMA.Korean])) return false;
+		if (tense !== K.PAST && (HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_V_DATA_SCHEMA_KOREAN_ONE_OF_3).has(v[DATA_SCHEMA.Korean])) return false;
 		return true;
 	});
 	const allNouns = getAllUnitsOfPos(K.NOUN, options, targetId).filter(
 		n => !hasTag(n, K.MEASUREWORD, K.COUNTER)
 			&& n[DATA_SCHEMA.Korean] !== "이"
 			&& !(hasTag(n, "colloquial") && parseSemanticData(n).polarity === -1)
-			&& (isInterrogative || (!hasTag(n, K.QUESTION_WORD, K.INTERROGATIVE) && !(new Set(["얼마", "누구", "무엇", "뭐", "어디", "언제", "몇", "며칠"])).has(n[DATA_SCHEMA.Korean])))
+			&& (isInterrogative || (!hasTag(n, K.QUESTION_WORD, K.INTERROGATIVE) && !(HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_N_DATA_SCHEMA_KOREAN_ONE_OF).has(n[DATA_SCHEMA.Korean])))
 	);
 
 	// Match tokens with their immediately following literal suffix up to the next space or token
@@ -3170,7 +3159,7 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 					const isDativeArg = arg.particleType === K.DATIVE || arg.role === K.RECIPIENT || arg.role === K.DATIVE;
 					let finalArgNoun = arg.nounUnit;
 					if (isDativeArg && !cVerbKo.includes("드리") && cVerbKo !== "여쭙다" && isElderNoun(finalArgNoun)) {
-						const nonElders = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (new Set(["친구", "동생", "남동생", "여동생", "학생", "아이"])).has(n[DATA_SCHEMA.Korean]));
+						const nonElders = getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => (HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_N_DATA_SCHEMA_KOREAN_ONE_OF_2).has(n[DATA_SCHEMA.Korean]));
 						if (nonElders.length > 0) finalArgNoun = pickRandom(nonElders, options.seedOffset, options);
 					}
 					constituents.push({
@@ -3178,9 +3167,9 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 						nounUnit: finalArgNoun,
 						particleType: arg.particleType
 					});
-					if (isDativeArg && (new Set(["가르치다", "주다", "드리다", "보내다", "선물하다", "빌려주다"])).has(cVerbKo)) {
+					if (isDativeArg && (HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_CVERBKO_ONE_OF).has(cVerbKo)) {
 						let objCands = cVerbKo === "가르치다"
-							? getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => !hasTag(n, K.MEASUREWORD, K.COUNTER, K.PERSON, K.PLACE, K.PROPER_NOUN) && (hasTag(n, "language", K.ACADEMIC, "hobby", "sport") || (new Set(["한국어", "영어", "일본어", "중국어", "요리", "노래", "운전", "컴퓨터", "수영", "태권도", "말"])).has(n[DATA_SCHEMA.Korean])))
+							? getAllUnitsOfPos(K.NOUN, options, targetId).filter(n => !hasTag(n, K.MEASUREWORD, K.COUNTER, K.PERSON, K.PLACE, K.PROPER_NOUN) && (hasTag(n, "language", K.ACADEMIC, "hobby", "sport") || (HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_N_DATA_SCHEMA_KOREAN_ONE_OF_3).has(n[DATA_SCHEMA.Korean])))
 							: filterBySet(getNounCandidatesForVerb(chosenVerb), options, targetId).filter(n => !hasTag(n, K.MEASUREWORD, K.COUNTER, K.PERSON, K.PLACE, K.PROPER_NOUN));
 						const objNoun = pickRandom(objCands, options.seedOffset, options);
 						if (objNoun) {
@@ -3243,7 +3232,7 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 			let pool = allNouns;
 			if (grammarUnit[DATA_SCHEMA.Korean] === "씨" || targetId === 23) {
 				const personalNames = allNouns.filter(
-					n => (new Set(["마리", "민수", "지훈", "수진", "영수", "유키", "올리비아", "미진", "리타오", "흐엉", "에릭", "민준"])).has(n[DATA_SCHEMA.Korean])
+					n => (HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_N_DATA_SCHEMA_KOREAN_ONE_OF_4).has(n[DATA_SCHEMA.Korean])
 						|| (hasTag(n, "properNoun", K.PROPER_NOUN) && hasTag(n, K.PERSON))
 				);
 				if (personalNames.length > 0) pool = personalNames;
@@ -3253,7 +3242,7 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 					const elders = allNouns.filter(
 						n => isElderNoun(n)
 							&& hasTag(n, K.PERSON, K.FAMILY, K.PROFESSION, "kinship_elder", "elder", K.ELDER_NOUN, "honorific_person")
-							&& !(new Set(["말씀", "진지", "연세", "성함", "생신", "댁", "병환", "약주"])).has(n[DATA_SCHEMA.Korean])
+							&& !(HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_N_DATA_SCHEMA_KOREAN_ONE_OF_5).has(n[DATA_SCHEMA.Korean])
 					);
 					if (elders.length > 0) pool = elders;
 				} else if (tag) {
@@ -3263,7 +3252,7 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 			}
 			const restOfFormula = formula.slice(m.index + m[0].length).trim();
 			const hasMoreTokens = /\{[^}]+\}/.test(restOfFormula);
-			const isCopulaEnding = !hasMoreTokens && (suffix.includes("이/예요") || suffix.includes("입니다") || suffix.includes("이야") || restOfFormula.includes("아니에요"));
+			const isCopulaEnding = !hasMoreTokens && (HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_SUFFIX_INCLUDES_ONE_OF_3.some(_w => suffix.includes(_w)) || restOfFormula.includes("아니에요"));
 
 			if (isCopulaEnding) {
 				const copulaNouns = pool.filter(n =>
@@ -3282,10 +3271,10 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 				const isHumanComp = hasTag(chosenNoun, K.PERSON, K.PROFESSION, "job", "status", "role", "nationality");
 				let subj = null;
 				if (isHumanComp) {
-					const humanPronouns = getAllUnitsOfPos(K.PRONOUN, options, targetId).filter(p => (new Set(["저", "나", "우리"])).has(p[DATA_SCHEMA.Korean]));
+					const humanPronouns = getAllUnitsOfPos(K.PRONOUN, options, targetId).filter(p => (HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_P_DATA_SCHEMA_KOREAN_ONE_OF).has(p[DATA_SCHEMA.Korean]));
 					subj = pickRandom(humanPronouns) || selectSubjectUnit(options, targetId, false);
 				} else {
-					const thingPronouns = getAllUnitsOfPos(K.PRONOUN, options, targetId).filter(p => (new Set(["이것", "그것", "저것", "이거", "그거", "저거"])).has(p[DATA_SCHEMA.Korean]));
+					const thingPronouns = getAllUnitsOfPos(K.PRONOUN, options, targetId).filter(p => (HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_P_DATA_SCHEMA_KOREAN_ONE_OF_2).has(p[DATA_SCHEMA.Korean]));
 					subj = pickRandom(thingPronouns);
 				}
 				if (subj && subj[DATA_SCHEMA.Id] !== chosenNoun[DATA_SCHEMA.Id]) {
@@ -3309,9 +3298,9 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 			} else {
 				const gKo = grammarUnit[DATA_SCHEMA.Korean] || "";
 				const inferredRole = (hasTag(grammarUnit, K.TOPIC) || suffix.includes("은/는")) ? K.TOPIC
-					: (hasTag(grammarUnit, K.SUBJECT) || suffix.includes("이/가") || suffix.includes("께서")) ? K.SUBJECT
+					: (hasTag(grammarUnit, K.SUBJECT) || HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_SUFFIX_INCLUDES_ONE_OF_2.some(_w => suffix.includes(_w))) ? K.SUBJECT
 					: (hasTag(grammarUnit, K.OBJECT) || suffix.includes("을/를")) ? K.OBJECT
-					: (hasTag(grammarUnit, K.DATIVE) || suffix.includes("에게") || suffix.includes("한테") || suffix === "께") ? K.RECIPIENT
+					: (hasTag(grammarUnit, K.DATIVE) || HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_SUFFIX_INCLUDES_ONE_OF.some(_w => suffix.includes(_w)) || suffix === "께") ? K.RECIPIENT
 					: (tag === K.PLACE || hasTag(grammarUnit, K.LOCATION, "location_action", K.DIRECTION, "directional")) ? K.LOCATION
 					: (tag === K.TIME || hasTag(grammarUnit, K.TIME, "temporal")) ? K.TIME
 					: "noun_phrase";
@@ -3334,7 +3323,7 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 				});
 
 				// If restOfFormula is a literal verb like "있어요" or "없어요", turn it into the predicate!
-				if (!hasMoreTokens && (restOfFormula === "있어요" || restOfFormula === "없어요")) {
+				if (!hasMoreTokens && (HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_RESTOFFORMULA_ONE_OF.includes(restOfFormula))) {
 					const existKo = restOfFormula === "없어요" ? "없다" : "있다";
 					const existUnit = dvs.find(v => v[DATA_SCHEMA.Korean] === existKo) || getLexiconIndex().verbByKo.get(existKo);
 					if (existUnit) {
@@ -3429,7 +3418,7 @@ function expandFormulaIntoClause(formula, grammarUnit, tense, politeness, option
 					? (pickRandom(nonHumbleAVs) || pickRandom(dvs))
 					: (selectDescriptiveVerbForNoun(baseNoun, { ...options, tense }, targetId) || selectActionVerbForNoun(baseNoun, options, targetId) || pickRandom(dvs) || pickRandom(avs));
 				if (chosenV) {
-					if ((new Set(["잘생기다", "못생기다", "오래되다"])).has(chosenV[DATA_SCHEMA.Korean]) && !options.tense) {
+					if ((HC.UNITGEN_EXPAND_FORMULA_INTO_CLAUSE_CHOSENV_DATA_SCHEMA_KOREAN_ONE_OF).has(chosenV[DATA_SCHEMA.Korean]) && !options.tense) {
 						tense = K.PAST;
 					}
 					const isAct = chosenV[DATA_SCHEMA.PartofSpeech] === K.ACTION_VERB;

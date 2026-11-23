@@ -1,4 +1,5 @@
 (function() {
+const { HANGUL_CONSTANTS: HC } = (typeof require !== 'undefined') ? require('../../data/hangul_constants.js') : window;
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('../../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
@@ -11,79 +12,14 @@ const { K } = (typeof require !== 'undefined') ? require('../../data/constants.j
  * Platform: Node.js & Browser (Vanilla JS, zero dependencies).
  */
 
-const PARTICLE_SPECS = Object.freeze([
-	// Compound particles (delimiter cliticized to case particle)
-	{ text: "에서는", ids: [199, 36], desc: "에서 + 는 (Location topic)", isCompound: true },
-	{ text: "에서도", ids: [199, 366], desc: "에서 + 도 (Location additive)", isCompound: true },
-	{ text: "에는", ids: [132, 36], desc: "에 + 는 (Time/Location topic)", isCompound: true },
-	{ text: "에다가", ids: [995, 996], desc: "에다가 (Location on / in addition to)", isCompound: true },
-	{ text: "에다", ids: [995, 996], desc: "에다 (Location on / in addition to)", isCompound: true },
-	{ text: "에도", ids: [132, 366], desc: "에 + 도 (Time/Location additive)", isCompound: true },
-	{ text: "에게는", ids: [618, 36], desc: "에게 + 는 (Dative topic)", isCompound: true },
-	{ text: "에게도", ids: [618, 366], desc: "에게 + 도 (Dative additive)", isCompound: true },
-	{ text: "한테는", ids: [618, 36], desc: "한테 + 는 (Dative informal topic)", isCompound: true },
-	{ text: "한테도", ids: [618, 366], desc: "한테 + 도 (Dative informal additive)", isCompound: true },
-	{ text: "에게나", ids: [618, 1333], desc: "에게 + 나 (Dative quantity/choice)", isCompound: true },
-	{ text: "만의", ids: [1402, 856], desc: "만 + 의 (Only + Possessive)", isCompound: true },
-	{ text: "에나", ids: [132, 1333], desc: "에 + 나 (Location + inclusive delimiter)", isCompound: true },
-	{ text: "께서도", ids: [648, 366], desc: "께서 + 도 (Honorific subject + also)", isCompound: true },
-	{ text: "께는", ids: [647, 36], desc: "께 + 는 (Dative honorific topic)", isCompound: true },
-	{ text: "께도", ids: [647, 366], desc: "께 + 도 (Dative honorific additive)", isCompound: true },
-
-	// Primary case & delimiter particles
-	{ text: "에서", ids: [199], desc: "에서 (Location of action / source)" },
-	{ text: "에게", ids: [618], desc: "에게 (Dative)" },
-	{ text: "한테", ids: [618], desc: "한테 (Dative informal)" },
-	{ text: "께", ids: [647], desc: "께 (Dative honorific)" },
-	{ text: "께서", ids: [648], desc: "께서 (Honorific subject marker)" },
-	{ text: "으로", ids: [1240, 1241, 1242], desc: "-(으)로 (Direction / Means / Status)", batchimReq: "consonant_not_l" },
-	{ text: "로", ids: [1240, 1241, 1242], desc: "-(으)로 (Direction / Means / Status)", batchimReq: "vowel_or_l" },
-	{ text: "이나", ids: [1333, 1334], desc: "이나 (Choice / Quantity)", batchimReq: true },
-	{ text: "나", ids: [1333, 1334], desc: "(이)나 (Choice / Quantity)", batchimReq: false },
-	{ text: "마다", ids: [1797], desc: "마다 (Each / Every)" },
-	{ text: "이랑", ids: [276], desc: "(이)랑 (And / With)", batchimReq: true },
-	{ text: "랑", ids: [276], desc: "(이)랑 (And / With)", batchimReq: false },
-	{ text: "이라서", ids: [1385], desc: "이라서 (Cause/reason for noun)", batchimReq: true },
-	{ text: "라서", ids: [1385], desc: "(이)라서 (Cause/reason for noun)", batchimReq: false },
-	{ text: "이라도", ids: [1453], desc: "(이)라도 (Compromise / At least)", batchimReq: true },
-	{ text: "라도", ids: [1453], desc: "(이)라도 (Compromise / At least)", batchimReq: false },
-	{ text: "하고", ids: [367], desc: "하고 (And / With)" },
-	{ text: "부터", ids: [1312], desc: "부터 (Starting point)" },
-	{ text: "까지", ids: [1826], desc: "까지 (Ending point)" },
-	{ text: "은", ids: [36], desc: "은 / 는 (Topic)", batchimReq: true },
-	{ text: "는", ids: [36], desc: "은 / 는 (Topic)", batchimReq: false },
-	{ text: "이", ids: [96], desc: "이 / 가 (Subject)", batchimReq: true },
-	{ text: "가", ids: [96], desc: "이 / 가 (Subject)", batchimReq: false },
-	{ text: "을", ids: [173], desc: "을 / 를 (Object)", batchimReq: true },
-	{ text: "를", ids: [173], desc: "을 / 를 (Object)", batchimReq: false },
-	{ text: "에", ids: [132, 200, 275], desc: "에 (Location / Direction / Time)" },
-	{ text: "과", ids: [1624], desc: "과 (And / With)", batchimReq: true },
-	{ text: "와", ids: [1624], desc: "와 (And / With)", batchimReq: false },
-	{ text: "도", ids: [366], desc: "도 (Also / Too)" },
-	{ text: "의", ids: [856, 857], desc: "의 (Possessive / Relation)" },
-	{ text: "보다", ids: [680], desc: "보다 (Comparative particle)" },
-	{ text: "만큼", ids: [1469], desc: "만큼 (Extent / Degree delimiter)" },
-	{ text: "밖에", ids: [1522], desc: "밖에 (Restriction / Only with negative verb)" },
-	{ text: "에게서", ids: [1706], desc: "에게서 (Ablative / From person formal)" },
-	{ text: "한테서", ids: [1707], desc: "한테서 (Ablative / From person informal)" },
-	{ text: "쯤", ids: [653], desc: "쯤 (Approximation particle)" },
-	{ text: "만", ids: [1402], desc: "만 (Only)" },
-	{ text: "아", ids: [1834], desc: "아 / 야 (Vocative)", batchimReq: true },
-	{ text: "야", ids: [1834], desc: "아 / 야 (Vocative)", batchimReq: false },
-	{ text: "이라고", ids: [1865], desc: "(이)라고 (Quotation)", batchimReq: true },
-	{ text: "라고", ids: [1865], desc: "(이)라고 (Quotation)", batchimReq: false }
-]);
+const PARTICLE_SPECS = HC.PARTICLE_PARTICLE_SPECS;
 
 /**
  * Permitted constituent particle sets for dynamic compound formation.
  * Korean morphology generally stacks delimiter/topic clitics onto case/source clitics.
  */
-const ALLOWED_COMPOUND_P1 = new Set([
-	"에서", "에", "에게", "한테", "께서", "으로", "로", "과", "와", "부터", "까지", "만", "보다"
-]);
-const ALLOWED_COMPOUND_P2 = new Set([
-	"는", "은", "도", "만", "의", "나", "야"
-]);
+const ALLOWED_COMPOUND_P1 = HC.PARTICLE_ALLOWED_COMPOUND_P1;
+const ALLOWED_COMPOUND_P2 = HC.PARTICLE_ALLOWED_COMPOUND_P2;
 
 /**
  * Finds exact particle match for a standalone particle word.
@@ -225,12 +161,7 @@ function recognizeCompoundParticle(word, vocabByKo = null, options = {}) {
 // Stems permitted to take the contracted topic particle -ㄴ (from -는, ID 36).
 // Restricting this prevents false positives on numbers (오->온, 사->산) and
 // adnominal modifier verb stems (온 from 오다, 산 from 사다, 찬 from 차다, 판 from 파다/판).
-const VALID_CONTRACTED_TOPIC_STEMS = new Set([
-	"나", "너", "저", "우리", "저희", "그대",
-	"이거", "그거", "저거", "여기", "거기", "저기", "어디",
-	"어제", "때", "오빠", "엄마", "아빠", "친구", "누나", "언니",
-	"뭐", "누구"
-]);
+const VALID_CONTRACTED_TOPIC_STEMS = HC.PARTICLE_VALID_CONTRACTED_TOPIC_STEMS;
 
 /**
  * Decomposes contracted enclitics (topic particle -ㄴ or object particle -ㄹ)

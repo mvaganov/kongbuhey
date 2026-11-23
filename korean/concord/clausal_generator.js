@@ -1,4 +1,5 @@
 (function() {
+const { HANGUL_CONSTANTS: HC } = (typeof require !== 'undefined') ? require('../../data/hangul_constants.js') : window;
 // Universal Constants
 var { K } = (typeof require !== 'undefined') ? require('../../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
@@ -234,123 +235,7 @@ function applyClausalConcord(input, options = {}) {
 	return str;
 }
 
-const CLAUSAL_QUIZ_BANKS = {
-	cause_imperative: [
-		{
-			clause1Nikka: "비가 오니까",
-			clause1Eoseo: "비가 와서",
-			clause1PastEoseo: "비가 왔어서",
-			clause1GiTtaemun: "비가 오기 때문에",
-			clause2: "우산을 쓰세요.",
-			explanation: "-(으)니까 allows imperative (-으세요) in Clause 2, whereas -아/어서 and -기 때문에 strictly forbid imperative and propositive endings. Additionally, -아/어서 does not allow past tense in Clause 1."
-		},
-		{
-			clause1Nikka: "날씨가 추우니까",
-			clause1Eoseo: "날씨가 추워서",
-			clause1PastEoseo: "날씨가 추웠어서",
-			clause1GiTtaemun: "날씨가 춥기 때문에",
-			clause2: "따뜻한 옷을 입으세요.",
-			explanation: "-(으)니까 allows imperative (-으세요) in Clause 2, whereas -아/어서 and -기 때문에 strictly forbid imperative endings."
-		},
-		{
-			clause1Nikka: "시간이 없으니까",
-			clause1Eoseo: "시간이 없어서",
-			clause1PastEoseo: "시간이 없었어서",
-			clause1GiTtaemun: "시간이 없기 때문에",
-			clause2: "빨리 가세요.",
-			explanation: "-(으)니까 allows imperative commands in Clause 2, while -아/어서 and -기 때문에 forbid imperative endings."
-		},
-		{
-			clause1Nikka: "길이 막히니까",
-			clause1Eoseo: "길이 막혀서",
-			clause1PastEoseo: "길이 막혔어서",
-			clause1GiTtaemun: "길이 막히기 때문에",
-			clause2: "지하철을 타세요.",
-			explanation: "-(으)니까 is used for reasons leading to commands or suggestions."
-		}
-	],
-	cause_propositive: [
-		{
-			clause1Nikka: "날씨가 좋으니까",
-			clause1Eoseo: "날씨가 좋아서",
-			clause1PastEoseo: "날씨가 좋았어서",
-			clause1GiTtaemun: "날씨가 좋기 때문에",
-			clause2: "공원에 갑시다.",
-			explanation: "Propositive proposals (-(으)ㅂ시다, -자) require -(으)니까 and cannot follow -아/어서 or -기 때문에."
-		},
-		{
-			clause1Nikka: "배가 고프니까",
-			clause1Eoseo: "배가 고파서",
-			clause1PastEoseo: "배가 고팠어서",
-			clause1GiTtaemun: "배가 고프기 때문에",
-			clause2: "식당에 갑시다.",
-			explanation: "Propositive proposals (-(으)ㅂ시다) require -(으)니까 and forbid -아/어서."
-		},
-		{
-			clause1Nikka: "시험이 끝나니까",
-			clause1Eoseo: "시험이 끝나서",
-			clause1PastEoseo: "시험이 끝났어서",
-			clause1GiTtaemun: "시험이 끝나기 때문에",
-			clause2: "영화를 봅시다.",
-			explanation: "Proposals for joint action require -(으)니까 and cannot take -아/어서."
-		}
-	],
-	reason_negative: [
-		{
-			correctC1: "공부하느라고",
-			pastC1: "공부했느라고",
-			adjC1: "방이 작느라고",
-			negOutcome: "잠을 못 잤어요.",
-			adjOutcome: "짐을 못 넣었어요.",
-			posOutcome: "시험에 합격했어요.",
-			explanation: "-느라고 strictly forbids past tense in Clause 1, requires an Action Verb (not a Descriptive Verb like 작다), and necessitates an unfortunate negative outcome or burden (not a success like 시험에 합격했어요)."
-		},
-		{
-			correctC1: "일하느라고",
-			pastC1: "일했느라고",
-			adjC1: "옷이 비싸느라고",
-			negOutcome: "점심을 못 먹었어요.",
-			adjOutcome: "사지 못했어요.",
-			posOutcome: "칭찬을 받았어요.",
-			explanation: "-느라고 requires an action verb in the present tense and connects to a negative outcome or burden."
-		},
-		{
-			correctC1: "준비하느라고",
-			pastC1: "준비했느라고",
-			adjC1: "날씨가 춥느라고",
-			negOutcome: "지각했어요.",
-			adjOutcome: "나가지 못했어요.",
-			posOutcome: "상을 받았어요.",
-			explanation: "-느라고 cannot take past tense, adjectives, or positive outcomes."
-		}
-	],
-	purpose_motion: [
-		{
-			actionC1: "책을 읽으러",
-			actionPastC1: "책을 읽었으러",
-			motionC2: "도서관에 가요.",
-			nonMotionC2a: "커피를 마셔요.",
-			nonMotionC2b: "집에 있어요.",
-			explanation: "-(으)러 strictly requires a motion verb (가다, 오다, 다니다) in Clause 2, and forbids past tense in Clause 1."
-		},
-		{
-			actionC1: "친구를 만나러",
-			actionPastC1: "친구를 만났으러",
-			motionC2: "카페에 왔어요.",
-			nonMotionC2a: "책을 읽어요.",
-			nonMotionC2b: "방에 있어요.",
-			explanation: "-(으)러 requires a motion verb in Clause 2 (가다, 오다, etc.) and non-past Clause 1."
-		},
-		{
-			actionC1: "운동을 하러",
-			actionPastC1: "운동을 했으러",
-			motionC2: "체육관에 가요.",
-			nonMotionC2a: "음악을 들어요.",
-			nonMotionC2b: "텔레비전을 봐요.",
-			explanation: "-(으)러 expresses purpose of motion and requires a directional motion verb in Clause 2."
-		}
-	]
-};
+const CLAUSAL_QUIZ_BANKS = HC.CLAUSAL_GEN_CLAUSAL_QUIZ_BANKS;
 
 function generateClausalQuizItem(options = {}) {
 	const rnd = (state && typeof state.seededRandom === 'function') ? state.seededRandom() : Math.random();

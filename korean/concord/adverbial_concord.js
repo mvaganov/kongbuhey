@@ -1,4 +1,5 @@
 (function() {
+const { HANGUL_CONSTANTS: HC } = (typeof require !== 'undefined') ? require('../../data/hangul_constants.js') : window;
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('../../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
@@ -28,20 +29,7 @@ const { DATA_SCHEMA, hasTag } = (typeof require !== 'undefined' ? require('../co
 const { ERROR_CODES } = (typeof require !== 'undefined' ? require('../constants/error_codes.js') : window);
 const { isDescriptiveVerb, isActionVerb } = (typeof require !== 'undefined' ? require('../core/morphology.js') : window);
 
-const NPI_NEGATIVE_PREFIX_REPAIRS = [
-	["알았", "몰랐"],
-	["알아", "몰라"],
-	["압니", "모릅니"],
-	["알다", "모르다"],
-	["알고", "모르고"],
-	["알면", "모르면"],
-	["있었", "없었"],
-	["있어", "없어"],
-	["있습니", "없습니"],
-	["있다", "없다"],
-	["있고", "없고"],
-	["있으면", "없으면"]
-];
+const NPI_NEGATIVE_PREFIX_REPAIRS = HC.ADVERB_NPI_NEGATIVE_PREFIX_REPAIRS;
 
 function isDegreeAdverb(wordOrUnit) {
 	if (!wordOrUnit) return false;

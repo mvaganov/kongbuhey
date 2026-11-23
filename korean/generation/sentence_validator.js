@@ -1,4 +1,5 @@
 (function() {
+const { HANGUL_CONSTANTS: HC } = (typeof require !== 'undefined') ? require('../../data/hangul_constants.js') : window;
 // Universal Constants
 const { K } = (typeof require !== 'undefined') ? require('../../data/constants.js') : (typeof window !== 'undefined' ? window : {});
 
@@ -52,13 +53,7 @@ const CLASSIFIER_DOMAIN_RULES = {
 };
 
 // Patterns representing unresolved generation syntax or morphology bugs
-const UNRESOLVED_PATTERNS = [
-	{ pattern: /\{[^}]*\}/, code: "UNRESOLVED_PLACEHOLDER", message: "Unresolved template placeholder remaining in Korean text" },
-	{ pattern: /이\/가|은\/는|을\/를|\(이\)랑|\(이\)나|이\/나|\(이\)라서|이\/라서|\(이\)라도|이\/라도|\(이\)든지|이\/든지|과\/와|와\/과/, code: "UNRESOLVED_PARTICLE_PAIR", message: "Unresolved particle alternation pair" },
-	{ pattern: /아\/어|으\/|았\/었/, code: "UNRESOLVED_VOWEL_HARMONY", message: "Unresolved vowel harmony / stem alternation marker" },
-	{ pattern: /\[[a-z_]+\]/, code: "UNRESOLVED_CONJUGATION_TAG", message: "Unresolved irregular conjugation tag" },
-	{ pattern: /\u200B/, code: "RESIDUAL_ZERO_WIDTH_SPACE", message: "Residual internal zero-width space marker (\u200B)" }
-];
+const UNRESOLVED_PATTERNS = HC.VALIDATOR_UNRESOLVED_PATTERNS;
 
 /**
  * Validates a realization against a SentenceAST.
