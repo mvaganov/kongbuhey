@@ -12,8 +12,10 @@ caches and the invariants that keep them exact, fc2 persistence layers, test arc
 - `node test.js`: default suite, ~30 s on a local disk (ESLint, data integrity, smoke generation, all test/ suites, then the fc2 build stamp if all passed). Run before every commit.
 - Agents running through `device_bash` on a mounted folder: file opens there are very slow (`require('jsdom')` took 25 s vs 0.4 s on the owner's host, so the suite took ~75 s). Run tests from a local copy instead (~30 s):
   `mkdir -p /tmp/kb && [ -d /tmp/kb/node_modules ] || cp -r node_modules /tmp/kb/` (once per session, ~45 s), then
-  `rsync -a --delete --exclude .git --exclude node_modules ./ /tmp/kb/ && (cd /tmp/kb && node test.js)` (sync 0.3 s), then `node tools/stamp.js` in the real repo (the stamp inside the copy is discarded).
+  `rsync -a --delete --exclude .git --exclude node_modules ./ /tmp/kb/ && (R=$PWD; cd /tmp/kb && node test.js --repo "$R")` (sync 0.3 s), then `node tools/stamp.js` in the real repo (the stamp inside the copy is discarded; `--repo` puts the full-sweep flag in the real repo).
   Edit only in the real repo; never copy files back from `/tmp/kb`.
+- `run_test_full_plz.txt` at the repo root means engine code (`korean/generation|core|concord/`) changed since the last passing `--full`
+  run (the default run samples generation and adds the file). Run `node test.js --full` before committing such a change; it deletes the file. Never commit it.
 - `node test.js --full`: adds the every-unit generation sweep (~20 s), the jsdom browser load test (slow on some disks), the CLI `--help` check (~2 s) and the generation bench (~10 s); the fc2 UI playthrough already runs by default.
 - `node tools/bench_generation.js`: generation timings (report only) plus deterministic checks against `test/bench_baseline.json`: work counters (caches stay warm, work does not grow) and a seeded output fingerprint. Run it before and after any generation refactor; `--save` only when the change is intended.
 - `npm run lint`: ESLint only. 0 errors required; `no-unused-vars` warnings are a dead-code cleanup backlog.
