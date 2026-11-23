@@ -515,6 +515,14 @@ class FC2App {
 		return u ? `<span class="vq-chip ${cls}">${escapeHtml(u[C.Korean])}<small>${escapeHtml(u[C.English])}</small></span>` : '';
 	}
 
+	/** Two or more missing units. Grammar has no chip in the sentence row, so it is listed here (a phone cannot show a hover title);
+	 * missing words are already red in the row, so they are counted. */
+	vqNeedsMany(miss) {
+		const grammar = miss.filter(x => x.slotIndex === null), words = miss.length - grammar.length;
+		const more = words ? ` <small class="vq-alt">+ ${words} red word${words > 1 ? 's' : ''}</small>` : '';
+		return `<span class="vq-lock many">🔒 needs ${grammar.map(x => this.vqChip(x.unitId, 'need')).join('')}${grammar.length ? more : `${words} red words`}</span>`;
+	}
+
 	vqHtml() {
 		const rows = this.vqRows();
 		if (!rows.length) return '<p class="muted">No verified sentence uses this unit. Its examples come from the generator.</p>';
@@ -522,7 +530,7 @@ class FC2App {
 			const miss = r.missing, missAt = new Set(miss.map(x => x.slotIndex).filter(x => x !== null));
 			const status = !miss.length ? '<span class="vq-ok">✓ ready</span>'
 				: miss.length === 1 ? `<span class="vq-lock">🔒 needs ${this.vqChip(miss[0].unitId, 'need')}${miss[0].pool > 1 ? `<small class="vq-alt">or any of ${miss[0].pool - 1} more</small>` : ''}</span>`
-				: `<span class="vq-lock many" title="${escapeHtml('needs: ' + miss.map(x => this.units.get(x.unitId)[C.Korean]).join(', '))}">🔒 2+</span>`;
+				: this.vqNeedsMany(miss);
 			const chips = r.slots.map(s => this.vqChip(s.unitId, s.role === 'target' ? 'tgt' : missAt.has(s.index) ? 'need' : '')).join('');
 			return `<li class="vq-row${miss.length ? ' locked' : ''}" data-tid="${escapeHtml(r.templateId)}"><span class="vq-grip" aria-label="Drag to reorder" title="Drag to reorder">⠿</span>
 				<div class="vq-main"><div class="vq-title"><b>${i + 1}</b> ${escapeHtml(r.ko || r.title)}</div><div class="vq-chips">${chips}</div><div class="vq-status">${status}</div></div>

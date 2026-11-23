@@ -198,7 +198,7 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		const seen = new Set();
 		for (let i = 0; i < 4; i++) for (const s of app.generateFor(unit).sentences) if (s.verifiedTemplateId) seen.add(s.verifiedTemplateId);
 		assert(fits.every(r => seen.has(r.templateId)), 'every fitting template shows up across a few cards');
-		// 3. the list view: ready sentences first, locked after; a single missing unit is highlighted, several show 2+
+		// 3. the list view: ready sentences first, locked after; a single missing unit is highlighted, several list their grammar
 		app.card = { id: unit, mode: 'learn', st: 'new', side: 'front', shownAt: Date.now(), trial: null, ...app.generateFor(unit) };
 		app.go('play');
 		const target = fits.map(r => ({ ...r, need: r.missing.map(m => m.unitId) })).sort((a, b) => a.need.length - b.need.length)[0];
@@ -212,7 +212,12 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(lockedAfterReady, 'sentences the owned units can build come before the ones that need an unlock');
 		const one = rows.find(r => r.dataset.tid === target.templateId);
 		assert(one && one.querySelector('.vq-lock:not(.many) .vq-chip.need'), 'a sentence missing exactly one unit highlights that unit');
-		assert(rows.some(r => r.querySelector('.vq-lock.many') && /2\+/.test(r.querySelector('.vq-lock.many').textContent)) || fits.length < 2, 'a sentence missing several units is marked 2+');
+		// Grammar has no chip in the sentence row, so a lock on several units lists the missing grammar (a phone has no hover title).
+		const byTid = new Map(app.vqRows().map(r => [r.templateId, r]));
+		const many = rows.filter(r => r.querySelector('.vq-lock.many'));
+		assert(many.length > 0 || fits.length < 2, 'some sentence is missing several units (needed to test the lock line)');
+		assert(many.every(r => { const m = byTid.get(r.dataset.tid).missing, g = m.filter(x => x.slotIndex === null).length; return r.querySelectorAll('.vq-lock.many .vq-chip.need').length === g && (g > 0 || /red word/.test(r.textContent)); }),
+			'a sentence missing several units names each missing grammar unit as a chip and counts the missing words');
 		// 4. reordering: Front / Back buttons and the drag move
 		const tids = () => [...d.querySelectorAll('.vq-row')].map(r => r.dataset.tid);
 		const group = r => r.classList.contains('locked');
