@@ -96,6 +96,9 @@ const ls = {
 class FC2App {
 	constructor(root) {
 		this.root = root;
+		// Time and randomness of the game flow. tools/fc2_sim.js (via the controller) swaps in a simulated clock and a seeded random.
+		this.clock = { sec: nowSec, ms: () => Date.now(), day: (offset = 0) => { const d = new Date(this.clock.ms() + offset * 864e5); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; } };
+		this.rand = Math.random;
 		// Custom names (Menu > Names) become runtime units before anything reads the unit list; changes apply on the next load.
 		this.customNameIds = this.injectCustomNames((ls.get(LS + 'opts', {}) || {}).names);
 		// Merged duplicates (alias rows, tools/merge_units.js) are not playable units; their saved state folds into the canonical unit in init().
@@ -149,14 +152,14 @@ class FC2App {
 		const merged = store().mergeProg(this.prog, folded.mirror, id => this.units.has(id), damaged);
 		this.prog = merged.prog;
 		let g = ls.get(LS + 'game', null);
-		if (!g || g.v !== 1) g = DEBUG === null ? this.migrate() : G.blankGame(nowSec());
-		const blank = G.blankGame(nowSec());
+		if (!g || g.v !== 1) g = DEBUG === null ? this.migrate() : G.blankGame(this.clock.sec());
+		const blank = G.blankGame(this.clock.sec());
 		this.g = { ...blank, ...g, cos: { ...blank.cos, ...g.cos }, totals: { ...blank.totals, ...g.totals } };
 		this.g.owned = fold({ prog: [], owned: this.g.owned }, this.alias).owned.filter(id => this.units.has(id));
 		this.ensureCoreUnlocked();
 		for (const id of new Set([...merged.healed, ...folded.moved])) this.saveUnit(id);
 		for (const [id, text] of Object.entries(this.notes)) if (text !== notesBefore[id]) this.saveCell(Number(id), 'notes', text);
-		const sess = store().unpackSession(ls.get(LS + 'session', null), nowSec(), 3 * 3600);
+		const sess = store().unpackSession(ls.get(LS + 'session', null), this.clock.sec(), 3 * 3600);
 		if (sess) this.session = { ...this.newSession(), ...sess, round: sess.round || this.newRound() };
 		this.applyCosmetics();
 		this.findRecoverable();
@@ -167,7 +170,7 @@ class FC2App {
 
 	/** First launch: adopt scores, timestamps, notes and flags from flashcards/ (kb.fc.v1.*). Scored cards start owned. */
 	migrate() {
-		const now = nowSec(), g = G.blankGame(now);
+		const now = this.clock.sec(), g = G.blankGame(now);
 		const deck = ls.get(OLD + 'deck', null), stats = ls.get(OLD + 'stats', {}) || {}, notes = ls.get(OLD + 'notes', {}) || {};
 		const scores = deck && deck.scores ? (Array.isArray(deck.scores) ? deck.scores : Object.entries(deck.scores)) : [];
 		for (const [k, raw] of scores) {
@@ -191,7 +194,7 @@ class FC2App {
 		return g;
 	}
 
-	save() { this.ensureCoreUnlocked(); this.syncAvail(); ls.set(LS + 'game', this.g); if (window.FC2Store) ls.set(LS + 'session', window.FC2Store.packSession(this.session, nowSec())); else store(); this.queueMirror(); }
+	save() { this.ensureCoreUnlocked(); this.syncAvail(); ls.set(LS + 'game', this.g); if (window.FC2Store) ls.set(LS + 'session', window.FC2Store.packSession(this.session, this.clock.sec())); else store(); this.queueMirror(); }
 	/** Write the progress mirror soon (debounced); flush() writes everything now (page hide, tab switch). */
 	queueMirror() { if (this.mirrorTimer) return; this.mirrorTimer = setTimeout(() => { this.mirrorTimer = null; this.writeMirror(); }, 250); }
 	/**
@@ -203,7 +206,7 @@ class FC2App {
 		const St = window.FC2Store, packed = St.packProg(this.prog);
 		if (!Object.keys(packed).length) { const old = ls.get(LS + 'prog', {}); if (old && Object.keys(old).length) return; }
 		ls.set(LS + 'prog', packed);
-		const next = St.addSnapshot(this.snaps, packed, nowSec());
+		const next = St.addSnapshot(this.snaps, packed, this.clock.sec());
 		if (next.length !== this.snaps.length || next.some((x, i) => x !== this.snaps[i])) {
 			for (const sn of next) if (!this.snaps.includes(sn) && this.g) sn.game = JSON.parse(JSON.stringify(this.g));   // new snapshot: keep coins, level, unlocks, upgrades too
 			this.snaps = next; ls.set(LS + 'snaps', next);
@@ -213,7 +216,7 @@ class FC2App {
 		if (!this.g) return;
 		if (this.mirrorTimer) { clearTimeout(this.mirrorTimer); this.mirrorTimer = null; }
 		this.writeMirror(); ls.set(LS + 'game', this.g);
-		if (window.FC2Store) ls.set(LS + 'session', window.FC2Store.packSession(this.session, nowSec()));
+		if (window.FC2Store) ls.set(LS + 'session', window.FC2Store.packSession(this.session, this.clock.sec()));
 	}
 	debugScene(name) { if (DEBUG === null) throw new Error('debug scenes need ?debug in the URL'); this.debug = name; window.FC2Debug.apply(this, name); }
 	unitOf(id) { return this.prog.get(id) || G.blankUnit(); }
@@ -235,10 +238,10 @@ class FC2App {
 	}
 
 	markSeen(ids) {
-		const t = nowSec();
+		const t = this.clock.sec();
 		for (const id of ids) if (this.units.has(id)) { this.prog.set(id, { ...this.unitOf(id), lastSeen: t }); this.saveCell(id, 'TimeStampLastSeen', t); }
 	}
-	classify() { return G.classify(this.prog, this.g.owned, nowSec()); }
+	classify() { return G.classify(this.prog, this.g.owned, this.clock.sec()); }
 	counts(st = this.classify()) { const c = { new: 0, learning: 0, growing: 0, ripe: 0, wilted: 0, dormant: 0 }; for (const s of st.values()) c[s]++; return c; }
 	applyCosmetics() {
 		document.body.dataset.theme = this.g.cos.theme;
@@ -318,7 +321,7 @@ class FC2App {
 	}
 
 	goalsHtml(c) {
-		const g = this.g, now = nowSec(), chips = [`Lv ${g.level + 1} in ${G.xpToNext(g.level) - g.xp} XP`], cost = G.pullCost(g);
+		const g = this.g, now = this.clock.sec(), chips = [`Lv ${g.level + 1} in ${G.xpToNext(g.level) - g.xp} XP`], cost = G.pullCost(g);
 		chips.push(cost <= g.coins ? `<b>Pull ready${cost ? '' : ' (free)'}</b>` : `Pull in ${fmt(cost - g.coins)} 냥`);
 		let best = null, soon = Infinity;
 		for (const id of g.owned) {
@@ -335,7 +338,7 @@ class FC2App {
 
 	mapHtml() {
 		this.ensureQuests();
-		const g = this.g, now = nowSec(), st = this.classify(), c = this.counts(st);
+		const g = this.g, now = this.clock.sec(), st = this.classify(), c = this.counts(st);
 		const trials = g.owned.filter(id => G.isTrial(this.unitOf(id), g.h[id] || 0, st.get(id))).length;
 		const idle = G.idleEarned(g, this.prog, now), rate = G.idleRate(g, this.prog, now);
 		const full = now >= g.lastCollect + G.offlineCapH(g) * G.HOUR;
@@ -373,7 +376,7 @@ class FC2App {
 
 	cheatTap(id) {
 		if (!this.g.owned.includes(id)) { this.toast('Locked unit'); FX.sfx('deny'); return; }
-		const p = { ...this.unitOf(id) }, now = nowSec();
+		const p = { ...this.unitOf(id) }, now = this.clock.sec();
 		p.score = Math.min(T.MAX_SCORE, p.score + 1);
 		if (!p.lastCorrect) p.lastCorrect = now;
 		if (!p.lastSeen) p.lastSeen = now;
@@ -399,7 +402,7 @@ class FC2App {
 	}
 
 	collect(el) {
-		const now = nowSec(), n = G.idleEarned(this.g, this.prog, now);
+		const now = this.clock.sec(), n = G.idleEarned(this.g, this.prog, now);
 		if (!n) return;
 		this.g.coins += n; this.g.totals.earned += n; this.g.lastCollect = now;
 		this.save();
@@ -411,7 +414,7 @@ class FC2App {
 	tileModal(id, edit = false) {
 		const u = this.units.get(id);
 		if (!this.g.owned.includes(id)) { this.toast(`Locked · ${u[C.Source]} · unlock with pulls`); FX.sfx('deny'); return; }
-		const p = this.unitOf(id), now = nowSec(), s = this.classify().get(id), I = T.INTERVAL[p.tier], rar = G.rarity(u[C.PriorityScore]);
+		const p = this.unitOf(id), now = this.clock.sec(), s = this.classify().get(id), I = T.INTERVAL[p.tier], rar = G.rarity(u[C.PriorityScore]);
 		const when = s === 'growing' ? `Ripe in ${dur(p.lastCorrect + I - now)}` : s === 'ripe' ? `Wilts in ${dur(p.lastCorrect + I * T.WILT_AFTER - now)}` : (s === 'wilted' ? 'A miss now costs a star' : '');
 		const row = (k, v) => `<tr><th>${k}</th><td>${v}</td></tr>`;
 		this.openModal(`${u[C.Korean]}`, `<div class="unit-en">${escapeHtml(u[C.English])}</div>
@@ -443,7 +446,7 @@ class FC2App {
 		if (field === 'score') p.score = Math.max(T.MIN_SCORE, Math.min(T.MAX_SCORE, n));
 		else if (field === 'tier') p.tier = Math.max(0, Math.min(T.TIERS.length - 1, n));
 		else if (field === 'h') this.g.h[id] = Math.max(0, n);
-		else if (field === 'lastCorrect' || field === 'lastSeen') p[field] = nowSec();
+		else if (field === 'lastCorrect' || field === 'lastSeen') p[field] = this.clock.sec();
 		else return;
 		this.prog.set(id, p);
 		this.saveUnit(id); this.save(); this.flush();
@@ -456,13 +459,13 @@ class FC2App {
 		this.editingNotes = false;
 		if (!pick) { this.card = null; return; }
 		const s = st.get(pick.id), u = this.unitOf(pick.id), trial = G.isTrial(u, this.g.h[pick.id] || 0, s);
-		this.card = { id: pick.id, mode: trial ? 'trial' : pick.mode, st: s, side: 'front', shownAt: Date.now(), trial: trial ? this.buildTrial(pick.id, u.tier) : null, ...this.generateFor(pick.id) };
+		this.card = { id: pick.id, mode: trial ? 'trial' : pick.mode, st: s, side: 'front', shownAt: this.clock.ms(), trial: trial ? this.buildTrial(pick.id, u.tier) : null, ...this.generateFor(pick.id) };
 	}
 
 	// G.sentenceOptions (game.js) is shared with tools/save_inspect.js, which replays a save's generation.
 	genOptions(targetId = null) {
 		const queue = window.FC2Queue && window.getAllVerifiedSentences ? window.FC2Queue.normalize(this.g.vq, this.vqIds()) : null;
-		return G.sentenceOptions({ owned: this.g.owned, opts: this.opts, unitOf: id => this.unitOf(id), now: nowSec(), queue, idOf: u => u[C.Id], recent: this.recent || [], targetId,
+		return G.sentenceOptions({ owned: this.g.owned, opts: this.opts, unitOf: id => this.unitOf(id), now: this.clock.sec(), queue, idOf: u => u[C.Id], recent: this.recent || [], targetId,
 			names: G.nameUse(this.nameRows || [], this.opts.names, C) });
 	}
 
@@ -749,7 +752,7 @@ class FC2App {
 		if (!k || k.mode === 'trial' || k.side !== 'back' || k.done) return;
 		k.done = true;
 		const u = this.unitOf(k.id);
-		this.advance(this.settle(G.answer(u, this.g.h[k.id] || 0, v, nowSec(), k.st), v, el, u.tier));
+		this.advance(this.settle(G.answer(u, this.g.h[k.id] || 0, v, this.clock.sec(), k.st), v, el, u.tier));
 	}
 
 	/** A trial choice was tapped: objective pass or fail, then the back of the card stays up until Continue. */
@@ -760,7 +763,7 @@ class FC2App {
 		k.passed = k.trial.choices[i].id === k.id;
 		this.root.querySelectorAll('#card .choice').forEach((b, j) => { b.disabled = true; if (k.trial.choices[j].id === k.id) b.classList.add('right'); else if (j === i) b.classList.add('wrong'); });
 		const u = this.unitOf(k.id);
-		this.settle(G.answerTrial(u, this.g.h[k.id] || 0, k.passed, nowSec(), k.st), k.passed ? 1 : -1, el, u.tier);
+		this.settle(G.answerTrial(u, this.g.h[k.id] || 0, k.passed, this.clock.sec(), k.st), k.passed ? 1 : -1, el, u.tier);
 		k.side = 'back';
 		setTimeout(() => { if (this.card !== k) return; this.renderScreen(false); const c = this.$('#card'); if (c) c.classList.add('flip'); this.$('#screen').scrollTop = 0; this.maybeSpeak('back'); }, k.passed ? 650 : 900);
 	}
@@ -771,7 +774,7 @@ class FC2App {
 	}
 
 	ensureQuests() {
-		if (G.ensureQuests(this.g, dayKey(), this.g.owned.some(id => this.unitOf(id).score >= T.ESTABLISHED))) this.save();
+		if (G.ensureQuests(this.g, this.clock.day(), this.g.owned.some(id => this.unitOf(id).score >= T.ESTABLISHED))) this.save();
 	}
 
 	/** Book an answer: unit progress, coins, xp, quests, effects. Returns the ms to wait before moving on. */
@@ -780,9 +783,9 @@ class FC2App {
 		this.prog.set(id, res.unit);
 		if (res.h) g.h[id] = res.h; else delete g.h[id];
 		this.saveUnit(id);
-		const streak = G.touchStreak(g, dayKey(), dayKey(-1));
+		const streak = G.touchStreak(g, this.clock.day(), this.clock.day(-1));
 		s.combo++;
-		const swift = (Date.now() - k.shownAt) / 1000 <= T.SWIFT_SEC, crit = ev.kind === 'harvest' && Math.random() < G.critChance(g);
+		const swift = (this.clock.ms() - k.shownAt) / 1000 <= T.SWIFT_SEC, crit = ev.kind === 'harvest' && this.rand() < G.critChance(g);
 		const coins = G.payout(g, ev, tierBefore, { combo: s.combo, swift, crit }), xp = G.xpFor(ev);
 		g.coins += coins; g.totals.earned += coins; g.totals.answers++;
 		if (ev.harvested) g.totals.harvests++;
@@ -832,12 +835,12 @@ class FC2App {
 		const ok = x => x[C.Id] !== id && x[C.Korean] !== u[C.Korean] && x[C.English] !== u[C.English] && !seen.has(key(x));
 		// Distractors: unlocked units of the same part of speech first, then the same pack, then anything.
 		for (const pool of [all.filter(x => owned.has(x[C.Id]) && pos(x)), all.filter(x => pos(x) && x[C.Source] === u[C.Source]), all.filter(pos), all]) {
-			for (const x of pool.sort(() => Math.random() - 0.5)) {
+			for (const x of pool.sort(() => this.rand() - 0.5)) {
 				if (picks.length >= n - 1) break;
 				if (ok(x)) { seen.add(key(x)); picks.push(x); }
 			}
 		}
-		return { type, tier, choices: [u, ...picks].map(x => ({ id: x[C.Id], label: label(x) })).sort(() => Math.random() - 0.5) };
+		return { type, tier, choices: [u, ...picks].map(x => ({ id: x[C.Id], label: label(x) })).sort(() => this.rand() - 0.5) };
 	}
 
 	trialHtml() {
@@ -962,7 +965,7 @@ class FC2App {
 	pull() {
 		const g = this.g, c = this.counts(), cost = G.pullCost(g);
 		if (cost > g.coins || c.new + c.learning >= G.nurseryCap(g)) { FX.sfx('deny'); return; }
-		const ids = G.pickPull(this.pullCandidates(), G.pullSize(g), Math.random, this.pullPack || null);
+		const ids = G.pickPull(this.pullCandidates(), G.pullSize(g), this.rand, this.pullPack || null);
 		if (!ids.length) return;
 		g.coins -= cost; g.pulls++; g.owned.push(...ids);
 		this.save();
@@ -1024,7 +1027,7 @@ class FC2App {
 		const nounsOf = ids => new Set(ids.filter(isNoun));
 		const cardNoun = isNoun(k.id), nouns = nounsOf([...mine].filter(id => !(cardNoun && id === k.id)));   // when the tested unit is a noun, its slot must differ in every option
 		const seen = new Set([norm(right), norm(String(s.enLiteral || ''))]), pool = [];
-		const shuffle = a => a.sort(() => Math.random() - 0.5), owned = this.g.owned;
+		const shuffle = a => a.sort(() => this.rand() - 0.5), owned = this.g.owned;
 		const inIt = [...mine].filter(id => id !== k.id && owned.includes(id));
 		const sources = [...(cardNoun ? [] : [k.id]), ...shuffle(inIt.filter(id => !isNoun(id))), ...shuffle(owned.filter(id => id !== k.id && !mine.has(id) && !isNoun(id))).slice(0, 5), ...shuffle(inIt.filter(isNoun))].slice(0, 10);
 		// Owned set and strength mean once per quiz, not once per generation call (~30). No queue order: wrong answers follow the queue's
@@ -1038,7 +1041,7 @@ class FC2App {
 			for (const [si, id] of sources.entries()) {
 				if (perfect >= budget.perfect) break;
 				let list = [];
-				try { for (let pass = 0; pass < (si < budget.deep ? budget.passes : 1); pass++) list.push(...Array.from(window.generateSentencesForUnit(id, budget.n, { ...genBase, seedOffset: Math.floor(Math.random() * 997), preferUnitIds: nouns }))); } catch (_) { /* fewer candidates */ }
+				try { for (let pass = 0; pass < (si < budget.deep ? budget.passes : 1); pass++) list.push(...Array.from(window.generateSentencesForUnit(id, budget.n, { ...genBase, seedOffset: Math.floor(this.rand() * 997), preferUnitIds: nouns }))); } catch (_) { /* fewer candidates */ }
 				for (const c of list) {
 					const en = this.enOf(c), key = norm(en);
 					if (!en || c.ko === s.ko || seen.has(key)) continue;
@@ -1047,7 +1050,7 @@ class FC2App {
 					seen.add(key);
 					const cn = nounsOf(ids), same = [...nouns].filter(x => cn.has(x)).length, repl = [...cn].filter(x => !nouns.has(x)), off = Math.abs(repl.length - (cardNoun ? 1 : 0));
 					if (same === nouns.size && off === 0) perfect++;
-					pool.push({ text: rev ? String(c.ko) : en, ids, repl, score: same * 10 - off * 6 + ids.filter(x => mine.has(x)).length, r: Math.random() });
+					pool.push({ text: rev ? String(c.ko) : en, ids, repl, score: same * 10 - off * 6 + ids.filter(x => mine.has(x)).length, r: this.rand() });
 				}
 			}
 		}
@@ -1060,7 +1063,7 @@ class FC2App {
 			for (const p of pool) { if (by.length >= 3) break; if (!by.includes(p)) by.push(p); }
 			picked = by;
 		}
-		return [{ text: rev ? String(s.ko) : right, ok: true, ids: [...mine] }, ...picked.map(p => ({ text: p.text, ok: false, ids: p.ids }))].sort(() => Math.random() - 0.5);
+		return [{ text: rev ? String(s.ko) : right, ok: true, ids: [...mine] }, ...picked.map(p => ({ text: p.text, ok: false, ids: p.ids }))].sort(() => this.rand() - 0.5);
 	}
 
 	get STEST_GUARD_MS() { return this.guardMs === undefined ? 450 : this.guardMs; }
@@ -1071,7 +1074,7 @@ class FC2App {
 		const rev = this.opts.reverse, pre = s.preTest, choices = pre && pre.key === `${rev}|${this.g.owned.length}` && pre.choices ? pre.choices : this.buildSentenceTest(s, rev);
 		s.preTest = null;   // each quiz is fresh: the next tap builds (or prefetches) a new one
 		if (!choices) { this.toast('No quick test for this sentence. Try ↻ New examples'); FX.sfx('deny'); return; }
-		this.stest = { k, s, choices, rev, done: false, picked: -1, readyAt: Date.now() + this.STEST_GUARD_MS };
+		this.stest = { k, s, choices, rev, done: false, picked: -1, readyAt: this.clock.ms() + this.STEST_GUARD_MS };
 		this.markSeen(new Set(choices.flatMap(c => c.ids || [])));   // every unit in the sentence and in the choices was read
 		FX.sfx('tap');
 		this.stestRender();
@@ -1088,7 +1091,7 @@ class FC2App {
 	stestPick(j, el) {
 		const t = this.stest;
 		if (!t || t.done || this.card !== t.k || t.k.done) return;
-		if (Date.now() < t.readyAt) return;   // a tap meant for the 🎯 button (or made while the quiz was appearing) must not answer it
+		if (this.clock.ms() < t.readyAt) return;   // a tap meant for the 🎯 button (or made while the quiz was appearing) must not answer it
 		t.done = true; t.picked = j;
 		const ok = t.choices[j].ok;
 		if (ok) { FX.sfx('answer', this.session.combo + 1); FX.buzz(15); FX.burstAt(el, { count: 20, power: 6 }); } else { FX.sfx('miss'); FX.buzz([20, 30, 20]); }
@@ -1106,13 +1109,13 @@ class FC2App {
 	 * second answer on a ripe unit pays as practice (one harvest per review). Wrong: "Missed it" for the card.
 	 */
 	sentenceSettle(s, ok) {
-		const k = this.card, g = this.g, now = nowSec(), el = this.$('#card'), u = this.unitOf(k.id);
+		const k = this.card, g = this.g, now = this.clock.sec(), el = this.$('#card'), u = this.unitOf(k.id);
 		k.done = true;
 		if (!ok) { this.advance(this.settle(G.answer(u, g.h[k.id] || 0, -1, now, k.st), -1, el, u.tier)); return; }
 		const st = this.classify(), rows = [], before = { ...u };
 		let xp = 0, coins = 0, ups = 0;
 		const credit = (id, row) => {
-			const r = this.creditAnswer(id, row.n ? G.status(this.unitOf(id), nowSec()) : st.get(id));
+			const r = this.creditAnswer(id, row.n ? G.status(this.unitOf(id), this.clock.sec()) : st.get(id));
 			row.n++; row.coins += r.coins; row.xp += r.xp; row.harvested = row.harvested || r.ev.harvested; row.established = row.established || r.ev.established; row.promoted = row.promoted || r.ev.promoted;
 			coins += r.coins; xp += r.xp; ups += r.ups;
 		};
@@ -1136,7 +1139,7 @@ class FC2App {
 
 	/** One right answer for a unit that is not the card being settled: everything an answer pays, without per-answer effects. */
 	creditAnswer(id, st) {
-		const g = this.g, ss = this.session, now = nowSec(), u = this.unitOf(id), h = g.h[id] || 0;
+		const g = this.g, ss = this.session, now = this.clock.sec(), u = this.unitOf(id), h = g.h[id] || 0;
 		const res = G.answer(u, h, 1, now, st), ev = res.ev;
 		this.prog.set(id, res.unit);
 		if (res.h) g.h[id] = res.h; else delete g.h[id];
@@ -1210,7 +1213,7 @@ class FC2App {
 
 	nbNext() {
 		const n = this.nb;
-		n.q = G.numberQuestion(n.mode, Math.random, n.q); n.done = false; n.picked = -1;
+		n.q = G.numberQuestion(n.mode, this.rand, n.q); n.done = false; n.picked = -1;
 		this.nbRender();
 		window.speakKorean(n.q.ko);
 	}
@@ -1304,14 +1307,14 @@ class FC2App {
 	recoverHintHtml() {
 		const r = this.recoverHint !== null && this.recoverHint !== undefined ? (this.recSources || [])[this.recoverHint] : null;
 		if (!r) return '';
-		return `<section class="panel hint-box"><b>💾 Found saved progress</b><p class="muted">${escapeHtml(r.label)}: ${r.st.scored} scored units, ${r.st.established} established, ${r.st.stars} stars${r.st.latest ? ', last activity ' + dur(nowSec() - r.st.latest) + ' ago' : ''}. This page has fewer.</p>
+		return `<section class="panel hint-box"><b>💾 Found saved progress</b><p class="muted">${escapeHtml(r.label)}: ${r.st.scored} scored units, ${r.st.established} established, ${r.st.stars} stars${r.st.latest ? ', last activity ' + dur(this.clock.sec() - r.st.latest) + ' ago' : ''}. This page has fewer.</p>
 			<div class="btn-row"><button type="button" class="btn primary" data-act="recover" data-i="${this.recoverHint}">Restore it</button>${r.game ? `<button type="button" class="btn" data-act="recover" data-i="${this.recoverHint}" data-game="1">Restore + game</button>` : ''}
 			<button type="button" class="btn" data-act="recover-open">See all copies</button></div></section>`;
 	}
 
 	recoverOpen() {
 		this.recSources = this.recoverySources();
-		const now = nowSec(), cur = window.FC2Store ? window.FC2Store.progStats(Object.fromEntries([...this.prog].map(([id, u]) => [id, [u.score, u.tier, u.lastCorrect, u.lastSeen]]))) : null;
+		const now = this.clock.sec(), cur = window.FC2Store ? window.FC2Store.progStats(Object.fromEntries([...this.prog].map(([id, u]) => [id, [u.score, u.tier, u.lastCorrect, u.lastSeen]]))) : null;
 		const rows = this.recSources.map((r, i) => `<tr><td>${escapeHtml(r.label)}<br><span class="muted">${r.st.scored} scored · ${r.st.established} established · ${r.st.stars} stars · last activity ${r.st.latest ? dur(now - r.st.latest) + ' ago' : 'unknown'}</span></td>
 			<td><button type="button" class="btn" data-act="recover" data-i="${i}">Restore</button>${r.game ? `<button type="button" class="btn" data-act="recover" data-i="${i}" data-game="1">+ game</button>` : ''}</td></tr>`).join('');
 		this.openModal('Recover progress', `<p class="muted">Now: ${cur ? `${cur.scored} scored · ${cur.established} established · ${cur.stars} stars` : 'unavailable (store.js missing: reload the page)'}.${EPHEMERAL ? ' <b>This is the ?debug page: it never saves. Open the normal page to recover.</b>' : ''}</p>
@@ -1324,7 +1327,7 @@ class FC2App {
 		const r = St.bestOf(this.prog, src.packed, id => this.units.has(id));
 		this.prog = r.prog;
 		if (withGame && src.game) {   // snapshots from this version on also hold the game (coins, level, unlocks, upgrades): replace the current one
-			const blank = G.blankGame(nowSec());
+			const blank = G.blankGame(this.clock.sec());
 			this.g = { ...blank, ...src.game, cos: { ...blank.cos, ...src.game.cos }, totals: { ...blank.totals, ...src.game.totals } };
 			this.g.owned = this.g.owned.filter(id => this.units.has(id));
 		}
@@ -1377,7 +1380,7 @@ class FC2App {
 		const msg = this.$('#backup-msg');
 		try {
 			const data = store().unpackBackup(this.$('#backup-text').value);
-			this.g = { ...G.blankGame(nowSec()), ...data.game };
+			this.g = { ...G.blankGame(this.clock.sec()), ...data.game };
 			this.opts = { ...DEFAULT_OPTS, ...data.opts };
 			if (data.flags) this.flags = data.flags;   // older backups carried flags; newer ones leave yours alone
 			for (const [id, u] of data.prog) { this.prog.set(id, u); this.saveUnit(id); }
@@ -1509,7 +1512,7 @@ class FC2App {
 			case 'clear-flags': if (window.confirm('Delete all flagged sentences?')) { this.flags = []; ls.set(LS + 'flags', this.flags); this.openModal('Flagged sentences', this.flagsHtml()); } break;
 			case 'restore': this.restore(); break;
 			case 'reset-game':
-				if (window.confirm('Reset coins, levels, unlocks and upgrades? Unit scores are kept.')) { this.g = G.blankGame(nowSec()); this.save(); this.session = this.newSession(); this.card = null; this.applyCosmetics(); this.render(); }
+				if (window.confirm('Reset coins, levels, unlocks and upgrades? Unit scores are kept.')) { this.g = G.blankGame(this.clock.sec()); this.save(); this.session = this.newSession(); this.card = null; this.applyCosmetics(); this.render(); }
 				break;
 			default: break;
 		}
