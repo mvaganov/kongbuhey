@@ -406,6 +406,13 @@ class FC2Core {
 		return { ids, cost, examples };
 	}
 
+	/** Verified example templates the unlocked units can fully build, of all: { usable, total }; null without the verified generator. */
+	examplesUsable() {
+		if (!this.env.criticalPath || !this.g) return null;
+		const ids = this.templateIds();
+		return { usable: this.env.criticalPath(this.g.owned, [], 0).before, total: ids ? ids.length : null };
+	}
+
 	/** The next `n` units of the Examples Critical Path from the current unlocks, with usable templates after each: [{ id, gain, usable }]. */
 	criticalPath(n = 10) {
 		if (!this.env.criticalPath) return null;

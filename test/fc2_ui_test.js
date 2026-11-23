@@ -106,6 +106,11 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		assert(path.after <= path.before || /verified example sentence/.test(d.querySelector('#modal').textContent), 'the reveal says how many example sentences became usable');
 		app.closeModal();
 		app.core.pullBlocked = saved.blocked; app.g.coins = saved.coins; app.g.owned = saved.owned; app.g.pulls = saved.pulls; app.pullPack = ''; app.save();
+		app.go('menu');
+		await until(() => { const el = d.querySelector('#ex-usable'); return el && /^\d[\d,]* \/ \d/.test(el.textContent); }, 5000);
+		const cell = d.querySelector('#ex-usable');
+		const want = app.core.examplesUsable();
+		assert(cell && cell.textContent.replace(/,/g, '') === `${want.usable} / ${want.total}`, `Menu > Progress shows the verified example sentences ready (${cell ? cell.textContent : 'missing'})`);
 	});
 
 	await step('learn a card', async () => {

@@ -276,7 +276,7 @@ function makeRunner(sim, logPath) {
 			if (!p) return 'no critical path (the verified generator is missing)';
 			return `verified templates usable now: ${p.before}\n` + p.steps.map((x, i) => `${String(i + 1).padStart(3)} ${String(x.id).padStart(5)} ${ko(x.id).padEnd(12)} gain ${x.gain}  -> ${x.usable} usable`).join('\n');
 		},
-		usable() { return vg.examplesCriticalPath(core.g.owned, [], 0).before; },
+		usable() { return core.examplesUsable().usable; },   // Menu > Progress "Verified example sentences ready"
 		writeSentences(file) {
 			const rows = Object.entries(stats.byKo).sort((a, b) => (a[1].src === b[1].src ? 0 : a[1].src === 'G' ? -1 : 1) || b[1].n - a[1].n);
 			const clean = t => String(t).replace(/[\t\n]/g, ' ');
@@ -293,7 +293,7 @@ function makeRunner(sim, logPath) {
 		wait(hours) { core.pauseSession(); sim.ms += Number(hours) * 3600 * 1000; if (core.card && !core.card.done) core.card = null; return `clock +${hours} h: ${new Date(sim.ms).toISOString()}`; },
 		status() {
 			const g = core.g, c = core.counts();
-			return `level ${g.level} xp ${g.xp}/${G.xpToNext(g.level)} coins ${g.coins} owned ${g.owned.length} stars ${g.owned.reduce((n, id) => n + core.unitOf(id).tier, 0)} seals ${g.seals} | ${Object.entries(c).map(([k, n]) => `${k} ${n}`).join(' ')} | pull ${G.pullCost(g)} (${core.pullBlocked() || 'ready'}) | ${new Date(sim.ms).toISOString()}`;
+			return `level ${g.level} xp ${g.xp}/${G.xpToNext(g.level)} coins ${g.coins} owned ${g.owned.length} stars ${g.owned.reduce((n, id) => n + core.unitOf(id).tier, 0)} seals ${g.seals} | ${Object.entries(c).map(([k, n]) => `${k} ${n}`).join(' ')} | pull ${G.pullCost(g)} (${core.pullBlocked() || 'ready'}) | verified examples ready ${(core.examplesUsable() || {}).usable}/${(core.examplesUsable() || {}).total} | ${new Date(sim.ms).toISOString()}`;
 		},
 		units(text = '') {
 			return core.g.owned.filter(id => !text || ko(id).includes(text)).map(id => { const p = core.unitOf(id); return `${id} ${ko(id)} score ${p.score} tier ${p.tier}`; }).join('\n') || '(none)';

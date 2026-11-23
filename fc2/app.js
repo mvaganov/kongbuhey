@@ -1106,14 +1106,25 @@ class FC2App {
 	}
 
 	// ---------- menu ----------
+	/** Fills Menu > Progress "Verified example sentences ready" after the Menu is drawn (the first count builds a model: ~0.3 s). */
+	fillExamplesUsable() {
+		setTimeout(() => {
+			const el = this.root.querySelector('#ex-usable');
+			if (!el) return;
+			try { const r = this.core.examplesUsable(); el.textContent = r ? `${fmt(r.usable)}${r.total ? ' / ' + fmt(r.total) : ''}` : '?'; } catch (err) { el.textContent = '?'; }
+		}, 30);
+	}
+
 	menuHtml() {
 		const o = this.opts, g = this.g, t = g.totals, c = this.counts();
+		this.fillExamplesUsable();
 		const select = (key, list, cur) => `<select data-opt="${key}">${list.map(([v, l]) => `<option value="${v}" ${String(cur) === String(v) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
 		const check = (key, label) => `<label class="row"><input type="checkbox" data-opt="${key}" ${o[key] ? 'checked' : ''}> ${label}</label>`;
 		const stars = g.owned.reduce((n, id) => n + this.unitOf(id).tier, 0);
 		return `<section class="panel"><h2>Progress</h2><table class="kv"><tr><th>Units unlocked</th><td>${g.owned.length} / ${this.playableUnits().length}</td></tr><tr><th>Stars · trials passed</th><td>${stars} ★ · ${fmt(t.trials || 0)}</td></tr><tr><th>Seals</th><td>${g.seals || 0} (+${Math.round((G.sealMult(g) - 1) * 100)}% coins)</td></tr>
 				<tr><th>Growing / ripe / wilted</th><td>${c.growing} / ${c.ripe} / ${c.wilted + c.dormant}</td></tr><tr><th>Answers · harvests · rounds</th><td>${fmt(t.answers)} · ${fmt(t.harvests)} · ${fmt(t.rounds)}</td></tr>
-				<tr><th>Coins earned</th><td>${fmt(t.earned)} 냥</td></tr><tr><th>Day streak</th><td>${g.streak.n} (+${Math.round((G.streakMult(g) - 1) * 100)}% coins)</td></tr></table></section>
+				<tr><th>Coins earned</th><td>${fmt(t.earned)} 냥</td></tr><tr><th>Day streak</th><td>${g.streak.n} (+${Math.round((G.streakMult(g) - 1) * 100)}% coins)</td></tr>
+				${window.examplesCriticalPath ? '<tr title="Textbook (📖) example sentences your unlocked units can fully build. Shop > From > Examples Critical Path raises it fastest."><th>Verified example sentences ready</th><td id="ex-usable">…</td></tr>' : ''}</table></section>
 			<section class="panel"><h2>Options</h2>${check('reverse', 'Test the Korean: show English on the front')}
 				<label class="row">Speak the Korean unit ${select('speak', SPEAK_MODES, o.speak)}</label>
 				<label class="row">Example sentences per card ${select('count', [1, 2, 3, 4, 5, 6].map(n => [n, n]), o.count)}</label>
