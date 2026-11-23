@@ -251,7 +251,10 @@ function generateTemplateTokenOptions(template, depth = 0) {
 			combinations.push(new TokenOption(prefix + sub.text, [...opt.units, ...sub.units]));
 		}
 	}
-	return combinations;
+	// A blind {Adv} can put a time word against the template's tense (방금 + -을 건가요?): drop those, as the other engines do.
+	const morph = (typeof require !== 'undefined') ? require('../core/morphology.js') : (typeof window !== 'undefined' ? window : {});
+	if (typeof morph.validateTemporalConcord !== 'function') return combinations;
+	return combinations.filter(c => morph.validateTemporalConcord(c.text).valid);
 }
 
 function generateTemplateOptions(template, depth = 0) {
