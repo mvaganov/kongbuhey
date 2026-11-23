@@ -326,7 +326,22 @@ function nextCard(g, units, st, s) {
 }
 const modeOf = st => (st === 'new' || st === 'learning') ? 'learn' : (st === 'growing' ? 'practice' : 'harvest');
 
-const api = { NUMBER_COST, NUMBER_WORDS, numberWord, numberQuestion, T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
+/**
+ * Sentence-generation options for a card. app.js genOptions() uses this, and tools/save_inspect.js replays it on a save file, so the
+ * two stay identical. onlyOwned -> sentences use unlocked units only. slotBias leans toward the units you know least: a slot filler
+ * stronger than the owned average is redrawn up to twice. queue: the normalized "time to use it" template order, or null.
+ */
+function sentenceOptions({ owned, opts, unitOf, now, queue, idOf, random = Math.random }) {
+	const options = { seedOffset: Math.floor(random() * 997) };
+	if (opts && opts.onlyOwned) { options.onlyFromSet = true; options.allowedUnitIds = new Set(owned); }
+	const strength = id => { const u = unitOf(id); return u ? effectiveScore(u, now) + u.tier : 0; };
+	const mean = owned.length ? owned.reduce((n, id) => n + strength(id), 0) / owned.length : 0;
+	if (queue) options.queueOrder = queue;
+	options.slotBias = { retries: 2, reject: unit => strength(idOf(unit)) > mean };
+	return options;
+}
+
+const api = { sentenceOptions, NUMBER_COST, NUMBER_WORDS, numberWord, numberQuestion, T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
 	idleEarned, idleRate, touchStreak, isTrial, answerTrial, sealMult, totalStars, sealsAvailable, ascend, ensureQuests, questEvent, claimQuest, packRank, rarity, pickPull, nextCard, modeOf, upLevel, upCost, comboCap, critChance, pullSize, pullCost,
 	nurseryCap, offlineCapH, streakMult };
 if (typeof window !== 'undefined') window.FC2Game = api;

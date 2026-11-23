@@ -194,5 +194,27 @@ assert(G.decay(est(0, 5 * HOUR), NOW) === 0 && G.decay(est(0, 13 * HOUR), NOW) =
 	assert(JSON.stringify(eng(mine)) === JSON.stringify(eng(srcs('flashcards'))), 'fc2/index.html loads the same data/ and korean/ scripts as flashcards/index.html');
 }
 
+// Backup format (Menu > Backup / restore) lives in store.js; tools/save_inspect.js reads saves with the same functions.
+{
+	const St = require('../fc2/store.js');
+	const game = { ...G.blankGame(1000), owned: [5, 7], coins: 42 };
+	const prog = new Map([[5, { score: 3, tier: 1, lastCorrect: 900, lastSeen: 950 }], [7, { score: 1, tier: 0, lastCorrect: 0, lastSeen: 10 }], [9, { score: 9, tier: 2, lastCorrect: 1, lastSeen: 1 }]]);
+	const text = St.packBackup({ game, opts: { onlyOwned: true }, prog, notes: { 5: 'n' } });
+	const back = St.unpackBackup(text);
+	assert(back.game.coins === 42 && back.opts.onlyOwned === true && back.notes[5] === 'n', 'backup round trip keeps game, opts and notes');
+	assert(back.prog.size === 2 && back.prog.get(5).lastSeen === 950 && !back.prog.has(9), 'backup holds the progress of owned units only');
+	let threw = false; try { St.unpackBackup('{"app":"other"}'); } catch (_) { threw = true; }
+	assert(threw, 'unpackBackup rejects a file that is not an fc2 backup');
+	assert(St.unpackBackup({ app: 'kongbuhey-fc2', game: {}, flags: [1] }).flags.length === 1, 'older backups with flags still unpack');
+}
+// Sentence options (app.js genOptions and tools/save_inspect.js gen share G.sentenceOptions)
+{
+	const prog = new Map([[1, { score: 9, tier: 2, lastCorrect: 100, lastSeen: 100 }], [2, { score: 0, tier: 0, lastCorrect: 0, lastSeen: 0 }]]);
+	const o = G.sentenceOptions({ owned: [1, 2], opts: { onlyOwned: true }, unitOf: id => prog.get(id) || G.blankUnit(), now: 100, queue: ['t1'], idOf: u => u.id, random: () => 0.5 });
+	assert(o.onlyFromSet && o.allowedUnitIds.has(2) && o.queueOrder[0] === 't1' && o.seedOffset === 498, 'sentenceOptions: unlocked-only set, queue order, seed');
+	assert(o.slotBias.reject({ id: 1 }) === true && o.slotBias.reject({ id: 2 }) === false, 'sentenceOptions: slot bias redraws the stronger unit, keeps the weaker');
+	assert(!G.sentenceOptions({ owned: [], opts: {}, unitOf: () => null, now: 0, queue: null, idOf: u => u }).onlyFromSet, 'sentenceOptions: onlyOwned off -> no set filter');
+}
+
 console.log(`\nfc2 game rules: ${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

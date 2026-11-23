@@ -69,7 +69,8 @@ window.addEventListener('unhandledrejection', ev => reportError('Unhandled promi
 
 // store.js holds the reload-safety logic. A phone can hold a stale cached index.html (no store.js tag) next to a fresh app.js: say so loudly
 // and keep playing without the localStorage mirror instead of failing to start.
-const NO_STORE = { packProg: () => ({}), mergeProg: prog => ({ prog, healed: [] }), packSession: () => null, unpackSession: () => null };
+const NO_BACKUP = () => { throw new Error('backup needs store.js, which did not load: reload the page'); };
+const NO_STORE = { packProg: () => ({}), mergeProg: prog => ({ prog, healed: [] }), packSession: () => null, unpackSession: () => null, packBackup: NO_BACKUP, unpackBackup: NO_BACKUP };
 let storeWarned = false;
 function store() {
 	if (window.FC2Store) return window.FC2Store;
@@ -454,15 +455,10 @@ class FC2App {
 		this.card = { id: pick.id, mode: trial ? 'trial' : pick.mode, st: s, side: 'front', shownAt: Date.now(), trial: trial ? this.buildTrial(pick.id, u.tier) : null, ...this.generateFor(pick.id) };
 	}
 
+	// G.sentenceOptions (game.js) is shared with tools/save_inspect.js, which replays a save's generation.
 	genOptions() {
-		const options = { seedOffset: Math.floor(Math.random() * 997) };
-		if (this.opts.onlyOwned) { options.onlyFromSet = true; options.allowedUnitIds = new Set(this.g.owned); }
-		// Lean toward the units you know least: a slot filler stronger than the owned average is redrawn up to twice. Every unit stays possible.
-		const now = nowSec(), strength = id => { const u = this.unitOf(id); if (!u) return 0; return G.effectiveScore(u, now) + u.tier; };
-		const owned = this.g.owned, mean = owned.length ? owned.reduce((n, id) => n + strength(id), 0) / owned.length : 0;
-		if (window.FC2Queue && window.getAllVerifiedSentences) options.queueOrder = window.FC2Queue.normalize(this.g.vq, this.vqIds());
-		options.slotBias = { retries: 2, reject: unit => strength(unit[C.Id]) > mean };
-		return options;
+		const queue = window.FC2Queue && window.getAllVerifiedSentences ? window.FC2Queue.normalize(this.g.vq, this.vqIds()) : null;
+		return G.sentenceOptions({ owned: this.g.owned, opts: this.opts, unitOf: id => this.unitOf(id), now: nowSec(), queue, idOf: u => u[C.Id] });
 	}
 
 	// ---------- verified-sentence queue ("time to use it"): the front of the queue is generated first; a generated template goes to the back ----------
@@ -1309,22 +1305,22 @@ class FC2App {
 		this.openModal('Force save', `<table class="kv">${rows.join('')}</table><p class="muted">${rows.some(r => r.includes('✖')) ? 'Something did not save: the red error box above has the details to copy.' : 'Everything above was written and read back.'}</p>`);
 	}
 
+	// The backup format lives in fc2/store.js (packBackup / unpackBackup), shared with tools/save_inspect.js. Flagged sentences are not
+	// included: they have their own ⬇ Flags export.
 	backupJson() {
-		const units = {};
-		for (const id of this.g.owned) { const u = this.unitOf(id); units[id] = [u.score, u.tier, u.lastCorrect, u.lastSeen]; }
-		return JSON.stringify({ app: 'kongbuhey-fc2', version: 1, game: this.g, opts: this.opts, units, notes: this.notes });   // flagged sentences are not included: they have their own ⬇ Flags export
+		const prog = new Map(this.g.owned.map(id => [id, this.unitOf(id)]));
+		try { return store().packBackup({ game: this.g, opts: this.opts, prog, notes: this.notes }); } catch (e) { return e.message; }
 	}
 
 	restore() {
 		const msg = this.$('#backup-msg');
 		try {
-			const data = JSON.parse(this.$('#backup-text').value);
-			if (data.app !== 'kongbuhey-fc2' || !data.game) throw new Error('Not an fc2 backup');
+			const data = store().unpackBackup(this.$('#backup-text').value);
 			this.g = { ...G.blankGame(nowSec()), ...data.game };
-			this.opts = { ...DEFAULT_OPTS, ...(data.opts || {}) };
-			if (Array.isArray(data.flags)) this.flags = data.flags;   // older backups carried flags; newer ones leave yours alone
-			for (const [k, a] of Object.entries(data.units || {})) { const id = Number(k); this.prog.set(id, { score: a[0], tier: a[1], lastCorrect: a[2], lastSeen: a[3] }); this.saveUnit(id); }
-			for (const [k, text] of Object.entries(data.notes || {})) { this.notes[k] = text; this.saveCell(Number(k), 'notes', text); }
+			this.opts = { ...DEFAULT_OPTS, ...data.opts };
+			if (data.flags) this.flags = data.flags;   // older backups carried flags; newer ones leave yours alone
+			for (const [id, u] of data.prog) { this.prog.set(id, u); this.saveUnit(id); }
+			for (const [k, text] of Object.entries(data.notes)) { this.notes[k] = text; this.saveCell(Number(k), 'notes', text); }
 			this.save(); ls.set(LS + 'opts', this.opts); ls.set(LS + 'flags', this.flags);
 			this.session = this.newSession(); this.card = null;
 			this.applyCosmetics(); this.closeModal(); this.render();

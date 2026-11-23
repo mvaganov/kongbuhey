@@ -115,7 +115,46 @@ function unpackSession(raw, now, maxAge) {
 	return { n: Number(raw.n) || 0, combo: Number(raw.combo) || 0, round: raw.round || undefined, due: new Map(Array.isArray(raw.due) ? raw.due : []), last: raw.last ?? null };
 }
 
-const api = { packProg, mergeProg, progStats, bestOf, foldAliases, addSnapshot, packSession, unpackSession };
+// ---------- Backup file (Menu > Backup / restore) ----------
+// The ONE place that knows the backup format: app.js builds and restores it with these, tools/save_inspect.js reads saves with them.
+// Change the format here (and bump BACKUP_VERSION, keeping unpackBackup able to read older versions).
+const BACKUP_APP = 'kongbuhey-fc2';
+const BACKUP_VERSION = 1;
+/**
+ * Fields of a backup (version 1):
+ *   app      'kongbuhey-fc2'
+ *   version  1
+ *   game     the game state (fc2/game.js blankGame): coins, xp, level, owned (unlocked unit ids, in unlock order),
+ *            h (id -> harvests toward the next star), up (upgrade levels), pulls, streak, cos (cosmetics), totals, seals,
+ *            starsBanked, ascensions, quests, vq ("time to use it" queue of verified template ids, front = longest unused)
+ *   opts     options (app.js DEFAULT_OPTS): onlyOwned (examples from unlocked units only), count (examples per card), speak,
+ *            reverse, sound, haptics, audioTrials
+ *   units    id -> [RecognitionScore, star tier, TimeStampLastCorrect, TimeStampLastSeen] for the unlocked units (epoch seconds)
+ *   notes    id -> markdown notes
+ *   flags    (older backups only) flagged sentences
+ */
+const BACKUP_FIELDS = ['app', 'version', 'game', 'opts', 'units', 'notes'];
+
+/** { game, opts, prog: Map id -> {score, tier, lastCorrect, lastSeen}, notes } -> backup JSON text. Only the owned units' progress is written. */
+function packBackup({ game, opts, prog, notes }) {
+	const units = {};
+	for (const id of game.owned || []) { const u = prog.get(id); if (u) units[id] = [u.score, u.tier, u.lastCorrect, u.lastSeen]; }
+	return JSON.stringify({ app: BACKUP_APP, version: BACKUP_VERSION, game, opts, units, notes: notes || {} });
+}
+
+/** Backup JSON text (or a parsed object) -> { version, game, opts, prog: Map, notes, flags|null }. Throws on anything that is not an fc2 backup. */
+function unpackBackup(textOrObj) {
+	const data = typeof textOrObj === 'string' ? JSON.parse(textOrObj) : textOrObj;
+	if (!data || data.app !== BACKUP_APP || !data.game) throw new Error('Not an fc2 backup');
+	const prog = new Map();
+	for (const [k, a] of Object.entries(data.units || {})) {
+		if (!Array.isArray(a)) continue;
+		prog.set(Number(k), { score: Number(a[0]) || 0, tier: Number(a[1]) || 0, lastCorrect: Number(a[2]) || 0, lastSeen: Number(a[3]) || 0 });
+	}
+	return { version: Number(data.version) || 1, game: data.game, opts: data.opts || {}, prog, notes: data.notes || {}, flags: Array.isArray(data.flags) ? data.flags : null };
+}
+
+const api = { packProg, mergeProg, progStats, bestOf, foldAliases, addSnapshot, packSession, unpackSession, BACKUP_APP, BACKUP_VERSION, BACKUP_FIELDS, packBackup, unpackBackup };
 if (typeof window !== 'undefined') window.FC2Store = api;
 if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })();

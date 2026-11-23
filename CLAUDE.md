@@ -47,6 +47,7 @@ statement. `test/cli_help_test.js` (in `node test.js --full`) finds CLIs by text
 - `tools/tatoeba_prefilter.js`: deterministic Tatoeba candidate filter.
 - `tools/merge_units.js`: merge duplicate language units.
 - `tools/stamp.js`: fc2 build stamp.
+- `tools/save_inspect.js`: fc2 save file (Backup / restore text) questions; `gen` replays the game's sentence generation.
 - `tools/bench_generation.js`: generation speed and output-unchanged check (baseline `test/bench_baseline.json`).
 - `tools/hangul_literals.js`: Hangul literals and magic unit ids in engine code (list, `--summary`, `--by-file`, `--by-function`, `--compare`, `--tables`); `--check` is a Stage 0 ratchet. New Hangul goes in `data/hangul_constants.js`.
 - `tools/only_expansion.js` (library): INSERT queues words that may fit `only`-list slots (`vs_tune.js expansions`).
