@@ -92,15 +92,16 @@ if (!fs.existsSync(studyPath) || !tracked) {
 		for (const s of v.split(/[.!?\n]+/).map(x => x.trim().replace(/\s+/g, ' '))) if ((s.match(hangul) || []).length >= 8) sentences.add(s);
 	}
 	const leaks = [];
+	// test/golden_sentences.json is exempt by decision 2026-11-23: its fixtures are sentences flagged by the owner and may quote the study texts.
 	for (const f of tracked) {
-		if (/^(node_modules|\.claude|docs\/kor_sentences|package-lock|studytexts)/.test(f) || !/\.(js|json|md|html|txt|tsv|css)$/.test(f)) continue;
+		if (/^(node_modules|\.claude|docs\/kor_sentences|package-lock|studytexts|test\/golden_sentences\.json)/.test(f) || !/\.(js|json|md|html|txt|tsv|css)$/.test(f)) continue;
 		let text;
 		try { text = fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/\s+/g, ' '); } catch (_) { continue; }
 		let n = 0;
 		for (const s of sentences) if (text.includes(s)) n++;
 		if (n > (KNOWN_LEAKS[f] || 0)) leaks.push(`${f} (${n})`);
 	}
-	assert(leaks.length === 0, `no tracked file contains a textbook sentence (${sentences.size} checked)${leaks.length ? ': ' + leaks.join(', ') : ''}`);
+	assert(leaks.length === 0, `no tracked file contains a textbook sentence (${sentences.size} checked)${leaks.length ? ': ' + leaks.join(', ') + ' (file (number of textbook sentences found in it)). Textbook text must stay in gitignored local/. Move it there, or if it is deliberate add the file to KNOWN_LEAKS (allowed count) or to the skip list above.' : ''}`);
 }
 
 console.log(`\nTOTAL: ${passed + failed}  PASSED: ${passed}  FAILED: ${failed}`);

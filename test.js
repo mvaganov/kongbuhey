@@ -544,7 +544,7 @@ function runTests(options = {}) {
 		if (slow.length) console.log(`        (${rest} other suites under 1 s)`);
 		if (echoed.length) { console.log('        Generation bench (ms; "was" = tools/bench_generation.js baseline):'); for (const l of echoed.filter(l => !/\[PASS\]/.test(l))) console.log('      ' + l); }
 	} catch (err) {
-		failFast("Stage 6 (Semantic & Honorific Concord)", err.stdout || err.stderr || err.message);
+		failFast("Stage 6 (Semantic & Honorific Concord)", [err.stdout, err.stderr].filter(Boolean).join('\n') || err.message);   // both streams: suites print [FAIL] lines to stderr
 	}
 
 	// The stamp of approval: only a fully green run stamps the fc2 build (hash of everything the page loads, ?v= cache busting, version.js).
