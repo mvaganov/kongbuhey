@@ -3526,6 +3526,9 @@ function generateSentenceForUnitImpl(unitOrId, options = {}) {
 		};
 	}
 
+	const needs = ensureRequiredAdverbs(buildRes.ast, options, targetUnit[DATA_SCHEMA.Id]);
+	if (!needs.ok) return needs;
+
 	const realized = realizeKoreanFromAST(buildRes.ast);
 	let sentenceValidatorModule;
 	try {
@@ -3553,6 +3556,31 @@ function generateSentenceForUnitImpl(unitOrId, options = {}) {
 		targetUnitId: targetUnit[DATA_SCHEMA.Id],
 		...realized
 	};
+}
+
+/**
+ * A verb whose SemanticData has needsAdv (unit ids) is incomplete without one of those adverbs (지내다 needs 잘: "X는 지내요" is not
+ * a sentence). Every clause with such a predicate gets one (replacing any other adverb); with none usable, the build fails.
+ */
+function ensureRequiredAdverbs(ast, options, targetId) {
+	const units = dataModule.KR_EN_languageUnits || [];
+	for (const clause of (ast && ast.clauses) || []) {
+		const verb = clause.predicate && clause.predicate.verbUnit;
+		const need = verb ? parseSemanticData(verb).needsAdv : null;
+		if (!Array.isArray(need) || !need.length) continue;
+		const cons = clause.constituents || (clause.constituents = []);
+		const has = c => c && c.unit && need.includes(c.unit[DATA_SCHEMA.Id]);
+		if (cons.some(has)) continue;
+		const usable = filterBySet(need.map(id => units[id]).filter(Boolean), options, targetId);
+		const adv = pickRandom(usable);
+		if (!adv) {
+			return { ok: false, insufficientSet: true, missingRoles: ["Adverb"],
+				message: `'${verb[DATA_SCHEMA.Korean]}' needs ${need.map(id => units[id] ? units[id][DATA_SCHEMA.Korean] : id).join(' or ')}: unlock it to see this verb in sentences.` };
+		}
+		for (let i = cons.length - 1; i >= 0; i--) if (cons[i].role === K.ADVERB) cons.splice(i, 1);
+		cons.push({ role: K.ADVERB, unit: adv, particleType: null });
+	}
+	return { ok: true };
 }
 
 /**

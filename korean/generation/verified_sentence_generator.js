@@ -1629,7 +1629,9 @@ function pickCandidateOnce(candidates, options = {}, slotIndex = 0, attempt = 0)
 		const preferred = candidates.filter(u => options.preferUnitIds.has(u[DATA_SCHEMA.Id]));
 		if (preferred.length > 0) pool = preferred;
 	}
-	const tier = options.difficultyTier || options.tier;
+	// A redraw (slotBias retry, attempt > 0) ignores the difficulty tier: in a small unlocked set the easiest tier is often a single
+	// unit, and redrawing inside it returned the same word on every visit of a card (밑에 ... 있습니다; found by tools/fc2_sim.js).
+	const tier = attempt > 0 ? null : (options.difficultyTier || options.tier);
 
 	if (tier === 'easiest') {
 		// Tier 1: Easiest vocabulary (lowest PriorityScore available)
@@ -1638,7 +1640,7 @@ function pickCandidateOnce(candidates, options = {}, slotIndex = 0, attempt = 0)
 			const sc = candidates[i][DATA_SCHEMA.PriorityScore] || 3;
 			if (sc < minScore) minScore = sc;
 		}
-		const easyGroup = candidates.filter(u => (u[DATA_SCHEMA.PriorityScore] || 3) <= minScore);
+		const easyGroup = candidates.filter(u => (u[DATA_SCHEMA.PriorityScore] || 3) <= minScore + 1);   // within one level: one word was too few
 		if (easyGroup.length > 0) pool = easyGroup;
 	} else if (tier === 'easy_and_inset') {
 		// Tier 2: 50% in-set vocabulary / 50% easy vocabulary (PriorityScore <= 2)

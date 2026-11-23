@@ -2266,6 +2266,30 @@
       "confidence": "clear",
       "status": "fixed",
       "addedAt": "2026-11-20"
+    },
+    {
+      "id": "g181",
+      "templateId": "vs_minimal_2",
+      "slot": 1,
+      "unitId": 795,
+      "expect": "bad",
+      "ko": "밥 지내러 가요.",
+      "reason": "밥 지내러 가요: 지내다 takes no object; the slot is eat verbs",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-23"
+    },
+    {
+      "id": "g182",
+      "templateId": "vs_83",
+      "slot": 1,
+      "unitId": 795,
+      "expect": "bad",
+      "ko": "안 지내 본 사람들은 꼭 드셔 보세요~",
+      "reason": "안 지내 본 ... 드셔 보세요: the slot is eat/drink verbs",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-23"
     }
   ]
 }

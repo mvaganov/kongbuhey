@@ -438,6 +438,33 @@ for (const npi of npiList) {
 	assert(words.length > 0 && special.length === 0, `NPI and manner adverb words are plain text, so the literal pre-check is exact`, special.join(', '));
 }
 
+// needsAdv (SemanticData): a verb that is incomplete without an adverb (지내다 needs 잘). Found by tools/fc2_sim.js: "광고 회사는 지내요."
+{
+	const usg = require('../korean/generation/unit_sentence_generator.js');
+	const korean = require('../korean/index.js');
+	const units = require('../data/data.js').KR_EN_languageUnits, C = require('../data/data.js').DATA_SCHEMA;
+	const verbs = units.filter(u => u && Array.isArray(require('../korean/core/primitives.js').parseSemanticData(u).needsAdv));
+	assert(verbs.length > 0, 'some verb declares needsAdv');
+	const missing = [];
+	let n = 0;
+	for (const v of verbs) {
+		const need = require('../korean/core/primitives.js').parseSemanticData(v).needsAdv.map(id => units[id][C.Korean]);
+		for (let seed = 1; seed <= 12; seed++) {
+			korean.setRandomSeed(seed);
+			const r = usg.generateSentenceForUnit(v, { variationIndex: seed % 3, seedOffset: seed });
+			if (!r || !r.ok) continue;
+			n++;
+			if (!need.some(a => r.ko.split(/\s+/).includes(a))) missing.push(r.ko);
+		}
+		// Without the adverb unlocked, the verb gets no generated sentence (not a sentence missing it).
+		const set = new Set(units.filter(u => u && u[C.Source] === 'SUOBI01').map(u => u[C.Id]).concat(v[C.Id]));
+		for (const id of require('../korean/core/primitives.js').parseSemanticData(v).needsAdv) set.delete(id);
+		const r = usg.generateSentenceForUnit(v, { onlyFromSet: true, allowedUnitIds: set, variationIndex: 0 });
+		assert(!r.ok, `${v[C.Korean]} without its adverb unlocked builds no sentence`, r.ko || '');
+	}
+	assert(n > 0 && missing.length === 0, `generated sentences with a needsAdv verb carry the adverb (${n} sentences)`, missing.slice(0, 3).join(' | '));
+}
+
 console.log("\n======================================================");
 console.log(`TOTAL TESTS: ${totalTests}`);
 console.log(`PASSED:      ${passedTests}`);
