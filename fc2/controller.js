@@ -188,6 +188,220 @@ class FC2Core {
 		return [{ text: rev ? String(s.ko) : right, ok: true, ids: [...mine] }, ...picked.map(p => ({ text: p.text, ok: false, ids: p.ids }))].sort(() => this.rand() - 0.5);
 	}
 
+	// ---------- the card loop ----------
+	ensureQuests() {
+		if (G.ensureQuests(this.g, this.clock.day(), this.g.owned.some(id => this.unitOf(id).score >= T.ESTABLISHED))) this.persist.game();
+	}
+
+	/** The next card (or null when nothing is owned), with its trial and example sentences. */
+	pickCard() {
+		const st = this.classify(), pick = G.nextCard(this.g, this.prog, st, this.session);
+		if (!pick) { this.card = null; return null; }
+		const s = st.get(pick.id), u = this.unitOf(pick.id), trial = G.isTrial(u, this.g.h[pick.id] || 0, s);
+		this.card = { id: pick.id, mode: trial ? 'trial' : pick.mode, st: s, side: 'front', shownAt: this.clock.ms(), trial: trial ? this.buildTrial(pick.id, u.tier) : null, ...this.generateFor(pick.id) };
+		return this.card;
+	}
+
+	/** Turn the front of a learn/harvest card over. False when there is nothing to flip. */
+	flip() {
+		if (!this.card || this.card.side !== 'front' || this.card.mode === 'trial') return false;
+		this.card.side = 'back';
+		return true;
+	}
+
+	/**
+	 * Book an answer for the current card: unit progress, coins, xp, quests, streak, the learning queue. Returns what the view needs for its
+	 * effects: { id, ev, coins, xp, ups, crit, swift, passed, streak, combo, unit }.
+	 */
+	settle(res, v, tierBefore) {
+		const k = this.card, g = this.g, s = this.session, id = k.id, ev = res.ev, passed = ev.kind === 'trial' && ev.promoted;
+		this.prog.set(id, res.unit);
+		if (res.h) g.h[id] = res.h; else delete g.h[id];
+		this.persist.unit(id);
+		const streak = G.touchStreak(g, this.clock.day(), this.clock.day(-1));
+		s.combo++;
+		const swift = (this.clock.ms() - k.shownAt) / 1000 <= T.SWIFT_SEC, crit = ev.kind === 'harvest' && this.rand() < G.critChance(g);
+		const coins = G.payout(g, ev, tierBefore, { combo: s.combo, swift, crit }), xp = G.xpFor(ev);
+		g.coins += coins; g.totals.earned += coins; g.totals.answers++;
+		if (ev.harvested) g.totals.harvests++;
+		if (passed) g.totals.trials = (g.totals.trials || 0) + 1;
+		const ups = G.addXp(g, xp);
+		if (res.unit.score < T.ESTABLISHED) s.due.set(id, s.n + 1 + T.LEARN_GAP[v]); else s.due.delete(id);
+		s.n++; s.last = id;
+		const r = s.round;
+		r.n++; r.coins += coins; r.xp += xp; r.est += ev.established ? 1 : 0; r.promo += ev.promoted ? 1 : 0; r.harvest += ev.harvested ? 1 : 0; r.lapsed += ev.lapsed ? 1 : 0; r.trials += passed ? 1 : 0;
+		this.ensureQuests();
+		G.questEvent(g, { answers: 1, established: ev.established ? 1 : 0, harvests: ev.harvested ? 1 : 0, trials: passed ? 1 : 0, combo: s.combo });
+		this.persist.game();
+		return { id, ev, coins, xp, ups, crit, swift, passed, streak, combo: s.combo, unit: res.unit };
+	}
+
+	/** Self-score v (-2..+2) for a flipped learn/harvest card. Null when the card cannot be scored now. */
+	answerSelf(v) {
+		const k = this.card;
+		if (!k || k.mode === 'trial' || k.side !== 'back' || k.done) return null;
+		k.done = true;
+		const u = this.unitOf(k.id);
+		return this.settle(G.answer(u, this.g.h[k.id] || 0, v, this.clock.sec(), k.st), v, u.tier);
+	}
+
+	/** Trial choice i: objective pass or fail; the back of the card stays up until continueCard(). Null when not answerable. */
+	answerTrial(i) {
+		const k = this.card;
+		if (!k || k.mode !== 'trial' || k.done) return null;
+		k.done = true;
+		k.passed = k.trial.choices[i].id === k.id;
+		const u = this.unitOf(k.id);
+		const r = this.settle(G.answerTrial(u, this.g.h[k.id] || 0, k.passed, this.clock.sec(), k.st), k.passed ? 1 : -1, u.tier);
+		k.side = 'back';
+		return r;
+	}
+
+	/** After a trial's verdict: true when the card may be left (the view then advances). */
+	continueCard() {
+		const k = this.card;
+		if (!k || !k.done || k.left) return false;
+		k.left = true;
+		return true;
+	}
+
+	/**
+	 * Sentence comprehension test answered. Wrong: "Missed it" for the card ({ wrong: settle result }). Right: every unlocked unit in the
+	 * sentence gets 2 "Correct" answers and the card's own unit its normal answer plus 2 more ({ own, rows, coins, xp, ups, settled }).
+	 * Units waiting on a promotion trial are skipped. hooks.settled(r) runs right after the card's own answer is booked (where the view
+	 * plays that answer's effects), before the 2 extra credits, so the effects see the state at that moment.
+	 */
+	answerSentence(s, ok, hooks = {}) {
+		const k = this.card, g = this.g, now = this.clock.sec(), u = this.unitOf(k.id);
+		k.done = true;
+		if (!ok) {
+			const wrong = this.settle(G.answer(u, g.h[k.id] || 0, -1, now, k.st), -1, u.tier);
+			return { wrong, settledOut: hooks.settled ? hooks.settled(wrong) : undefined };
+		}
+		const st = this.classify(), rows = [], before = { ...u };
+		let xp = 0, coins = 0, ups = 0;
+		const credit = (id, row) => {
+			const r = this.creditAnswer(id, row.n ? G.status(this.unitOf(id), this.clock.sec()) : st.get(id));
+			row.n++; row.coins += r.coins; row.xp += r.xp; row.harvested = row.harvested || r.ev.harvested; row.established = row.established || r.ev.established; row.promoted = row.promoted || r.ev.promoted;
+			coins += r.coins; xp += r.xp; ups += r.ups;
+		};
+		for (const id of R.unitIdsOf(s)) {
+			if (id === k.id || !g.owned.includes(id) || G.isTrial(this.unitOf(id), g.h[id] || 0, st.get(id))) continue;
+			const row = { id, n: 0, coins: 0, xp: 0, before: { ...this.unitOf(id) } };
+			credit(id, row); credit(id, row);
+			row.after = { ...this.unitOf(id) }; rows.push(row);
+		}
+		// The card's own unit: its normal answer (all the usual effects), then 2 more.
+		const settled = this.settle(G.answer(u, g.h[k.id] || 0, 1, now, k.st), 1, u.tier);
+		const settledOut = hooks.settled ? hooks.settled(settled) : undefined;
+		const own = { id: k.id, n: 1, coins: 0, xp: 0, before, own: true };
+		credit(k.id, own); credit(k.id, own);
+		own.after = { ...this.unitOf(k.id) };
+		this.persist.game();
+		return { settled, settledOut, own, rows: [own, ...rows], coins, xp, ups };
+	}
+
+	/** True when the round is complete (the view shows the results, then nextRound()). */
+	roundDone() { return this.session.round.n >= T.ROUND; }
+
+	/** Book the end of a round; returns the finished round and the numbers the results screen shows. */
+	endRound() {
+		const g = this.g, r = this.session.round, c = this.counts(), need = G.xpToNext(g.level), cost = G.pullCost(g), combo = Math.min(this.session.combo, G.comboCap(g));
+		g.totals.rounds++;
+		G.questEvent(g, { rounds: 1 });
+		this.persist.game();
+		return { r, c, need, cost, combo };
+	}
+
+	/** A fresh round and its first card. */
+	nextRound() {
+		this.session.round = this.newRound();
+		return this.pickCard();
+	}
+
+	// ---------- economy ----------
+	/** Idle coins from growing units; returns the amount collected (0 = nothing to collect). */
+	collect() {
+		const now = this.clock.sec(), n = G.idleEarned(this.g, this.prog, now);
+		if (!n) return 0;
+		this.g.coins += n; this.g.totals.earned += n; this.g.lastCollect = now;
+		this.persist.game();
+		return n;
+	}
+
+	/** Why a pull is not possible now ('coins' | 'nursery'), or '' when it is. */
+	pullBlocked() {
+		const g = this.g, c = this.counts();
+		return G.pullCost(g) > g.coins ? 'coins' : c.new + c.learning >= G.nurseryCap(g) ? 'nursery' : '';
+	}
+
+	/** Unlock a pack of units (pack: a Source, or null for course order). Returns { ids, cost } or { blocked } ({ ids: [] } when none left). */
+	pull(pack = null) {
+		const g = this.g, cost = G.pullCost(g), blocked = this.pullBlocked();
+		if (blocked) return { blocked, ids: [] };
+		const ids = G.pickPull(this.pullCandidates(), G.pullSize(g), this.rand, pack || null);
+		if (!ids.length) return { ids };
+		g.coins -= cost; g.pulls++; g.owned.push(...ids);
+		this.persist.game();
+		this.card = null;
+		return { ids, cost };
+	}
+
+	/** Buy one level of upgrade key; false when too expensive or maxed. */
+	upgrade(key) {
+		const g = this.g, price = G.upCost(g, key);
+		if (price > g.coins || G.upLevel(g, key) >= T.UPGRADES[key].max) return false;
+		g.coins -= price; g.up[key] = G.upLevel(g, key) + 1;
+		this.persist.game();
+		return true;
+	}
+
+	/** Equip (buying first if needed, for price coins) a cosmetic. Returns { bought } or null when it cannot be afforded. */
+	cosmetic(kind, key, price) {
+		const g = this.g;
+		let bought = false;
+		if (!g.cos.owned.includes(key)) {
+			if (price > g.coins) return null;
+			g.coins -= price; g.cos.owned.push(key);
+			bought = true;
+		}
+		g.cos[kind] = key;
+		this.persist.game();
+		return { bought };
+	}
+
+	/** Claim daily quest i (-1 = the chest); returns the coins paid (0 = nothing to claim). */
+	claim(i) {
+		const coins = G.claimQuest(this.g, i);
+		if (coins) this.persist.game();
+		return coins;
+	}
+
+	sealsAvailable() { return G.sealsAvailable(this.g, this.prog); }
+	/** Bank new stars as seals (the view confirms first). Returns the seals gained, or 0 when below the minimum. */
+	ascend() {
+		const n = this.sealsAvailable();
+		if (n < T.SEAL_MIN) return 0;
+		G.ascend(this.g, this.prog);
+		this.persist.game();
+		return n;
+	}
+
+	// ---------- number sound board ----------
+	buyNumbers() {
+		const g = this.g;
+		if ((g.games || {}).numbers || G.NUMBER_COST > g.coins) return false;
+		g.coins -= G.NUMBER_COST; g.games = { ...g.games, numbers: 1 };
+		this.persist.game();
+		return true;
+	}
+	numberQuestion(mode, prev) { return G.numberQuestion(mode, this.rand, prev); }
+	/** A right-answer streak: kept as the best when it beats it. */
+	recordNumberStreak(streak) {
+		const g = this.g;
+		if (streak > ((g.games || {}).numbersBest || 0)) { g.games = { ...g.games, numbersBest: streak }; this.persist.game(); }
+	}
+
 	/** One right answer for a unit that is not the card being settled: everything an answer pays, without per-answer effects. */
 	creditAnswer(id, st) {
 		const g = this.g, ss = this.session, now = this.clock.sec(), u = this.unitOf(id), h = g.h[id] || 0;

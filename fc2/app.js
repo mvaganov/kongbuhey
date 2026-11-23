@@ -421,10 +421,8 @@ class FC2App {
 	}
 
 	collect(el) {
-		const now = this.clock.sec(), n = G.idleEarned(this.g, this.prog, now);
+		const n = this.core.collect();
 		if (!n) return;
-		this.g.coins += n; this.g.totals.earned += n; this.g.lastCollect = now;
-		this.save();
 		FX.sfx('coin'); FX.buzz(20); FX.fly(el, this.$('#coins'), Math.min(12, 3 + Math.floor(n / 10))); FX.floatText(el, `+${fmt(n)}`, 'gold'); FX.burstAt(el, { count: 24 });
 		this.updateHud();
 		this.renderScreen(false);
@@ -474,11 +472,8 @@ class FC2App {
 
 	// ---------- play ----------
 	pickCard() {
-		const st = this.classify(), pick = G.nextCard(this.g, this.prog, st, this.session);
 		this.editingNotes = false;
-		if (!pick) { this.card = null; return; }
-		const s = st.get(pick.id), u = this.unitOf(pick.id), trial = G.isTrial(u, this.g.h[pick.id] || 0, s);
-		this.card = { id: pick.id, mode: trial ? 'trial' : pick.mode, st: s, side: 'front', shownAt: this.clock.ms(), trial: trial ? this.buildTrial(pick.id, u.tier) : null, ...this.generateFor(pick.id) };
+		this.core.pickCard();
 	}
 
 	// G.sentenceOptions (game.js) is shared with tools/save_inspect.js, which replays a save's generation.
@@ -723,8 +718,7 @@ class FC2App {
 	}
 
 	flip() {
-		if (!this.card || this.card.side !== 'front' || this.card.mode === 'trial') return;
-		this.card.side = 'back';
+		if (!this.core.flip()) return;
 		this.renderScreen(false);
 		this.$('#card').classList.add('flip');
 		FX.sfx('flip');
@@ -746,71 +740,44 @@ class FC2App {
 	}
 
 	score(v, el) {
-		const k = this.card;
-		if (!k || k.mode === 'trial' || k.side !== 'back' || k.done) return;
-		k.done = true;
-		const u = this.unitOf(k.id);
-		this.advance(this.settle(G.answer(u, this.g.h[k.id] || 0, v, this.clock.sec(), k.st), v, el, u.tier));
+		const r = this.core.answerSelf(v);
+		if (!r) return;
+		this.advance(this.settleEffects(r, v, el));
 	}
 
 	/** A trial choice was tapped: objective pass or fail, then the back of the card stays up until Continue. */
 	choose(i, el) {
-		const k = this.card;
-		if (!k || k.mode !== 'trial' || k.done) return;
-		k.done = true;
-		k.passed = k.trial.choices[i].id === k.id;
+		const k = this.card, r = this.core.answerTrial(i);
+		if (!r) return;
 		this.root.querySelectorAll('#card .choice').forEach((b, j) => { b.disabled = true; if (k.trial.choices[j].id === k.id) b.classList.add('right'); else if (j === i) b.classList.add('wrong'); });
-		const u = this.unitOf(k.id);
-		this.settle(G.answerTrial(u, this.g.h[k.id] || 0, k.passed, this.clock.sec(), k.st), k.passed ? 1 : -1, el, u.tier);
-		k.side = 'back';
+		this.settleEffects(r, k.passed ? 1 : -1, el);
 		setTimeout(() => { if (this.card !== k) return; this.renderScreen(false); const c = this.$('#card'); if (c) c.classList.add('flip'); this.$('#screen').scrollTop = 0; this.maybeSpeak('back'); }, k.passed ? 650 : 900);
 	}
 
 	advance(delay) {
-		if (this.session.round.n >= T.ROUND) setTimeout(() => this.roundResults(), delay + 350);
+		if (this.core.roundDone()) setTimeout(() => this.roundResults(), delay + 350);
 		else setTimeout(() => this.showNextCard(), delay || 120);
 	}
 
-	ensureQuests() {
-		if (G.ensureQuests(this.g, this.clock.day(), this.g.owned.some(id => this.unitOf(id).score >= T.ESTABLISHED))) this.save();
-	}
+	ensureQuests() { this.core.ensureQuests(); }
 
-	/** Book an answer: unit progress, coins, xp, quests, effects. Returns the ms to wait before moving on. */
-	settle(res, v, el, tierBefore) {
-		const k = this.card, g = this.g, s = this.session, id = k.id, ev = res.ev, passed = ev.kind === 'trial' && ev.promoted;
-		this.prog.set(id, res.unit);
-		if (res.h) g.h[id] = res.h; else delete g.h[id];
-		this.saveUnit(id);
-		const streak = G.touchStreak(g, this.clock.day(), this.clock.day(-1));
-		s.combo++;
-		const swift = (this.clock.ms() - k.shownAt) / 1000 <= T.SWIFT_SEC, crit = ev.kind === 'harvest' && this.rand() < G.critChance(g);
-		const coins = G.payout(g, ev, tierBefore, { combo: s.combo, swift, crit }), xp = G.xpFor(ev);
-		g.coins += coins; g.totals.earned += coins; g.totals.answers++;
-		if (ev.harvested) g.totals.harvests++;
-		if (passed) g.totals.trials = (g.totals.trials || 0) + 1;
-		const ups = G.addXp(g, xp);
-		if (res.unit.score < T.ESTABLISHED) s.due.set(id, s.n + 1 + T.LEARN_GAP[v]); else s.due.delete(id);
-		s.n++; s.last = id;
-		const r = s.round;
-		r.n++; r.coins += coins; r.xp += xp; r.est += ev.established ? 1 : 0; r.promo += ev.promoted ? 1 : 0; r.harvest += ev.harvested ? 1 : 0; r.lapsed += ev.lapsed ? 1 : 0; r.trials += passed ? 1 : 0;
-		this.ensureQuests();
-		G.questEvent(g, { answers: 1, established: ev.established ? 1 : 0, harvests: ev.harvested ? 1 : 0, trials: passed ? 1 : 0, combo: s.combo });
-		this.save();
-
-		const ko = this.units.get(id)[C.Korean], glyphs = this.glyphsFor(id);
+	/** Effects for a booked answer (r from core.settle): coins flying, sounds, banners, toasts. Returns the ms to wait before moving on. */
+	settleEffects(r, v, el) {
+		const g = this.g, ev = r.ev, passed = r.passed, coins = r.coins, crit = r.crit, swift = r.swift, ups = r.ups;
+		const ko = this.units.get(r.id)[C.Korean], glyphs = this.glyphsFor(r.id);
 		FX.floatText(el, `+${fmt(coins)}${crit ? ' CRIT!' : swift ? ' swift' : ''}`, crit || passed ? 'gold big' : 'gold');
 		FX.fly(el, this.$('#coins'), crit || passed ? 12 : Math.min(8, 2 + Math.floor(coins / 6)));
 		if (crit) { FX.sfx('crit'); FX.buzz([30, 40, 60]); FX.burstAt(el, { count: 70, power: 12, glyphs }); FX.flash('gold'); }
-		else if (ev.harvested) { FX.sfx('harvest', s.combo); FX.buzz(25); FX.burstAt(el, { count: 30, power: 8, glyphs }); }
+		else if (ev.harvested) { FX.sfx('harvest', r.combo); FX.buzz(25); FX.burstAt(el, { count: 30, power: 8, glyphs }); }
 		else if (v < 0) { FX.sfx('miss'); FX.buzz(ev.kind === 'trial' ? [40, 50, 40] : 15); }
-		else { FX.sfx('answer', s.combo); FX.burstAt(el, { count: 8 + Math.min(s.combo, 20), power: 5, glyphs }); }
+		else { FX.sfx('answer', r.combo); FX.burstAt(el, { count: 8 + Math.min(r.combo, 20), power: 5, glyphs }); }
 		let delay = 0;
-		if (ev.promoted) { FX.sfx('promote'); FX.flash('gold'); FX.banner(`${ko} ${STARS[res.unit.tier]}`, `${passed ? 'Trial passed' : 'Promoted'}: ${TIER_LABEL[res.unit.tier]}`, 'promo'); delay = 900; }
+		if (ev.promoted) { FX.sfx('promote'); FX.flash('gold'); FX.banner(`${ko} ${STARS[r.unit.tier]}`, `${passed ? 'Trial passed' : 'Promoted'}: ${TIER_LABEL[r.unit.tier]}`, 'promo'); delay = 900; }
 		else if (ev.established) { FX.sfx('establish'); FX.banner(ko, 'Established: now growing in your hive', 'est'); delay = 700; }
 		else if (ev.demoted) { FX.flash('bad'); this.toast(`${ko} wilted and lost a star`); }
 		else if (ev.kind === 'trial') FX.flash('bad');
 		else if (ev.kind === 'harvest' && ev.lapsed) this.toast(v > 0 ? `${ko} had faded: re-establish it` : `${ko} goes back to learning`);
-		if (streak === 'kept') this.toast(`🔥 ${g.streak.n}-day streak: +${Math.round((G.streakMult(g) - 1) * 100)}% coins`);
+		if (r.streak === 'kept') this.toast(`🔥 ${g.streak.n}-day streak: +${Math.round((G.streakMult(g) - 1) * 100)}% coins`);
 		if (ups) setTimeout(() => this.levelUp(), delay + 200);
 		this.updateHud();
 		return delay + (ups ? 1300 : 0);
@@ -847,9 +814,8 @@ class FC2App {
 	}
 
 	claim(i, el) {
-		const coins = G.claimQuest(this.g, i);
+		const coins = this.core.claim(i);
 		if (!coins) { FX.sfx('deny'); return; }
-		this.save();
 		FX.sfx(i === -1 ? 'crit' : 'coin'); FX.buzz(i === -1 ? [30, 40, 60] : 20); FX.floatText(el, `+${fmt(coins)}`, 'gold big'); FX.fly(el, this.$('#coins'), 10); FX.burstAt(el, { count: i === -1 ? 80 : 30, power: i === -1 ? 12 : 7 });
 		if (this.g.lastLevelUps) setTimeout(() => this.levelUp(), 300);
 		this.updateHud();
@@ -858,20 +824,16 @@ class FC2App {
 	}
 
 	ascend() {
-		const n = G.sealsAvailable(this.g, this.prog);
+		const n = this.core.sealsAvailable();
 		if (n < T.SEAL_MIN || !window.confirm(`Ascend for ${n} seals? Coins and upgrades reset. Units, stars, levels and cosmetics stay.`)) return;
-		G.ascend(this.g, this.prog);
-		this.save();
+		this.core.ascend();
 		FX.sfx('level'); FX.buzz([60, 60, 60, 60, 160]); FX.flash('gold'); FX.banner('Ascended', `+${n} seals · +${Math.round((G.sealMult(this.g) - 1) * 100)}% coins forever`, 'level');
 		this.updateHud();
 		this.renderScreen(false);
 	}
 
 	roundResults() {
-		const g = this.g, r = this.session.round, c = this.counts(), need = G.xpToNext(g.level), cost = G.pullCost(g), combo = Math.min(this.session.combo, G.comboCap(g));
-		g.totals.rounds++;
-		G.questEvent(g, { rounds: 1 });
-		this.save();
+		const { r, c, need, cost, combo } = this.core.endRound(), g = this.g;
 		const line = (label, n, cls = '') => n ? `<li class="${cls}"><span>${label}</span><b>${n}</b></li>` : '';
 		const tease = [c.ripe + c.wilted ? `${c.ripe + c.wilted} harvests waiting` : '', `${need - g.xp} XP to Lv ${g.level + 1}`,
 			cost <= g.coins ? 'A pull is ready in the Shop' : `${fmt(cost - g.coins)} 냥 to the next pull`, c.learning ? `${c.learning} still learning` : ''].filter(Boolean);
@@ -941,12 +903,10 @@ class FC2App {
 	}
 
 	pull() {
-		const g = this.g, c = this.counts(), cost = G.pullCost(g);
-		if (cost > g.coins || c.new + c.learning >= G.nurseryCap(g)) { FX.sfx('deny'); return; }
-		const ids = G.pickPull(this.pullCandidates(), G.pullSize(g), this.rand, this.pullPack || null);
+		const res = this.core.pull(this.pullPack || null);
+		if (res.blocked) { FX.sfx('deny'); return; }
+		const ids = res.ids;
 		if (!ids.length) return;
-		g.coins -= cost; g.pulls++; g.owned.push(...ids);
-		this.save();
 		this.updateHud();
 		const cards = ids.map((id, i) => {
 			const u = this.units.get(id), r = G.rarity(u[C.PriorityScore]);
@@ -966,24 +926,16 @@ class FC2App {
 	}
 
 	upgrade(key, el) {
-		const g = this.g, price = G.upCost(g, key);
-		if (price > g.coins || G.upLevel(g, key) >= T.UPGRADES[key].max) { FX.sfx('deny'); return; }
-		g.coins -= price; g.up[key] = G.upLevel(g, key) + 1;
-		this.save();
+		if (!this.core.upgrade(key)) { FX.sfx('deny'); return; }
 		FX.sfx('buy'); FX.buzz(20); FX.burstAt(el, { count: 26, colors: ['#6cb6ff', '#cfe6ff', '#ffd166'] });
 		this.updateHud();
 		this.renderScreen(false);
 	}
 
 	cosmetic(kind, key, el) {
-		const g = this.g, price = (kind === 'theme' ? THEMES : PARTICLES)[key][1];
-		if (!g.cos.owned.includes(key)) {
-			if (price > g.coins) { FX.sfx('deny'); return; }
-			g.coins -= price; g.cos.owned.push(key);
-			FX.sfx('buy');
-		}
-		g.cos[kind] = key;
-		this.save();
+		const res = this.core.cosmetic(kind, key, (kind === 'theme' ? THEMES : PARTICLES)[key][1]);
+		if (!res) { FX.sfx('deny'); return; }
+		if (res.bought) FX.sfx('buy');
 		this.applyCosmetics();
 		FX.burstAt(el, { count: 30, glyphs: kind === 'particle' && key === 'hangul' ? ['공', '부', '해'] : undefined });
 		this.updateHud();
@@ -1043,30 +995,11 @@ class FC2App {
 	 * second answer on a ripe unit pays as practice (one harvest per review). Wrong: "Missed it" for the card.
 	 */
 	sentenceSettle(s, ok) {
-		const k = this.card, g = this.g, now = this.clock.sec(), el = this.$('#card'), u = this.unitOf(k.id);
-		k.done = true;
-		if (!ok) { this.advance(this.settle(G.answer(u, g.h[k.id] || 0, -1, now, k.st), -1, el, u.tier)); return; }
-		const st = this.classify(), rows = [], before = { ...u };
-		let xp = 0, coins = 0, ups = 0;
-		const credit = (id, row) => {
-			const r = this.creditAnswer(id, row.n ? G.status(this.unitOf(id), this.clock.sec()) : st.get(id));
-			row.n++; row.coins += r.coins; row.xp += r.xp; row.harvested = row.harvested || r.ev.harvested; row.established = row.established || r.ev.established; row.promoted = row.promoted || r.ev.promoted;
-			coins += r.coins; xp += r.xp; ups += r.ups;
-		};
-		for (const id of R.unitIdsOf(s)) {
-			if (id === k.id || !g.owned.includes(id) || G.isTrial(this.unitOf(id), g.h[id] || 0, st.get(id))) continue;
-			const row = { id, n: 0, coins: 0, xp: 0, before: { ...this.unitOf(id) } };
-			credit(id, row); credit(id, row);
-			row.after = { ...this.unitOf(id) }; rows.push(row);
-		}
-		// The card's own unit: its normal answer (all the usual effects), then 2 more.
-		const delay = this.settle(G.answer(u, g.h[k.id] || 0, 1, now, k.st), 1, el, u.tier);
-		const own = { id: k.id, n: 1, coins: 0, xp: 0, before, own: true };
-		credit(k.id, own); credit(k.id, own);
-		own.after = { ...this.unitOf(k.id) };
-		this.save();
-		const total = this.bonusShow(el, [own, ...rows], coins, xp);
-		if (ups) setTimeout(() => this.levelUp(), delay + 500);
+		const el = this.$('#card');
+		const res = this.core.answerSentence(s, ok, { settled: r => this.settleEffects(r, ok ? 1 : -1, el) });
+		if (!ok) { this.advance(res.settledOut); return; }
+		const delay = res.settledOut, total = this.bonusShow(el, res.rows, res.coins, res.xp);
+		if (res.ups) setTimeout(() => this.levelUp(), delay + 500);
 		this.updateHud();
 		this.advance(Math.max(delay, total));
 	}
@@ -1116,10 +1049,8 @@ class FC2App {
 
 	// ---------- number sound board (shop unlock) ----------
 	nbBuy(el) {
-		const g = this.g;
-		if ((g.games || {}).numbers || G.NUMBER_COST > g.coins) { FX.sfx('deny'); return; }
-		g.coins -= G.NUMBER_COST; g.games = { ...g.games, numbers: 1 };
-		this.save(); FX.sfx('buy'); FX.buzz(20); FX.burstAt(el, { count: 30 });
+		if (!this.core.buyNumbers()) { FX.sfx('deny'); return; }
+		FX.sfx('buy'); FX.buzz(20); FX.burstAt(el, { count: 30 });
 		this.updateHud(); this.renderScreen(false); this.nbOpen();
 	}
 
@@ -1131,7 +1062,7 @@ class FC2App {
 
 	nbNext() {
 		const n = this.nb;
-		n.q = G.numberQuestion(n.mode, this.rand, n.q); n.done = false; n.picked = -1;
+		n.q = this.core.numberQuestion(n.mode, n.q); n.done = false; n.picked = -1;
 		this.nbRender();
 		window.speakKorean(n.q.ko);
 	}
@@ -1158,7 +1089,7 @@ class FC2App {
 		window.speakKorean(G.numberWord(n.q.sys, v));   // say the tapped number in the question's own system
 		if (v === n.q.n) {
 			n.right++; n.streak++;
-			if (n.streak > ((g.games || {}).numbersBest || 0)) { g.games = { ...g.games, numbersBest: n.streak }; this.save(); }
+			this.core.recordNumberStreak(n.streak);
 			FX.sfx('answer', n.streak); FX.buzz(15); FX.burstAt(el, { count: 8 + Math.min(n.streak, 20), power: 5 });
 		} else { n.streak = 0; FX.sfx('miss'); FX.buzz([20, 30, 20]); }
 		this.nbRender();
