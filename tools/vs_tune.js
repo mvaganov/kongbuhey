@@ -53,6 +53,8 @@ WRITE (all accept --dry-run; all print the admitted/dropped units realized in th
 
 BATCHES (ledger: data/vs_review.json)
   batch [--n 25]                  the open batch's remaining templates; opens the next batch if none is open
+  batch --critical-path [--save F] open the next batch in Examples Critical Path order: templates in the order they become usable
+                                  when unlocking along the path from the newest local/GameSave_*.json (or F; fresh game if none)
   batch --low-yield               open a batch of every template with a low-yield slot (pool >= 20, under 20% realize),
                                   reviewed or not; the list marks those slots with !
   batch status                    progress of the open batch + stats (deep, ~40 s) changed since the baseline
@@ -580,6 +582,22 @@ function reviewOrder() {
 	return keyed.map(k => k.t);
 }
 
+/** Templates in the order they become usable along the Examples Critical Path from a save's unlocks (fresh game without a save). */
+function criticalPathOrder(saveFile) {
+	const fs = require('fs'), path = require('path'), sim = require('./fc2_sim.js');
+	const dir = path.join(__dirname, '..', 'local');
+	const file = saveFile || (fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => /^GameSave_.*\.json$/.test(f)).sort().map(f => path.join(dir, f)).pop() : null);
+	const s = sim.createSim({ seed: 1 });
+	if (file) sim.loadInto(s, fs.readFileSync(file, 'utf8')); else { s.addCustomNames(); s.core.newGame(false); s.core.ensureCoreUnlocked(); }
+	const p = vg.examplesCriticalPath(s.core.g.owned, s.core.pullCandidates().map(c => c.id), 5000);
+	console.log(`critical path from ${file ? path.basename(file) : 'a fresh game'}: ${p.before} usable now, ${p.after} after ${p.ids.length} unlocks`);
+	const byId = new Map(vg.getAllVerifiedSentences().map(t => [t.id, t]));
+	const seen = new Set(), out = [];
+	for (const c of p.completed) { const t = byId.get(c.id); if (t && !seen.has(t.id)) { seen.add(t.id); out.push(t); } }
+	for (const t of reviewOrder()) if (!seen.has(t.id)) { seen.add(t.id); out.push(t); }   // never completable: last, in the old order
+	return out.filter(t => variableSlots(t).length > 0);
+}
+
 function lowYieldSlots(t) {
 	return variableSlots(t).filter(i => {
 		const pool = vg.getSlotCandidates(t.slots[i]).candidates;
@@ -616,10 +634,11 @@ function cmdBatch(sub, flags) {
 	const inBatch = new Set(l.batches.flatMap(b => b.ids));
 	const ids = flags['low-yield']
 		? vg.getAllVerifiedSentences().filter(t => lowYieldSlots(t).length > 0).map(t => t.id)
-		: reviewOrder().filter(t => !l.reviewed[t.id] && !inBatch.has(t.id)).slice(0, n).map(t => t.id);
+		: (flags['critical-path'] ? criticalPathOrder(flags.save) : reviewOrder()).filter(t => !l.reviewed[t.id] && !inBatch.has(t.id)).slice(0, n).map(t => t.id);
 	if (!ids.length) { console.log('every template with a variable slot has been reviewed'); return; }
 	const b = { n: l.batches.length + 1, opened: today(), ids };
 	if (flags['low-yield']) b.lowYield = true;
+	if (flags['critical-path']) b.order = 'critical-path';
 	if (flags['dry-run']) { console.log('(dry run: batch not opened)'); printBatch(b, l); return; }
 	l.batches.push(b);
 	writeLedger(l);
@@ -983,7 +1002,7 @@ function cmdIngest(file, flags) {
 function parseArgs(argv) {
 	const pos = [];
 	const flags = {};
-	const BOOL = new Set(['all', 'check', 'dry-run', 'summary', 'unsure', 'open', 'sync', 'deep', 'by-tag', 'low-yield', 'ok']);
+	const BOOL = new Set(['all', 'check', 'dry-run', 'summary', 'unsure', 'open', 'sync', 'deep', 'by-tag', 'low-yield', 'ok', 'critical-path']);
 	for (let k = 0; k < argv.length; k++) {
 		const a = argv[k];
 		if (a.startsWith('--')) {

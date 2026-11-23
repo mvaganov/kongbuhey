@@ -110,8 +110,9 @@ One agent at a time (vs_tune writes files in place; no locks). Per batch: loosen
 native-speaker list, commit). The orchestrating session starts each agent with the prompt below and does not do the batch itself.
 
 **Loosener brief (Sonnet). Paste as the agent prompt:**
-> Kongbuhey repo (read CLAUDE.md first: test from a local copy, never commit). Run `node tools/vs_tune.js batch` (opens or resumes
-> the batch) and `node tools/vs_tune.js gap-classes`. For each listed template: `show <id>`; for each variable slot (the `pools` column,
+> Kongbuhey repo (read CLAUDE.md first: test from a local copy, never commit). Run `node tools/vs_tune.js batch --critical-path`
+> (opens or resumes the batch; new batches follow the Examples Critical Path from the owner's save, so each batch makes soon-usable
+> templates better) and `node tools/vs_tune.js gap-classes`. For each listed template: `show <id>`; for each variable slot (the `pools` column,
 > slot:pool size), decide which words fit the sentence with every other slot fixed. `show` prints how many pool words realize;
 > `slot <id> <i> --open --by-tag` lists what the validator alone allows, grouped by tag (`unit <id>` shows one word's tags). Then:
 > 1. Loosen: `tags <id> <i> -tag --dry-run`; read every `OK` line (`REJ` = an existing validator already rejects it). Write it (same

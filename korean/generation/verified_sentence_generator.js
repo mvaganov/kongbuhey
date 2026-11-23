@@ -3632,7 +3632,8 @@ function criticalPathModel() {
 
 /**
  * The next `n` units (from candidateIds) to unlock for the fastest growth of usable verified templates, given ownedIds.
- * Returns { ids, steps: [{ id, gain, usable }], before, after } (before/after = usable templates). Stops early when no candidate
+ * Returns { ids, steps: [{ id, gain, usable }], before, after, completed } (before/after = usable templates; completed = templates
+ * in the order they become usable: [{ id, step }], step 0 = usable already). Stops early when no candidate
  * helps any template (the caller fills the rest another way). n = 0 just counts: { before }.
  */
 function examplesCriticalPath(ownedIds, candidateIds = [], n = 5) {
@@ -3642,6 +3643,7 @@ function examplesCriticalPath(ownedIds, candidateIds = [], n = 5) {
 	const unmet = met.map(m => m.reduce((k, ok) => k + (ok ? 0 : 1), 0));
 	let usable = unmet.reduce((k, x) => k + (x === 0 ? 1 : 0), 0);
 	const before = usable, steps = [], cands = new Set(candidateIds || []);
+	const completed = tpls.filter((t, ti) => unmet[ti] === 0).map(t => ({ id: t.id, step: 0 }));
 	const prio = id => Number(units[id] && units[id][DATA_SCHEMA.PriorityScore]) || 3;
 	while (steps.length < n && cands.size) {
 		let best = null, bestGain = 0;
@@ -3658,12 +3660,12 @@ function examplesCriticalPath(ownedIds, candidateIds = [], n = 5) {
 			const ti = list[k], ri = list[k + 1];
 			if (met[ti][ri]) continue;
 			met[ti][ri] = true;
-			if (--unmet[ti] === 0) usable++;
+			if (--unmet[ti] === 0) { usable++; completed.push({ id: tpls[ti].id, step: steps.length + 1 }); }
 		}
 		cands.delete(best);
 		steps.push({ id: best, gain: Math.round(bestGain * 100) / 100, usable });
 	}
-	return { ids: steps.map(s => s.id), steps, before, after: usable };
+	return { ids: steps.map(s => s.id), steps, before, after: usable, completed };
 }
 
 /**

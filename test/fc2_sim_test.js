@@ -98,6 +98,8 @@ test('Examples Critical Path: monotone, beats course order, pulls through the Sh
 	assert.strictEqual(p.ids.length, 40);
 	assert.strictEqual(new Set(p.ids).size, 40, 'no unit twice');
 	p.steps.forEach((x, i) => assert.ok(x.usable >= (i ? p.steps[i - 1].usable : p.before), 'usable templates never drop'));
+	assert.strictEqual(p.completed.length, p.after, 'completed lists every usable template once');
+	p.completed.forEach((c, i) => assert.ok(c.step >= (i ? p.completed[i - 1].step : 0), 'completed is in step order (vs_tune batch --critical-path)'));
 	const G = require('../fc2/game.js');
 	const course = G.pickPull(s.core.pullCandidates(), 40, () => 0, null);
 	const courseAfter = vg.examplesCriticalPath([...s.core.g.owned, ...course], [], 0).before;
