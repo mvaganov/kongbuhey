@@ -16,6 +16,15 @@ const G = isNode ? require('./game.js') : window.FC2Game;
 const Q = isNode ? require('./queue.js') : window.FC2Queue;
 const R = isNode ? require('../flashcards/render.js') : window.FlashcardRender;
 const T = G.T;
+// store.js is optional in the browser (a stale cached page may lack it); backups need it.
+const Store = () => {
+	const S = isNode ? require('./store.js') : window.FC2Store;
+	if (!S) throw new Error('backup needs store.js, which did not load: reload the page');
+	return S;
+};
+
+/** Options of a new player (Menu > Options). */
+const DEFAULT_OPTS = { reverse: false, speak: 'front', count: 3, onlyOwned: true, v: 2, sound: true, haptics: true, audioTrials: true, names: { off: [], custom: [] } };
 
 const defaultClock = () => {
 	const clock = { sec: () => Math.floor(clock.ms() / 1000), ms: () => Date.now() };
@@ -51,6 +60,46 @@ class FC2Core {
 		this.card = null;
 		this.recent = [];
 		this.session = this.newSession();
+	}
+
+	// ---------- whole-state operations ----------
+	/** A fresh game (coins, levels, unlocks, upgrades reset). Unit progress is kept unless keepProgress is false. */
+	newGame(keepProgress = true) {
+		this.g = G.blankGame(this.clock.sec());
+		if (!keepProgress) { this.prog = new Map(); this.notes = {}; }
+		this.session = this.newSession();
+		this.card = null;
+		this.ensureCoreUnlocked();
+		this.persist.game();
+	}
+
+	/** Backup text (Menu > Backup / restore; format in fc2/store.js). */
+	backupJson() {
+		const prog = new Map(this.g.owned.map(id => [id, this.unitOf(id)]));
+		return Store().packBackup({ game: this.g, opts: this.opts, prog, notes: this.notes });
+	}
+
+	/**
+	 * Load a backup (text or parsed object) into this state, like the app's Restore: the game and options are replaced (missing fields
+	 * from the defaults), unit progress and notes are merged in. Returns { ids, noteIds, flags } for the caller to persist.
+	 */
+	loadBackup(textOrObj) {
+		const data = Store().unpackBackup(textOrObj);
+		this.g = { ...G.blankGame(this.clock.sec()), ...data.game };
+		this.opts = { ...DEFAULT_OPTS, ...data.opts };
+		for (const [id, u] of data.prog) this.prog.set(id, u);
+		for (const [k, text] of Object.entries(data.notes)) this.notes[k] = text;
+		this.session = this.newSession();
+		this.card = null;
+		return { ids: [...data.prog.keys()], noteIds: Object.keys(data.notes).map(Number), flags: data.flags };
+	}
+
+	/** Leaving the Play screen ends the combo. */
+	pauseSession() { this.session.combo = 0; }
+	/** Show unit id next (Review now, or a tapped word in an example). first: ahead of anything already queued. */
+	queueNext(id, first = false) {
+		if (first) this.session.front.unshift(id);
+		else if (!this.session.front.includes(id)) this.session.front.push(id);
 	}
 
 	newSession() { return { n: 0, due: new Map(), last: null, front: [], combo: 0, round: this.newRound() }; }
@@ -422,7 +471,7 @@ class FC2Core {
 	}
 }
 
-const api = { FC2Core, defaultClock };
+const api = { FC2Core, defaultClock, DEFAULT_OPTS };
 if (typeof window !== 'undefined') window.FC2Controller = api;
 if (isNode) module.exports = api;
 })();

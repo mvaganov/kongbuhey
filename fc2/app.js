@@ -24,7 +24,7 @@ const STATUS_LABEL = { new: '✨ New', learning: '🌱 Learning', growing: '🌿
 const THEMES = { midnight: ['Midnight', 0], jade: ['Jade', 300], sunset: ['Sunset', 800], neon: ['Neon', 2000] };
 const PARTICLES = { sparks: ['Sparks', 0], stars: ['Stars', 250], petals: ['Petals', 600], hangul: ['Hangul burst', 1200] };
 const SPEAK_MODES = [['none', "Don't speak"], ['front', 'When the front is shown'], ['back', 'When the back is shown'], ['both', 'Front and back']];
-const DEFAULT_OPTS = { reverse: false, speak: 'front', count: 3, onlyOwned: true, v: 2, sound: true, haptics: true, audioTrials: true, names: { off: [], custom: [] } };
+const DEFAULT_OPTS = (window.FC2Controller && window.FC2Controller.DEFAULT_OPTS) || {};   // defined in controller.js (shared with tools/fc2_sim.js)
 const nowSec = () => Math.floor(Date.now() / 1000);
 const fmt = n => Math.round(n).toLocaleString();
 const dur = s => s < 90 ? `${Math.max(1, Math.round(s))}s` : s < 5400 ? `${Math.round(s / 60)}m` : s < 129600 ? `${Math.round(s / 3600)}h` : `${Math.round(s / 86400)}d`;
@@ -297,7 +297,7 @@ class FC2App {
 	}
 
 	go(tab) {
-		if (tab !== 'play' && this.tab === 'play') this.session.combo = 0;
+		if (tab !== 'play' && this.tab === 'play') this.core.pauseSession();
 		this.tab = tab;
 		FX.clear();   // a burst left mid-flight must not survive a screen change
 		this.ensureQuests();
@@ -855,7 +855,7 @@ class FC2App {
 		if (!this.units.has(id) || !this.card || id === this.card.id) return;
 		const ko = this.units.get(id)[C.Korean];
 		if (!this.g.owned.includes(id)) { this.toast(`${ko} is not unlocked yet`); return; }
-		if (!this.session.front.includes(id)) this.session.front.push(id);
+		this.core.queueNext(id);
 		this.toast(`${ko} is next`);
 	}
 
@@ -1221,21 +1221,17 @@ class FC2App {
 	// The backup format lives in fc2/store.js (packBackup / unpackBackup), shared with tools/save_inspect.js. Flagged sentences are not
 	// included: they have their own ⬇ Flags export.
 	backupJson() {
-		const prog = new Map(this.g.owned.map(id => [id, this.unitOf(id)]));
-		try { return store().packBackup({ game: this.g, opts: this.opts, prog, notes: this.notes }); } catch (e) { return e.message; }
+		try { return this.core.backupJson(); } catch (e) { return e.message; }
 	}
 
 	restore() {
 		const msg = this.$('#backup-msg');
 		try {
-			const data = store().unpackBackup(this.$('#backup-text').value);
-			this.g = { ...G.blankGame(this.clock.sec()), ...data.game };
-			this.opts = { ...DEFAULT_OPTS, ...data.opts };
-			if (data.flags) this.flags = data.flags;   // older backups carried flags; newer ones leave yours alone
-			for (const [id, u] of data.prog) { this.prog.set(id, u); this.saveUnit(id); }
-			for (const [k, text] of Object.entries(data.notes)) { this.notes[k] = text; this.saveCell(Number(k), 'notes', text); }
+			const r = this.core.loadBackup(this.$('#backup-text').value);
+			if (r.flags) this.flags = r.flags;   // older backups carried flags; newer ones leave yours alone
+			for (const id of r.ids) this.saveUnit(id);
+			for (const id of r.noteIds) this.saveCell(id, 'notes', this.notes[id]);
 			this.save(); ls.set(LS + 'opts', this.opts); ls.set(LS + 'flags', this.flags);
-			this.session = this.newSession(); this.card = null;
 			this.applyCosmetics(); this.closeModal(); this.render();
 		} catch (err) { msg.textContent = 'Could not restore: ' + err.message; }
 	}
@@ -1329,7 +1325,7 @@ class FC2App {
 			case 'unit-now': this.applyUnitEdit(Number(el.dataset.id), el.dataset.col, 1); break;
 			case 'recover-open': this.recoverOpen(); break;
 			case 'recover': this.recoverFrom(Number(el.dataset.i), el.dataset.game === '1'); break;
-			case 'review': this.session.front.unshift(Number(el.dataset.id)); this.card = null; this.closeModal(); this.go('play'); break;
+			case 'review': this.core.queueNext(Number(el.dataset.id), true); this.card = null; this.closeModal(); this.go('play'); break;
 			case 'score': this.score(Number(el.dataset.v), el); break;
 			case 'choose': this.choose(Number(el.dataset.i), el); break;
 			case 'continue': if (this.card && this.card.done && !this.card.left) { this.card.left = true; this.advance(0); } break;
@@ -1361,7 +1357,7 @@ class FC2App {
 			case 'clear-flags': if (window.confirm('Delete all flagged sentences?')) { this.flags = []; ls.set(LS + 'flags', this.flags); this.openModal('Flagged sentences', this.flagsHtml()); } break;
 			case 'restore': this.restore(); break;
 			case 'reset-game':
-				if (window.confirm('Reset coins, levels, unlocks and upgrades? Unit scores are kept.')) { this.g = G.blankGame(this.clock.sec()); this.save(); this.session = this.newSession(); this.card = null; this.applyCosmetics(); this.render(); }
+				if (window.confirm('Reset coins, levels, unlocks and upgrades? Unit scores are kept.')) { this.core.newGame(); this.applyCosmetics(); this.render(); }
 				break;
 			default: break;
 		}
