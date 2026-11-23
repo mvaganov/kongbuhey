@@ -9,11 +9,16 @@ if (typeof require === 'function' && typeof module !== 'undefined' && require.ma
  *   run      batch play; prints a compact summary, writes one JSON line per card to --log
  *            --cards N (200)  --days D (3)  --sessions S per day (2)  --policy correct|wrong|mixed (mixed)
  *            --quiz R  share of cards that take a sentence test (0.1)   --pull auto|never (auto)   --sec-per-card S (20)
+ *            --pull-from course|examples|<Source> (course): what auto-pulls unlock (examples = the Examples Critical Path)
+ *            --sentences file.tsv: every distinct example sentence (count, V verified / G generator, template, cards, ko, en),
+ *            generator ones first: the file to read in a sentence quality pass (docs: handoff.md "Simulator sentence QA")
  *   step     play by commands: --do "card; answer 1; trial right; status" (or commands from piped stdin, one per line;
  *            an interactive fc2> prompt when stdin is a terminal). --state keeps the game between calls, not the open card.
  *            commands: card | answer <-2..2> | trial right|wrong|<i> | quiz right|wrong [i] | next | pull [pack] | collect |
  *                      upgrade <key> | claim <i|-1> | ascend | buy-numbers | wait <hours> | status | units [text] | save <file>
+ *            also: path [n] (next n units of the Examples Critical Path)
  *   script   --script file.js (exports next(view) -> command string or null) or file.txt (one command per line)
+ *   critical-path [--n 30]  the Examples Critical Path from the loaded state: units in order, usable verified templates after each
  *   help     this text
  * Common:  --load save.json (a Menu > Backup / restore file; default: a fresh game)  --seed N (1)  --save out.json (end state as a
  *          backup the app can restore)  --state file.json (load if it exists, save at the end: carries a step session between calls)
@@ -74,7 +79,8 @@ function createSim({ seed = 1, startMs = null, speech = true, opts = null } = {}
 		generate: (id, n, options) => generateSentencesForUnit(id, n, options),
 		templateIds: () => templateIds,
 		canSpeak: () => speech,
-		persist: { game() {}, unit() {}, cell() {} }
+		persist: { game() {}, unit() {}, cell() {} },
+		criticalPath: (owned, cands, n) => vg.examplesCriticalPath(owned, cands, n)
 	});
 	core.opts = { ...DEFAULT_OPTS, ...(opts || {}) };
 	sim.core = core;
@@ -154,18 +160,22 @@ const POLICIES = {
 };
 
 // ---------------------------------------------------------------- actions (shared by run, step and script)
+/** V = from a verified (textbook) template, G = built by the fallback generator (the app shows 📖 / ⚙). */
+const srcOf = s => (s && s.isVerifiedStructure ? 'V' : 'G');
+const logSentences = list => (list || []).map(s => `${srcOf(s)} ${s.ko}`);
+
 function cardView(core) {
 	const k = core.card;
 	if (!k) return null;
 	const u = core.units.get(k.id), p = core.unitOf(k.id);
 	return { id: k.id, ko: u[D.Korean], en: u[D.English], pos: u[D.PartofSpeech], mode: k.mode, status: k.st, side: k.side, score: p.score, tier: p.tier,
-		trial: k.trial && { type: k.trial.type, choices: k.trial.choices.map(c => c.label) }, sentences: (k.sentences || []).map(s => ({ ko: s.ko, en: s.enNatural || s.en, template: s.verifiedTemplateId || null })) };
+		trial: k.trial && { type: k.trial.type, choices: k.trial.choices.map(c => c.label) }, sentences: (k.sentences || []).map(s => ({ src: srcOf(s), ko: s.ko, en: s.enNatural || s.en, template: s.verifiedTemplateId || null })) };
 }
 
 function makeRunner(sim, logPath) {
 	const core = sim.core;
 	const stats = { cards: 0, modes: {}, self: {}, trials: { passed: 0, failed: 0 }, quizzes: { right: 0, wrong: 0, none: 0 }, harvests: 0, established: 0, promoted: 0, lapsed: 0, demoted: 0, rounds: 0,
-		pulls: [], sentenceN: 0, sentences: {}, endings: {}, finals: {}, paths: {}, checks: {}, checkEx: {}, stateChecks: {}, timeline: [] };
+		pulls: [], sentenceN: 0, sentences: {}, byKo: {}, endings: {}, finals: {}, paths: {}, checks: {}, checkEx: {}, stateChecks: {}, timeline: [] };
 	const logLines = [];
 	const bump = (m, k, n = 1) => { m[k] = (m[k] || 0) + n; };
 	const check = (name, example) => { bump(stats.checks, name); if (!stats.checkEx[name]) stats.checkEx[name] = example; };
@@ -173,6 +183,8 @@ function makeRunner(sim, logPath) {
 		for (const s of list) {
 			stats.sentenceN++;
 			bump(stats.sentences, s.ko);
+			const row = stats.byKo[s.ko] || (stats.byKo[s.ko] = { n: 0, src: srcOf(s), tpl: s.verifiedTemplateId || '', cards: new Set(), en: s.enNatural || s.en || '' });
+			row.n++; row.cards.add(ko(cardId));
 			const w = String(s.ko).replace(/[.?!~]+$/, '').split(/\s+/);
 			bump(stats.endings, w.slice(-2).join(' '));
 			const content = (s.unitsUsed || []).filter(x => String(x.kind).toLowerCase() !== 'grammar');
@@ -213,7 +225,7 @@ function makeRunner(sim, logPath) {
 			core.flip();
 			const r = core.answerSelf(v);
 			stats.cards++; bump(stats.modes, k.mode); bump(stats.self, v);
-			book(r, { mode: k.mode, status: k.st, self: v, sentences: (k.sentences || []).map(s => s.ko) });
+			book(r, { mode: k.mode, status: k.st, self: v, sentences: logSentences(k.sentences) });
 			afterAction(`answer ${v} on ${ko(k.id)}`);
 			sim.ms += (sim.secPerCard || 20) * 1000;
 			return `${ko(k.id)} ${k.mode} ${v > 0 ? '+' : ''}${v}: +${r.coins} coins${r.ev.established ? ', established' : ''}${r.ev.promoted ? ', promoted' : ''}${r.ev.harvested ? ', harvested' : ''}${r.ev.lapsed ? ', lapsed' : ''}`;
@@ -226,7 +238,7 @@ function makeRunner(sim, logPath) {
 			const r = core.answerTrial(i);
 			core.continueCard();
 			stats.cards++; bump(stats.modes, 'trial'); stats.trials[k.passed ? 'passed' : 'failed']++;
-			book(r, { mode: 'trial', trialType: k.trial.type, passed: k.passed, sentences: (k.sentences || []).map(s => s.ko) });
+			book(r, { mode: 'trial', trialType: k.trial.type, passed: k.passed, sentences: logSentences(k.sentences) });
 			afterAction(`trial on ${ko(k.id)}`);
 			sim.ms += (sim.secPerCard || 20) * 1000;
 			return `${ko(k.id)} trial (${k.trial.type}) ${k.passed ? 'passed' : 'failed'}: +${r.coins} coins`;
@@ -249,13 +261,29 @@ function makeRunner(sim, logPath) {
 			return `${ko(k.id)} quiz ${ok ? 'right' : 'wrong'}${res.rows ? `: ${res.rows.length} units credited, +${res.coins} bonus coins` : ''}`;
 		},
 		next() { if (core.card && !core.card.done) core.card.done = true; ensureCard(); return cardView(core) ? `next: ${cardView(core).ko}` : 'no card'; },
+		/** pack: a Source name, "examples" (the Examples Critical Path), "course" or nothing (course order). */
 		pull(pack) {
-			const res = core.pull(pack || null);
+			const res = core.pull(pack === 'examples' ? G.EXAMPLES_PACK : pack === 'course' ? null : pack || null);
 			if (res.blocked) return `pull blocked: ${res.blocked === 'coins' ? `needs ${G.pullCost(core.g)} coins` : 'nursery full (establish some units first)'}`;
 			if (!res.ids.length) return 'nothing left to pull';
-			stats.pulls.push({ t: new Date(sim.ms).toISOString(), level: core.g.level, ids: res.ids, ko: res.ids.map(ko), cost: res.cost });
+			stats.pulls.push({ t: new Date(sim.ms).toISOString(), level: core.g.level, ids: res.ids, ko: res.ids.map(ko), cost: res.cost, examples: res.examples });
 			afterAction('pull');
-			return `pulled ${res.ids.length} for ${res.cost}: ${res.ids.map(ko).join(' ')}`;
+			const ex = res.examples ? ` (verified templates usable ${res.examples.before} -> ${res.examples.after})` : '';
+			return `pulled ${res.ids.length} for ${res.cost}: ${res.ids.map(ko).join(' ')}${ex}`;
+		},
+		path(n = 10) {
+			const p = core.criticalPath(Number(n));
+			if (!p) return 'no critical path (the verified generator is missing)';
+			return `verified templates usable now: ${p.before}\n` + p.steps.map((x, i) => `${String(i + 1).padStart(3)} ${String(x.id).padStart(5)} ${ko(x.id).padEnd(12)} gain ${x.gain}  -> ${x.usable} usable`).join('\n');
+		},
+		usable() { return vg.examplesCriticalPath(core.g.owned, [], 0).before; },
+		writeSentences(file) {
+			const rows = Object.entries(stats.byKo).sort((a, b) => (a[1].src === b[1].src ? 0 : a[1].src === 'G' ? -1 : 1) || b[1].n - a[1].n);
+			const clean = t => String(t).replace(/[\t\n]/g, ' ');
+			const out = ['count\tsrc\ttemplate\tcards\tko\ten'].concat(rows.map(([k, r]) => [r.n, r.src, r.tpl, [...r.cards].join(','), k, r.en].map(clean).join('\t')));
+			fs.mkdirSync(path.dirname(path.resolve(file)), { recursive: true });
+			fs.writeFileSync(file, out.join('\n') + '\n');
+			return rows.length;
 		},
 		collect() { const n = core.collect(); afterAction('collect'); return n ? `collected ${n} idle coins` : 'nothing to collect'; },
 		upgrade(key) { return core.upgrade(key) ? `upgraded ${key} to ${G.upLevel(core.g, key)}` : `cannot upgrade ${key}`; },
@@ -290,7 +318,7 @@ function runCommand(api, line) {
 	if (cmd === 'answer') return api.answer(Number(args[0]));
 	if (cmd === 'trial') return api.trial(args[0]);
 	if (cmd === 'quiz') return api.quiz(args[0], Number(args[1] || 0));
-	if (typeof api[cmd] === 'function' && !['writeLog', 'timeline', 'card', 'stats'].includes(cmd)) return api[cmd](...args);
+	if (typeof api[cmd] === 'function' && !['writeLog', 'timeline', 'card', 'stats', 'writeSentences', 'usable'].includes(cmd)) return api[cmd](...args);
 	throw new Error(`unknown command "${cmd}" (see --help)`);
 }
 
@@ -299,18 +327,19 @@ function runBatch(sim, api, flags) {
 	const core = sim.core, policy = POLICIES[flags.policy || 'mixed'];
 	if (!policy) throw new Error(`unknown policy ${flags.policy} (correct | wrong | mixed)`);
 	const cards = Number(flags.cards || 200), days = Number(flags.days || 3), sessions = Number(flags.sessions || 2);
-	const quizRate = Number(flags.quiz !== undefined ? flags.quiz : 0.1), autoPull = (flags.pull || 'auto') === 'auto';
+	const quizRate = Number(flags.quiz !== undefined ? flags.quiz : 0.1), autoPull = (flags.pull || 'auto') === 'auto', from = flags['pull-from'] || 'course';
 	const perSession = Math.max(1, Math.ceil(cards / (days * sessions)));
 	const pRand = mulberry32((sim.seed * 7919) >>> 0);   // the policy's own stream, so changing it does not shift the game's random
 	const practice = new Map();
 	api.timeline('start');
+	api.stats.usable = api.usable();
 	let played = 0;
 	for (let day = 0; day < days && played < cards; day++) {
 		for (let s = 0; s < sessions && played < cards; s++) {
 			if (day || s) api.wait(24 / sessions);
 			api.collect();
 			core.ensureQuests();
-			while (autoPull && !core.pullBlocked() && core.pullCandidates().length) { if (/nothing left/.test(api.pull())) break; }
+			while (autoPull && !core.pullBlocked() && core.pullCandidates().length) { if (/nothing left/.test(api.pull(from))) break; }
 			for (let n = 0; n < perSession && played < cards; n++) {
 				const k = (() => { const v = api.card(); return v && core.card; })();
 				if (!k) break;
@@ -319,7 +348,7 @@ function runBatch(sim, api, flags) {
 				else if (pRand() < quizRate && (k.sentences || []).length) api.quiz(p.quiz ? 'right' : 'wrong', 0);
 				else api.answer(p.self);
 				played++;
-				while (autoPull && !core.pullBlocked() && core.counts().new === 0 && core.pullCandidates().length) { if (/nothing left/.test(api.pull())) break; }
+				while (autoPull && !core.pullBlocked() && core.counts().new === 0 && core.pullCandidates().length) { if (/nothing left/.test(api.pull(from))) break; }
 			}
 			for (let i = 0; i < 3; i++) core.claim(i);
 			core.claim(-1);
@@ -343,7 +372,8 @@ function summary(sim, api, played, flags) {
 	out.push(`established ${st.established}  harvests ${st.harvests}  promotions ${st.promoted}  lapses ${st.lapsed}  demotions ${st.demoted}`);
 	out.push(`pulls: ${st.pulls.length ? st.pulls.map(p => `[Lv${p.level} ${p.cost}c] ${p.ko.join(' ')}`).join(' | ') : 'none'}`);
 	out.push(`generator paths: ${top(st.paths).map(([k, n]) => `${k} ${pct(n)}`).join(', ')}`);
-	out.push(`most repeated sentences: ${top(st.sentences, 5).map(([k, n]) => `${n}x ${k}`).join(' | ')}`);
+	out.push(`verified templates usable: ${st.usable !== undefined ? st.usable : '?'} -> ${api.usable()}   (pulls from: ${flags['pull-from'] || 'course'})`);
+	out.push(`most repeated sentences: ${top(st.sentences, 5).map(([k, n]) => `${n}x ${st.byKo[k] ? st.byKo[k].src : ''} ${k}`).join(' | ')}`);
 	out.push(`most common endings: ${top(st.endings, 6).map(([k, n]) => `${pct(n)} ${k}`).join(' | ')}`);
 	out.push(`final content words: ${top(st.finals, 8).map(([k, n]) => `${pct(n)} ${k}`).join(' | ')}`);
 	const checks = { ...st.checks, ...st.stateChecks };
@@ -356,7 +386,7 @@ function summary(sim, api, played, flags) {
 function main() {
 	const { pos, flags } = parseArgs(process.argv.slice(2));
 	const cmd = pos[0];
-	if (!cmd || cmd === 'help') { console.log('usage: node tools/fc2_sim.js run|step|script [options] (details: --help)'); return; }
+	if (!cmd || cmd === 'help') { console.log('usage: node tools/fc2_sim.js run|step|script|critical-path [options] (details: --help)'); return; }
 	const seed = Number(flags.seed || 1);
 	const stateFile = flags.state ? path.resolve(flags.state) : null;
 	const loadFile = stateFile && fs.existsSync(stateFile) ? stateFile : flags.load ? path.resolve(flags.load) : null;
@@ -368,9 +398,12 @@ function main() {
 	const logPath = path.resolve(flags.log || path.join(ROOT, 'local', 'sim', `${cmd}-seed${seed}.jsonl`));
 	flags.logPath = logPath;
 	const api = makeRunner(sim, logPath);
-	if (cmd === 'run') {
+	if (cmd === 'critical-path') {
+		console.log(api.path(Number(flags.n || 30)));
+	} else if (cmd === 'run') {
 		const played = runBatch(sim, api, flags);
 		if (flags.save) api.save(flags.save);
+		if (flags.sentences) console.log(`wrote ${api.writeSentences(flags.sentences)} distinct sentences to ${flags.sentences}`);
 		api.writeLog();
 		console.log(summary(sim, api, played, flags));
 	} else if (cmd === 'step' || cmd === 'script') {
@@ -397,7 +430,7 @@ function main() {
 		}
 		if (flags.save) api.save(flags.save);
 		api.writeLog();
-	} else throw new Error(`unknown command ${cmd} (run | step | script)`);
+	} else throw new Error(`unknown command ${cmd} (run | step | script | critical-path)`);
 	finish(sim, api, flags, stateFile);
 }
 

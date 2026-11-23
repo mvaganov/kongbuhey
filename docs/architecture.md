@@ -150,6 +150,11 @@ Rules that keep them exact:
   score/tier ranges, unique owned ids, xp). ~1 s per 200 cards, so use it before asking the owner to play-test.
   Enforced: `test/fc2_sim_test.js` (default: determinism, scripted session, backup round trip, policies, checks; `--full`: 200-card runs
   for every policy with zero check failures).
+- **Examples Critical Path** (`examplesCriticalPath` in `verified_sentence_generator.js`, Shop "From" option `G.EXAMPLES_PACK`, simulator
+  `--pull-from examples` / `critical-path`): a verified template is usable when its grammar units are unlocked and each word slot has an
+  unlocked unit that fits. The path greedily unlocks the unit with the most progress, where filling one of a template's n missing
+  requirements is worth 4^(1-n). From the core grammar: 23 usable templates after 40 unlocks and 204 after 300 (course order: 1 and 1).
+  Enforced: `test/fc2_sim_test.js` (monotone, beats course order, pulls through the controller), fc2 UI test (Shop option, reveal).
 - **Parity rule:** a new gameplay feature goes into `FC2Core` (not `app.js`), gets a simulator command or batch behaviour, and a
   `test/fc2_sim_test.js` case. Exempt from full parity: speech, sound, haptics, animation, layout. Stub them instead (e.g. `canSpeak`
   decides whether listening trials exist; the simulator answers them like reading trials).

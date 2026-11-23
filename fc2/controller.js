@@ -385,15 +385,31 @@ class FC2Core {
 	}
 
 	/** Unlock a pack of units (pack: a Source, or null for course order). Returns { ids, cost } or { blocked } ({ ids: [] } when none left). */
+	/**
+	 * pack: a Source name, null (course order) or G.EXAMPLES_PACK: the units that make the most verified example templates usable
+	 * (env.criticalPath), then course order for any rest. Returns { ids, cost, examples: { before, after } | undefined }.
+	 */
 	pull(pack = null) {
-		const g = this.g, cost = G.pullCost(g), blocked = this.pullBlocked();
+		const g = this.g, cost = G.pullCost(g), blocked = this.pullBlocked(), n = G.pullSize(g), cands = this.pullCandidates();
 		if (blocked) return { blocked, ids: [] };
-		const ids = G.pickPull(this.pullCandidates(), G.pullSize(g), this.rand, pack || null);
+		let ids, examples;
+		if (pack === G.EXAMPLES_PACK && this.env.criticalPath) {
+			const path = this.env.criticalPath(g.owned, cands.map(c => c.id), n);
+			ids = path.ids.slice();
+			if (ids.length < n) { const taken = new Set(ids); ids.push(...G.pickPull(cands.filter(c => !taken.has(c.id)), n - ids.length, this.rand, null)); }
+			examples = { before: path.before, after: path.after };
+		} else ids = G.pickPull(cands, n, this.rand, pack === G.EXAMPLES_PACK ? null : pack || null);
 		if (!ids.length) return { ids };
 		g.coins -= cost; g.pulls++; g.owned.push(...ids);
 		this.persist.game();
 		this.card = null;
-		return { ids, cost };
+		return { ids, cost, examples };
+	}
+
+	/** The next `n` units of the Examples Critical Path from the current unlocks, with usable templates after each: [{ id, gain, usable }]. */
+	criticalPath(n = 10) {
+		if (!this.env.criticalPath) return null;
+		return this.env.criticalPath(this.g.owned, this.pullCandidates().map(c => c.id), n);
 	}
 
 	/** Buy one level of upgrade key; false when too expensive or maxed. */

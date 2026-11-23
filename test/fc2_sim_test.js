@@ -87,6 +87,28 @@ test('the checks catch faults', () => {
 	assert.deepStrictEqual(sim.sentenceChecks({ ko: '내일 학교에 갈 거예요.', unitsUsed: [] }), []);
 });
 
+test('Examples Critical Path: monotone, beats course order, pulls through the Shop option', () => {
+	const vg = require('../korean/generation/verified_sentence_generator.js');
+	const s = sim.createSim({ seed: 2 });
+	s.addCustomNames();
+	s.core.newGame(false);
+	s.core.ensureCoreUnlocked();
+	const cands = s.core.pullCandidates().map(c => c.id);
+	const p = vg.examplesCriticalPath(s.core.g.owned, cands, 40);
+	assert.strictEqual(p.ids.length, 40);
+	assert.strictEqual(new Set(p.ids).size, 40, 'no unit twice');
+	p.steps.forEach((x, i) => assert.ok(x.usable >= (i ? p.steps[i - 1].usable : p.before), 'usable templates never drop'));
+	const G = require('../fc2/game.js');
+	const course = G.pickPull(s.core.pullCandidates(), 40, () => 0, null);
+	const courseAfter = vg.examplesCriticalPath([...s.core.g.owned, ...course], [], 0).before;
+	assert.ok(p.after >= courseAfter + 10, `critical path ${p.after} usable templates after 40 unlocks vs course order ${courseAfter}`);
+	const api = sim.makeRunner(s, null);
+	const out = sim.runCommand(api, 'pull examples');
+	assert.match(out, /verified templates usable \d+ -> \d+/, out);
+	assert.deepStrictEqual(s.core.g.owned.slice(-p.steps.slice(0, 5).length), p.ids.slice(0, 5), 'the free pull takes the first steps of the path');
+	assert.match(sim.runCommand(api, 'path 3'), /^verified templates usable now: \d+\n +1 /);
+});
+
 if (FULL) {
 	for (const policy of Object.keys(sim.POLICIES)) {
 		test(`full: 200 cards over 3 days, policy ${policy}, no check failures`, () => {

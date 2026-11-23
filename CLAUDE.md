@@ -52,6 +52,7 @@ statement. `test/cli_help_test.js` (in `node test.js --full`) finds CLIs by text
 - `tools/save_inspect.js`: fc2 save file (Backup / restore text) questions; `gen` replays the game's sentence generation.
 - `tools/fc2_sim.js`: headless fc2 (same `fc2/controller.js`), seeded, simulated time. QA a game change here before asking the owner to play:
   `node tools/fc2_sim.js run --cards 200 --days 3 --policy mixed [--load save.json] [--save out.json]`, or `step --do "pull; card; answer 1"`.
+  Sentence quality pass: `--sentences out.tsv` (V verified / G generator) and the brief in handoff.md "Simulator sentence QA workflow".
 - `tools/bench_generation.js`: generation speed and output-unchanged check (baseline `test/bench_baseline.json`).
 - `tools/hangul_literals.js`: Hangul literals and magic unit ids in engine code (list, `--summary`, `--by-file`, `--by-function`, `--compare`, `--tables`); `--check` is a Stage 0 ratchet. New Hangul goes in `data/hangul_constants.js`.
 - `tools/only_expansion.js` (library): INSERT queues words that may fit `only`-list slots (`vs_tune.js expansions`).

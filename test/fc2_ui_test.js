@@ -91,6 +91,23 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		app.closeModal();
 	});
 
+	await step('pull along the Examples Critical Path', async () => {
+		app.go('shop');
+		const opt = d.querySelector(`[data-pack] option[value="${G.EXAMPLES_PACK}"]`);
+		assert(opt, 'the Shop "From" list offers the Examples Critical Path');
+		const sel = d.querySelector('[data-pack]');
+		sel.value = G.EXAMPLES_PACK; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
+		assert(app.pullPack === G.EXAMPLES_PACK, 'choosing it sets the pull source');
+		const saved = { coins: app.g.coins, owned: app.g.owned.slice(), pulls: app.g.pulls, blocked: app.core.pullBlocked };
+		const path = w.examplesCriticalPath(app.g.owned, app.pullCandidates().map(c => c.id), G.pullSize(app.g));
+		app.g.coins = 1e6; app.core.pullBlocked = () => '';
+		click('[data-act="pull"]');
+		assert(path.ids.every(id => app.g.owned.includes(id)), 'the pull unlocks the next units of the path');
+		assert(path.after <= path.before || /verified example sentence/.test(d.querySelector('#modal').textContent), 'the reveal says how many example sentences became usable');
+		app.closeModal();
+		app.core.pullBlocked = saved.blocked; app.g.coins = saved.coins; app.g.owned = saved.owned; app.g.pulls = saved.pulls; app.pullPack = ''; app.save();
+	});
+
 	await step('learn a card', async () => {
 		app.go('play');
 		assert(app.card && app.card.mode !== 'trial', 'Play shows a learning card');
@@ -217,6 +234,9 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		// 3. the list view: ready sentences first, locked after; a single missing unit is highlighted, several list their grammar
 		app.card = { id: unit, mode: 'learn', st: 'new', side: 'front', shownAt: Date.now(), trial: null, ...app.generateFor(unit) };
 		app.go('play');
+		const badges = [...d.querySelectorAll('.sentence')].map(li => li.querySelector('.s-src'));
+		assert(badges.length === app.card.sentences.length && badges.every((b, i) => b && b.classList.contains(app.card.sentences[i].isVerifiedStructure ? 'verified' : 'generated')),
+			'every example shows where it came from (📖 verified template, ⚙ generator)');
 		const target = fits.map(r => ({ ...r, need: r.missing.map(m => m.unitId) })).sort((a, b) => a.need.length - b.need.length)[0];
 		app.g.owned = [unit, ...target.need.slice(0, -1)];   // everything the sentence needs except one unit
 		app.vqUnit = unit;

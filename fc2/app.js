@@ -69,6 +69,10 @@ window.addEventListener('unhandledrejection', ev => reportError('Unhandled promi
 // store.js holds the reload-safety logic. A phone can hold a stale cached index.html (no store.js tag) next to a fresh app.js: say so loudly
 // and keep playing without the localStorage mirror instead of failing to start.
 const NO_BACKUP = () => { throw new Error('backup needs store.js, which did not load: reload the page'); };
+/** Where an example sentence came from: a verified (textbook) template or the fallback generator. tools/fc2_sim.js shows the same. */
+const sourceBadge = s => (s && s.isVerifiedStructure
+	? '<span class="s-src verified" title="From a verified textbook sentence">📖</span>'
+	: '<span class="s-src generated" title="Built by the fallback sentence generator">⚙</span>');
 const NO_STORE = { packProg: () => ({}), mergeProg: prog => ({ prog, healed: [] }), packSession: () => null, unpackSession: () => null, packBackup: NO_BACKUP, unpackBackup: NO_BACKUP };
 let storeWarned = false;
 function store() {
@@ -115,7 +119,8 @@ class FC2App {
 			templateIds: () => (window.FC2Queue && window.getAllVerifiedSentences ? this.vqIds() : null),
 			canSpeak: () => 'speechSynthesis' in window,
 			persist: { game: () => this.save(), unit: id => this.saveUnit(id), cell: (id, col, value) => this.saveCell(id, col, value) },
-			onSentences: (id, sentences) => this.prefetchSoon(id, sentences)
+			onSentences: (id, sentences) => this.prefetchSoon(id, sentences),
+			criticalPath: window.examplesCriticalPath ? (owned, cands, n) => window.examplesCriticalPath(owned, cands, n) : null
 		});
 		this.prog = new Map();   // id -> { score, tier, lastCorrect, lastSeen }
 		this.notes = {};
@@ -669,6 +674,7 @@ class FC2App {
 	speakBtn(act, extra = '') { return `<button type="button" class="icon-btn speak" data-act="${act}" ${extra} aria-label="Speak">🔊</button>`; }
 	isFlagged(ko) { return this.flags.some(f => f.ko === ko); }
 
+	/** 📖 = from a verified (textbook) sentence, ⚙ = built by the fallback generator. */
 	sentencesHtml(o) {
 		const k = this.card;
 		if (!k.sentences.length) return `<p class="muted">${escapeHtml(k.msg)}</p>`;
@@ -676,6 +682,7 @@ class FC2App {
 			${o.hideKo ? '' : `<div class="s-ko">${R.sentenceHtml(s, k.id)}</div>`}
 			${o.english || o.hideKo ? `<div class="s-en-lit">${escapeHtml(s.enLiteral)}</div><div class="s-en">${escapeHtml(s.enNatural || s.en)}</div>` : ''}</div>
 			<div class="s-actions">${o.hideKo ? '' : this.speakBtn('speak-sent', `data-i="${i}"`)}
+			${sourceBadge(s)}
 			${o.test ? `<button type="button" class="icon-btn test" data-act="sent-test" data-i="${i}" aria-label="Test my comprehension of this sentence">🎯</button>` : ''}
 			<button type="button" class="icon-btn flag${this.isFlagged(s.ko) ? ' flagged' : ''}" data-act="flag" data-i="${i}" aria-label="Flag bad sentence">⚑</button></div></li>`).join('') + '</ul>';
 	}
@@ -878,6 +885,7 @@ class FC2App {
 		const { all, next } = this.packsShown();
 		const blocked = !left ? 'Everything is unlocked' : nursery >= cap ? 'Nursery full: establish some units first' : cost > g.coins ? `Need ${fmt(cost - g.coins)} more 냥` : '';
 		const packOpts = ['<option value="">Next in course order' + (next ? ` (${escapeHtml(next.name)})` : '') + '</option>']
+			.concat(window.examplesCriticalPath ? [`<option value="${G.EXAMPLES_PACK}" ${this.pullPack === G.EXAMPLES_PACK ? 'selected' : ''}>Examples Critical Path (most new example sentences)</option>`] : [])
 			.concat(all.filter(p => p.owned < p.ids.length).map(p => `<option value="${escapeHtml(p.name)}" ${this.pullPack === p.name ? 'selected' : ''}>${escapeHtml(p.name)} (${p.ids.length - p.owned} left)</option>`)).join('');
 		const nbLv = (g.games || {}).numbers ? 1 : 0;
 		const ups = Object.entries(T.UPGRADES).map(([key, s]) => {
@@ -890,7 +898,7 @@ class FC2App {
 			return `<button type="button" class="btn cos${on ? ' on' : ''}" data-act="cosmetic" data-kind="${kind}" data-key="${key}" ${!has && price > g.coins ? 'disabled' : ''}>${name}<small>${on ? 'equipped' : has ? 'owned' : fmt(price) + ' 냥'}</small></button>`;
 		}).join('');
 		return `<section class="panel pull"><h2>Pull new units</h2>
-				<p class="muted">Reveals ${G.pullSize(g)} units in course order, highest priority first. Nursery ${nursery}/${cap}.</p>
+				<p class="muted">Reveals ${G.pullSize(g)} units: in course order (easiest first), from one pack, or along the Examples Critical Path (the units that make the most textbook example sentences usable). Nursery ${nursery}/${cap}.</p>
 				<label class="row">From <select data-pack>${packOpts}</select></label>
 				<button type="button" class="btn primary wide pull-btn" data-act="pull" ${blocked ? 'disabled' : ''}>✨ Pull ×${G.pullSize(g)} <small>${cost ? fmt(cost) + ' 냥' : 'FREE'}</small></button>
 				${blocked ? `<p class="muted center">${blocked}</p>` : ''}</section>
@@ -913,7 +921,8 @@ class FC2App {
 			return `<div class="reveal r${r}" style="--d:${i * 320}ms" data-r="${r}"><span class="rar">${RARITY[r]}</span><b>${escapeHtml(u[C.Korean])}</b><small>${escapeHtml(u[C.Source])}</small></div>`;
 		}).join('');
 		this.card = null;
-		this.openModal('New units', `<div class="reveals">${cards}</div><div class="btn-row"><button type="button" class="btn primary wide" data-act="tab" data-tab="play">▶ Learn them</button></div>`, 'result');
+		const ex = res.examples && res.examples.after > res.examples.before ? `<p class="muted center">+${res.examples.after - res.examples.before} verified example sentence${res.examples.after - res.examples.before === 1 ? '' : 's'} usable (${res.examples.after} in all)</p>` : '';
+		this.openModal('New units', `<div class="reveals">${cards}</div>${ex}<div class="btn-row"><button type="button" class="btn primary wide" data-act="tab" data-tab="play">▶ Learn them</button></div>`, 'result');
 		const colors = [['#b8c0cc'], ['#6cb6ff', '#cfe6ff'], ['#c39bff', '#f0e4ff'], ['#ffd166', '#fff3c4', '#ff9f1c']];
 		this.root.querySelectorAll('.reveal').forEach((n, i) => setTimeout(() => {
 			if (!n.isConnected) return;

@@ -3595,6 +3595,77 @@ function slotsToRelax(tpl, targetSlotIndex) {
 	return out;
 }
 
+// ---------------------------------------------------------------- Examples Critical Path
+// A template is usable for examples when every grammar unit it uses is unlocked and every word slot has at least one unlocked unit that
+// fits (the slot's eligible list, as the availability cache uses). The critical path is a greedy order of units to unlock: each step
+// takes the unit with the most progress, where filling one of a template's n unmet requirements is worth 4^(1-n): completing a
+// template is worth 1, nearly complete ones count most. Measured on the whole curriculum from the core grammar (usable templates
+// after 40 / 300 unlocks): this 23 / 204, 1/n weights 2 / 178, course order 1 / 1. Ties: easier unit (PriorityScore), then lower id.
+let cpCache = null;
+function criticalPathModel() {
+	const all = getVerifiedTemplatesShared(), units = getUnitsArray();
+	if (cpCache && cpCache.of === all && cpCache.ver === templateEdits) return cpCache;
+	const tpls = [];
+	for (const tpl of all) {
+		if (!tpl || !Array.isArray(tpl.slots)) continue;
+		const reqs = [], grammar = new Set();
+		for (const slot of tpl.slots) {
+			for (const g of (slot.grammar || [])) {
+				if (typeof g.unitId !== 'number') continue;
+				const c = canonicalUnitId(g.unitId);
+				if (!grammar.has(c)) { grammar.add(c); reqs.push([c]); }
+			}
+			if (typeof slot.originalUnitId !== 'number') continue;
+			const own = canonicalUnitId(slot.originalUnitId);
+			if (isLockedSlot(slot)) { reqs.push([own]); continue; }
+			const ids = new Set(slotEligibleUnits(slot, units, false).map(u => u[DATA_SCHEMA.Id]));
+			ids.add(own);
+			reqs.push([...ids]);
+		}
+		tpls.push({ id: tpl.id, reqs });
+	}
+	const index = new Map();   // unit id -> flat [templateIndex, reqIndex, ...]
+	tpls.forEach((t, ti) => t.reqs.forEach((r, ri) => { for (const id of r) { if (!index.has(id)) index.set(id, []); index.get(id).push(ti, ri); } }));
+	cpCache = { of: all, ver: templateEdits, tpls, index };
+	return cpCache;
+}
+
+/**
+ * The next `n` units (from candidateIds) to unlock for the fastest growth of usable verified templates, given ownedIds.
+ * Returns { ids, steps: [{ id, gain, usable }], before, after } (before/after = usable templates). Stops early when no candidate
+ * helps any template (the caller fills the rest another way). n = 0 just counts: { before }.
+ */
+function examplesCriticalPath(ownedIds, candidateIds = [], n = 5) {
+	const { tpls, index } = criticalPathModel(), units = getUnitsArray();
+	const owned = new Set([...(ownedIds || [])].map(canonicalUnitId));
+	const met = tpls.map(t => t.reqs.map(r => r.some(id => owned.has(id))));
+	const unmet = met.map(m => m.reduce((k, ok) => k + (ok ? 0 : 1), 0));
+	let usable = unmet.reduce((k, x) => k + (x === 0 ? 1 : 0), 0);
+	const before = usable, steps = [], cands = new Set(candidateIds || []);
+	const prio = id => Number(units[id] && units[id][DATA_SCHEMA.PriorityScore]) || 3;
+	while (steps.length < n && cands.size) {
+		let best = null, bestGain = 0;
+		for (const id of cands) {
+			const list = index.get(canonicalUnitId(id));
+			if (!list) continue;
+			let gain = 0;
+			for (let k = 0; k < list.length; k += 2) if (!met[list[k]][list[k + 1]]) gain += Math.pow(4, 1 - unmet[list[k]]);
+			if (gain > bestGain + 1e-9 || (best !== null && Math.abs(gain - bestGain) <= 1e-9 && (prio(id) - prio(best) || id - best) < 0)) { best = id; bestGain = gain; }
+		}
+		if (best === null) break;
+		const list = index.get(canonicalUnitId(best));
+		for (let k = 0; k < list.length; k += 2) {
+			const ti = list[k], ri = list[k + 1];
+			if (met[ti][ri]) continue;
+			met[ti][ri] = true;
+			if (--unmet[ti] === 0) usable++;
+		}
+		cands.delete(best);
+		steps.push({ id: best, gain: Math.round(bestGain * 100) / 100, usable });
+	}
+	return { ids: steps.map(s => s.id), steps, before, after: usable };
+}
+
 /**
  * Every verified template that can teach `unitId`, one row each, with what it still needs. ownedIds (array or Set) = unlocked units.
  * row: { templateId, title, ko, source, slotIndex, matchType, slots: [{ index, unitId, role: 'target'|'word' }],
@@ -3946,6 +4017,8 @@ const verifiedGeneratorExports = {
 	getAvailabilityStats,
 	getWorkStats,
 	listVerifiedFitsForUnit,
+	examplesCriticalPath,
+	criticalPathModel,
 	buildPosDecks,
 	getPosDecks,
 	getPosDeck,

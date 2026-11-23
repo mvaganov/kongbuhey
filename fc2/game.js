@@ -293,6 +293,9 @@ const rarity = priority => priority >= 5 ? 3 : priority >= 4 ? 2 : priority >= 3
  * Choose the next units to unlock. cands: [{ id, pack, priority }] not yet owned. Works through packs in packRank order
  * (or `pack` first when given); inside a pack, lowest PriorityScore (easiest: 0.5 ultra-simple .. 5 niche) then lowest id, picking randomly within a small window.
  */
+/** Shop "From" value for the Examples Critical Path (verified_sentence_generator.examplesCriticalPath); not a Source name. */
+const EXAMPLES_PACK = '@examples';
+
 function pickPull(cands, n, rng = Math.random, pack = null) {
 	const sorted = cands.slice().sort((a, b) => ((a.pack === pack ? -1 : packRank(a.pack)) - (b.pack === pack ? -1 : packRank(b.pack)))
 		|| (a.priority - b.priority) || (a.id - b.id));
@@ -399,7 +402,7 @@ function ensureUnlocked(g, ids) {
 	return add.length > 0;
 }
 
-const api = { sentenceOptions, CUSTOM_NAME_SOURCE, isNameRow, normalizeNames, customNameRow, nameUse, RECENT_KEEP, pushRecent, contentUnitIds, ensureUnlocked, NUMBER_COST, NUMBER_WORDS, numberWord, numberQuestion, T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
+const api = { sentenceOptions, EXAMPLES_PACK, CUSTOM_NAME_SOURCE, isNameRow, normalizeNames, customNameRow, nameUse, RECENT_KEEP, pushRecent, contentUnitIds, ensureUnlocked, NUMBER_COST, NUMBER_WORDS, numberWord, numberQuestion, T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
 	idleEarned, idleRate, touchStreak, isTrial, answerTrial, sealMult, totalStars, sealsAvailable, ascend, ensureQuests, questEvent, claimQuest, packRank, rarity, pickPull, nextCard, modeOf, upLevel, upCost, comboCap, critChance, pullSize, pullCost,
 	nurseryCap, offlineCapH, streakMult };
 if (typeof window !== 'undefined') window.FC2Game = api;

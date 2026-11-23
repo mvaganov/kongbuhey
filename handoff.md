@@ -173,3 +173,31 @@ Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). 
   Measured but deliberately not done: architecture doc section 6.
 - Open: one unexplained stage-6 failure in 1 of 4 full runs on 2026-11-22 (not reproduced in 13 UI-suite runs); suspect the old
   random-pack flake in the UI test's "sentence test" step.
+
+## Simulator sentence QA workflow (agreed 2026-11-23)
+Goal: find and fix wrong example sentences without the owner play-testing. `tools/fc2_sim.js` plays the real game (same controller and
+generators as the phone) and lists every example it showed. Each one is marked: V = from a verified textbook template (📖 in the app),
+G = built by the fallback generator (⚙). Most wrong sentences are G; V ones go through the verified-sentence tuning workflow above.
+
+**Brief for an agent (paste as the prompt):**
+> Kongbuhey repo (read CLAUDE.md: test from a local copy, ask before committing). Sentence quality pass with the simulator.
+> 1. Collect: `node tools/fc2_sim.js run --load "$(ls local/GameSave_*.json | tail -1)" --cards 300 --days 3 --seed <N> --sentences /tmp/sent.tsv`
+>    (no save in local/: drop `--load`; also try `--pull-from examples`, which unlocks different units). Use 2-3 seeds.
+> 2. Read `/tmp/sent.tsv` (count, V/G, template, card units, Korean, English; G first, most repeated first). Read at least the top 150 G
+>    rows and 50 V rows. Note each distinct KIND of error with 2 examples: wrong particle or role, verb that does not fit its subject or
+>    object, adverb that does not fit the verb, tense clash, incomplete sentence, a fixed phrase broken by a slot.
+>    Skip what is grammatical but bland (`가방이 좋아요`) and anything you are not sure is wrong (list those for the owner instead).
+> 3. Reproduce each kind with the smallest unlocked set: `generateSentenceForUnit(id, { onlyFromSet: true, allowedUnitIds, seedOffset })`
+>    from `korean/generation/unit_sentence_generator.js`; `unitsUsed[].role` shows which builder branch made it.
+> 4. Fix the rule, preferring data: tags, SemanticData (`collocation_filter`, `adverb_concord.denyVerbs`, `needsAdv`, `req`), or
+>    `tools/vs_tune.js` rules for a verified slot. Code only when a builder ignores the data (then make it obey the data everywhere).
+>    No Hangul literals or unit ids in engine code.
+> 5. Guard each fix: a test case in the matching existing suite (adverb_test, collocation_test, spatial_concord_test,
+>    temporal_concord_test, ...) built on the small set from step 3, or a slot fixture (`vs_tune.js fixture`) for a verified slot.
+>    Check the test FAILS without the fix.
+> 6. Re-run step 1 with the same seeds: the kind is gone and `checks: all passed`. Then `node test.js`, and `node test.js --full`
+>    when `run_test_full_plz.txt` exists. Report: kinds fixed (one example each), kinds left for the owner, the unsure list.
+Fixed in the first pass (2026-11-23): 지내다 without 잘 (needsAdv), 많다 with a single demonstrative (collocation filter now holds in the
+fallback), 열심히 with one-time events (denyVerbs, also for grammar-formula adverbs), a person at a place with a descriptive verb
+(*우리는 학생회관에 조용했어요: the place is the subject), eat-verb slots open to every verb (vs_minimal_2, vs_83).
+Seen and left (owner: fine or unsure): `맞은편에 서점이 있습니다` without a reference noun (fine), `프랑스에서 졸업했어요`, `제가 죄송해요`.
