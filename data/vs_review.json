@@ -475,6 +475,39 @@
 			],
 			"order": "critical-path",
 			"english": true
+		},
+		{
+			"n": 15,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_234",
+				"vs_470",
+				"vs_7",
+				"vs_216",
+				"vs_209",
+				"vs_143",
+				"vs_251",
+				"vs_84",
+				"vs_249",
+				"vs_220",
+				"vs_245",
+				"vs_127",
+				"vs_250",
+				"vs_75",
+				"vs_540",
+				"vs_30",
+				"vs_224",
+				"vs_157",
+				"vs_270",
+				"vs_283",
+				"vs_141",
+				"vs_129",
+				"vs_132",
+				"vs_360",
+				"vs_176"
+			],
+			"order": "critical-path",
+			"english": true
 		}
 	],
 	"reviewed": {
@@ -1949,6 +1982,106 @@
 		"vs_512": {
 			"batch": 14,
 			"note": "tags: kept; en: new"
+		},
+		"vs_234": {
+			"batch": 15,
+			"note": "tags: kept (pools 1-2, nothing to tighten); en: new"
+		},
+		"vs_470": {
+			"batch": 15,
+			"note": "tags: kept (nothing variable); en: new"
+		},
+		"vs_7": {
+			"batch": 15,
+			"note": "tags: slot2 +배우다 allow; countries/languages kept; en: new"
+		},
+		"vs_216": {
+			"batch": 15,
+			"note": "tags: slot3 deny 월 일 주 년 개월 (walking time); en: new"
+		},
+		"vs_209": {
+			"batch": 15,
+			"note": "tags: kept; en: new"
+		},
+		"vs_143": {
+			"batch": 15,
+			"note": "tags: slot5 allow 좋다 튼튼하다 예쁘다; en: new"
+		},
+		"vs_251": {
+			"batch": 15,
+			"note": "tags: slot1 deny 방학중 학기 중; en: new"
+		},
+		"vs_84": {
+			"batch": 15,
+			"note": "tags: kept; en: new"
+		},
+		"vs_249": {
+			"batch": 15,
+			"note": "tags: slots 1/3/5 deny 계절; slots 2/4/6 deny 방학중, 학기 중 (not slot 6); gap cross-slot duplicates; en: new"
+		},
+		"vs_220": {
+			"batch": 15,
+			"note": "tags: kept; en: new"
+		},
+		"vs_245": {
+			"batch": 15,
+			"note": "tags: slot1 allow 공부하다 배우다; slot4 deny 선물하다 축하하다 사랑하다; slot7 deny 할인; gap validator-reject 연습하다; en: new"
+		},
+		"vs_127": {
+			"batch": 15,
+			"note": "tags: slot4 deny 조금 모두 다; slot5 deny 교환; slot6 deny 열다 싣다; en: new"
+		},
+		"vs_250": {
+			"batch": 15,
+			"note": "tags: kept; en: new"
+		},
+		"vs_75": {
+			"batch": 15,
+			"note": "tags: slot5 deny 돌아오다; en: new"
+		},
+		"vs_540": {
+			"batch": 15,
+			"note": "tags: kept; en: new"
+		},
+		"vs_30": {
+			"batch": 15,
+			"note": "tags: kept; en: new"
+		},
+		"vs_224": {
+			"batch": 15,
+			"note": "tags: kept; en: new"
+		},
+		"vs_157": {
+			"batch": 15,
+			"note": "tags: slot2 only 초대장; slot3 allow 부치다; slot5 deny 약속 파티 모임 결혼식; slot6 only 파티 (+모임); en: new"
+		},
+		"vs_270": {
+			"batch": 15,
+			"note": "tags: slot2 deny 생필품 쿠폰; en: new"
+		},
+		"vs_283": {
+			"batch": 15,
+			"note": "tags: kept; gap validator-reject 비싸다; en: new"
+		},
+		"vs_141": {
+			"batch": 15,
+			"note": "tags: slot7 deny 좀 조금 더 제일 거의 아무리 완전; en: new"
+		},
+		"vs_129": {
+			"batch": 15,
+			"note": "tags: slot1 deny 계절; en: new"
+		},
+		"vs_132": {
+			"batch": 15,
+			"note": "tags: kept (nothing variable); en: new"
+		},
+		"vs_360": {
+			"batch": 15,
+			"note": "tags: slot1 deny 기침 두통 배탈 열 콧물 (에 걸리다); slot5 deny 감기 열; gap cross-slot; en: new"
+		},
+		"vs_176": {
+			"batch": 15,
+			"note": "tags: kept (nothing variable); en: new"
 		}
 	}
 }
