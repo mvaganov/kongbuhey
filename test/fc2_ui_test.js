@@ -148,6 +148,7 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		const seenIds = [...new Set(app.stest.choices.flatMap(c => c.ids))].filter(u => app.g.owned.includes(u));
 		assert(seenIds.length > 0 && seenIds.every(u => app.unitOf(u).lastSeen > 0), 'opening a test marks every unit in the sentence and its choices as seen');
 		assert(app.stest && app.stest.choices.length === 4 && app.stest.choices.filter(c => c.ok).length === 1 && d.querySelectorAll('.sent-test .choice').length === 4, 'the test offers 4 translations, one right');
+		assert(app.core.buildSentenceTest({ ...app.card.sentences[0], glossOk: false }) === null && !app.core.glossOk({ glossOk: false }), 'no quiz for a verified example without an English frame (its English is a word list that gives the answer away)');
 		const others = w.FlashcardRender.unitIdsOf(app.stest.s).filter(u => u !== id && app.g.owned.includes(u)).length;
 		const coins0 = app.g.coins, xp0 = app.g.xp + app.g.level * 1000;
 		click(`[data-act="stest-pick"][data-i="${app.stest.choices.findIndex(c => c.ok)}"]`);

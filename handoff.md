@@ -72,6 +72,13 @@ tools/merge_units.js    merge duplicate units: alias=canonical pairs -> alias ro
   open-licensed); textbook text goes through `tools/text_analyzer.js --add-verified` so it lands in `local/`. Rejections are analyzer gaps.
 
 ## Priorities (in order)
+Top priority now (owner 2026-11-24): English frames for every verified template (section below), so verified sentences
+can be used in the sentence quiz. Sonnet does the drafting. Then:
+- **Reminder for the owner:** once most verified templates have an English frame (`node tools/vs_tune.js en-status`), go back
+  to the verified-sentence tuning workflow (batch 7 next, `vs_tune batch --critical-path`). It is paused until then.
+- After that tuning settles the grammar handling: upgrade the AST English realizer (`korean/translation/natural_realizer.js`):
+  relative clauses, quotes, 3+ clauses. Measured 2026-11-24: only 230 of 547 templates avoid those gaps. Decide then whether
+  it replaces the frames. Not before: two English generators are too much for an agent to keep in view.
 0. Refactor the conjugator (agreed 2026-11-20, not started): it builds malformed forms that the validator accepts (받가지고,
    사으라고/고르으라고, 찾실/넣실: -가지고, -(으)라고, -(으)시- with some stems; batch 4 log). Old code with much feature creep;
    pin current correct output with tests first, then refactor. Gap class `morphology` collects new cases.
@@ -185,6 +192,23 @@ Existing checks to know before calling something a gap: the validator already ha
 temporal check misses some time words; extend it rather than adding a second one.
 Ingestion of minimal sentences (one short sentence per grammar unit) is a separate track, blocked on the analyzer: it rejects -자,
 -(으)ㄹ게요, -니, 줘요, 고파서 (12 of 15 pilot sentences in `local/minimal_pilot.txt`). One Opus task, then `vs_tune.js ingest`.
+
+## English frames for verified sentences (agreed 2026-11-24)
+Verified templates had no English. `enNatural` was the slot glosses joined with ` · `, so quiz answers gave themselves away.
+`VERIFIED_TEMPLATE_SCHEMA.English` (index 7, null Rules before it) holds a frame. `renderEnglishFrame` fills it per generation:
+`{3}` plain gloss, `{3:past}` a form (`base past part s ing adj pl a the`), `{3|wording}` used while slot 3 holds its original word.
+A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc2 then hides its 🎯, and it is never offered as a wrong answer.
+- Drafting batch: `node tools/vs_tune.js en-batch --n 25` (critical-path order), `en-set <id> "<frame>"` (validates, shows variants),
+  `en-check` (run by test/collocation_test.js), `en-status`. Sonnet brief: natural English that keeps the Korean structure visible
+  (connectives translated faithfully, dropped subjects chosen from context, no words for politeness levels), every VARIES slot a placeholder,
+  read the variants and restructure until they're grammatical.
+- Batch 1 (25, 2026-11-24): about 2 min and 90k Sonnet tokens. The owner reviews the English.
+  Problems frames can't fix: these come from pool quality (later tuning work):
+  - degree-adverb pools (너무 "too much", 제일 "most", 더) next to an adjective slot: vs_503, vs_85, vs_400;
+  - 현재 glossed "present": vs_396, vs_397;
+  - location nouns that don't fit "on the X" (건너편 "the other side", 밑, 가운데): vs_228;
+  - school subjects in vs_506 slot 1.
+  No `{n:is}` agreement form yet. The workaround is "as for X, it's" (vs_54).
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:

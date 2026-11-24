@@ -178,13 +178,15 @@ const VERIFIED_TEMPLATE_SCHEMA = (verifiedDataModule && verifiedDataModule.VERIF
 	Punctuation: 4,
 	Slots: 5,
 	Rules: 6,
+	English: 7,
 	0: 'Id',
 	1: 'Title',
 	2: 'Source',
 	3: 'OriginalKo',
 	4: 'Punctuation',
 	5: 'Slots',
-	6: 'Rules'
+	6: 'Rules',
+	7: 'English'
 };
 
 const VERIFIED_SLOT_SCHEMA = (verifiedDataModule && verifiedDataModule.VERIFIED_SLOT_SCHEMA) || {
@@ -216,6 +218,7 @@ const VERIFIED_SLOT_SCHEMA = (verifiedDataModule && verifiedDataModule.VERIFIED_
 //   { kind: 'gap', slot?, text }             a documented missing mechanism (no effect on generation)
 // tools/vs_tune.js edits these; unknown kinds are ignored here and reported by the tool.
 const TEMPLATE_RULES_INDEX = (VERIFIED_TEMPLATE_SCHEMA && typeof VERIFIED_TEMPLATE_SCHEMA.Rules === 'number') ? VERIFIED_TEMPLATE_SCHEMA.Rules : 6;
+const TEMPLATE_ENGLISH_INDEX = (VERIFIED_TEMPLATE_SCHEMA && typeof VERIFIED_TEMPLATE_SCHEMA.English === 'number') ? VERIFIED_TEMPLATE_SCHEMA.English : 7;
 // allow {ids}: these units join the slot even without its tags (an explicit list next to the tag filter).
 // Tags that only exempt a word from a validator check. They describe one word, not a class, so they never
 // become a slot's default filter (else adding object_elidable to 만나다 would shrink every 만나다 slot to
@@ -273,6 +276,7 @@ function hydrateVerifiedSentence(raw) {
 	const punctuation = raw[VERIFIED_TEMPLATE_SCHEMA.Punctuation] || '';
 	const rawSlots = raw[VERIFIED_TEMPLATE_SCHEMA.Slots] || [];
 	// Optional template-level semantic rules (see slotRulesAllow); most rows omit this field.
+	const english = String(raw[TEMPLATE_ENGLISH_INDEX] || '');
 	const rawRules = raw[TEMPLATE_RULES_INDEX];
 	const rules = Array.isArray(rawRules) ? rawRules.filter(r => r && typeof r === 'object') : [];
 
@@ -352,6 +356,7 @@ function hydrateVerifiedSentence(raw) {
 		originalKo: originalKo,
 		punctuation: punctuation,
 		isHardcoded: true,
+		english,
 		grammarUnitIds: Array.from(grammarUnitIdsSet).sort((a, b) => a - b),
 		rules,
 		slots: hydratedSlots
@@ -412,8 +417,75 @@ function serializeCompactTemplate(tpl) {
 		tpl.punctuation || '',
 		slots
 	];
-	if (Array.isArray(tpl.rules) && tpl.rules.length > 0) row.push(tpl.rules);
+	const hasRules = Array.isArray(tpl.rules) && tpl.rules.length > 0;
+	if (hasRules || tpl.english) row.push(hasRules ? tpl.rules : null);
+	if (tpl.english) row.push(tpl.english);
 	return row;
+}
+
+// ---------- English frames (VERIFIED_TEMPLATE_SCHEMA.English) ----------
+// A frame is the template's natural English with placeholders for its slots: {3} the slot's plain gloss, {3:past} a form of it,
+// {3|went to bed} wording used while the slot holds its original unit (any other unit falls back to {3} or {3:form}).
+const _natEn = (typeof require !== 'undefined')
+	? (() => { try { return require('../translation/natural_realizer.js'); } catch (e) { return {}; } })()
+	: (typeof window !== 'undefined' ? window : {});
+const EN_FRAME_FORMS = ['base', 'past', 'part', 's', 'ing', 'adj', 'pl', 'a', 'the'];
+const EN_FRAME_RE = /\{(\d+)(?::([a-z]+))?(?:\|([^{}]*))?\}/g;
+
+function englishForSlot(unit, form) {
+	if (!unit) return '';
+	if (['base', 'past', 'part', 's', 'ing', 'adj'].includes(form)) return (_natEn.getVerbEnForms ? _natEn.getVerbEnForms(unit)[form] : '') || '';
+	const plain = (_natEn.getUnitNaturalPhrase ? _natEn.getUnitNaturalPhrase(unit) : '')
+		|| String(unit[DATA_SCHEMA.English] || '').replace(/\([^)]*\)/g, '').split(/[;,/]/)[0].replace(/^to\s+/i, '').trim();
+	if (form === 'pl') return _natEn.pluralizeEnglishNoun ? _natEn.pluralizeEnglishNoun(plain, 2) : plain;
+	if (form === 'the' || form === 'a') {
+		const out = _natEn.withEnglishArticle ? _natEn.withEnglishArticle(plain, unit, form === 'the') : plain;
+		// withEnglishArticle leaves mass nouns bare (right for "a": "some water"), but "the" still applies: "how is the weather".
+		// A noun pluralizeEnglishNoun leaves unchanged is a mass or plural-only noun; bare places ("home") do pluralize and stay bare.
+		const massNoun = _natEn.pluralizeEnglishNoun && _natEn.pluralizeEnglishNoun(plain, 2) === plain;
+		return form === 'the' && out === plain && massNoun && /^[a-z]/.test(plain) && unit[DATA_SCHEMA.PartofSpeech] !== 'Pronoun' ? 'the ' + plain : out;
+	}
+	return plain;
+}
+
+/** Problems with a frame for a template of slotCount slots: [] when it is usable. */
+function validateEnglishFrame(frame, slotCount) {
+	const errors = [];
+	const text = String(frame || '');
+	if (!text.trim()) return ['empty frame'];
+	for (const m of text.matchAll(EN_FRAME_RE)) {
+		const idx = Number(m[1]);
+		if (idx >= slotCount) errors.push(`{${m[1]}}: no slot ${idx} (template has ${slotCount})`);
+		if (m[2] && !EN_FRAME_FORMS.includes(m[2])) errors.push(`{${m[1]}:${m[2]}}: unknown form (known: ${EN_FRAME_FORMS.join(', ')})`);
+	}
+	if (/[{}]/.test(text.replace(EN_FRAME_RE, ''))) errors.push('unmatched { or }, or a placeholder not written {n}, {n:form} or {n|text}');
+	return errors;
+}
+
+/** Slot indexes a frame mentions. */
+function englishFrameSlots(frame) {
+	return new Set([...String(frame || '').matchAll(EN_FRAME_RE)].map(m => Number(m[1])));
+}
+
+/** The frame filled from one generation's slot choices; '' when it cannot be (a bad frame never shows half-filled English). */
+function renderEnglishFrame(frame, slotChoices, punct = '.') {
+	if (validateEnglishFrame(frame, slotChoices.length).length) return '';
+	let failed = false;
+	let text = String(frame).replace(EN_FRAME_RE, (all, i, form, orig) => {
+		const sc = slotChoices[Number(i)];
+		if (!sc) { failed = true; return ''; }
+		if (orig !== undefined && sc.chosenUnitId === sc.originalUnitId) return orig;
+		const en = englishForSlot(sc.chosenUnit, form || '');
+		if (!en) failed = true;
+		return en;
+	});
+	if (failed) return '';
+	text = text.replace(/\s+/g, ' ').replace(/\s+([,.?!])/g, '$1').trim();
+	if (!text) return '';
+	text = text.charAt(0).toUpperCase() + text.slice(1);
+	if (/[.?!]$/.test(text)) return text;
+	const m = String(punct || '').match(/[.?!]/);
+	return text + (m ? m[0] : '.');
 }
 
 let cachedHydratedStatic = null;
@@ -2748,7 +2820,8 @@ function generateSentenceFromTemplate(templateOrId, options = {}) {
 				const cleanGloss = String(sc.chosenEn).replace(/\([^)]*\)/g, '').split(/[;,/]/)[0].trim();
 				return cleanGloss;
 			});
-		const enNatural = natClauses.length > 0
+		const framedEn = template.english ? renderEnglishFrame(template.english, slotChoices, punct) : '';
+		const enNatural = framedEn ? framedEn : natClauses.length > 0
 			? (natClauses.join(" · ") + (/[.?!]$/.test(natClauses[natClauses.length - 1]) ? "" : punct))
 			: enLiteral;
 
@@ -2833,6 +2906,7 @@ function generateSentenceFromTemplate(templateOrId, options = {}) {
 				pronunciation: koWithPunct ? getPronunciation(koWithPunct) : "",
 				enLiteral,
 				enNatural,
+				enNaturalFramed: Boolean(framedEn),
 				en: enLiteral,
 				difficultyTier: options.difficultyTier || null,
 				difficultyLabel: options.difficultyTier === 'easiest' ? 'Easiest' : (options.difficultyTier === 'easy_and_inset' ? 'Easy + In-Set' : (options.difficultyTier === 'challenging' ? 'Challenging' : null)),
@@ -4006,6 +4080,10 @@ const verifiedGeneratorExports = {
 	validateVerifiedSentence,
 	hydrateVerifiedSentence,
 	serializeCompactTemplate,
+	validateEnglishFrame,
+	englishFrameSlots,
+	renderEnglishFrame,
+	EN_FRAME_FORMS,
 	resetHardcodedVerifiedCache,
 	extractCleanSentenceStrings,
 	buildSlotFromToken,

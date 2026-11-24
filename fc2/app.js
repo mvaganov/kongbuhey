@@ -683,7 +683,7 @@ class FC2App {
 			${o.english || o.hideKo ? `<div class="s-en-lit">${escapeHtml(s.enLiteral)}</div><div class="s-en">${escapeHtml(s.enNatural || s.en)}</div>` : ''}</div>
 			<div class="s-actions">${o.hideKo ? '' : this.speakBtn('speak-sent', `data-i="${i}"`)}
 			${sourceBadge(s)}
-			${o.test ? `<button type="button" class="icon-btn test" data-act="sent-test" data-i="${i}" aria-label="Test my comprehension of this sentence">🎯</button>` : ''}
+			${o.test && this.core.glossOk(s) ? `<button type="button" class="icon-btn test" data-act="sent-test" data-i="${i}" aria-label="Test my comprehension of this sentence">🎯</button>` : ''}
 			<button type="button" class="icon-btn flag${this.isFlagged(s.ko) ? ' flagged' : ''}" data-act="flag" data-i="${i}" aria-label="Flag bad sentence">⚑</button></div></li>`).join('') + '</ul>';
 	}
 
@@ -968,7 +968,7 @@ class FC2App {
 		if (!s || k.done || k.side !== 'front') return;
 		const rev = this.opts.reverse, pre = s.preTest, choices = pre && pre.key === `${rev}|${this.g.owned.length}` && pre.choices ? pre.choices : this.buildSentenceTest(s, rev);
 		s.preTest = null;   // each quiz is fresh: the next tap builds (or prefetches) a new one
-		if (!choices) { this.toast('No quick test for this sentence. Try ↻ New examples'); FX.sfx('deny'); return; }
+		if (!choices) { this.toast(this.core.glossOk(s) ? 'No quick test for this sentence. Try ↻ New examples' : 'No quick test yet: this example\'s English is not written. Try ↻ New examples'); FX.sfx('deny'); return; }
 		this.stest = { k, s, choices, rev, done: false, picked: -1, readyAt: this.clock.ms() + this.STEST_GUARD_MS };
 		this.markSeen(new Set(choices.flatMap(c => c.ids || [])));   // every unit in the sentence and in the choices was read
 		FX.sfx('tap');

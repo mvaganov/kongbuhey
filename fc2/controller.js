@@ -184,6 +184,8 @@ class FC2Core {
 
 	// ---------- sentence comprehension test ----------
 	enOf(s) { return String(s.enNatural || s.en || '').trim(); }
+	/** False for a verified sentence whose template has no English frame yet: its English is a word list, which would give the answer away. */
+	glossOk(s) { return !s || s.glossOk !== false; }
 
 	/**
 	 * The sentence's translation (or, when rev, its Korean) plus 3 close wrong ones. Close = the same nouns: candidates are generated with those
@@ -191,6 +193,7 @@ class FC2Core {
 	 * tense or other details differ. Each choice carries the unit ids of its sentence.
 	 */
 	buildSentenceTest(s, rev = false, cardId = null) {
+		if (!this.glossOk(s)) return null;
 		const C = this.C;
 		const k = { id: cardId === null ? this.card.id : cardId }, mine = new Set(R.unitIdsOf(s)), right = this.enOf(s);
 		const norm = t => t.toLowerCase().replace(/[^\p{L}\p{N} ]/gu, '').replace(/\s+/g, ' ').trim();
@@ -215,7 +218,7 @@ class FC2Core {
 				try { for (let pass = 0; pass < (si < budget.deep ? budget.passes : 1); pass++) list.push(...Array.from(this.env.generate(id, budget.n, { ...genBase, seedOffset: Math.floor(this.rand() * 997), preferUnitIds: nouns }))); } catch (_) { /* fewer candidates */ }
 				for (const c of list) {
 					const en = this.enOf(c), key = norm(en);
-					if (!en || c.ko === s.ko || seen.has(key)) continue;
+					if (!en || c.ko === s.ko || seen.has(key) || !this.glossOk(c)) continue;
 					const ids = R.unitIdsOf(c);
 					if (cardNoun && ids.includes(k.id)) continue;   // the tested noun itself never appears in a wrong answer
 					seen.add(key);

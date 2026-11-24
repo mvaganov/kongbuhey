@@ -715,6 +715,35 @@ assert(unregisteredDVTags.length === 0, "All descriptive_* tags are registered i
 	assert(!sell.has('콘서트') && !sell.has('음악회') && sell.has('표') && sell.has('옷'), '팔다 takes tickets and goods (표, 옷) but not events (콘서트, 음악회)');
 }
 
+// English frames (VERIFIED_TEMPLATE_SCHEMA.English): the natural English for a verified template, filled per generation.
+{
+	const vg = require('../korean/generation/verified_sentence_generator.js');
+	const vt = require('../tools/vs_tune.js');
+	const tpl = JSON.parse(JSON.stringify(vg.getVerifiedSentenceById('vs_367')));   // 어제 숙제를 다 하고 잤어요?
+	tpl.english = 'Did you finish all your {1} {0|yesterday} and {4:base|go to bed}?';
+	const orig = vg.generateSentenceFromTemplate(tpl, { varyMode: 'selected', unlockedSlots: [] });
+	assert(orig.ok && orig.enNaturalFramed && orig.enNatural === 'Did you finish all your homework yesterday and go to bed?', 'a frame fills for the original sentence ({n|original wording} used)', orig.enNatural);
+	let variant = null;
+	for (let k = 0; k < 40 && !variant; k++) {
+		const r = vg.generateSentenceFromTemplate(tpl, { varyMode: 'selected', unlockedSlots: [4], seedOffset: k * 17, variationIndex: k });
+		if (r.ok && r.slotChoices[4].chosenUnitId !== r.slotChoices[4].originalUnitId) variant = r;
+	}
+	const past = variant && require('../korean/translation/natural_realizer.js').getVerbEnForms(variant.slotChoices[4].chosenUnit).base;
+	assert(variant && variant.enNatural.endsWith(` and ${past}?`), 'a varied slot gets its own form ({4:base}) instead of the original wording', variant && variant.enNatural);
+	const plain = JSON.parse(JSON.stringify(tpl)); plain.english = '';
+	assert(!vg.generateSentenceFromTemplate(plain, { varyMode: 'selected', unlockedSlots: [] }).enNaturalFramed, 'without a frame the sentence is marked unframed (the quiz skips it)');
+	const bad = vg.validateEnglishFrame('x {9} {1:foo} }', 5);
+	assert(bad.length === 3, 'validateEnglishFrame: slot out of range, unknown form, stray brace', bad.join('; '));
+	assert(vg.renderEnglishFrame('{7}', orig.slotChoices) === '', 'a frame that cannot fill gives "" (never half-filled English)');
+	const row = vg.serializeCompactTemplate(tpl);
+	assert(row.length === 8 && row[6] === null && row[7] === tpl.english, 'serializeCompactTemplate keeps the frame at index 7 (null rules before it)');
+	const src = '\n\t["vs_x","t","s","",".",[],[{"slot":0,"kind":"deny","ids":[1]}],"Hi {0}."]\n';
+	assert(vt.editRules(src, 'vs_x', []).includes('[],null,"Hi {0}."]'), 'removing a template\'s last rule keeps its English frame at index 7');
+	assert(vt.editEnglish(src.replace(',"Hi {0}."', '').replace(',[{"slot":0,"kind":"deny","ids":[1]}]', ''), 'vs_x', 'Hi.').includes('[],null,"Hi."]'), 'en-set on a row with no rules writes null rules first');
+	const problems = vt.enCheckProblems();
+	assert(problems.length === 0, 'every committed English frame is valid and names each slot that varies (vs_tune en-check)', problems.slice(0, 5).join(' | '));
+}
+
 console.log("\n======================================================");
 console.log(`TOTAL TESTS: ${totalTests}`);
 console.log(`PASSED:      ${passedTests}`);

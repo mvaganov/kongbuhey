@@ -60,6 +60,16 @@ BATCHES (ledger: data/vs_review.json)
   batch status                    progress of the open batch + stats (deep, ~40 s) changed since the baseline
   done <id> "<note>"              mark a template of the open batch reviewed (note: what changed, or "kept")
 
+ENGLISH FRAMES (column VERIFIED_TEMPLATE_SCHEMA.English: the natural English the game and quiz show)
+  en-batch [--n 25] [--save F]    the next N templates with no frame, in Examples Critical Path order (from the newest
+                                  local/GameSave_*.json, or F): sentence, literal gloss, every slot and whether it varies
+  en-set <id> "<frame>" [--dry-run]  validate and write a frame; prints it filled for the original and for variants
+                                  {3} slot 3's plain gloss   {3:past} a form (base past part s ing adj | pl a the)
+                                  {3|went to bed} this wording while slot 3 holds its original word, else {3}/{3:form}
+                                  Every slot that varies must be a placeholder (fixed words are written out).
+  en-check                        every frame valid and covering its varying slots; exit 1 if not (run by the suite)
+  en-status                       how many templates have a frame (and how many of those the critical path reaches)
+
 FIXTURES (test/golden_sentences.json; checked by test/golden_sentences_test.js without sampling)
   fixture <id> <i> <unitId> bad|ok "<reason>" [--confidence clear|unsure] [--gap-class C]
                                   "template <id> slot <i> must not (bad) / must (ok) produce this unit".
@@ -210,6 +220,7 @@ function editRules(src, id, rules) {
 	const row = locateRow(src, id);
 	const els = splitTop(src, row.start, row.end);
 	const text = JSON.stringify(rules);
+	if (els[6] && !rules.length && els[7]) return src.slice(0, els[6].s) + 'null' + src.slice(els[6].e);   // keep the English frame at index 7
 	if (els[6]) return rules.length ? src.slice(0, els[6].s) + text + src.slice(els[6].e) : src.slice(0, els[5].e) + src.slice(els[6].e);
 	return rules.length ? src.slice(0, els[5].e) + ',' + text + src.slice(els[5].e) : src;
 }
@@ -583,7 +594,7 @@ function reviewOrder() {
 }
 
 /** Templates in the order they become usable along the Examples Critical Path from a save's unlocks (fresh game without a save). */
-function criticalPathOrder(saveFile) {
+function criticalPathOrder(saveFile, everyTemplate = false) {
 	const fs = require('fs'), path = require('path'), sim = require('./fc2_sim.js');
 	const dir = path.join(__dirname, '..', 'local');
 	const file = saveFile || (fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => /^GameSave_.*\.json$/.test(f)).sort().map(f => path.join(dir, f)).pop() : null);
@@ -595,7 +606,7 @@ function criticalPathOrder(saveFile) {
 	const seen = new Set(), out = [];
 	for (const c of p.completed) { const t = byId.get(c.id); if (t && !seen.has(t.id)) { seen.add(t.id); out.push(t); } }
 	for (const t of reviewOrder()) if (!seen.has(t.id)) { seen.add(t.id); out.push(t); }   // never completable: last, in the old order
-	return out.filter(t => variableSlots(t).length > 0);
+	return everyTemplate ? out : out.filter(t => variableSlots(t).length > 0);
 }
 
 function lowYieldSlots(t) {
@@ -1019,6 +1030,102 @@ function cmdIngest(file, flags) {
 	console.log(`appended ${newRows.length} templates to data/verified_sentences.js`);
 }
 
+// ---------------------------------------------------------------- English frames
+const EN_IDX = (require('../data/verified_sentences.js').VERIFIED_TEMPLATE_SCHEMA || {}).English || 7;
+
+/** Slot indexes whose word can change (not locked, pool > 1): a frame must give each one a placeholder. */
+function varyingSlots(t) {
+	return t.slots.map((s, i) => i).filter(i => !isLocked(t.slots[i]) && vg.getSlotCandidates(t.slots[i]).count > 1);
+}
+
+/** Problems with frame for template t: [] when usable. */
+function frameProblems(t, frame) {
+	const errs = vg.validateEnglishFrame(frame, t.slots.length);
+	if (errs.length) return errs;
+	const named = vg.englishFrameSlots(frame);
+	const missing = varyingSlots(t).filter(i => !named.has(i));
+	if (missing.length) errs.push(`slots that vary need a placeholder: ${missing.map(i => `{${i}} ${t.slots[i].originalSurface}`).join(', ')}`);
+	const orig = vg.generateSentenceFromTemplate({ ...t, english: frame }, { varyMode: 'selected', unlockedSlots: [] });
+	if (orig && orig.ok && !orig.enNaturalFramed) errs.push('the frame does not fill for the original sentence (a placeholder found no English)');
+	return errs;
+}
+
+function editEnglish(src, id, frame) {
+	const row = locateRow(src, id);
+	const els = splitTop(src, row.start, row.end);
+	const text = JSON.stringify(frame);
+	if (els[EN_IDX]) return src.slice(0, els[EN_IDX].s) + text + src.slice(els[EN_IDX].e);
+	if (els[6]) return src.slice(0, els[6].e) + ',' + text + src.slice(els[6].e);
+	return src.slice(0, els[5].e) + ',null,' + text + src.slice(els[5].e);
+}
+
+function printFramed(t, count = 4) {
+	const orig = vg.generateSentenceFromTemplate(t, { varyMode: 'selected', unlockedSlots: [] });
+	if (orig && orig.ok) console.log(`  original  ${orig.ko}   | ${orig.enNatural}`);
+	const seen = new Set([orig && orig.ko]);
+	for (let k = 0, shown = 0; k < count * 6 && shown < count; k++) {
+		const r = vg.generateSentenceFromTemplate(t, { varyMode: 'all', seedOffset: 101 + k * 17, variationIndex: k });
+		if (!r || !r.ok || seen.has(r.ko)) continue;
+		seen.add(r.ko); shown++;
+		console.log(`  variant   ${r.ko}   | ${r.enNatural}`);
+	}
+}
+
+function cmdEnBatch(flags) {
+	const n = Number(flags.n || 25);
+	const todo = criticalPathOrder(flags.save, true).filter(t => !t.english).slice(0, n);
+	console.log(`${todo.length} templates without an English frame (critical path order):\n`);
+	for (const t of todo) {
+		const orig = vg.generateSentenceFromTemplate(t, { varyMode: 'selected', unlockedSlots: [] });
+		const vary = new Set(varyingSlots(t));
+		console.log(`== ${t.id}  ${orig && orig.ok ? orig.ko : sentenceOf(t)}`);
+		if (orig && orig.ok) console.log(`   literal: ${orig.enLiteral}`);
+		t.slots.forEach((s, i) => {
+			const u = U(s.originalUnitId);
+			const g = (s.grammar || []).map(x => `${x.text}=${String(x.en || '').slice(0, 30)}`).join('; ');
+			let alt = '';
+			if (vary.has(i)) {
+				const all = vg.getSlotCandidates(s).candidates.filter(x => x[D.Id] !== s.originalUnitId);
+				const c = all.slice(0, 40).filter(x => realizeWith(t, i, x[D.Id]).ok).slice(0, all.length <= 15 ? 15 : 6);   // small pools (adverbs, places) in full
+				alt = `  VARIES${all.length <= 15 ? ' (all)' : ', e.g.'} ${c.map(x => `${x[D.Korean]}=${String(x[D.English] || '').slice(0, 18)}`).join(', ')}`;
+			}
+			console.log(`   [${i}] ${s.originalSurface}  ${s.pos}  ${u ? u[D.Korean] + '=' + String(u[D.English] || '').slice(0, 30) : '?'}${g ? '  +' + g : ''}${alt || '  fixed'}`);
+		});
+		console.log('');
+	}
+}
+
+function cmdEnSet(id, frame, flags) {
+	const t = getTpl(id);
+	const errs = frameProblems(t, frame);
+	if (errs.length) { errs.forEach(e => console.log('REJECTED: ' + e)); process.exitCode = 1; return; }
+	console.log(`== ${id}: ${flags['dry-run'] ? 'dry run, nothing written' : 'frame written'}`);
+	if (!flags['dry-run']) writeSrc(editEnglish(readSrc(), id, frame));
+	printFramed({ ...t, english: frame });
+}
+
+function enCheckProblems() {
+	const out = [];
+	for (const t of vg.getAllVerifiedSentences()) if (t.english) for (const e of frameProblems(t, t.english)) out.push(`${t.id}: ${e}`);
+	return out;
+}
+
+function cmdEnCheck() {
+	const p = enCheckProblems();
+	p.forEach(x => console.log(x));
+	const framed = vg.getAllVerifiedSentences().filter(t => t.english).length;
+	console.log(p.length ? `${p.length} problems` : `ok: ${framed} frames valid`);
+	if (p.length) process.exitCode = 1;
+}
+
+function cmdEnStatus(flags) {
+	const all = vg.getAllVerifiedSentences();
+	const framed = all.filter(t => t.english).length;
+	const path = criticalPathOrder(flags.save, true);
+	const firstGap = path.findIndex(t => !t.english);
+	console.log(`english frames: ${framed} / ${all.length}; the first ${firstGap < 0 ? path.length : firstGap} templates on the critical path all have one`);
+}
+
 // ---------------------------------------------------------------- arg parsing
 function parseArgs(argv) {
 	const pos = [];
@@ -1063,6 +1170,10 @@ function main() {
 	case 'evidence': return cmdEvidence([a, b, ...rest].filter(x => x !== undefined));
 	case 'ingest': return cmdIngest(a, flags);
 	case 'batch': return cmdBatch(a, flags);
+	case 'en-batch': return cmdEnBatch(flags);
+	case 'en-set': return cmdEnSet(a, [b, ...rest].join(' '), flags);
+	case 'en-check': return cmdEnCheck();
+	case 'en-status': return cmdEnStatus(flags);
 	case 'done': return cmdDone(a, [b, ...rest].join(' ').trim(), flags);
 	case 'fixture': return cmdFixture(a, num(b, 'slot'), num(rest[0], 'unitId'), rest[1], rest.slice(2).join(' ').trim(), flags);
 	case 'fixtures': return cmdFixtures(flags);
@@ -1077,5 +1188,6 @@ if (require.main === module) {
 
 module.exports = {
 	splitTop, locateRow, editSlotTags, editRules, rowText, kNameMap,
-	GAP_CLASSES, RULE_KINDS, validateRule, exampleKo, reviewOrder, readLedger, isSlotFixture, slotAdmits, slotFixtureState, statsLines
+	GAP_CLASSES, RULE_KINDS, validateRule, exampleKo, reviewOrder, readLedger, isSlotFixture, slotAdmits, slotFixtureState, statsLines,
+	varyingSlots, frameProblems, editEnglish, enCheckProblems
 };

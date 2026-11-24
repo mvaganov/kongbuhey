@@ -43,6 +43,7 @@ function generateSentencesForUnit(unitId, count = 3, optionsOrRawUnits = null, d
 			ko: s.ko || '',
 			enLiteral: s.enLiteral || '',
 			enNatural: s.enNatural || '',
+			glossOk: !s.isVerifiedStructure || Boolean(s.enNaturalFramed),   // verified templates without an English frame only have a word list
 			en: s.enLiteral || s.enNatural || '',
 			pronunciation: s.pronunciation || s.ko || '',
 			isVerifiedStructure: Boolean(s.isVerifiedStructure),
