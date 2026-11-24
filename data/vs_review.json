@@ -244,6 +244,39 @@
 			],
 			"order": "critical-path",
 			"english": true
+		},
+		{
+			"n": 8,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_11",
+				"vs_5",
+				"vs_428",
+				"vs_433",
+				"vs_56",
+				"vs_231",
+				"vs_504",
+				"vs_505",
+				"vs_502",
+				"vs_500",
+				"vs_519",
+				"vs_499",
+				"vs_469",
+				"vs_531",
+				"vs_105",
+				"vs_468",
+				"vs_471",
+				"vs_395",
+				"vs_465",
+				"vs_47",
+				"vs_501",
+				"vs_87",
+				"vs_62",
+				"vs_401",
+				"vs_339"
+			],
+			"order": "critical-path",
+			"english": true
 		}
 	],
 	"reviewed": {
@@ -1018,6 +1051,106 @@
 		"vs_50": {
 			"batch": 7,
 			"note": "tags: deny 세탁소 (slot4), 신기하다 (slot1); en: new"
+		},
+		"vs_11": {
+			"batch": 8,
+			"note": "tags: slot1 +evaluation (adds 중요하다) | rest kept; en: new"
+		},
+		"vs_5": {
+			"batch": 8,
+			"note": "tags: kept (all locked or single); en: new"
+		},
+		"vs_428": {
+			"batch": 8,
+			"note": "tags: slot2 hat->food (noTags condiment/ingredient/place, deny 진지); en: new"
+		},
+		"vs_433": {
+			"batch": 8,
+			"note": "tags: slot3 weather->nature (deny 한강공원 꽃다발 설악산 + uncountables); en: new"
+		},
+		"vs_56": {
+			"batch": 8,
+			"note": "tags: kept; en: new"
+		},
+		"vs_231": {
+			"batch": 8,
+			"note": "tags: slot2 allow 6 school/dorm/company words; en: new"
+		},
+		"vs_504": {
+			"batch": 8,
+			"note": "tags: slot3 allow 좋다 괜찮다; en: new"
+		},
+		"vs_505": {
+			"batch": 8,
+			"note": "tags: kept; en: new"
+		},
+		"vs_502": {
+			"batch": 8,
+			"note": "tags: kept; en: new"
+		},
+		"vs_500": {
+			"batch": 8,
+			"note": "tags: slot7 deny 결혼식; en: new"
+		},
+		"vs_519": {
+			"batch": 8,
+			"note": "tags: slot2 allow 여행; en: new"
+		},
+		"vs_499": {
+			"batch": 8,
+			"note": "tags: kept; en: new"
+		},
+		"vs_469": {
+			"batch": 8,
+			"note": "tags: slot1 object/communication -> writing, deny 글씨; en: new"
+		},
+		"vs_531": {
+			"batch": 8,
+			"note": "tags: kept; en: new"
+		},
+		"vs_105": {
+			"batch": 8,
+			"note": "tags: slot0 allow 나라 학교 집 회사; en: new"
+		},
+		"vs_468": {
+			"batch": 8,
+			"note": "tags: slot5 allow 5 passport verbs, slot2 deny 국내 여행; en: new"
+		},
+		"vs_471": {
+			"batch": 8,
+			"note": "tags: slot0 only 아니요/네; en: new"
+		},
+		"vs_395": {
+			"batch": 8,
+			"note": "tags: kept; en: new"
+		},
+		"vs_465": {
+			"batch": 8,
+			"note": "tags: slot0 allow 오늘, slot2 allow 숙제; en: new"
+		},
+		"vs_47": {
+			"batch": 8,
+			"note": "tags: kept; en: new"
+		},
+		"vs_501": {
+			"batch": 8,
+			"note": "tags: kept (pool 92 natural); en: new"
+		},
+		"vs_87": {
+			"batch": 8,
+			"note": "tags: slot1 deny 좋아하다; en: new"
+		},
+		"vs_62": {
+			"batch": 8,
+			"note": "tags: slot4 only 룸메이트 동창 선배; en: new"
+		},
+		"vs_401": {
+			"batch": 8,
+			"note": "tags: slot1 appliance->electronics (adds 컴퓨터 텔레비전); en: new"
+		},
+		"vs_339": {
+			"batch": 8,
+			"note": "tags: slot0 only 밤 낮, slot3 only 자다, slot4 only 감기; en: new"
 		}
 	}
 }

@@ -246,6 +246,10 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
   fixed: duration slots admit 일/주 for short trips (vs_216 "걸어서 15주쯤", vs_227 "5일 정도 걸립니다"); 확인하다 glossed "to confirm"
   (should be "to check"); plural glosses of mass nouns ("garlics"). Agents: run `show` for the whole batch into one file and read
   it in slices (each `show` takes seconds on the mounted folder).
+- Batch 8 (25, 2026-11-24): about 11 min, 162k tokens; 221 of 547 framed. Loosened vs_428 (food, 3 -> 74), vs_433 (nature), several
+  allow lists; tightened vs_471, vs_62, vs_339. Bench review: vs_501 slot 5 took seasonings ("그 식당의 설탕이 맛있는 줄"):
+  orchestrator added noTags condiment/ingredient/place + fixture g304. Agent notes: `listVerifiedFitsForUnit` can list a unit the
+  validator rejects (공책 in vs_469 broke fc2_ui_test until denied); 동창회 glossed "alumni association" (means reunion).
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:
