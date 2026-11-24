@@ -508,6 +508,39 @@
 			],
 			"order": "critical-path",
 			"english": true
+		},
+		{
+			"n": 16,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_180",
+				"vs_381",
+				"vs_389",
+				"vs_440",
+				"vs_45",
+				"vs_243",
+				"vs_248",
+				"vs_476",
+				"vs_21",
+				"vs_27",
+				"vs_223",
+				"vs_222",
+				"vs_168",
+				"vs_74",
+				"vs_159",
+				"vs_371",
+				"vs_213",
+				"vs_34",
+				"vs_232",
+				"vs_443",
+				"vs_429",
+				"vs_240",
+				"vs_336",
+				"vs_257",
+				"vs_260"
+			],
+			"order": "critical-path",
+			"english": true
 		}
 	],
 	"reviewed": {
@@ -2082,6 +2115,106 @@
 		"vs_176": {
 			"batch": 15,
 			"note": "tags: kept (nothing variable); en: new"
+		},
+		"vs_180": {
+			"batch": 16,
+			"note": "tags: kept (nothing varies); en: new"
+		},
+		"vs_381": {
+			"batch": 16,
+			"note": "tags: kept; en: new"
+		},
+		"vs_389": {
+			"batch": 16,
+			"note": "tags: s0 -medical (16 facilities), s2 allow 강/거리 | kept rest; en: new"
+		},
+		"vs_440": {
+			"batch": 16,
+			"note": "tags: s2 only 5 crossing spots | kept rest; en: new"
+		},
+		"vs_45": {
+			"batch": 16,
+			"note": "tags: kept; en: new"
+		},
+		"vs_243": {
+			"batch": 16,
+			"note": "tags: s1 only 학생 | kept; en: new"
+		},
+		"vs_248": {
+			"batch": 16,
+			"note": "tags: kept; en: new"
+		},
+		"vs_476": {
+			"batch": 16,
+			"note": "tags: s0 -object -sinoRoot (+만화책); en: new"
+		},
+		"vs_21": {
+			"batch": 16,
+			"note": "tags: kept; en: new"
+		},
+		"vs_27": {
+			"batch": 16,
+			"note": "tags: kept; en: new"
+		},
+		"vs_223": {
+			"batch": 16,
+			"note": "tags: kept; en: new"
+		},
+		"vs_222": {
+			"batch": 16,
+			"note": "tags: s6 deny 여쭙다 | kept; en: new"
+		},
+		"vs_168": {
+			"batch": 16,
+			"note": "tags: kept; en: new"
+		},
+		"vs_74": {
+			"batch": 16,
+			"note": "tags: kept (gap template-error s0); en: new"
+		},
+		"vs_159": {
+			"batch": 16,
+			"note": "tags: s5 deny 지난, s6 deny 약속 | kept; en: new"
+		},
+		"vs_371": {
+			"batch": 16,
+			"note": "tags: s3 deny non-transit spots, s4 deny 배/오토바이/자전거/차 | cross-slot gap; en: new"
+		},
+		"vs_213": {
+			"batch": 16,
+			"note": "tags: s0 deny non-transit spots, s1 only 지하철 | cross-slot gap; en: new"
+		},
+		"vs_34": {
+			"batch": 16,
+			"note": "tags: s4 only 한/두/세/네; en: new"
+		},
+		"vs_232": {
+			"batch": 16,
+			"note": "tags: s0 deny 지난, s2 deny 조금, s10 deny 시험; en: new"
+		},
+		"vs_443": {
+			"batch": 16,
+			"note": "tags: kept; en: new"
+		},
+		"vs_429": {
+			"batch": 16,
+			"note": "tags: kept; en: new"
+		},
+		"vs_240": {
+			"batch": 16,
+			"note": "tags: s12 deny 내려가다/올라가다 | kept; en: new"
+		},
+		"vs_336": {
+			"batch": 16,
+			"note": "tags: kept; en: new"
+		},
+		"vs_257": {
+			"batch": 16,
+			"note": "tags: s2 deny 이때 | kept; en: new"
+		},
+		"vs_260": {
+			"batch": 16,
+			"note": "tags: kept; en: new"
 		}
 	}
 }

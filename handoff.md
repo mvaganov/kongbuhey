@@ -283,6 +283,9 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
   10 incl. vs_216 (walking time: minutes/seconds only); 5 gap rules (validator-reject: 언어 + 연습하다, 비싸다 polarity in vs_283).
   Bench review: vs_227 trip time also minutes/seconds only (g420). Agent ideas: the batch list's `pools` should show only pool > 1;
   `rule-add --dry-run` should show other slots' pools too (an allow on one slot can widen another through collocation).
+- Batch 16 (25, 2026-11-24): about 8 min, 159k tokens; 421 of 547 framed. Loosened vs_389, vs_476; tightened 11 (transit templates:
+  places that are stations, vehicles that run lines). Bench review: vs_377 numbered routes are buses only (g443), vs_227 no tollgate
+  (g444). Recurring frame limits: counters ("{n} hour(s)"), country adjectives ("songs from {0|Korea}"), 보다 976/149 identical.
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:
