@@ -442,6 +442,39 @@
 			],
 			"order": "critical-path",
 			"english": true
+		},
+		{
+			"n": 14,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_427",
+				"vs_419",
+				"vs_356",
+				"vs_306",
+				"vs_412",
+				"vs_321",
+				"vs_442",
+				"vs_434",
+				"vs_42",
+				"vs_289",
+				"vs_454",
+				"vs_353",
+				"vs_342",
+				"vs_477",
+				"vs_191",
+				"vs_524",
+				"vs_416",
+				"vs_195",
+				"vs_68",
+				"vs_53",
+				"vs_386",
+				"vs_446",
+				"vs_230",
+				"vs_511",
+				"vs_512"
+			],
+			"order": "critical-path",
+			"english": true
 		}
 	],
 	"reviewed": {
@@ -1816,6 +1849,106 @@
 		"vs_184": {
 			"batch": 13,
 			"note": "tags: kept (nothing variable); en: new"
+		},
+		"vs_427": {
+			"batch": 14,
+			"note": "tags: kept (only 어제/그제 take no particle); en: new"
+		},
+		"vs_419": {
+			"batch": 14,
+			"note": "tags: slot1 allow 12 placeable objects; kept slot2/3; en: new"
+		},
+		"vs_356": {
+			"batch": 14,
+			"note": "tags: slot2 deny non-periods, slot5 only 이상; en: new"
+		},
+		"vs_306": {
+			"batch": 14,
+			"note": "tags: deny 지난, 연말, slot4 only 시작되다/생기다, deny 부부; en: new"
+		},
+		"vs_412": {
+			"batch": 14,
+			"note": "tags: slot5 -female, deny 엄마/부부; en: new"
+		},
+		"vs_321": {
+			"batch": 14,
+			"note": "tags: deny 부부; kept rest; en: new"
+		},
+		"vs_442": {
+			"batch": 14,
+			"note": "tags: slot1 only younger/peer people; en: new"
+		},
+		"vs_434": {
+			"batch": 14,
+			"note": "tags: deny 계절; gap clothing 부치다; en: new"
+		},
+		"vs_42": {
+			"batch": 14,
+			"note": "tags: slot0 -proper_noun etc (cities), deny 도시; en: new"
+		},
+		"vs_289": {
+			"batch": 14,
+			"note": "tags: kept; en: new"
+		},
+		"vs_454": {
+			"batch": 14,
+			"note": "tags: kept; en: new"
+		},
+		"vs_353": {
+			"batch": 14,
+			"note": "tags: slot2 only 낮/밤; en: new"
+		},
+		"vs_342": {
+			"batch": 14,
+			"note": "tags: slot1 낮/밤, slots 5/13 only 자다, deny 배탈/변비; en: new"
+		},
+		"vs_477": {
+			"batch": 14,
+			"note": "tags: kept; en: new"
+		},
+		"vs_191": {
+			"batch": 14,
+			"note": "tags: kept; en: new"
+		},
+		"vs_524": {
+			"batch": 14,
+			"note": "tags: kept; en: new"
+		},
+		"vs_416": {
+			"batch": 14,
+			"note": "tags: kept; en: new"
+		},
+		"vs_195": {
+			"batch": 14,
+			"note": "tags: kept; en: new"
+		},
+		"vs_68": {
+			"batch": 14,
+			"note": "tags: slot1 deny 화장실; en: new"
+		},
+		"vs_53": {
+			"batch": 14,
+			"note": "tags: kept; en: new"
+		},
+		"vs_386": {
+			"batch": 14,
+			"note": "tags: slot3 deny 국내 여행; en: new"
+		},
+		"vs_446": {
+			"batch": 14,
+			"note": "tags: kept; en: new"
+		},
+		"vs_230": {
+			"batch": 14,
+			"note": "tags: kept; en: new"
+		},
+		"vs_511": {
+			"batch": 14,
+			"note": "tags: kept; en: new"
+		},
+		"vs_512": {
+			"batch": 14,
+			"note": "tags: kept; en: new"
 		}
 	}
 }

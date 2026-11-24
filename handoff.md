@@ -276,6 +276,9 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
 - Batch 13 (25, 2026-11-24): about 7 min, 133k tokens; 346 of 547 framed. Tightened 8 templates (vs_311 slot 4: non-elder kin only,
   gap class honorific for the elders); 4 unsure fixtures. Agent note: the `pools` header counts words that don't realize, and en-set
   wants a placeholder for each; showing the realized count would save a rejected en-set per template.
+- Batch 14 (25, 2026-11-24): about 7 min, 161k tokens; 371 of 547 framed. Loosened vs_419 (allow list), vs_412 (-female), vs_42
+  (cities); tightened 9; 4 gap rules (validator-reject: 도와드리다 + elders, 부치다 + clothing; 연말을 보내다 rejected but not logged).
+  Bench review: vs_341 took 기간/종일/동안 as a day count and 쌀쌀하다 for 따뜻하다 (g396, g397). Agent idea: `slot --open --tags a,b`.
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:
