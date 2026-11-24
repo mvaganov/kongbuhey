@@ -152,6 +152,8 @@ the batch itself, and may run 2 or 3 batches back to back (fresh agent each) bef
 >    Never deny a word whose Korean is natural only because its English reads badly (the Korean is the product): list it instead.
 >    Read 10 frames from earlier batches first (`show` on a few `done` templates) to match their style.
 > 7. `done <id> "<tags: what changed | kept>; en: <new|kept|reworked>"` (refused until the frame is valid).
+>    After the last `done`, never run `batch` again (with no batch open it opens the next one, whose flag then blocks the commit);
+>    `batch status` is safe.
 > Finish: `node test.js` (local copy) passes, then report `batch status`, `gaps --summary`, the count from `fixtures --unsure`, `en-status`,
 > a table of the frames (id | Korean | frame), and the gloss/pool problems from step 6. Stop.
 
@@ -288,6 +290,13 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
   (g444). Recurring frame limits: counters ("{n} hour(s)"), country adjectives ("songs from {0|Korea}"), 보다 976/149 identical.
 - Batch 17 (25, 2026-11-24): about 7 min, 143k tokens; 446 of 547 framed. Loosened allow lists (vs_307, vs_19, vs_238); tightened 13.
   Bench review: vs_227/vs_216 trip time no seconds either (g-fixture "5초 정도").
+- Batch 18 (25, 2026-11-24): about 6 min, 141k tokens; 471 of 547 framed. Loosened allow lists (vs_175, vs_139); tightened 3; gap
+  validator-reject: 올리다 + toppings (vs_103). The agent didn't probe pool-1 slots for loosening (e.g. vs_136 slot 2).
+  Agent idea: a tag filter on `slot --open --by-tag` (output is ~25 groups of mostly irrelevant words).
+  The batch 18 agent ran `batch` after its last `done`, which opened batch 19 and blocked the commit; batches 18 and 19 were committed
+  together. The brief (step 7) now warns about it.
+- Batch 19 (25, 2026-11-24): about 7 min, 145k tokens; 496 of 547 framed. Tightened 9 (cooking verbs, kin collisions, 걸리다 + illness).
+  fc2_ui_test's sentence tests now pick an example whose quiz builds twice (the background build is random too).
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:

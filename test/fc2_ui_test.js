@@ -132,7 +132,7 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 			for (const i of app.g.owned) {
 				const c = app.generateFor(i);
 				app.card = { id: i };
-				const at = c.sentences.findIndex(x => app.buildSentenceTest(x));
+				const at = c.sentences.findIndex(x => app.buildSentenceTest(x) && app.buildSentenceTest(x));   // twice: building is random, the background build must succeed too
 				if (at < 0) continue;
 				if (at > 0) c.sentences.unshift(...c.sentences.splice(at, 1));
 				app.card = { id: i, mode: 'learn', st: 'new', side: 'front', shownAt: Date.now(), trial: null, ...c };
@@ -179,7 +179,7 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		let id, card;   // keep the checked card, testable example first (see showTestable)
 		for (const i of app.g.owned) {
 			const c = app.generateFor(i); app.card = { id: i };
-			const at = c.sentences.findIndex(x => app.buildSentenceTest(x, true));
+			const at = c.sentences.findIndex(x => app.buildSentenceTest(x, true) && app.buildSentenceTest(x, true));
 			if (at < 0) continue;
 			if (at > 0) c.sentences.unshift(...c.sentences.splice(at, 1));
 			id = i; card = c; break;

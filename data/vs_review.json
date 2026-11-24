@@ -574,6 +574,70 @@
 			],
 			"order": "critical-path",
 			"english": true
+		},
+		{
+			"n": 18,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_136",
+				"vs_521",
+				"vs_175",
+				"vs_217",
+				"vs_198",
+				"vs_139",
+				"vs_103",
+				"vs_288",
+				"vs_333",
+				"vs_201",
+				"vs_309",
+				"vs_305",
+				"vs_451",
+				"vs_207",
+				"vs_202",
+				"vs_205",
+				"vs_17",
+				"vs_135",
+				"vs_140",
+				"vs_149",
+				"vs_349",
+				"vs_350",
+				"vs_351",
+				"vs_352",
+				"vs_449"
+			],
+			"order": "critical-path",
+			"english": true
+		},
+		{
+			"n": 19,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_153",
+				"vs_297",
+				"vs_99",
+				"vs_94",
+				"vs_335",
+				"vs_301",
+				"vs_290",
+				"vs_365",
+				"vs_338",
+				"vs_186",
+				"vs_204",
+				"vs_291",
+				"vs_328",
+				"vs_293",
+				"vs_210",
+				"vs_525",
+				"vs_299",
+				"vs_194",
+				"vs_319",
+				"vs_421",
+				"vs_370",
+				"vs_285",
+				"vs_286",
+				"vs_533",
+				"vs_90"
+			]
 		}
 	],
 	"reviewed": {
@@ -2348,6 +2412,206 @@
 		"vs_325": {
 			"batch": 17,
 			"note": "tags: slot1 deny 길이/높이/무게/크기; en: new"
+		},
+		"vs_175": {
+			"batch": 18,
+			"note": "tags: allow 5 gift items on slots 2,3 | kept rest; en: new"
+		},
+		"vs_139": {
+			"batch": 18,
+			"note": "tags: allow shoes/sneakers/clothes/bag on slot 0 | kept; en: new"
+		},
+		"vs_349": {
+			"batch": 18,
+			"note": "tags: deny mom/couple/relatives/siblings on slot 0 | kept; en: new"
+		},
+		"vs_135": {
+			"batch": 18,
+			"note": "tags: slot 3 only foot (body parts nonsense for shoe fit) | kept; en: new"
+		},
+		"vs_352": {
+			"batch": 18,
+			"note": "tags: deny 중앙/여기저기 on slot 1 | kept; en: new"
+		},
+		"vs_103": {
+			"batch": 18,
+			"note": "tags: kept (validator-reject gap logged for topping foods); en: new"
+		},
+		"vs_136": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_521": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_217": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_198": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_288": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_333": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_201": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_309": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_305": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_451": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_207": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_202": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_205": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_17": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_140": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_149": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_350": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_351": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_449": {
+			"batch": 18,
+			"note": "tags: kept (pools reviewed, no safe loosening found); en: new"
+		},
+		"vs_99": {
+			"batch": 19,
+			"note": "tags: deny 주방용품; 간장,우유; 양념하다,썰다 | en: new"
+		},
+		"vs_94": {
+			"batch": 19,
+			"note": "tags: slot3 deny 굽다 끓이다 삶다 찌다 튀기다 붓다 젓다 짓다 | en: new"
+		},
+		"vs_335": {
+			"batch": 19,
+			"note": "tags: slot4 deny 부치다 남기다 꺼내다 이해하다 | en: new"
+		},
+		"vs_297": {
+			"batch": 19,
+			"note": "tags: deny self-grandfather in slot0, 매일 slot8 | en: new"
+		},
+		"vs_338": {
+			"batch": 19,
+			"note": "tags: slot7 deny symptoms 걸리다 | en: new"
+		},
+		"vs_291": {
+			"batch": 19,
+			"note": "tags: deny 메시지/핸드폰/통화, 질문하다 | en: new"
+		},
+		"vs_293": {
+			"batch": 19,
+			"note": "tags: deny 부부, 신선식품, 좋아하다 | en: new"
+		},
+		"vs_285": {
+			"batch": 19,
+			"note": "tags: deny 핸드폰 slot4 | en: new"
+		},
+		"vs_90": {
+			"batch": 19,
+			"note": "tags: deny soups/chicken slot0 | en: new"
+		},
+		"vs_153": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_301": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_290": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_365": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_186": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_204": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_328": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_210": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_525": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_299": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_194": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_319": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_421": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_370": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_286": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
+		},
+		"vs_533": {
+			"batch": 19,
+			"note": "tags: kept; en: new"
 		}
 	}
 }
