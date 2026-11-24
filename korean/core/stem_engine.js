@@ -75,8 +75,8 @@ function conjugateAoStem(rawStem, conjRule = K.REGULAR) {
 		return prefix + withL + vh;
 	}
 
-	// 3. ㅅ irregular (낫다 -> 나아, 짓다 -> 지어, 붓다 -> 부어)
-	if (rule.includes(K.S_IRREGULAR) && d.final === 19) {
+	// 3. ㅅ irregular (낫다 -> 나아, 짓다 -> 지어, 붓다 -> 부어); b_drop drops a final ㅂ the same way (뵙다 -> 뵈어)
+	if ((rule.includes(K.S_IRREGULAR) && d.final === 19) || (rule.includes(K.B_DROP) && d.final === 17)) {
 		const base = setFinal(lastChar, 0);
 		const vh = getVowelHarmony(base);
 		return prefix + base + vh;
@@ -236,7 +236,8 @@ function resolvePureMorphology(text, stateObj = null) {
 	});
 
 	// 6. h_irregular
-	resolvedKo = resolvedKo.replace(/([가-힣])\[h_irregular\]으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고|므로|ㄹ|ㄴ)/g, (_, ch, s) => {
+	// b_drop shares the h_irregular 으-rule (drop the final consonant, attach directly: 뵈러, 뵌, 뵐) and the s_irregular 아/어 rule.
+	resolvedKo = resolvedKo.replace(/([가-힣])\[(?:h_irregular|b_drop)\]으\/(니까|면|면서|러|려고|려면|세|시|셔|셨|십|로|라고|므로|ㄹ|ㄴ)/g, (_, ch, s) => {
 		const base = setFinal(ch, 0);
 		return s === 'ㄴ' ? setFinal(base, 4) : s === 'ㄹ' ? setFinal(base, 8) : base + s;
 	});
@@ -249,7 +250,7 @@ function resolvePureMorphology(text, stateObj = null) {
 		const base = setFinal(ch, 0);
 		return s === 'ㄴ' ? base + '은' : s === 'ㄹ' ? base + '을' : base + '으' + s;
 	});
-	resolvedKo = resolvedKo.replace(/([가-힣])\[s_irregular\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => {
+	resolvedKo = resolvedKo.replace(/([가-힣])\[(?:s_irregular|b_drop)\](아\/어|았\/었)(요|서|어|도|야|라|던|)/g, (_, ch, h, s) => {
 		const base = setFinal(ch, 0);
 		const hv = getVowelHarmony(base);
 		return base + '\u200B' + (h === "았/었" ? (hv === '아' ? '았' : '었') : hv) + s;

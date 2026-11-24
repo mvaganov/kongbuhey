@@ -466,6 +466,18 @@ for (const [plain, hon] of HONORIFIC_NOUN_SUPPLETIONS.entries()) {
 // -----------------------------------------------------------------------------
 // Summary
 // -----------------------------------------------------------------------------
+// b_drop: the humble 뵙다 drops its final ㅂ before vowel endings with nothing inserted (뵈러, not *뵙으러 or *뵈워),
+// and keeps it before consonant endings (뵙고, 뵙습니다). Conjugation class from data.js.
+{
+	const se = require('../korean/core/stem_engine.js');
+	const D_ = require('../data/data.js'), U_ = D_.KR_EN_languageUnits, C_ = D_.DATA_SCHEMA;
+	const u = U_.find(x => x && x[C_.Korean] === '뵙다');
+	const stem = se.getConjugatedStem(u[C_.Korean], u[C_.Conjugation]);
+	const want = { '으/러': '뵈러', '으/면': '뵈면', '으/ㄴ': '뵌', '으/ㄹ': '뵐', '아/어요': '뵈어요', '았/었어요': '뵈었어요', '고': '뵙고', '습니다/ㅂ니다': '뵙습니다' };
+	const wrong = Object.entries(want).filter(([e, w]) => se.resolvePureMorphology(stem + e) !== w).map(([e, w]) => `${e}: ${se.resolvePureMorphology(stem + e)} (want ${w})`);
+	assert(wrong.length === 0, '뵙다 conjugates as b_drop (뵈러, 뵈어요, 뵙고)', wrong.join('; '));
+}
+
 console.log("\n======================================================");
 console.log(`TOTAL TESTS: ${totalTests}`);
 console.log(`PASSED:      ${passedTests}`);

@@ -161,8 +161,8 @@ Batch 5 (2026-11-24, first `--critical-path` batch from the owner's save; Sonnet
 changed (food/person/place slots to their class + denies; emotion and 괜찮다 slots narrowed to only-lists), ~35 fixtures. Opus pass
 measured rejections over a 30k one-slot sweep (VERB_OBJECT 6,471 mostly right, DESCRIPTIVE_VERB_SUBJECT 1,038, ADNOMINAL_ACTION 786,
 ADNOMINAL_DESCRIPTIVE 637) and fixed ADNOMINAL_ACTION for animate heads of intransitive motion/locative clauses (일본에서 온 민수,
-같이 살 친구; 786 -> 682); g205 and g072 fixed. Left: names/얘들 accept plural 들 (only deny rules block it); 뵙다 + -(으)러 gives
-뵙으러 (should be 뵈러); 찾다 lacks person objects (vs_64 gap); the focus-object fallback (도/는/만) treats adverbs/adnominals as objects.
+같이 살 친구; 786 -> 682); g205 and g072 fixed. Fixed after (2026-11-24): a 들 slot never admits names, proper nouns or
+plural nouns; conjugation class `b_drop` (뵙다: 뵈러, 뵈어요, 뵙고). Left: 찾다 lacks person objects (vs_64 gap); the focus-object fallback (도/는/만) treats adverbs/adnominals as objects.
 
 **Owner:** `node tools/vs_tune.js fixtures --unsure` is the native-speaker list; record answers with `human <gid> right|wrong`; commit.
 

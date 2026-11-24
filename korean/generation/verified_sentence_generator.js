@@ -1079,7 +1079,8 @@ function isUnitEligibleForSlot(u, slot, ctx, options = {}) {
 		if ((uId === 1180 || uId === 1631) && !isOrigUnit) return false; // Post-nominal relational nouns 후/전 cannot replace bare time words (e.g. 이때 -> *후)
 		if (!isNumericSlot && uKo === HC.SLOT_COUNTER_ONLY_IN_NUMERIC_SLOT_MONTHS) return false;
 		if (u[DATA_SCHEMA.PartofSpeech] === K.NUMBER && _hasTag(u, "attributive") && (ctx.slotHasParticle || ctx.slotMorph !== "")) return false;
-		if ((slot.category === "noun_plural" || (slot.grammar || []).some(g => g.unitId === 550)) && u[DATA_SCHEMA.PartofSpeech] !== K.NOUN) return false;
+		if ((slot.category === "noun_plural" || (slot.grammar || []).some(g => g.unitId === 550)) && (u[DATA_SCHEMA.PartofSpeech] !== K.NOUN
+			|| _hasTag(u, "plural", "proper_noun", "name"))) return false;   // 들 never follows a name or an already plural noun (*민수들이, *얘들들)
 		if (u[DATA_SCHEMA.PartofSpeech] === K.NUMBER && ctx.origUnit && ctx.origUnit[DATA_SCHEMA.PartofSpeech] === K.NUMBER) {
 			if (HC.SLOT_ZERO_WORDS_REPLACE_ONLY_ZERO.includes(uKo) && !HC.SLOT_ZERO_WORDS_REPLACE_ONLY_ZERO.includes(ctx.origUnit[DATA_SCHEMA.Korean] || "")) return false;
 			if (!_hasTag(ctx.origUnit, K.SINO_NUMBER)) {

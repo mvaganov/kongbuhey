@@ -56,6 +56,7 @@
     REU_IRREGULAR: "reu_irregular",
     H_IRREGULAR: "h_irregular",
     S_IRREGULAR: "s_irregular",
+    B_DROP: "b_drop",              // final ㅂ drops before vowel endings, nothing inserted: 뵙다 -> 뵈러, 뵈어요, 뵌, 뵐 (뵙고, 뵙습니다 keep it)
     D_IRREGULAR: "d_irregular",
     P_IRREGULAR: "p_irregular",
     REGULAR_VOWEL: "regular_vowel",

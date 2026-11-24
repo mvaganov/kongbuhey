@@ -635,6 +635,23 @@ assert(unregisteredDVTags.length === 0, "All descriptive_* tags are registered i
 	}
 }
 
+// Plural 들: a slot that takes 들 never admits a personal name, a proper noun or an already plural noun (*민수들이, *얘들들),
+// with the slot's tags and rules removed so only the eligibility check decides (found in batch 5, then blocked by deny rules only).
+{
+	const vg = require('../korean/generation/verified_sentence_generator.js');
+	const U_ = KR_EN_languageUnits;
+	const byKo = k => U_.findIndex(u => u && u[KoreanWord] === k && u[DATA_SCHEMA.PartofSpeech] !== 'Alias');
+	const tpl = JSON.parse(JSON.stringify(vg.getVerifiedSentenceById('vs_76')));
+	const slot = tpl.slots.findIndex(s => s.category === 'noun_plural' || (s.grammar || []).some(g => g.unitId === byKo('들')));
+	assert(slot >= 0, 'vs_76 has a slot with plural 들');
+	if (slot >= 0) {
+		tpl.slots[slot].tags = ['person']; tpl.slots[slot].rules = [];
+		const ids = new Set(vg.getSlotCandidates(tpl.slots[slot]).candidates.map(u => u[DATA_SCHEMA.Id]));
+		const bad = ['민수', '유키', '얘들'].filter(k => ids.has(byKo(k)));
+		assert(bad.length === 0 && ids.has(byKo('친구')), 'a 들 slot admits person nouns (친구) but no names or plural nouns', bad.join(','));
+	}
+}
+
 // The head of an intransitive motion/locative relative clause is its subject (일본에서 온 민수, 같이 살 친구), so an
 // animate head passes ADNOMINAL_ACTION_COLLOCATION_MISMATCH; inanimate heads, non-motion or involuntary verbs and
 // transitive verbs are still checked (verified templates, one slot varied with its tag filter removed).
