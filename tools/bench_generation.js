@@ -17,6 +17,9 @@
  *   - same data, different output  -> FAIL: generator behaviour changed. Intended (a fix, a new rule)? re-save with --save.
  *   - data files changed            -> the check is skipped (and says so); re-save after reviewing the data change.
  * Use it around refactors: run before (or --save), change code, run again; "identical" means no behaviour change.
+ * Whenever the output differs from the baseline (changed data or not), it writes the flag ]bench_baseline.txt listing the changed
+ * samples; `node tools/flags.js resolve --reviewed "]bench_baseline.txt"` re-saves after review, and an identical run removes it.
+ * --repo <dir>: the real repo when running from a test copy (the baseline and the flag are read and written there).
  */
 'use strict';
 if (typeof require === 'function' && typeof module !== 'undefined' && require.main === module) require('./exit_log.js').watch('tools/bench_generation.js'); // failed runs -> test.js report
@@ -24,8 +27,11 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) require('./c
 
 const fs = require('fs'), path = require('path'), crypto = require('crypto');
 const ROOT = path.resolve(__dirname, '..');
-const BASELINE = path.join(ROOT, 'test', 'bench_baseline.json');
 const args = process.argv.slice(2), SAVE = args.includes('--save'), QUIZ = !args.includes('--no-quiz');
+const REPO = args.includes('--repo') ? path.resolve(args[args.indexOf('--repo') + 1] || '.') : ROOT;
+const BASELINE = path.join(REPO, 'test', 'bench_baseline.json');
+const FLAG = ']bench_baseline.txt';
+const Flags = require('./flags.js');
 const OWNED_MAX = 700;   // "owned" = units 0..699: an early-curriculum unlock set
 const hash = s => crypto.createHash('sha1').update(s).digest('hex').slice(0, 12);
 const now = () => process.hrtime.bigint(), ms = a => Number(process.hrtime.bigint() - a) / 1e6;
@@ -103,22 +109,38 @@ async function main() {
 	const fmt = (k, v) => `${k.padEnd(14)} ${JSON.stringify(v)}${base && base.timings && base.timings[k] !== undefined ? '   was ' + JSON.stringify(base.timings[k]) : ''}`;
 	for (const [k, v] of Object.entries(timings)) console.log('  ' + fmt(k, v));
 
+	const changed = base ? Object.keys({ ...base.lines, ...lines }).filter(k => base.lines[k] !== lines[k]) : [];
+	const dataChanged = Boolean(base) && base.dataHash !== dataHash;
+	const sampleName = k => { const m = /^(\d+):(\w+)$/.exec(k); return m && units[Number(m[1])] ? `unit ${m[1]} ${units[Number(m[1])][1]} (${m[2]})` : k; };
 	if (SAVE) {
 		fs.writeFileSync(BASELINE, JSON.stringify({ savedAt: new Date().toISOString(), dataHash, timings, work: work.cold, lines }, null, 1) + '\n');
-		console.log(`Saved baseline: ${Object.keys(lines).length} output hashes -> ${path.relative(ROOT, BASELINE)}`);
+		Flags.removeFlag(REPO, FLAG);
+		console.log(`Saved baseline: ${Object.keys(lines).length} output hashes -> ${path.relative(REPO, BASELINE)} (${FLAG} removed)`);
 		check(true, 'baseline saved');
-	} else if (!base) {
-		check(false, `no baseline at ${path.relative(ROOT, BASELINE)}: run node tools/bench_generation.js --save`);
-	} else if (base.dataHash !== dataHash) {
-		console.log('  (output check skipped: data/data.js or data/verified_sentences.js changed since the baseline; re-save with --save after reviewing)');
-		check(true, 'bench ran (output check skipped for changed data)');
+	} else if (changed.length) {
+		Flags.writeFlag(REPO, FLAG, {
+			head: `blocks commits: generation output differs from the saved bench baseline in ${changed.length} of ${Object.keys(lines).length} samples (data files changed: ${dataChanged ? 'yes' : 'no'}). Review, then: node tools/flags.js resolve --reviewed "${FLAG}"`,
+			action: 'bench_save',
+			details: ['What to check: the uncommitted change (git diff --stat) should explain every changed sample: a fix, a new rule, tuned',
+				'templates or edited units. Samples for units the change cannot touch mean an unintended side effect: find it instead of resolving.',
+				'Changed samples (unit, mode: all units / owned = units 0..699):', ...changed.slice(0, 40).map(k => '  ' + sampleName(k)), ...(changed.length > 40 ? [`  ... ${changed.length - 40} more`] : [])],
+			milestone: `${changed.length} samples differ (data changed: ${dataChanged ? 'yes' : 'no'})`,
+		});
+		console.log(`  output differs in ${changed.length} samples: ${FLAG} written (review, then node tools/flags.js resolve --reviewed "${FLAG}")`);
+	} else Flags.removeFlag(REPO, FLAG);
+	if (SAVE) { /* saved above */ } else if (!base) {
+		check(false, `no baseline at ${path.relative(REPO, BASELINE)}: run node tools/bench_generation.js --save`);
+	} else if (dataChanged) {
+		console.log(changed.length ? `  (data/data.js or data/verified_sentences.js changed since the baseline: the ${changed.length} output differences are expected; review them in ${FLAG})`
+			: '  (data/data.js or data/verified_sentences.js changed since the baseline, but the output is identical: nothing to review)');
+		check(true, `bench ran (data changed; ${changed.length} output samples differ)`);
 	} else {
-		const diff = Object.keys({ ...base.lines, ...lines }).filter(k => base.lines[k] !== lines[k]);
+		const diff = changed;
 		const grew = base.work ? Object.keys(work.cold).filter(k => work.cold[k] > (base.work[k] ?? Infinity)) : [];
 		console.log(`  ${'work (cold)'.padEnd(14)} ${JSON.stringify(work.cold)}${base.work ? '   was ' + JSON.stringify(base.work) : ''}`);
 		check(grew.length === 0, grew.length ? `the seeded pass does more work than the baseline: ${grew.map(k => `${k} ${base.work[k]} -> ${work.cold[k]}`).join(', ')}. Intended? --save`
 			: 'the seeded pass does no more work than the baseline');
-		check(diff.length === 0, diff.length ? `generation output changed for ${diff.length} of ${Object.keys(lines).length} unit/mode samples (first: ${diff.slice(0, 6).join(', ')}). Intended? node tools/bench_generation.js --save`
+		check(diff.length === 0, diff.length ? `generation output changed for ${diff.length} of ${Object.keys(lines).length} unit/mode samples with unchanged data (first: ${diff.slice(0, 6).join(', ')}). Intended? review ${FLAG}`
 			: `generation output identical to the baseline (${Object.keys(lines).length} samples)`);
 	}
 	console.log(`\nTOTAL TESTS: ${passed + failed}\nPASSED:      ${passed}\nFAILED:      ${failed}`);

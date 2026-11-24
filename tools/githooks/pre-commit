@@ -1,0 +1,24 @@
+#!/bin/sh
+# Kongbuhey pre-commit hook: refuses to commit while a flag file (a name starting with "]") exists in the repo root, or when one
+# is staged anywhere. Project tooling writes flags to say what must happen before the next commit; line 1 of each says why.
+# See and resolve them with: node tools/flags.js resolve      Never bypass this hook with --no-verify.
+# Enabled once per clone: git config core.hooksPath tools/githooks   (test/flags_test.js checks it)
+root=$(git rev-parse --show-toplevel) || exit 1
+blocked=0
+for f in "$root"/\]*; do
+	[ -e "$f" ] || continue
+	echo "commit blocked by flag file $(basename "$f"):" >&2
+	head -n 1 "$f" >&2
+	blocked=1
+done
+staged=$(git diff --cached --name-only | grep -E '(^|/)\]' || true)
+if [ -n "$staged" ]; then
+	echo "commit blocked: flag files are staged (never commit them):" >&2
+	echo "$staged" >&2
+	blocked=1
+fi
+if [ "$blocked" -ne 0 ]; then
+	echo "Resolve with: node tools/flags.js resolve" >&2
+	exit 1
+fi
+exit 0

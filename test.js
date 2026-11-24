@@ -30,11 +30,12 @@ const { K } = (typeof require !== 'undefined') ? require('./data/constants.js') 
  *   node test.js --full          # Also sweep generation over every unit, CLI --help, generation bench (tools/bench_generation.js)
  *   node test.js <source>        # Validate specific source (e.g. node test.js studytext21)
  *   node test.js -v, --verbose   # Display detailed breakdown per stage
- *   node test.js --repo <dir>    # Testing a copy (agents: /tmp/kb): the full-sweep flag and its state go to the real repo <dir>
+ *   node test.js --only a,b      # Only these slower checks (sweep, browser, bench, cli, sim; tools/checks.js), nothing else
+ *   node test.js --repo <dir>    # Testing a copy (agents: /tmp/kb): the flag and check state go to the real repo <dir>
  *
- * Full-sweep flag: the default run samples generation, so an engine change can break units it never generates. Every run compares
- * korean/{generation,core,concord}/ with the last passing --full run (local/full_sweep_state.json) and, when they differ, appends
- * the changed files to run_test_full_plz.txt at the repo root (never commit it). A passing --full run deletes it.
+ * Slower checks and the ]test_full.txt flag (tools/checks.js): every run notes which slower checks are due because files they
+ * watch changed since they last passed, and keeps the flag file ]test_full.txt in the repo root while any is due (the pre-commit
+ * hook blocks commits until then). `--full` or `--only <due checks>` (what `node tools/flags.js resolve` runs) clears it.
  */
 
 function printHelp() {
@@ -55,8 +56,9 @@ VALIDATION STAGES (Fails fast on any error):
 OPTIONS:
   <source>             Target curriculum source (e.g. studytext21, class2012) for scoped validation
   -v, --verbose        Include detailed per-stage breakdown and logs
-  --full               Every unit in generation, CLI --help, bench; clears run_test_full_plz.txt when it passes
-  --repo <dir>         When testing a copy: write the full-sweep flag and its state into the real repo <dir>
+  --full               Everything, including every slower check (tools/checks.js); clears ]test_full.txt when it passes
+  --only a,b           Run only these slower checks (sweep, browser, bench, cli, sim); what node tools/flags.js resolve uses
+  --repo <dir>         When testing a copy: read and write the flag and check state in the real repo <dir>
   -h, --help           Display this help text and exit
 
 KEY LLM WORKFLOW PATTERNS:
@@ -83,43 +85,8 @@ const INGESTED_STUDY_TEXTS = ["studytext12", "studytext21", K.STUDYTEXT22, "stud
 // Fixed ID ranges for the default (fast) generation smoke test; --full sweeps every unit instead.
 const SMOKE_RANGES = ['0-14', '700-714', '1500-1514'];
 
-// ---------------------------------------------------------------- full-sweep flag (see the header)
-const FULL_SWEEP_DIRS = ['korean/generation', 'korean/core', 'korean/concord'];
-const FULL_FLAG_NAME = 'run_test_full_plz.txt';
-function fullSweepHashes() {
-	const crypto = require('crypto'), out = {};
-	for (const dir of FULL_SWEEP_DIRS) {
-		const abs = path.resolve(__dirname, dir);
-		if (!fs.existsSync(abs)) continue;
-		for (const f of fs.readdirSync(abs).filter(f => f.endsWith('.js')).sort()) {
-			out[`${dir}/${f}`] = crypto.createHash('sha1').update(fs.readFileSync(path.join(abs, f))).digest('hex').slice(0, 12);
-		}
-	}
-	return out;
-}
-/** Every run: flag engine files changed since the last passing --full run. Returns the changed paths. */
-function noteFullSweepNeed(repoDir) {
-	const stateFile = path.join(repoDir, 'local', 'full_sweep_state.json'), flagFile = path.join(repoDir, FULL_FLAG_NAME);
-	let last = null;
-	try { last = JSON.parse(fs.readFileSync(stateFile, 'utf8')).hashes; } catch (_) { last = null; }
-	const now = fullSweepHashes();
-	const changed = last ? [...new Set([...Object.keys(now), ...Object.keys(last)])].filter(k => now[k] !== last[k]).sort() : ['(no passing --full run recorded yet)'];
-	if (!changed.length) return changed;
-	const line = changed.join(', ');
-	const prev = fs.existsSync(flagFile) ? fs.readFileSync(flagFile, 'utf8') : '';
-	if (!prev.trim().split('\n').pop().endsWith(line)) {
-		const head = prev ? '' : `Generation engine code changed since the last passing full sweep. Run: node test.js --full (it deletes this file).\n`;
-		fs.appendFileSync(flagFile, `${head}${new Date().toISOString()} ${line}\n`);
-	}
-	return changed;
-}
-/** A passing --full run: record the engine state and clear the flag. */
-function clearFullSweepNeed(repoDir) {
-	fs.mkdirSync(path.join(repoDir, 'local'), { recursive: true });
-	fs.writeFileSync(path.join(repoDir, 'local', 'full_sweep_state.json'), JSON.stringify({ at: new Date().toISOString(), hashes: fullSweepHashes() }, null, 1));
-	const flagFile = path.join(repoDir, FULL_FLAG_NAME);
-	if (fs.existsSync(flagFile)) fs.unlinkSync(flagFile);
-}
+// Slower checks, their state and the ]test_full.txt flag: tools/checks.js (see the header).
+const Checks = require('./tools/checks.js');
 
 // Runs ESLint (config: eslint.config.js). Errors fail the suite; warnings are only counted.
 function runEslint() {
@@ -165,8 +132,9 @@ function runTests(options = {}) {
 	const verbose = options.verbose || false;
 	const full = options.full || false;
 	const repoDir = options.repoDir || __dirname;
-	let sweepChanged = [];
-	try { sweepChanged = noteFullSweepNeed(repoDir); } catch (err) { sweepChanged = [`(flag check failed: ${err.message})`]; }
+	if (options.only) return runOnly(options.only, repoDir);
+	let dueChecks = [];
+	try { dueChecks = Checks.note(__dirname, repoDir); } catch (err) { dueChecks = [{ name: '?', changed: [`flag check failed: ${err.message}`] }]; }
 	const startTime = Date.now();
 
 	console.log(`======================================================`);
@@ -554,13 +522,14 @@ function runTests(options = {}) {
 			{ name: "fc2 UI (jsdom playthrough)", path: path.resolve(__dirname, 'test', 'fc2_ui_test.js') },
 			{ name: "fc2 effect trace (golden)", path: path.resolve(__dirname, 'test', 'fc2_trace_test.js') },
 			{ name: "fc2 headless simulator", path: path.resolve(__dirname, 'test', 'fc2_sim_test.js'), args: full ? ['--full'] : [] },
+			{ name: "Flag files, slower-check state, pre-commit hook", path: path.resolve(__dirname, 'test', 'flags_test.js') },
 			{ name: "Golden Sentences (flag + slot fixtures, tuning ledger)", path: path.resolve(__dirname, 'test', 'golden_sentences_test.js') },
 			{ name: "Content Hygiene (textbook text stays local)", path: path.resolve(__dirname, 'test', 'verified_originals_test.js') },
 			{ name: "Flashcard Deck Logic", path: path.resolve(__dirname, 'test', 'flashcard_deck_test.js') },
 			{ name: "Spreadsheet UI & Database", path: path.resolve(__dirname, 'test', 'spreadsheet_ui_test.js') },
 			{ name: "select.js API (temp data copy)", path: path.resolve(__dirname, 'test', 'select_test.js') },
 			...(full ? [{ name: "CLI --help (fast, exit 0, no writes)", path: path.resolve(__dirname, 'test', 'cli_help_test.js') }] : []),
-			...(full ? [{ name: "Generation bench (speed + output unchanged)", path: path.resolve(__dirname, 'tools', 'bench_generation.js'), echo: /^ {2}\S/ }] : [])
+			...(full ? [{ name: "Generation bench (speed + output unchanged)", path: path.resolve(__dirname, 'tools', 'bench_generation.js'), args: ['--repo', repoDir], echo: /^ {2}\S/ }] : [])
 		];
 
 		let totalAssertions = 0;
@@ -603,10 +572,9 @@ function runTests(options = {}) {
 
 	let sweepNote = '';
 	if (full) {
-		try { clearFullSweepNeed(repoDir); sweepNote = `\nFull sweep passed: ${FULL_FLAG_NAME} cleared.`; } catch (err) { sweepNote = `\nFull sweep passed, but clearing ${FULL_FLAG_NAME} FAILED: ${err.message}`; }
-	} else if (sweepChanged.length) {
-		const what = sweepChanged.length > 3 ? `${sweepChanged.slice(0, 3).join(', ')} and ${sweepChanged.length - 3} more` : sweepChanged.join(', ');
-		sweepNote = `\n>>> Not covered by a full sweep yet: ${what} (see ${FULL_FLAG_NAME}). Run node test.js --full before committing.`;
+		try { const left = Checks.markPassed(__dirname, repoDir, Checks.NAMES); sweepNote = left.length ? `\n>>> Still due after --full: ${left.map(x => x.name).join(', ')} (files changed during the run?)` : `\nAll slower checks passed: ${Checks.FLAG} cleared.`; } catch (err) { sweepNote = `\nFull run passed, but recording it FAILED: ${err.message}`; }
+	} else if (dueChecks.length) {
+		sweepNote = `\n>>> Slower checks due (${Checks.FLAG} blocks commits): ${dueChecks.map(x => x.name).join(', ')}. Run node tools/flags.js resolve${repoDir !== __dirname ? ` --repo "${repoDir}"` : ''} before committing.`;
 	}
 
 	const elapsedSec = ((Date.now() - startTime) / 1000).toFixed(2);
@@ -616,12 +584,30 @@ function runTests(options = {}) {
 	return { success: true, duration: elapsedSec };
 }
 
+/** `--only a,b`: run just these slower checks (tools/checks.js), record the passes, update the flag. */
+function runOnly(names, repoDir) {
+	const bad = names.filter(n => !Checks.NAMES.includes(n));
+	if (bad.length || !names.length) { console.error(`--only: unknown check ${bad.join(', ') || '(none given)'} (checks: ${Checks.NAMES.join(', ')})`); process.exit(2); }
+	console.log(`Slower checks: ${names.join(', ')}`);
+	const results = Checks.run(__dirname, names, repoDir);
+	for (const r of results) {
+		console.log(`  ${r.ok ? '[ PASS ]' : '[ FAIL ]'} ${r.name.padEnd(8)} ${(r.ms / 1000).toFixed(1)}s  ${Checks.CHECKS[r.name].desc}`);
+		if (!r.ok) console.log(r.out.split('\n').filter(l => /FAIL|Error|error|FAILED/.test(l)).slice(0, 15).map(l => '      ' + l).join('\n'));
+	}
+	const passed = results.filter(r => r.ok).map(r => r.name);
+	const left = Checks.markPassed(__dirname, repoDir, passed);
+	console.log(left.length ? `Still due: ${left.map(x => x.name).join(', ')} (${Checks.FLAG} stays)` : `Nothing due: ${Checks.FLAG} removed`);
+	if (passed.length < names.length) process.exit(1);
+	return { success: true };
+}
+
 if (require.main === module) {
 	const args = process.argv.slice(2);
 	let targetSource = null;
 	let verbose = false;
 	let full = false;
 	let repoDir = null;
+	let only = null;
 
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
@@ -632,6 +618,8 @@ if (require.main === module) {
 			verbose = true;
 		} else if (arg === '--full') {
 			full = true;
+		} else if (arg === '--only') {
+			only = String(args[++i] || '').split(',').map(x => x.trim()).filter(Boolean);
 		} else if (arg === '--repo') {
 			repoDir = path.resolve(args[++i] || '.');
 			if (!fs.existsSync(path.join(repoDir, 'test.js'))) { console.error(`--repo ${repoDir}: not a kongbuhey checkout (no test.js)`); process.exit(2); }
@@ -640,7 +628,7 @@ if (require.main === module) {
 		}
 	}
 
-	runTests({ targetSource, verbose, full, repoDir });
+	runTests({ targetSource, verbose, full, repoDir, only });
 }
 
 module.exports = {

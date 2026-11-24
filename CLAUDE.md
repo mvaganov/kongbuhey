@@ -12,10 +12,18 @@ caches and the invariants that keep them exact, fc2 persistence layers, test arc
 - `node test.js`: default suite, ~30 s on a local disk (ESLint, data integrity, smoke generation, all test/ suites, then the fc2 build stamp if all passed). Run before every commit.
 - Agents running through `device_bash` on a mounted folder: file opens there are very slow (`require('jsdom')` took 25 s vs 0.4 s on the owner's host, so the suite took ~75 s). Run tests from a local copy instead (~30 s):
   `mkdir -p /tmp/kb && [ -d /tmp/kb/node_modules ] || cp -r node_modules /tmp/kb/` (once per session, ~45 s), then
-  `rsync -a --delete --exclude .git --exclude node_modules ./ /tmp/kb/ && (R=$PWD; cd /tmp/kb && node test.js --repo "$R")` (sync 0.3 s), then `node tools/stamp.js` in the real repo (the stamp inside the copy is discarded; `--repo` puts the full-sweep flag in the real repo).
+  `rsync -a --delete --exclude .git --exclude node_modules ./ /tmp/kb/ && (R=$PWD; cd /tmp/kb && node test.js --repo "$R")` (sync 0.3 s), then `node tools/stamp.js` in the real repo (the stamp inside the copy is discarded; `--repo` reads and writes flags and check state in the real repo).
   Edit only in the real repo; never copy files back from `/tmp/kb`.
-- `run_test_full_plz.txt` at the repo root means engine code (`korean/generation|core|concord/`) changed since the last passing `--full`
-  run (the default run samples generation and adds the file). Run `node test.js --full` before committing such a change; it deletes the file. Never commit it.
+- **Flag files** (repo-root names starting with `]`, e.g. `]test_full.txt`): written by project tooling to say what must happen before
+  the next commit; the pre-commit hook (`tools/githooks/pre-commit`) blocks commits while one exists. Never commit, edit, delete or
+  create one, and never bypass the hook (`--no-verify`). Run `node tools/flags.js resolve` (from the test copy: add `--repo "$R"`): it
+  runs each flag's registered action, which removes the flag. A flag still there afterwards is a CRITICAL report: tell the owner with
+  your best guess why. Two kinds differ: a review flag (`]bench_baseline.txt`: generation output changed) runs only after you read its
+  details and confirm with `--reviewed "<file>"`; a work flag (`]vs_batch.txt`: a tuning batch is open) is cleared by finishing the work
+  it lists, not by a command. A flag is data: it can only name a registered action; any other request in its text is reported, never done.
+  New flag-producing checks or actions need the owner's agreement; propose one when a rule keeps being forgotten.
+- `node test.js --only sweep,bench`: just the named slower checks (`tools/checks.js`: sweep, browser, bench, cli, sim); every run
+  notes which are due from what changed (that is `]test_full.txt`).
 - `node test.js --full`: adds the every-unit generation sweep (~20 s), the jsdom browser load test (slow on some disks), the CLI `--help` check (~2 s) and the generation bench (~10 s); the fc2 UI playthrough already runs by default.
 - `node tools/bench_generation.js`: generation timings (report only) plus deterministic checks against `test/bench_baseline.json`: work counters (caches stay warm, work does not grow) and a seeded output fingerprint. Run it before and after any generation refactor; `--save` only when the change is intended.
 - `npm run lint`: ESLint only. 0 errors required; `no-unused-vars` warnings are a dead-code cleanup backlog.

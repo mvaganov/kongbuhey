@@ -625,11 +625,30 @@ function printBatch(b, l) {
 	if (!left.length) console.log('  complete: run `batch status`, then hand off (see handoff.md)');
 }
 
+// ]vs_batch.txt (tools/flags.js): an open batch blocks commits; `done` writes progress milestones; the last `done` removes it.
+const BATCH_FLAG = ']vs_batch.txt';
+function batchFlag(b, l, milestone = null) {
+	const Flags = require('./flags.js');
+	const done = b.ids.filter(id => l.reviewed[id] && l.reviewed[id].batch === b.n).length;
+	if (done >= b.ids.length) { Flags.removeFlag(ROOT, BATCH_FLAG); return; }
+	Flags.writeFlag(ROOT, BATCH_FLAG, {
+		head: `blocks commits: verified-sentence batch ${b.n} is open (${done}/${b.ids.length} reviewed). Continue: node tools/vs_tune.js batch (handoff.md, "Verified-sentence tuning workflow"); \`done\` on the last template removes this file.`,
+		action: 'vs_batch', args: { batch: b.n },
+		details: [`opened ${b.opened}${b.order ? `, order: ${b.order}` : ''}${b.lowYield ? ', low-yield slots' : ''}`,
+			`left: ${b.ids.filter(id => !(l.reviewed[id] && l.reviewed[id].batch === b.n)).join(' ')}`],
+		milestone,
+	});
+}
+
 function cmdBatch(sub, flags) {
 	const l = readLedger();
 	if (sub === 'status') return cmdBatchStatus(l);
 	const open = openBatch(l);
-	if (open) { printBatch(open, l); return; }
+	if (open) {
+		if (!flags['dry-run'] && !fs.existsSync(path.join(ROOT, BATCH_FLAG))) batchFlag(open, l, `batch ${open.n} resumed (flag was missing)`);
+		printBatch(open, l);
+		return;
+	}
 	const n = Number(flags.n || 25);
 	const inBatch = new Set(l.batches.flatMap(b => b.ids));
 	const ids = flags['low-yield']
@@ -642,6 +661,7 @@ function cmdBatch(sub, flags) {
 	if (flags['dry-run']) { console.log('(dry run: batch not opened)'); printBatch(b, l); return; }
 	l.batches.push(b);
 	writeLedger(l);
+	batchFlag(b, l, `batch ${b.n} opened: ${b.ids.length} templates${b.order ? ` (${b.order})` : ''}`);
 	printBatch(b, l);
 }
 
@@ -654,7 +674,8 @@ function cmdDone(id, note, flags) {
 	l.reviewed[id] = { batch: b.n, note };
 	writeLedger(l);
 	const left = b.ids.filter(x => !(l.reviewed[x] && l.reviewed[x].batch === b.n)).length;
-	console.log(`${id} reviewed (batch ${b.n}: ${left} left)`);
+	batchFlag(b, l, `${id} done (${b.ids.length - left}/${b.ids.length}): ${note.slice(0, 120)}`);
+	console.log(`${id} reviewed (batch ${b.n}: ${left} left)${left ? '' : `: batch complete, ${BATCH_FLAG} removed. Next: node test.js, then batch status / gaps --summary`}`);
 }
 
 function cmdBatchStatus(l) {

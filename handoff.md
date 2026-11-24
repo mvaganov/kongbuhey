@@ -112,7 +112,8 @@ native-speaker list, commit). The orchestrating session starts each agent with t
 **Loosener brief (Sonnet). Paste as the agent prompt:**
 > Kongbuhey repo (read CLAUDE.md first: test from a local copy, never commit). Run `node tools/vs_tune.js batch --critical-path`
 > (opens or resumes the batch; new batches follow the Examples Critical Path from the owner's save, so each batch makes soon-usable
-> templates better) and `node tools/vs_tune.js gap-classes`. For each listed template: `show <id>`; for each variable slot (the `pools` column,
+> templates better) and `node tools/vs_tune.js gap-classes`. An open batch keeps `]vs_batch.txt` in the repo root (progress and
+> milestones; it blocks commits); `done` on the last template removes it. Never edit or delete it. For each listed template: `show <id>`; for each variable slot (the `pools` column,
 > slot:pool size), decide which words fit the sentence with every other slot fixed. `show` prints how many pool words realize;
 > `slot <id> <i> --open --by-tag` lists what the validator alone allows, grouped by tag (`unit <id>` shows one word's tags). Then:
 > 1. Loosen: `tags <id> <i> -tag --dry-run`; read every `OK` line (`REJ` = an existing validator already rejects it). Write it (same
@@ -205,8 +206,8 @@ G = built by the fallback generator (⚙). Most wrong sentences are G; V ones go
 > 5. Guard each fix: a test case in the matching existing suite (adverb_test, collocation_test, spatial_concord_test,
 >    temporal_concord_test, ...) built on the small set from step 3, or a slot fixture (`vs_tune.js fixture`) for a verified slot.
 >    Check the test FAILS without the fix.
-> 6. Re-run step 1 with the same seeds: the kind is gone and `checks: all passed`. Then `node test.js`, and `node test.js --full`
->    when `run_test_full_plz.txt` exists. Report: kinds fixed (one example each), kinds left for the owner, the unsure list.
+> 6. Re-run step 1 with the same seeds: the kind is gone and `checks: all passed`. Then `node test.js`, and `node tools/flags.js resolve`
+>    if a `]` flag file exists. Report: kinds fixed (one example each), kinds left for the owner, the unsure list.
 Fixed in the first pass (2026-11-23): 지내다 without 잘 (needsAdv), 많다 with a single demonstrative (collocation filter now holds in the
 fallback), 열심히 with one-time events (denyVerbs, also for grammar-formula adverbs), a person at a place with a descriptive verb
 (*우리는 학생회관에 조용했어요: the place is the subject), eat-verb slots open to every verb (vs_minimal_2, vs_83).
