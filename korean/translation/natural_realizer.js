@@ -87,6 +87,7 @@ function pluralizeEnglishNoun(nounStr, count = 2) {
 	const lower = nounStr.toLowerCase();
 	if (UNCOUNTABLE_EN_NOUNS.has(lower)) return nounStr;
 	if (lower === K.PERSON) return "people";
+	if (/ person$/.test(lower)) return nounStr.slice(0, -6) + "people";   // American person -> American people
 	if (lower === "child") return "children";
 	if (lower === "man") return "men";
 	if (lower === "woman") return "women";

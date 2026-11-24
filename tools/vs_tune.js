@@ -320,6 +320,7 @@ function cmdShow(id, flags) {
 	const n = Number(flags.n || 10);
 	console.log(`${t.id}  [${t.source}]  ${sentenceOf(t)}`);
 	console.log(`grammar units: ${t.grammarUnitIds.map(g => shortUnit(U(g))).join(' ')}`);
+	if (t.english) console.log(`english frame: ${t.english}`);
 	t.slots.forEach((s, i) => {
 		const pool = vg.getSlotCandidates(s);
 		const custom = rawCustomTags(id, i);

@@ -740,6 +740,7 @@ assert(unregisteredDVTags.length === 0, "All descriptive_* tags are registered i
 	const src = '\n\t["vs_x","t","s","",".",[],[{"slot":0,"kind":"deny","ids":[1]}],"Hi {0}."]\n';
 	assert(vt.editRules(src, 'vs_x', []).includes('[],null,"Hi {0}."]'), 'removing a template\'s last rule keeps its English frame at index 7');
 	assert(vt.editEnglish(src.replace(',"Hi {0}."', '').replace(',[{"slot":0,"kind":"deny","ids":[1]}]', ''), 'vs_x', 'Hi.').includes('[],null,"Hi."]'), 'en-set on a row with no rules writes null rules first');
+	assert(require('../korean/translation/natural_realizer.js').pluralizeEnglishNoun('American person', 2) === 'American people', 'pluralizeEnglishNoun: "American person" -> "American people"');
 	const problems = vt.enCheckProblems();
 	assert(problems.length === 0, 'every committed English frame is valid and names each slot that varies (vs_tune en-check)', problems.slice(0, 5).join(' | '));
 }

@@ -443,7 +443,9 @@ function englishForSlot(unit, form) {
 		// withEnglishArticle leaves mass nouns bare (right for "a": "some water"), but "the" still applies: "how is the weather".
 		// A noun pluralizeEnglishNoun leaves unchanged is a mass or plural-only noun; bare places ("home") do pluralize and stay bare.
 		const massNoun = _natEn.pluralizeEnglishNoun && _natEn.pluralizeEnglishNoun(plain, 2) === plain;
-		return form === 'the' && out === plain && massNoun && /^[a-z]/.test(plain) && unit[DATA_SCHEMA.PartofSpeech] !== 'Pronoun' ? 'the ' + plain : out;
+		// Time nouns are left bare too ("on weekend"); "the" fits the period ones (the weekend, the semester), not today/tomorrow/now.
+		const periodNoun = _hasTag(unit, 'time', 'temporal') && !/^(today|tomorrow|yesterday|tonight|now|currently|this|next|last|every)\b/.test(plain);
+		return form === 'the' && out === plain && (massNoun || periodNoun) && /^[a-z]/.test(plain) && unit[DATA_SCHEMA.PartofSpeech] !== 'Pronoun' ? 'the ' + plain : out;
 	}
 	return plain;
 }

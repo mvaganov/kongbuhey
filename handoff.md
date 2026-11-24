@@ -136,6 +136,10 @@ native-speaker list, commit). The orchestrating session starts each agent with t
 > 4. `done <id> "<what changed | kept: reason>"`. Locked slots never vary: skip them.
 > 5. A validator rejecting a natural sentence with the new word is gap class `validator-reject` (name the error code); do not work
 >    around a failing test with a deny rule: report it.
+> 6. English frame (if `show` prints one): after loosening a template, run `en-set <id> "<its frame>"
+>    --dry-run` (`show <id>` prints the current frame) and read the variants.
+>    A slot that now varies must become a placeholder (`en-check` in the suite fails otherwise); newly admitted words that read badly in
+>    the frame mean reworking the frame with `en-set` (same rules as the English frame brief).
 > Finish: `node test.js` (local copy) passes, then report `batch status`, `gaps --summary`, and the count from `fixtures --unsure`. Stop.
 
 **Implementer (Opus), after the loosener:** `gaps --summary`, take the top class (or two), implement it in the generator/concord/data
@@ -209,6 +213,14 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
   - location nouns that don't fit "on the X" (건너편 "the other side", 밑, 가운데): vs_228;
   - school subjects in vs_506 slot 1.
   No `{n:is}` agreement form yet. The workaround is "as for X, it's" (vs_54).
+- Batch 2 (50, 2026-11-24): about 4 min, 108k Sonnet tokens; 75 of 547 done. 50 per batch worked; keep it. More problems frames
+  can't fix:
+  - time nouns that need their own preposition ("at 8 o'clock, Thursday" in vs_426/vs_520; "today afternoon" in vs_435);
+  - 이번 glossed "this time" ("this time week" in vs_537, vs_522);
+  - verbs that need their own preposition ("arrived to the bank" in vs_491; `getVerbEnForms` has a `prep` field no form uses yet);
+  - 아침 = "morning", not the meal ("I ate morning" in vs_490);
+  - mixed verb/noun pools (vs_523).
+  Fixed: `{n:the}` on period nouns (the weekend), and "American persons".
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:

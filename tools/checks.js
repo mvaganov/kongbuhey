@@ -21,7 +21,7 @@ const CHECKS = {
 		cmd: ['tools/exhaustive.js', '--seed', '1'], ok: out => !/Validation: FAILED|Unused Language Units in Scope/.test(out) },
 	browser: { desc: 'jsdom load of webapp/index.html (test/browser_load_test.js), ~10 s', watch: ['korean', 'shared', 'webapp', 'flashcards'],
 		cmd: ['test/browser_load_test.js'] },
-	bench: { desc: 'generation speed and output-unchanged check (tools/bench_generation.js), ~10 s', watch: ['korean/generation', 'korean/core', 'korean/concord', 'shared/sentence_adapter.js',
+	bench: { desc: 'generation speed and output-unchanged check (tools/bench_generation.js), ~10 s', watch: ['korean/generation', 'korean/core', 'korean/concord', 'korean/translation', 'shared/sentence_adapter.js',
 		'data/data.js', 'data/verified_sentences.js'],
 		cmd: ['tools/bench_generation.js'], repoArg: true },   // writes test/bench_baseline.json and ]bench_baseline.txt in the repo
 	cli: { desc: 'every CLI answers --help fast and writes nothing (test/cli_help_test.js), ~2 s', watch: ['tools', '*.js'],
