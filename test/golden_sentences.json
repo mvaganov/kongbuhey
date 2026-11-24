@@ -6197,6 +6197,126 @@
       "status": "open",
       "gapClass": "validator-reject",
       "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g506",
+      "templateId": "vs_322",
+      "slot": 4,
+      "unitId": 1942,
+      "expect": "bad",
+      "ko": "피자를 한 판만 주문하시면 계산 3,000원이 있습니다.",
+      "reason": "계산 (calculation) is not a fee: 'there is a calculation 3,000 won'",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g507",
+      "templateId": "vs_280",
+      "slot": 11,
+      "unitId": 643,
+      "expect": "bad",
+      "ko": "인터넷이나 전화로 주문하시면 신선한 과일 채소 고기 곡류 등을 집으로 배달해 여쭙습니다.",
+      "reason": "여쭙다 (ask a superior) cannot mean 'deliver (to)'",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g508",
+      "templateId": "vs_114",
+      "slot": 7,
+      "unitId": 1392,
+      "expect": "bad",
+      "ko": "생활용품 식료품 채소나 과일 음료 냉동식품을 다 배달시키는데 저는 보통 생수나 우유 과일을 많이 사요.",
+      "reason": "배달시키다 means order-in, not 'sell'",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g509",
+      "templateId": "vs_125",
+      "slot": 9,
+      "unitId": 1472,
+      "expect": "bad",
+      "ko": "우리 쇼핑몰에서는 매주 특별 상품 몇 가지를 할인해서 싸게 낚시할 수 있습니다.",
+      "reason": "낚시하다 does not fit 'shop at a discount'",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g510",
+      "templateId": "vs_225",
+      "slot": 3,
+      "unitId": 1629,
+      "expect": "bad",
+      "ko": "공원 입구에서 이 제목과 신분증을 보여 주시면 표를 드리겠습니다.",
+      "reason": "제목 (title) is not something shown at an entrance",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g511",
+      "templateId": "vs_280",
+      "slot": 6,
+      "unitId": 298,
+      "expect": "bad",
+      "ko": "인터넷이나 전화로 주문하시면 신선한 과일 채소 삼계탕 곡류 등을 집으로 배달해 드립니다.",
+      "reason": "삼계탕 is a cooked dish, not fresh meat in a groceries list",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g512",
+      "templateId": "vs_287",
+      "slot": 7,
+      "unitId": 1924,
+      "expect": "bad",
+      "ko": "20-30대는 휴대 전화로 뉴스나 드라마를 보고 쇼핑이나 메시지 뱅킹을 한다고 대답했다.",
+      "reason": "메시지 뱅킹 is not an established kind of banking",
+      "confidence": "unsure",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g513",
+      "templateId": "vs_324",
+      "slot": 4,
+      "unitId": 1973,
+      "expect": "bad",
+      "ko": "큰 사이즈 피자를 주문하시면 사이다나 사이다를 무료로 드립니다.",
+      "reason": "'사이다나 사이다' repeats the same word",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g514",
+      "templateId": "vs_49",
+      "slot": 3,
+      "unitId": 415,
+      "expect": "ok",
+      "ko": "그런데 방이 생각보다 좁고 좀 어두워서 마음에 들지 않았습니다.",
+      "reason": "좁다 (narrow) fits a room that is smaller/darker than expected",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g515",
+      "templateId": "vs_49",
+      "slot": 3,
+      "unitId": 127,
+      "expect": "ok",
+      "ko": "그런데 방이 생각보다 시끄럽고 좀 어두워서 마음에 들지 않았습니다.",
+      "reason": "noisy room that is a bit dark: bad room",
+      "confidence": "unsure",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
     }
   ]
 }

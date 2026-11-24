@@ -671,6 +671,40 @@
 			],
 			"order": "critical-path",
 			"english": true
+		},
+		{
+			"n": 21,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_112",
+				"vs_172",
+				"vs_225",
+				"vs_362",
+				"vs_296",
+				"vs_324",
+				"vs_322",
+				"vs_82",
+				"vs_211",
+				"vs_118",
+				"vs_49",
+				"vs_199",
+				"vs_214",
+				"vs_114",
+				"vs_125",
+				"vs_126",
+				"vs_280",
+				"vs_36",
+				"vs_430",
+				"vs_246",
+				"vs_310",
+				"vs_67",
+				"vs_117",
+				"vs_348",
+				"vs_121",
+				"vs_287"
+			],
+			"order": "critical-path",
+			"english": true
 		}
 	],
 	"reviewed": {
@@ -2745,6 +2779,110 @@
 		"vs_22": {
 			"batch": 20,
 			"note": "kept; en: new"
+		},
+		"vs_112": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_172": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_225": {
+			"batch": 21,
+			"note": "slot 3 deny 7 non-ID/odd docs, slot 7 deny 여쭙다 | kept others; en: new"
+		},
+		"vs_362": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_296": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_324": {
+			"batch": 21,
+			"note": "slot 4/5 only 콜라/사이다 (no duplicate 사이다나 사이다), slot 7 deny 여쭙다; en: new"
+		},
+		"vs_322": {
+			"batch": 21,
+			"note": "slot 4 deny 계산/결제; en: new"
+		},
+		"vs_82": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_211": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_118": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_49": {
+			"batch": 21,
+			"note": "slot 3 allow 좁다/더럽다/시끄럽다; en: new"
+		},
+		"vs_199": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_214": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_114": {
+			"batch": 21,
+			"note": "slot 7 deny 배달시키다 | kept others; en: new"
+		},
+		"vs_125": {
+			"batch": 21,
+			"note": "slot 9 deny 낚시하다 | kept others; en: new"
+		},
+		"vs_126": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_280": {
+			"batch": 21,
+			"note": "slot 6 deny cooked dishes/ham, slot 11 deny 여쭙다; en: new"
+		},
+		"vs_36": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_430": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_246": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_310": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_67": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_117": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_348": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_121": {
+			"batch": 21,
+			"note": "tags kept; en: new"
+		},
+		"vs_287": {
+			"batch": 21,
+			"note": "slot 7 deny 메시지/통화; en: new"
 		}
 	}
 }

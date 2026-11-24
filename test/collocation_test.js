@@ -740,6 +740,8 @@ assert(unregisteredDVTags.length === 0, "All descriptive_* tags are registered i
 	const src = '\n\t["vs_x","t","s","",".",[],[{"slot":0,"kind":"deny","ids":[1]}],"Hi {0}."]\n';
 	assert(vt.editRules(src, 'vs_x', []).includes('[],null,"Hi {0}."]'), 'removing a template\'s last rule keeps its English frame at index 7');
 	assert(vt.editEnglish(src.replace(',"Hi {0}."', '').replace(',[{"slot":0,"kind":"deny","ids":[1]}]', ''), 'vs_x', 'Hi.').includes('[],null,"Hi."]'), 'en-set on a row with no rules writes null rules first');
+	{ const P_ = require('../korean/translation/natural_realizer.js').pluralizeEnglishNoun; const got = ['shoes', 'home appliances', 'bus', 'class', 'box', 'book'].map(w => P_(w, 2)).join('|');
+		assert(got === 'shoes|home appliances|buses|classes|boxes|books', 'pluralizeEnglishNoun leaves already-plural glosses alone (no "shoeses")', got); }
 	assert(require('../korean/translation/natural_realizer.js').pluralizeEnglishNoun('American person', 2) === 'American people', 'pluralizeEnglishNoun: "American person" -> "American people"');
 	const noFrame = { ...vg.getVerifiedSentenceById('vs_367'), english: '' };
 	assert(vt.doneProblems({ english: true }, noFrame).length === 1 && vt.doneProblems({}, noFrame).length === 0, 'a sentence-focused batch refuses done on a template without an English frame; older batches do not');

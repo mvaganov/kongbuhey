@@ -94,6 +94,7 @@ function pluralizeEnglishNoun(nounStr, count = 2) {
 	if (lower === "foot") return "feet";
 	if (lower === "tooth") return "teeth";
 	if (lower.endsWith("Clothes") || lower.endsWith("clothes") || lower.endsWith("pants") || lower.endsWith("glasses")) return nounStr;
+	if (/[^s]s$/.test(lower) && !/(?:us|is|as|os)$/.test(lower)) return nounStr;   // already plural: shoes, home appliances (bus, gas keep +es)
 	if (/[sxz]$/.test(lower) || /(?:ch|sh)$/.test(lower)) return nounStr + "es";
 	if (/[^aeiou]y$/i.test(lower)) return nounStr.slice(0, -1) + "ies";
 	return nounStr + "s";

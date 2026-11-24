@@ -76,9 +76,9 @@ Top priority now (owner 2026-11-24): English frames for every verified template 
 can be used in the sentence quiz. Sonnet does the drafting. Then:
 - Since 2026-11-24 the tag loosening and the English frames are one sentence-focused batch (`vs_tune batch --critical-path`):
   each template is loosened first, then given its English, so neither has to be redone.
-- **Reminder for the owner:** the Opus implementer pass (fixing the recorded gaps) is paused to save budget; gaps keep
-  accumulating as rules (`gaps --summary`). Once most verified templates have an English frame (`node tools/vs_tune.js en-status`),
-  start running it again after batches.
+- **Reminder for the owner:** every verified template has an English frame and a tag review (done 2026-11-24, batches 7-21).
+  The Opus implementer pass (fixing the recorded gaps: 41 rules, 23 validator-reject, `gaps --summary`) was paused to save budget;
+  it is the next tuning step. Pool-1 slots were mostly not probed for loosening in batches 18-21.
 - After that tuning settles the grammar handling: upgrade the AST English realizer (`korean/translation/natural_realizer.js`):
   relative clauses, quotes, 3+ clauses. Measured 2026-11-24: only 230 of 547 templates avoid those gaps. Decide then whether
   it replaces the frames. Not before: two English generators are too much for an agent to keep in view.
@@ -299,6 +299,10 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
   fc2_ui_test's sentence tests now pick an example whose quiz builds twice (the background build is random too).
 - Batch 20 (25, 2026-11-24): about 6 min, 147k tokens; 521 of 547 framed. Loosened allow lists (vs_8, vs_193, vs_2, vs_37); tightened 3;
   gap rules: 크다 + 공원 rejected (vs_39, ADNOMINAL_DESCRIPTIVE_COLLOCATION_MISMATCH), honorific in vs_308 (이모/고모 + 에게/묻다 kept).
+- Batch 21 (26, last, 2026-11-24): about 7 min, 145k tokens; 547 of 547 framed and reviewed (`batch --critical-path --dry-run`: none
+  left). In 987 bench samples, 0 verified sentences fall back to the ` · ` word list. Orchestrator fix: pluralizeEnglishNoun leaves
+  already-plural glosses alone ("shoeses", "home applianceses"). Possible next check (needs agreement): a default-suite assertion that
+  every template has a frame, so newly ingested templates can't ship without English.
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:
