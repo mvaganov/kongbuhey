@@ -273,6 +273,9 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
   fc2_ui_test's sentence tests keep the card they checked, testable example first; verified_originals_test's round-trip picks an
   untuned row. Bench review: seasonings in dish slots again (vs_77 "설탕도 많았고요", vs_80 "후추를 제일 좋아했어요"): noTags
   condiment/ingredient + g365/g366. Candidate one-off sweep: every food slot whose original is a dish, noTags condiment/ingredient.
+- Batch 13 (25, 2026-11-24): about 7 min, 133k tokens; 346 of 547 framed. Tightened 8 templates (vs_311 slot 4: non-elder kin only,
+  gap class honorific for the elders); 4 unsure fixtures. Agent note: the `pools` header counts words that don't realize, and en-set
+  wants a placeholder for each; showing the realized count would save a rejected en-set per template.
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:

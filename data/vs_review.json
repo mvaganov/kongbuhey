@@ -409,6 +409,39 @@
 			],
 			"order": "critical-path",
 			"english": true
+		},
+		{
+			"n": 13,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_239",
+				"vs_183",
+				"vs_192",
+				"vs_184",
+				"vs_206",
+				"vs_237",
+				"vs_15",
+				"vs_318",
+				"vs_355",
+				"vs_3",
+				"vs_253",
+				"vs_311",
+				"vs_444",
+				"vs_431",
+				"vs_441",
+				"vs_461",
+				"vs_300",
+				"vs_40",
+				"vs_334",
+				"vs_526",
+				"vs_113",
+				"vs_150",
+				"vs_529",
+				"vs_170",
+				"vs_405"
+			],
+			"order": "critical-path",
+			"english": true
 		}
 	],
 	"reviewed": {
@@ -1683,6 +1716,106 @@
 		"vs_272": {
 			"batch": 12,
 			"note": "tags: kept; en: new"
+		},
+		"vs_239": {
+			"batch": 13,
+			"note": "tags: kept (country slot fine); en: new"
+		},
+		"vs_183": {
+			"batch": 13,
+			"note": "tags: kept (nothing variable); en: new"
+		},
+		"vs_192": {
+			"batch": 13,
+			"note": "tags: slot5 deny 선물/소개/이야기/사랑하다 (keep 들어주다, 빌려주다); en: new"
+		},
+		"vs_206": {
+			"batch": 13,
+			"note": "tags: kept; en: new"
+		},
+		"vs_237": {
+			"batch": 13,
+			"note": "tags: kept; en: new"
+		},
+		"vs_15": {
+			"batch": 13,
+			"note": "tags: kept; en: new"
+		},
+		"vs_318": {
+			"batch": 13,
+			"note": "tags: slot9 deny 기억/외우/잊어버리다; en: new"
+		},
+		"vs_355": {
+			"batch": 13,
+			"note": "tags: kept; en: new"
+		},
+		"vs_3": {
+			"batch": 13,
+			"note": "tags: slot8 deny 열심히; en: new"
+		},
+		"vs_253": {
+			"batch": 13,
+			"note": "tags: kept; en: new"
+		},
+		"vs_311": {
+			"batch": 13,
+			"note": "tags: slot4 only same-age/younger kin (elders need -(으)시-), honorific gap; en: new"
+		},
+		"vs_444": {
+			"batch": 13,
+			"note": "tags: kept; en: new"
+		},
+		"vs_431": {
+			"batch": 13,
+			"note": "tags: slot0 only 와/그래요; en: new"
+		},
+		"vs_441": {
+			"batch": 13,
+			"note": "tags: slot0 deny 엄마/부부/친척, slot3 deny 좋아하다; en: new"
+		},
+		"vs_461": {
+			"batch": 13,
+			"note": "tags: kept; en: new"
+		},
+		"vs_300": {
+			"batch": 13,
+			"note": "tags: slot7 deny 동창회/뒤풀이; en: new"
+		},
+		"vs_40": {
+			"batch": 13,
+			"note": "tags: kept; en: new"
+		},
+		"vs_334": {
+			"batch": 13,
+			"note": "tags: kept; en: new"
+		},
+		"vs_526": {
+			"batch": 13,
+			"note": "tags: kept; en: new"
+		},
+		"vs_113": {
+			"batch": 13,
+			"note": "tags: kept; en: new"
+		},
+		"vs_150": {
+			"batch": 13,
+			"note": "tags: kept; en: new"
+		},
+		"vs_529": {
+			"batch": 13,
+			"note": "tags: kept; en: new"
+		},
+		"vs_170": {
+			"batch": 13,
+			"note": "tags: kept; en: new"
+		},
+		"vs_405": {
+			"batch": 13,
+			"note": "tags: slot1 deny commute vehicles (지하철/택시/고속버스/공항버스/비행기); en: new"
+		},
+		"vs_184": {
+			"batch": 13,
+			"note": "tags: kept (nothing variable); en: new"
 		}
 	}
 }
