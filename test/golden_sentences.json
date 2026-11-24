@@ -1650,9 +1650,10 @@
       "ko": "그래도 샤워하고 주무세요.",
       "reason": "샤워하고 주무세요 natural",
       "confidence": "clear",
-      "status": "open",
+      "status": "fixed",
       "gapClass": "validator-reject",
-      "addedAt": "2026-11-20"
+      "addedAt": "2026-11-20",
+      "fixedAt": "2026-11-24"
     },
     {
       "id": "g130",
@@ -2654,6 +2655,42 @@
       "confidence": "clear",
       "status": "fixed",
       "addedAt": "2026-11-23"
+    },
+    {
+      "id": "g213",
+      "templateId": "vs_64",
+      "slot": 4,
+      "unitId": 24,
+      "expect": "ok",
+      "ko": "제 원룸에서 같이 살 학생을 찾고 있는 중입니다.",
+      "reason": "룸메이트로 학생을 찾다 is natural: 찾다 takes person objects (overrideAllow 학생 over notTags academic)",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g214",
+      "templateId": "vs_73",
+      "slot": 10,
+      "unitId": 595,
+      "expect": "bad",
+      "ko": "저와 같이 맛있는 음식도 먹고 재미있게 지내고 싶은 분은 제 이메일로 연락드려 주세요.",
+      "reason": "연락드려 주세요 asks the reader to use a humble verb toward the writer",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g215",
+      "templateId": "vs_223",
+      "slot": 4,
+      "unitId": 1560,
+      "expect": "bad",
+      "ko": "아름다운 가을밤 시원한 바람이 개는 호수에서 듣는 음악!",
+      "reason": "바람이 개는: 개다 is the sky clearing, not wind",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
     }
   ]
 }

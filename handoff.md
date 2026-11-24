@@ -163,7 +163,10 @@ changed (food/person/place slots to their class + denies; emotion and 괜찮다 
 measured rejections over a 30k one-slot sweep (VERB_OBJECT 6,471 mostly right, DESCRIPTIVE_VERB_SUBJECT 1,038, ADNOMINAL_ACTION 786,
 ADNOMINAL_DESCRIPTIVE 637) and fixed ADNOMINAL_ACTION for animate heads of intransitive motion/locative clauses (일본에서 온 민수,
 같이 살 친구; 786 -> 682); g205 and g072 fixed. Fixed after (2026-11-24): a 들 slot never admits names, proper nouns or
-plural nouns; conjugation class `b_drop` (뵙다: 뵈러, 뵈어요, 뵙고). Left: 찾다 lacks person objects (vs_64 gap); the focus-object fallback (도/는/만) treats adverbs/adnominals as objects.
+plural nouns; conjugation class `b_drop` (뵙다: 뵈러, 뵈어요, 뵙고). Then: 찾다 takes 학생 (overrideAllow over notTags academic); the focus-object fallback (도/는/만) only
+considers nouns/pronouns (그래도 씻고 주무세요, g129 fixed); vs_73 and vs_223 verb slots narrowed (연락드려 주세요, 바람이 개는).
+validator-reject gaps 14 -> 10. Left: a 도/는 noun before an intransitive verb is its subject, not an object (vs_329, vs_185);
+seen in bench samples, for later batches: vs_415 slot "아이가 죽는 동안", the AST builds 개다 (weather) with person subjects.
 
 **Owner:** `node tools/vs_tune.js fixtures --unsure` is the native-speaker list; record answers with `human <gid> right|wrong`; commit.
 

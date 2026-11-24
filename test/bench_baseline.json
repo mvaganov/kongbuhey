@@ -1,30 +1,30 @@
 {
- "savedAt": "2026-11-24T02:07:10.426Z",
- "dataHash": "6c384a1d3513",
+ "savedAt": "2026-11-24T04:38:18.020Z",
+ "dataHash": "7077b8703997",
  "timings": {
-  "loadMs": 495,
-  "initMs": 14.5,
+  "loadMs": 99,
+  "initMs": 6.4,
   "coldCard": {
    "n": 76,
-   "mean": 8.9,
-   "p90": 20.9,
-   "max": 117.1
+   "mean": 8.3,
+   "p90": 18.1,
+   "max": 128.2
   },
   "warmCard": {
    "n": 76,
-   "mean": 3.6,
-   "p90": 7.1,
-   "max": 59.7
+   "mean": 3.2,
+   "p90": 4.8,
+   "max": 35.7
   },
   "availSweep": {
    "slices": 3,
-   "worstSliceMs": 6.6
+   "worstSliceMs": 6.5
   },
   "quizBuild": {
    "n": 60,
-   "mean": 50.3,
-   "p90": 92.7,
-   "max": 396.3
+   "mean": 53.2,
+   "p90": 86.4,
+   "max": 471.5
   }
  },
  "work": {
@@ -33,9 +33,9 @@
   "slotContextBuilds": 2681,
   "slotListComputes": 2323,
   "matchComputes": 76,
-  "baselineChecks": 71,
-  "templateAttempts": 758,
-  "astFallbackCalls": 121
+  "baselineChecks": 64,
+  "templateAttempts": 733,
+  "astFallbackCalls": 119
  },
  "lines": {
   "0:all": "d471bbff9783",
@@ -55,7 +55,7 @@
   "35:all": "42b2745f36eb",
   "35:owned": "faf3ca884ee9",
   "40:all": "09d458a9da43",
-  "40:owned": "ec7eab19c992",
+  "40:owned": "0ffd93613530",
   "45:all": "6350ef3baa3c",
   "45:owned": "340a5349c04b",
   "50:all": "e8ba6f51444b",
@@ -96,7 +96,7 @@
   "135:owned": "1dfdbf7d8fcb",
   "140:all": "3be73f763aa9",
   "140:owned": "9d1ec99d7fde",
-  "145:all": "c5c16ece9135",
+  "145:all": "424e96568120",
   "145:owned": "04c134b70b0c",
   "150:all": "5e7b39ee47a3",
   "150:owned": "4d1adc71bc38",
@@ -112,7 +112,7 @@
   "175:owned": "e7fb34f8cde5",
   "180:all": "43ae042b9605",
   "180:owned": "6ddfd3e73dca",
-  "185:all": "0aa2123b111e",
+  "185:all": "b59a3c86b062",
   "185:owned": "ed20f21edaf5",
   "190:all": "44748afb8629",
   "190:owned": "eb1d665afbd0",
@@ -276,9 +276,9 @@
   "585:owned": "91f4edbdb2b0",
   "590:all": "3c4d0c532abf",
   "590:owned": "fd0b9c0bd421",
-  "595:all": "b937aa9b41f4",
+  "595:all": "5aaca4a76823",
   "595:owned": "6ac84b9d3b41",
-  "600:all": "d4e88e8d2f83",
+  "600:all": "57e67ddacc70",
   "600:owned": "553eea6e70ad",
   "605:all": "3baeda3255db",
   "605:owned": "9ce56dbec901",
@@ -312,7 +312,7 @@
   "675:owned": "fd66bb1ec37a",
   "680:all": "42b816d4cf32",
   "680:owned": "1c50e929b8e3",
-  "685:all": "cfe062b25f58",
+  "685:all": "e73c2ca039a1",
   "685:owned": "ddbc6b0e49dc",
   "690:all": "389d7b67e4fc",
   "690:owned": "14fd0468fa67",
@@ -389,7 +389,7 @@
   "870:all": "a383d216dfa7",
   "870:owned": "7e9ef9ab9f4a",
   "875:all": "d79fc562d876",
-  "875:owned": "cf929d774cae",
+  "875:owned": "a44d1b2830ca",
   "880:all": "4c772906f1fe",
   "880:owned": "b6338d12558e",
   "885:all": "642ec6690fbe",
@@ -584,7 +584,7 @@
   "1355:owned": "9d0747055951",
   "1360:all": "a2b9ff430d50",
   "1360:owned": "606eb042caa3",
-  "1365:all": "845e249616ea",
+  "1365:all": "a3e023639405",
   "1365:owned": "3519fccc12fa",
   "1370:all": "0776081327b1",
   "1370:owned": "c6d61e9b4d48",
@@ -787,7 +787,7 @@
   "1865:all": "cc88e186f328",
   "1865:owned": "ec02f8cc6445",
   "1870:all": "4f613c6967ef",
-  "1870:owned": "e7e9664999a4",
+  "1870:owned": "7be01eced9e4",
   "1875:all": "15d60e4f464e",
   "1875:owned": "2289e9d48297",
   "1880:all": "e50a09568c42",
@@ -827,7 +827,7 @@
   "1965:all": "ee58440b81dd",
   "1965:owned": "0eeb5b6019f9",
   "1970:all": "ee250e25b153",
-  "1970:owned": "8325a0b556f5",
+  "1970:owned": "5b2bbf0fb8b4",
   "1975:all": "f2f6e99c35d3",
   "1975:owned": "4051c330b819",
   "1980:all": "e8f688ce6900",
@@ -857,6 +857,6 @@
   "2040:all": "3d8c6923c02c",
   "2040:owned": "b6b55bb9485c",
   "fits": "3c9c09b3608b",
-  "ranking": "ad8df8e60fe5"
+  "ranking": "054be5f28af3"
  }
 }

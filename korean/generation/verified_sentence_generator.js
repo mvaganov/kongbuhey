@@ -1999,6 +1999,10 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 					const u = c.nounUnit || c.unit;
 					const s = c.surfaceKo || "";
 					if (!u) return false;
+					// Only a noun or pronoun can be a focus-marked object: adverbs (그래도, 하지만) and adnominal verbs (있는) end in the
+					// same syllables but are never objects.
+					const pos = u[DATA_SCHEMA.PartofSpeech];
+					if (pos !== K.NOUN && pos !== K.PRONOUN) return false;
 					if (_hasTag(u, K.PERSON, K.TIME, K.PLACE, "pronoun_1st", "pronoun_2nd", "pronoun_3rd", "temporal", K.BOUND_NOUN)) return false;
 					return /(?:은|는|만|도|이라도|라도|까지|부터)$/.test(s);
 				});
