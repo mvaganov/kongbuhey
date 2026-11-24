@@ -147,6 +147,38 @@
 				"vs_361"
 			],
 			"lowYield": true
+		},
+		{
+			"n": 5,
+			"opened": "2026-11-23",
+			"ids": [
+				"vs_503",
+				"vs_457",
+				"vs_528",
+				"vs_530",
+				"vs_minimal_1",
+				"vs_517",
+				"vs_527",
+				"vs_77",
+				"vs_76",
+				"vs_28",
+				"vs_383",
+				"vs_384",
+				"vs_80",
+				"vs_474",
+				"vs_71",
+				"vs_396",
+				"vs_minimal_2",
+				"vs_409",
+				"vs_438",
+				"vs_463",
+				"vs_169",
+				"vs_106",
+				"vs_108",
+				"vs_63",
+				"vs_13"
+			],
+			"order": "critical-path"
 		}
 	],
 	"reviewed": {
@@ -256,7 +288,7 @@
 		},
 		"vs_64": {
 			"batch": 2,
-			"note": "kept: gap validator-reject ADNOMINAL_ACTION_COLLOCATION_MISMATCH slot 4"
+			"note": "implementer: ADNOMINAL fix lets 같이 살 + person; allow 사람/친구/한국·미국 사람/남자/여자/회사원; gap narrowed to 찾다+학생"
 		},
 		"vs_208": {
 			"batch": 2,
@@ -621,6 +653,106 @@
 		"vs_361": {
 			"batch": 4,
 			"note": "low-yield slot 3: kept 4 of 28"
+		},
+		"vs_530": {
+			"batch": 5,
+			"note": "slot0 -meat: food class, 80 OK all natural"
+		},
+		"vs_77": {
+			"batch": 5,
+			"note": "slot0 -meat food class, deny 진지; slots1/2 locked-ish small"
+		},
+		"vs_76": {
+			"batch": 5,
+			"note": "slot0 -koreanRoot -devtest, deny names/얘들"
+		},
+		"vs_28": {
+			"batch": 5,
+			"note": "slot4 only [심심,외롭,불안]"
+		},
+		"vs_463": {
+			"batch": 5,
+			"note": "slot4 only [심심,외롭,불안]"
+		},
+		"vs_80": {
+			"batch": 5,
+			"note": "slot1 -meat food + deny 10 odd; slot0 person only + deny names"
+		},
+		"vs_396": {
+			"batch": 5,
+			"note": "slot2 food w/ only-list of 33 eatable foods; slot1 time kept strict"
+		},
+		"vs_169": {
+			"batch": 5,
+			"note": "slot1 only [괜찮다,좋다,부럽다]: emotions of persons dropped"
+		},
+		"vs_106": {
+			"batch": 5,
+			"note": "slot5 place/facility w/ only-list of 26 leisure places; slot1 countries kept"
+		},
+		"vs_108": {
+			"batch": 5,
+			"note": "slot0 -sinoRoot admits 4 shops (꽃집,문구점,백화점,빵집)"
+		},
+		"vs_63": {
+			"batch": 5,
+			"note": "kept: slot3 names all rejected by ADNOMINAL_ACTION_COLLOCATION_MISMATCH (gap validator-reject); slot1 countries 12 kept"
+		},
+		"vs_13": {
+			"batch": 5,
+			"note": "kept: same validator-reject gap as vs_63 slot3; slot1 countries kept"
+		},
+		"vs_438": {
+			"batch": 5,
+			"note": "slot2 deny 5 odd verbs (선물,뵙,사랑,때리,데려오); gap morphology 뵙으러"
+		},
+		"vs_528": {
+			"batch": 5,
+			"note": "slot0 object tag + only 40 buyables (was 책,교과서)"
+		},
+		"vs_457": {
+			"batch": 5,
+			"note": "slot0 -attribute -nature (weather tag), deny 영상/영하/비옷/장화"
+		},
+		"vs_503": {
+			"batch": 5,
+			"note": "kept: pools small/locked; vs_503 73-pool natural, vs_383 11 places natural"
+		},
+		"vs_383": {
+			"batch": 5,
+			"note": "kept: pools small/locked; vs_503 73-pool natural, vs_383 11 places natural"
+		},
+		"vs_384": {
+			"batch": 5,
+			"note": "kept: pools small/locked; vs_503 73-pool natural, vs_383 11 places natural"
+		},
+		"vs_517": {
+			"batch": 5,
+			"note": "kept: pools small/locked; vs_503 73-pool natural, vs_383 11 places natural"
+		},
+		"vs_527": {
+			"batch": 5,
+			"note": "kept: pools small/locked; vs_503 73-pool natural, vs_383 11 places natural"
+		},
+		"vs_474": {
+			"batch": 5,
+			"note": "kept: pools small/locked; vs_503 73-pool natural, vs_383 11 places natural"
+		},
+		"vs_71": {
+			"batch": 5,
+			"note": "kept: pools small/locked; vs_503 73-pool natural, vs_383 11 places natural"
+		},
+		"vs_minimal_1": {
+			"batch": 5,
+			"note": "kept: pools small/locked; vs_503 73-pool natural, vs_383 11 places natural"
+		},
+		"vs_minimal_2": {
+			"batch": 5,
+			"note": "kept: pools small/locked; vs_503 73-pool natural, vs_383 11 places natural"
+		},
+		"vs_409": {
+			"batch": 5,
+			"note": "kept: pools small/locked; vs_503 73-pool natural, vs_383 11 places natural"
 		}
 	}
 }

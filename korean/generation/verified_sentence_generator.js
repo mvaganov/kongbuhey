@@ -2225,7 +2225,14 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 									const modTags = modVerb[DATA_SCHEMA.SemanticTags];
 									const hasModTransSubtag = modTags && Array.from(modTags).some(t => t.startsWith("transitive_") && t !== K.TRANSITIVE_GENERAL);
 									const isRestrictedMod = Boolean(modSd.collocation_filter || (modSd.req && modSd.req !== K.OBJECT && modSd.req !== "any")) || hasModTransSubtag;
-									if (isRestrictedMod) {
+									// The head of an intransitive motion/locative clause is its subject, not an object: 일본에서 온 학생,
+									// 같이 살 친구, 지나가는 아저씨. The verb's req/filter restricts the place, so any animate head fits;
+									// involuntary verbs (떨리다) and non-motion intransitives (끓다, 시작되다) keep the object check, and so do transitive verbs (올려놓다) and question words (누구).
+									const isLocativeIntransMod = _hasTag(modVerb, K.INTRANSITIVE_MOTION, K.INTRANSITIVE_PLACE, K.LOCATIVE_STATIC, K.LOCATIVE_GOAL, K.LOCATIVE_ORIGIN) && !_hasTag(modVerb, "involuntary") && !hasModTransSubtag && !_hasTag(modVerb, K.TRANSITIVE_GENERAL);
+									const isAnimateHead = _hasTag(headNoun, K.PERSON, K.FAMILY, "name", "animal") && !_hasTag(headNoun, "pronoun_1st", "pronoun_2nd", "pronoun_3rd", "questionWord");
+									if (isRestrictedMod && isLocativeIntransMod && isAnimateHead) {
+										// subject head: allowed
+									} else if (isRestrictedMod) {
 										const validObjs = getNounCandidatesForVerb(modVerb);
 										if (Array.isArray(validObjs) && validObjs.length > 0 && !validObjs.some(n => n[DATA_SCHEMA.Id] === headNoun[DATA_SCHEMA.Id])) {
 											errors.push({

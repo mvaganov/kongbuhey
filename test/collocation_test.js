@@ -635,6 +635,30 @@ assert(unregisteredDVTags.length === 0, "All descriptive_* tags are registered i
 	}
 }
 
+// The head of an intransitive motion/locative relative clause is its subject (일본에서 온 민수, 같이 살 친구), so an
+// animate head passes ADNOMINAL_ACTION_COLLOCATION_MISMATCH; inanimate heads, non-motion or involuntary verbs and
+// transitive verbs are still checked (verified templates, one slot varied with its tag filter removed).
+{
+	const vg = require('../korean/generation/verified_sentence_generator.js');
+	const U_ = KR_EN_languageUnits;
+	const byKo = k => U_.findIndex(u => u && u[KoreanWord] === k && u[DATA_SCHEMA.PartofSpeech] !== 'Alias');
+	const realize = (id, slot, ko) => {
+		const tpl = JSON.parse(JSON.stringify(vg.getVerifiedSentenceById(id)));
+		tpl.slots[slot].tags = []; tpl.slots[slot].rules = [];
+		const r = vg.generateSentenceFromTemplate(tpl, { targetUnitId: byKo(ko), targetSlotIndex: slot, varyMode: 'selected', unlockedSlots: [slot] });
+		const errs = (r && r.validation && r.validation.errors || []).map(e => e.code);
+		return { ok: Boolean(r && r.ok), ko: r && r.ko, errs };
+	};
+	for (const [id, slot, ko] of [['vs_63', 3, '민수'], ['vs_63', 3, '학생'], ['vs_13', 3, '민수'], ['vs_64', 4, '친구'], ['vs_164', 10, '배우'], ['vs_198', 7, '선생님']]) {
+		const r = realize(id, slot, ko);
+		assert(r.ok, `${id} slot ${slot}: animate head ${ko} of a motion/locative relative clause is accepted`, r.errs.join(','));
+	}
+	for (const [id, slot, ko] of [['vs_64', 4, '책'], ['vs_64', 3, '끓다'], ['vs_64', 3, '올려놓다'], ['vs_164', 9, '시작되다'], ['vs_326', 1, '떨리다'], ['vs_382', 2, '누구']]) {
+		const r = realize(id, slot, ko);
+		assert(!r.ok && r.errs.includes('ADNOMINAL_ACTION_COLLOCATION_MISMATCH'), `${id} slot ${slot}: ${ko} still rejected by ADNOMINAL_ACTION_COLLOCATION_MISMATCH`, r.ko || r.errs.join(','));
+	}
+}
+
 console.log("\n======================================================");
 console.log(`TOTAL TESTS: ${totalTests}`);
 console.log(`PASSED:      ${passedTests}`);

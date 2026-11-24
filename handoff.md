@@ -133,6 +133,8 @@ native-speaker list, commit). The orchestrating session starts each agent with t
 **Implementer (Opus), after the loosener:** `gaps --summary`, take the top class (or two), implement it in the generator/concord/data
 (CLAUDE.md rules: no Hangul literals or unit ids in logic), remove the gap rules it now handles (`rule-rm`), `fixtures --sync`,
 `node test.js`, spot-check `gen <id> 5 --slot i` on ~10 changed slots. Report what was implemented and what is left.
+Run `fixtures --sync` and the suite right after EACH engine edit, not only at the end: an interrupted run (the laptop slept mid-pass
+on 2026-11-24) must leave a passing tree.
 
 Before each batch, look for a mechanical cause first: batch 1's loosener spent ~195k tokens for +348 sentences, while one
 generator fix it pointed at (originals failing their own validator: 257 of 547 templates) gave +832. If several gaps share an error
@@ -154,6 +156,13 @@ list of the natural words among those that realize. slots.lowYield 52 -> 0; sent
 realized but were unnatural; the game now varies those slots reliably). Found: the conjugator builds malformed forms that pass
 the validator (받가지고, 사으라고/고르으라고, 찾실/넣실: -가지고, -(으)라고, -(으)시- with some stems); none is reachable now (only
 lists exclude them), but loosening could re-admit them. Fix the conjugator next (gap class `morphology`).
+
+Batch 5 (2026-11-24, first `--critical-path` batch from the owner's save; Sonnet ~113k tokens, Opus ~138k): 13 of 25 templates
+changed (food/person/place slots to their class + denies; emotion and 괜찮다 slots narrowed to only-lists), ~35 fixtures. Opus pass
+measured rejections over a 30k one-slot sweep (VERB_OBJECT 6,471 mostly right, DESCRIPTIVE_VERB_SUBJECT 1,038, ADNOMINAL_ACTION 786,
+ADNOMINAL_DESCRIPTIVE 637) and fixed ADNOMINAL_ACTION for animate heads of intransitive motion/locative clauses (일본에서 온 민수,
+같이 살 친구; 786 -> 682); g205 and g072 fixed. Left: names/얘들 accept plural 들 (only deny rules block it); 뵙다 + -(으)러 gives
+뵙으러 (should be 뵈러); 찾다 lacks person objects (vs_64 gap); the focus-object fallback (도/는/만) treats adverbs/adnominals as objects.
 
 **Owner:** `node tools/vs_tune.js fixtures --unsure` is the native-speaker list; record answers with `human <gid> right|wrong`; commit.
 
