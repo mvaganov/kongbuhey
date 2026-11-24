@@ -238,6 +238,9 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
   countries as modifiers ("China songs"), "one hours", verbs whose object/preposition differs from the original's.
   While few templates have frames, fc2_ui_test's "repeated replacement" noun-quiz check flakes more often (fewer framed sentences
   to draw wrong answers from); it failed once in 5 runs here.
+- Batch 4 (48, English only, 2026-11-24): 173 of 547; every loosened template now has a frame. about 5 min, 129k tokens.
+  Remaining English work goes through the sentence-focused tuning batches. Ideas from the agents, not done: `en-set --variants N`
+  (4 variants miss rare combinations), the pool count on VARIES lines.
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:
