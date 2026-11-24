@@ -254,6 +254,15 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
   vs_375, vs_393, vs_83); 4 new gap rules (validator-reject: 하다 + language names, 넣다 + meats; cross-slot duplicates). Bench review:
   vs_212 took 외우다 and 기념품 ("교통 기념품을 ... 외우지 마시고요"): orchestrator narrowed slot 4 to 잊다/잊어버리다, denied 기념품/생필품
   (g319, g320). Agent note: en-set requires a placeholder for pool > 1 even when only 1 word realizes.
+- Batch 10 (25, 2026-11-24): about 6 min, 117k tokens; 271 of 547 framed. Tightened only (deny/only on vs_33, vs_254, vs_275, vs_218,
+  vs_148, vs_439, vs_437, vs_507, vs_312), 6 unsure fixtures. Orchestrator fixes:
+  - `withEnglishArticle` tested pronouns by prefix, so "meeting"/"message" (me), "item" (it), "wedding" (we) never got an article,
+    in frames and in free-sentence English; it now matches whole words, and checks a phrase's last word for mass nouns (men's clothing).
+  - vs_415 slot 2 denies 죽다/생기다/끝나다 and similar ("while the child was dying"), g333.
+  - fc2/debug.js testableCard moves a testable example to the front (the sentence-card scene flaked when a pack's first examples
+    had no English frame).
+  Agent notes, not done: 선물하다/축하하다/찾다 glosses read badly in frames; slots of one template can draw the same word
+  (불고기나 불고기: no distinct-word check); 보다 976 and 149 render identically.
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:

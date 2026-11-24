@@ -32,14 +32,17 @@ function show(app, tab) {
 	app.render();
 	if (tab === 'play') app.maybeSpeak('front');
 }
-/** A learn card whose first example can build a comprehension test. */
+/** A learn card whose first example can build a comprehension test (a testable example is moved to the front). */
 function testableCard(app, rev) {
 	app.opts = { ...app.opts, reverse: rev };
 	for (const id of app.g.owned) {
 		const c = app.generateFor(id);
 		if (!c.sentences.length) continue;
 		app.card = { id };
-		if (!app.buildSentenceTest(c.sentences[0], rev)) continue;
+		// Any example will do (verified ones without an English frame have no test): move the first testable one to the front.
+		const at = c.sentences.findIndex(s => app.buildSentenceTest(s, rev));
+		if (at < 0) continue;
+		if (at > 0) c.sentences.unshift(...c.sentences.splice(at, 1));
 		app.card = { id, mode: 'learn', st: 'new', side: 'front', shownAt: Date.now(), trial: null, ...c };
 		return true;
 	}

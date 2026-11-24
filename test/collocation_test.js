@@ -744,6 +744,11 @@ assert(unregisteredDVTags.length === 0, "All descriptive_* tags are registered i
 	const noFrame = { ...vg.getVerifiedSentenceById('vs_367'), english: '' };
 	assert(vt.doneProblems({ english: true }, noFrame).length === 1 && vt.doneProblems({}, noFrame).length === 0, 'a sentence-focused batch refuses done on a template without an English frame; older batches do not');
 	assert(!vt.needsTags(vg.getVerifiedSentenceById('vs_455'), { reviewed: {} }), 'a template with nothing variable needs no tag review (only English)');
+	{
+		const R_ = require('../korean/translation/natural_realizer.js');
+		const art = ['meeting', 'message', 'item', 'wedding', 'heart', 'theater'].map(w => R_.withEnglishArticle(w, null, false));
+		assert(art.join('|') === 'a meeting|a message|an item|a wedding|a heart|a theater' && R_.withEnglishArticle('my friend', null, false) === 'my friend' && R_.withEnglishArticle("men's clothing", null, false) === "men's clothing", 'withEnglishArticle: only whole pronouns/determiners skip the article (meeting, item, wedding get one)', art.join('|'));
+	}
 	const problems = vt.enCheckProblems();
 	assert(problems.length === 0, 'every committed English frame is valid and names each slot that varies (vs_tune en-check)', problems.slice(0, 5).join(' | '));
 }

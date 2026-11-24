@@ -29,7 +29,7 @@ const UNCOUNTABLE_EN_NOUNS = new Set([
 	"kimchi", "ramen", "soup", "salt", "sugar", "money", "cash", K.TIME, "homework",
 	"work", "music", K.WEATHER, "rain", "snow", "wind", "air", "fire", "love",
 	"happiness", "peace", K.HEALTH, "information", "news", "furniture", "luggage",
-	"traffic", "advice", "research", "korean", "english", "japanese", "chinese", "french",
+	"traffic", "advice", "research", "clothing", "korean", "english", "japanese", "chinese", "french",
 	"spanish", "german", "history", "math", "science", "medicine", "exercise", "sleep"
 ]);
 
@@ -107,10 +107,11 @@ function withEnglishArticle(nounStr, unit = null, definite = true) {
 	const trimmed = nounStr.trim();
 	const lower = trimmed.toLowerCase();
 
-	if (/^(?:i|you|he|she|it|we|they|me|him|her|us|them|who|what|where|when|this|that|these|those|here|there|over there|my|your|his|her|our|their|a |an |the |\d)/i.test(lower)) {
+	// Whole words only: a bare prefix test skipped "meeting"/"message" (me), "item" (it), "wedding" (we).
+	if (/^(?:(?:i|you|he|she|it|we|they|me|him|her|us|them|who|what|where|when|this|that|these|those|here|there|over there|my|your|his|our|their)\b|a |an |the |\d)/i.test(lower)) {
 		return trimmed;
 	}
-	if (UNCOUNTABLE_EN_NOUNS.has(lower) || PROPER_OR_BARE_PLACES.has(lower)) {
+	if (UNCOUNTABLE_EN_NOUNS.has(lower) || UNCOUNTABLE_EN_NOUNS.has(lower.split(' ').pop()) || PROPER_OR_BARE_PLACES.has(lower)) {   // last word too: men's clothing
 		return trimmed;
 	}
 	if (unit && (hasTag(unit, "language", K.COUNTRY, "nationality", "properName", "proper_name", K.TIME, "temporal") || unit[DATA_SCHEMA.PartofSpeech] === K.PRONOUN)) {

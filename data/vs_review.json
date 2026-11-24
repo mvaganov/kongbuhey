@@ -310,6 +310,39 @@
 			],
 			"order": "critical-path",
 			"english": true
+		},
+		{
+			"n": 10,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_33",
+				"vs_274",
+				"vs_31",
+				"vs_276",
+				"vs_255",
+				"vs_254",
+				"vs_268",
+				"vs_275",
+				"vs_513",
+				"vs_539",
+				"vs_252",
+				"vs_473",
+				"vs_10",
+				"vs_161",
+				"vs_123",
+				"vs_507",
+				"vs_218",
+				"vs_269",
+				"vs_312",
+				"vs_313",
+				"vs_437",
+				"vs_273",
+				"vs_439",
+				"vs_261",
+				"vs_148"
+			],
+			"order": "critical-path",
+			"english": true
 		}
 	],
 	"reviewed": {
@@ -1284,6 +1317,106 @@
 		"vs_484": {
 			"batch": 9,
 			"note": "tags: kept; en: new"
+		},
+		"vs_33": {
+			"batch": 10,
+			"note": "slot0 only today/now (deny drift words); en: new"
+		},
+		"vs_274": {
+			"batch": 10,
+			"note": "kept (nothing variable); en: new"
+		},
+		"vs_31": {
+			"batch": 10,
+			"note": "kept; en: new"
+		},
+		"vs_276": {
+			"batch": 10,
+			"note": "kept; en: new"
+		},
+		"vs_255": {
+			"batch": 10,
+			"note": "kept; en: new"
+		},
+		"vs_254": {
+			"batch": 10,
+			"note": "slot1 deny message/phone/call; en: new"
+		},
+		"vs_268": {
+			"batch": 10,
+			"note": "kept; en: new"
+		},
+		"vs_275": {
+			"batch": 10,
+			"note": "slot2 deny internet/phone/call; en: new"
+		},
+		"vs_513": {
+			"batch": 10,
+			"note": "kept; en: new"
+		},
+		"vs_539": {
+			"batch": 10,
+			"note": "kept; en: new"
+		},
+		"vs_252": {
+			"batch": 10,
+			"note": "kept; en: new"
+		},
+		"vs_473": {
+			"batch": 10,
+			"note": "kept; en: new"
+		},
+		"vs_10": {
+			"batch": 10,
+			"note": "kept; en: new"
+		},
+		"vs_161": {
+			"batch": 10,
+			"note": "kept; en: new"
+		},
+		"vs_123": {
+			"batch": 10,
+			"note": "kept (nothing variable); en: new"
+		},
+		"vs_507": {
+			"batch": 10,
+			"note": "slot0 deny 약속; en: new"
+		},
+		"vs_218": {
+			"batch": 10,
+			"note": "slot2 deny 김치/한식; en: new"
+		},
+		"vs_269": {
+			"batch": 10,
+			"note": "kept; en: new"
+		},
+		"vs_312": {
+			"batch": 10,
+			"note": "slot0 deny 그럼; en: new"
+		},
+		"vs_313": {
+			"batch": 10,
+			"note": "kept; en: new"
+		},
+		"vs_437": {
+			"batch": 10,
+			"note": "slot2 deny 지난, slot7 deny 좋아하다; en: new"
+		},
+		"vs_273": {
+			"batch": 10,
+			"note": "kept; en: new"
+		},
+		"vs_439": {
+			"batch": 10,
+			"note": "slot0 only 네-type, slot4 deny 사귀다/뵙다; en: new"
+		},
+		"vs_261": {
+			"batch": 10,
+			"note": "kept; en: new"
+		},
+		"vs_148": {
+			"batch": 10,
+			"note": "slot2 deny wardrobe/bookshelf/furniture; en: new"
 		}
 	}
 }
