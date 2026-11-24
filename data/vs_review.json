@@ -277,6 +277,39 @@
 			],
 			"order": "critical-path",
 			"english": true
+		},
+		{
+			"n": 9,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_262",
+				"vs_258",
+				"vs_481",
+				"vs_480",
+				"vs_483",
+				"vs_482",
+				"vs_9",
+				"vs_393",
+				"vs_189",
+				"vs_303",
+				"vs_538",
+				"vs_267",
+				"vs_298",
+				"vs_97",
+				"vs_100",
+				"vs_83",
+				"vs_359",
+				"vs_278",
+				"vs_277",
+				"vs_487",
+				"vs_488",
+				"vs_486",
+				"vs_375",
+				"vs_462",
+				"vs_484"
+			],
+			"order": "critical-path",
+			"english": true
 		}
 	],
 	"reviewed": {
@@ -1151,6 +1184,106 @@
 		"vs_339": {
 			"batch": 8,
 			"note": "tags: slot0 only 밤 낮, slot3 only 자다, slot4 only 감기; en: new"
+		},
+		"vs_262": {
+			"batch": 9,
+			"note": "tags: deny 계좌 slot0 | kept others; en: new"
+		},
+		"vs_258": {
+			"batch": 9,
+			"note": "tags: kept (nothing else realizes); en: new"
+		},
+		"vs_481": {
+			"batch": 9,
+			"note": "tags: kept (nothing variable); en: new"
+		},
+		"vs_480": {
+			"batch": 9,
+			"note": "tags: kept; gap validator-reject slot2 (language nouns with 하다); en: new"
+		},
+		"vs_483": {
+			"batch": 9,
+			"note": "tags: only 아니요 slot0; en: new"
+		},
+		"vs_482": {
+			"batch": 9,
+			"note": "tags: kept; en: new"
+		},
+		"vs_9": {
+			"batch": 9,
+			"note": "tags: kept; gap cross-slot same country; en: new"
+		},
+		"vs_393": {
+			"batch": 9,
+			"note": "tags: deny 기념품, 생필품 slot1 | kept; en: new"
+		},
+		"vs_189": {
+			"batch": 9,
+			"note": "tags: kept; en: new"
+		},
+		"vs_303": {
+			"batch": 9,
+			"note": "tags: only 잊다/잊어버리다; en: new"
+		},
+		"vs_538": {
+			"batch": 9,
+			"note": "tags: kept; en: new"
+		},
+		"vs_267": {
+			"batch": 9,
+			"note": "tags: kept; en: new"
+		},
+		"vs_298": {
+			"batch": 9,
+			"note": "tags: kept; en: new"
+		},
+		"vs_97": {
+			"batch": 9,
+			"note": "tags: deny 샐러드 slots2,3; deny 삼계탕 샤부샤부 치킨 slot4; en: new"
+		},
+		"vs_100": {
+			"batch": 9,
+			"note": "tags: only 당면/면/밥/라면 slot0; deny 샐러드 slot2, 두다 slot4, dishes slot3; gap validator-reject slot3; en: new"
+		},
+		"vs_83": {
+			"batch": 9,
+			"note": "tags: deny 못 slot0; en: new"
+		},
+		"vs_359": {
+			"batch": 9,
+			"note": "tags: kept; en: new"
+		},
+		"vs_278": {
+			"batch": 9,
+			"note": "tags: kept; en: new"
+		},
+		"vs_277": {
+			"batch": 9,
+			"note": "tags: kept; en: new"
+		},
+		"vs_487": {
+			"batch": 9,
+			"note": "tags: kept; en: new"
+		},
+		"vs_488": {
+			"batch": 9,
+			"note": "tags: kept; en: new"
+		},
+		"vs_486": {
+			"batch": 9,
+			"note": "tags: kept; en: new"
+		},
+		"vs_375": {
+			"batch": 9,
+			"note": "tags: deny 젓다 slot4; en: new"
+		},
+		"vs_462": {
+			"batch": 9,
+			"note": "tags: kept; en: new"
+		},
+		"vs_484": {
+			"batch": 9,
+			"note": "tags: kept; en: new"
 		}
 	}
 }

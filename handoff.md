@@ -250,6 +250,10 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
   allow lists; tightened vs_471, vs_62, vs_339. Bench review: vs_501 slot 5 took seasonings ("그 식당의 설탕이 맛있는 줄"):
   orchestrator added noTags condiment/ingredient/place + fixture g304. Agent notes: `listVerifiedFitsForUnit` can list a unit the
   validator rejects (공책 in vs_469 broke fc2_ui_test until denied); 동창회 glossed "alumni association" (means reunion).
+- Batch 9 (25, 2026-11-24): about 8 min, 129k tokens; 246 of 547 framed. Tightened only (vs_100, vs_97, vs_262, vs_483, vs_303,
+  vs_375, vs_393, vs_83); 4 new gap rules (validator-reject: 하다 + language names, 넣다 + meats; cross-slot duplicates). Bench review:
+  vs_212 took 외우다 and 기념품 ("교통 기념품을 ... 외우지 마시고요"): orchestrator narrowed slot 4 to 잊다/잊어버리다, denied 기념품/생필품
+  (g319, g320). Agent note: en-set requires a placeholder for pool > 1 even when only 1 word realizes.
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:
