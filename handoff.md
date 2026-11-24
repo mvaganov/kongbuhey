@@ -149,6 +149,7 @@ the batch itself, and may run 2 or 3 batches back to back (fresh agent each) bef
 >    every slot that varies is a placeholder: `{3}` plain gloss, `{3:form}` (`base past part s ing adj` | `pl a the`; write "a/the"
 >    only through `{3:a}`/`{3:the}`), `{3|wording}` used while slot 3 holds its original word. Read every variant; restructure until
 >    they are grammatical. Gloss or pool problems a frame can't fix (degree adverbs, prepositions of time/motion verbs): list them.
+>    Never deny a word whose Korean is natural only because its English reads badly (the Korean is the product): list it instead.
 >    Read 10 frames from earlier batches first (`show` on a few `done` templates) to match their style.
 > 7. `done <id> "<tags: what changed | kept>; en: <new|kept|reworked>"` (refused until the frame is valid).
 > Finish: `node test.js` (local copy) passes, then report `batch status`, `gaps --summary`, the count from `fixtures --unsure`, `en-status`,
@@ -263,6 +264,10 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
     had no English frame).
   Agent notes, not done: 선물하다/축하하다/찾다 glosses read badly in frames; slots of one template can draw the same word
   (불고기나 불고기: no distinct-word check); 보다 976 and 149 render identically.
+- Batch 11 (25, 2026-11-24): about 7 min, 130k tokens; 296 of 547 framed. Tightened only (12 templates), 5 unsure fixtures. The agent
+  denied two natural Korean words for English reasons (얼마나 in vs_119 slot 2, 재미없다 in vs_235 slot 1); the brief now forbids it
+  (step 6). Those two denies are still in place: remove them once frames can handle them. Missing frame feature: counter plurals
+  ("{n} minute(s)" in vs_496/497/498). fc2/debug.js sentence scenes unlock more units when 12 give no testable example (flaked).
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:

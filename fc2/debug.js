@@ -40,7 +40,8 @@ function testableCard(app, rev) {
 		if (!c.sentences.length) continue;
 		app.card = { id };
 		// Any example will do (verified ones without an English frame have no test): move the first testable one to the front.
-		const at = c.sentences.findIndex(s => app.buildSentenceTest(s, rev));
+		// Keep the quiz that was built (as the app's prefetch does): building is random, a second build can come out empty.
+		const at = c.sentences.findIndex(s => { const choices = app.buildSentenceTest(s, rev); if (choices) s.preTest = { key: `${rev}|${app.g.owned.length}`, choices }; return Boolean(choices); });
 		if (at < 0) continue;
 		if (at > 0) c.sentences.unshift(...c.sentences.splice(at, 1));
 		app.card = { id, mode: 'learn', st: 'new', side: 'front', shownAt: Date.now(), trial: null, ...c };
@@ -57,7 +58,9 @@ const trial = tier => app => {
 };
 const sentence = (rev, open) => app => {
 	reset(app); own(app, 12);
-	if (!testableCard(app, rev)) { show(app, 'map'); app.toast('debug: no testable example in this pack'); return; }
+	// Generation is random and only framed verified examples are testable: unlock more units before giving up.
+	for (let more = 0; more < 3 && !testableCard(app, rev); more++) own(app, 12);
+	if (!app.card && !testableCard(app, rev)) { show(app, 'map'); app.toast('debug: no testable example in this pack'); return; }
 	show(app, 'play');
 	if (open) app.sentenceTest(0);
 };

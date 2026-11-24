@@ -343,6 +343,39 @@
 			],
 			"order": "critical-path",
 			"english": true
+		},
+		{
+			"n": 11,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_14",
+				"vs_88",
+				"vs_495",
+				"vs_496",
+				"vs_453",
+				"vs_498",
+				"vs_119",
+				"vs_38",
+				"vs_418",
+				"vs_452",
+				"vs_534",
+				"vs_489",
+				"vs_394",
+				"vs_327",
+				"vs_20",
+				"vs_66",
+				"vs_459",
+				"vs_497",
+				"vs_354",
+				"vs_347",
+				"vs_264",
+				"vs_60",
+				"vs_160",
+				"vs_242",
+				"vs_235"
+			],
+			"order": "critical-path",
+			"english": true
 		}
 	],
 	"reviewed": {
@@ -1417,6 +1450,106 @@
 		"vs_148": {
 			"batch": 10,
 			"note": "slot2 deny wardrobe/bookshelf/furniture; en: new"
+		},
+		"vs_14": {
+			"batch": 11,
+			"note": "tags: s1 deny 때; en: new"
+		},
+		"vs_88": {
+			"batch": 11,
+			"note": "tags: kept (nothing variable); en: new"
+		},
+		"vs_495": {
+			"batch": 11,
+			"note": "tags: s1 deny 팬; en: new"
+		},
+		"vs_496": {
+			"batch": 11,
+			"note": "tags: s6 deny 뵙다, 사귀다; en: new"
+		},
+		"vs_453": {
+			"batch": 11,
+			"note": "tags: kept; en: new"
+		},
+		"vs_498": {
+			"batch": 11,
+			"note": "tags: kept; en: new"
+		},
+		"vs_119": {
+			"batch": 11,
+			"note": "tags: s0 deny 계절, s2 deny 얼마나 (English); en: new"
+		},
+		"vs_38": {
+			"batch": 11,
+			"note": "tags: s0 deny 계절, 겨울; en: new"
+		},
+		"vs_418": {
+			"batch": 11,
+			"note": "tags: kept; en: new"
+		},
+		"vs_452": {
+			"batch": 11,
+			"note": "tags: s2 deny 할아버지, 외할아버지; en: new"
+		},
+		"vs_534": {
+			"batch": 11,
+			"note": "tags: kept; en: new"
+		},
+		"vs_489": {
+			"batch": 11,
+			"note": "tags: s2 deny 바로; en: new"
+		},
+		"vs_394": {
+			"batch": 11,
+			"note": "tags: kept; en: new"
+		},
+		"vs_327": {
+			"batch": 11,
+			"note": "tags: kept; en: new"
+		},
+		"vs_20": {
+			"batch": 11,
+			"note": "tags: s0 deny 지난달/지난주, s4 deny 요즘; en: new"
+		},
+		"vs_66": {
+			"batch": 11,
+			"note": "tags: kept; en: new"
+		},
+		"vs_459": {
+			"batch": 11,
+			"note": "tags: kept; en: new"
+		},
+		"vs_497": {
+			"batch": 11,
+			"note": "tags: s1 deny 백/천/만; en: new"
+		},
+		"vs_354": {
+			"batch": 11,
+			"note": "tags: s5 only 힘들다; en: new"
+		},
+		"vs_347": {
+			"batch": 11,
+			"note": "tags: kept; en: new"
+		},
+		"vs_264": {
+			"batch": 11,
+			"note": "tags: kept; en: new"
+		},
+		"vs_60": {
+			"batch": 11,
+			"note": "tags: kept; en: new"
+		},
+		"vs_160": {
+			"batch": 11,
+			"note": "tags: s2 deny 8 unrelated verbs, s6 deny 재미없다; en: new"
+		},
+		"vs_242": {
+			"batch": 11,
+			"note": "tags: kept; en: new"
+		},
+		"vs_235": {
+			"batch": 11,
+			"note": "tags: s1 deny 재미없다 (English); en: new"
 		}
 	}
 }
