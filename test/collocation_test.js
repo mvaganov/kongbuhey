@@ -735,7 +735,7 @@ assert(unregisteredDVTags.length === 0, "All descriptive_* tags are registered i
 	const bad = vg.validateEnglishFrame('x {9} {1:foo} }', 5);
 	assert(bad.length === 3, 'validateEnglishFrame: slot out of range, unknown form, stray brace', bad.join('; '));
 	assert(vg.renderEnglishFrame('{7}', orig.slotChoices) === '', 'a frame that cannot fill gives "" (never half-filled English)');
-	const row = vg.serializeCompactTemplate(tpl);
+	const row = vg.serializeCompactTemplate(Object.assign({}, tpl, { rules: [] }));   // vs_367 now carries tuning rules; the test is about the frame position
 	assert(row.length === 8 && row[6] === null && row[7] === tpl.english, 'serializeCompactTemplate keeps the frame at index 7 (null rules before it)');
 	const src = '\n\t["vs_x","t","s","",".",[],[{"slot":0,"kind":"deny","ids":[1]}],"Hi {0}."]\n';
 	assert(vt.editRules(src, 'vs_x', []).includes('[],null,"Hi {0}."]'), 'removing a template\'s last rule keeps its English frame at index 7');

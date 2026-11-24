@@ -211,6 +211,39 @@
 				"vs_522"
 			],
 			"order": "critical-path"
+		},
+		{
+			"n": 7,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_379",
+				"vs_229",
+				"vs_382",
+				"vs_44",
+				"vs_410",
+				"vs_95",
+				"vs_98",
+				"vs_460",
+				"vs_367",
+				"vs_406",
+				"vs_43",
+				"vs_374",
+				"vs_369",
+				"vs_116",
+				"vs_420",
+				"vs_423",
+				"vs_424",
+				"vs_109",
+				"vs_315",
+				"vs_332",
+				"vs_380",
+				"vs_50",
+				"vs_344",
+				"vs_6",
+				"vs_57"
+			],
+			"order": "critical-path",
+			"english": true
 		}
 	],
 	"reviewed": {
@@ -885,6 +918,106 @@
 		"vs_522": {
 			"batch": 6,
 			"note": "slot0 deny 지난 (tense); slot1 only 방학/주말/휴가/연휴/학기; 2,3,4 pool1 (other verbs rejected VERB_OBJECT 뭐, see vs_520 gap)"
+		},
+		"vs_379": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: kept"
+		},
+		"vs_229": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: kept"
+		},
+		"vs_382": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_410": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_460": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_406": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_43": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_374": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_369": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_420": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_315": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_6": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_332": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_380": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_109": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_116": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_57": {
+			"batch": 7,
+			"note": "tags: kept (no variable slot or pool already natural); en: new"
+		},
+		"vs_44": {
+			"batch": 7,
+			"note": "tags: kept; en: new"
+		},
+		"vs_95": {
+			"batch": 7,
+			"note": "tags: slots 0-2 deny 채소/샐러드 (category/dish in a vegetable list); en: new"
+		},
+		"vs_98": {
+			"batch": 7,
+			"note": "tags: slot1 only 분/초, slot3 only 삶다/볶다 (duration and verb fit); en: new"
+		},
+		"vs_367": {
+			"batch": 7,
+			"note": "tags: slot4 only 자다/일어나다, slot2 deny 조금; en: new"
+		},
+		"vs_344": {
+			"batch": 7,
+			"note": "tags: slot3 only 자다/일어나다 (nonsense intransitives removed); en: new"
+		},
+		"vs_423": {
+			"batch": 7,
+			"note": "tags: kept; en: new"
+		},
+		"vs_424": {
+			"batch": 7,
+			"note": "tags: slot0 only 네 (answer to question); en: new"
+		},
+		"vs_50": {
+			"batch": 7,
+			"note": "tags: deny 세탁소 (slot4), 신기하다 (slot1); en: new"
 		}
 	}
 }

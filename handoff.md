@@ -241,6 +241,11 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
 - Batch 4 (48, English only, 2026-11-24): 173 of 547; every loosened template now has a frame. about 5 min, 129k tokens.
   Remaining English work goes through the sentence-focused tuning batches. Ideas from the agents, not done: `en-set --variants N`
   (4 variants miss rare combinations), the pool count on VARIES lines.
+- Batch 7 (first sentence-focused batch, 25, 2026-11-24): about 8 min, 114k tokens; 196 of 547 framed. Tightened only (deny/only rules
+  in vs_95, vs_98, vs_367, vs_344, vs_424, vs_50, vs_116), 15 fixtures (5 unsure; 38 in total). Seen in the bench review, not yet
+  fixed: duration slots admit 일/주 for short trips (vs_216 "걸어서 15주쯤", vs_227 "5일 정도 걸립니다"); 확인하다 glossed "to confirm"
+  (should be "to check"); plural glosses of mass nouns ("garlics"). Agents: run `show` for the whole batch into one file and read
+  it in slices (each `show` takes seconds on the mounted folder).
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:
