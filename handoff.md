@@ -268,6 +268,11 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
   denied two natural Korean words for English reasons (얼마나 in vs_119 slot 2, 재미없다 in vs_235 slot 1); the brief now forbids it
   (step 6). Those two denies are still in place: remove them once frames can handle them. Missing frame feature: counter plurals
   ("{n} minute(s)" in vs_496/497/498). fc2/debug.js sentence scenes unlock more units when 12 give no testable example (flaked).
+- Batch 12 (25, 2026-11-24): about 8 min, 142k tokens; 321 of 547 framed. Loosened vs_363 (-male), allow lists on vs_265/266;
+  tightened vs_357, vs_minimal_3, vs_284, vs_445, vs_241, vs_32. Test fixes (they assumed every example is testable or row 0 untuned):
+  fc2_ui_test's sentence tests keep the card they checked, testable example first; verified_originals_test's round-trip picks an
+  untuned row. Bench review: seasonings in dish slots again (vs_77 "설탕도 많았고요", vs_80 "후추를 제일 좋아했어요"): noTags
+  condiment/ingredient + g365/g366. Candidate one-off sweep: every food slot whose original is a dish, noTags condiment/ingredient.
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:

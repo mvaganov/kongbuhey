@@ -126,12 +126,20 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		app.session = app.newSession(); app.card = null; app.go('map'); app.go('play');
 		assert(app.opts.onlyOwned === true, 'examples default to unlocked units only');
 		// some units have no example from a 5-unit pack (that is expected): show a card that does
+		// Show the card that was checked (a fresh generateFor would draw new examples), with a testable example first:
+		// verified examples without an English frame have no test.
 		const showTestable = () => {
-			const id = app.g.owned.find(i => { const c = app.generateFor(i); if (!c.sentences.length) return false; app.card = { id: i }; return Boolean(app.buildSentenceTest(c.sentences[0])); });
-			if (id === undefined) return false;
-			app.card = { id, mode: 'learn', st: 'new', side: 'front', shownAt: Date.now(), trial: null, ...app.generateFor(id) };
-			app.renderScreen(false);
-			return true;
+			for (const i of app.g.owned) {
+				const c = app.generateFor(i);
+				app.card = { id: i };
+				const at = c.sentences.findIndex(x => app.buildSentenceTest(x));
+				if (at < 0) continue;
+				if (at > 0) c.sentences.unshift(...c.sentences.splice(at, 1));
+				app.card = { id: i, mode: 'learn', st: 'new', side: 'front', shownAt: Date.now(), trial: null, ...c };
+				app.renderScreen(false);
+				return true;
+			}
+			return false;
 		};
 		// Some random 5-unit packs have no example with 3 distinct wrong answers (the app then says "try New examples"): widen the pack like later play does.
 		for (let extra = 0; extra < 4 && !showTestable(); extra++) for (let i = 0; i < 15; i++) { const nid = (extra * 15 + i) * 7 + 3; if (!app.g.owned.includes(nid) && app.units.has(nid)) app.g.owned.push(nid); }
@@ -168,8 +176,15 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 
 	await step('reverse sentence test', async () => {
 		app.opts.reverse = true;
-		const id = app.g.owned.find(i => { const c = app.generateFor(i); if (!c.sentences.length) return false; app.card = { id: i }; return Boolean(app.buildSentenceTest(c.sentences[0], true)); });
-		app.card = { id, mode: 'learn', st: 'new', side: 'front', shownAt: Date.now(), trial: null, ...app.generateFor(id) };
+		let id, card;   // keep the checked card, testable example first (see showTestable)
+		for (const i of app.g.owned) {
+			const c = app.generateFor(i); app.card = { id: i };
+			const at = c.sentences.findIndex(x => app.buildSentenceTest(x, true));
+			if (at < 0) continue;
+			if (at > 0) c.sentences.unshift(...c.sentences.splice(at, 1));
+			id = i; card = c; break;
+		}
+		app.card = { id, mode: 'learn', st: 'new', side: 'front', shownAt: Date.now(), trial: null, ...card };
 		app.renderScreen(false);
 		click('[data-act="sent-test"]'); app.stest.readyAt = 0;
 		const t = app.stest, hangul = /[\uAC00-\uD7A3]/;

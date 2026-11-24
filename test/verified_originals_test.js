@@ -37,7 +37,8 @@ assert(privateRows.every(r => /^\[[^\]]*\]$/.test(r[T.Title]) || r[T.Title] === 
 {
 	const vsTune = require('../tools/vs_tune.js');
 	const src0 = fs.readFileSync(path.join(ROOT, 'data/verified_sentences.js'), 'utf8');
-	const id = VERIFIED_SENTENCES[0][T.Id];
+	// A row the undo can restore exactly: slot 0 with default tags and no rules (tuning batches change any fixed choice, e.g. row 0).
+	const id = VERIFIED_SENTENCES.find(r => !Array.isArray(r[T.Slots][0][7]) && !(Array.isArray(r[T.Rules]) && r[T.Rules].length))[T.Id];
 	const s1 = vsTune.editRules(vsTune.editSlotTags(src0, id, 0, ['x', 'y']), id, [{ slot: 0, kind: 'gap', text: 'a "quoted" [test]' }]);
 	const ctx = { K: require('../data/constants.js').K };
 	const row = vsTune.locateRow(s1, id);

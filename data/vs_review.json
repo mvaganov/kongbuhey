@@ -376,6 +376,39 @@
 			],
 			"order": "critical-path",
 			"english": true
+		},
+		{
+			"n": 12,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_402",
+				"vs_432",
+				"vs_265",
+				"vs_363",
+				"vs_464",
+				"vs_364",
+				"vs_422",
+				"vs_357",
+				"vs_266",
+				"vs_minimal_3",
+				"vs_368",
+				"vs_543",
+				"vs_479",
+				"vs_478",
+				"vs_392",
+				"vs_404",
+				"vs_284",
+				"vs_241",
+				"vs_236",
+				"vs_32",
+				"vs_445",
+				"vs_366",
+				"vs_23",
+				"vs_152",
+				"vs_272"
+			],
+			"order": "critical-path",
+			"english": true
 		}
 	],
 	"reviewed": {
@@ -1550,6 +1583,106 @@
 		"vs_235": {
 			"batch": 11,
 			"note": "tags: s1 deny 재미없다 (English); en: new"
+		},
+		"vs_402": {
+			"batch": 12,
+			"note": "tags: kept; en: new"
+		},
+		"vs_432": {
+			"batch": 12,
+			"note": "tags: kept; en: new"
+		},
+		"vs_265": {
+			"batch": 12,
+			"note": "tags: slot1 allow 이메일,편지; en: new"
+		},
+		"vs_363": {
+			"batch": 12,
+			"note": "tags: slot0 -male (+9 kin/child words, all OK); en: new"
+		},
+		"vs_464": {
+			"batch": 12,
+			"note": "tags: kept; en: new"
+		},
+		"vs_364": {
+			"batch": 12,
+			"note": "tags: kept (nothing variable); en: new"
+		},
+		"vs_422": {
+			"batch": 12,
+			"note": "tags: kept (nothing variable); en: new"
+		},
+		"vs_357": {
+			"batch": 12,
+			"note": "tags: slot0 noTags condiment,ingredient + deny drinks/non-food/진지; en: new"
+		},
+		"vs_266": {
+			"batch": 12,
+			"note": "tags: slot0 allow 이메일; en: new"
+		},
+		"vs_minimal_3": {
+			"batch": 12,
+			"note": "tags: slot1 deny 열다,싣다; en: new"
+		},
+		"vs_368": {
+			"batch": 12,
+			"note": "tags: kept; en: new"
+		},
+		"vs_543": {
+			"batch": 12,
+			"note": "tags: kept; en: new"
+		},
+		"vs_479": {
+			"batch": 12,
+			"note": "tags: kept; en: new"
+		},
+		"vs_478": {
+			"batch": 12,
+			"note": "tags: kept; en: new"
+		},
+		"vs_392": {
+			"batch": 12,
+			"note": "tags: kept; en: new"
+		},
+		"vs_404": {
+			"batch": 12,
+			"note": "tags: kept; en: new"
+		},
+		"vs_284": {
+			"batch": 12,
+			"note": "tags: slot1 only 아이 (kin words are not an age range); en: new"
+		},
+		"vs_241": {
+			"batch": 12,
+			"note": "tags: slot6 deny 모두,다; en: new"
+		},
+		"vs_236": {
+			"batch": 12,
+			"note": "tags: kept; en: new"
+		},
+		"vs_32": {
+			"batch": 12,
+			"note": "tags: slot0 deny 다음; slot3 deny 곳,자리,중앙; en: new"
+		},
+		"vs_445": {
+			"batch": 12,
+			"note": "tags: slot2 deny 모두,다; en: new"
+		},
+		"vs_366": {
+			"batch": 12,
+			"note": "tags: kept; en: new"
+		},
+		"vs_23": {
+			"batch": 12,
+			"note": "tags: kept; en: new"
+		},
+		"vs_152": {
+			"batch": 12,
+			"note": "tags: kept; en: new"
+		},
+		"vs_272": {
+			"batch": 12,
+			"note": "tags: kept; en: new"
 		}
 	}
 }
