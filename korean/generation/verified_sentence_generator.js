@@ -2038,6 +2038,12 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 							});
 							continue;
 						}
+						// An interrogative thing pronoun (questionWord + object/thing tags) stands for any object the verb takes
+						// (뭘 먹을 거예요?, 무엇을 샀어요?); verbs whose object is a person keep the check (*뭘 만나요?), and so does a
+						// focus-marked fallback object, which is often a topic (*뭐는 물냉면으로 하겠습니다).
+						const isOvertObject = objCon.role === K.OBJECT || objCon.particleType === K.OBJECT;
+						const isWhatObject = isOvertObject && _hasTag(objUnit, K.QUESTION_WORD) && _hasTag(objUnit, K.OBJECT, "thing") && !_hasTag(objUnit, K.PERSON, K.PLACE, K.TIME);
+						if (isWhatObject && !isIntransTarget && !_hasTag(targetVerb, "transitive_person", K.DATIVE_PERSON)) continue;
 						const isButeoSlot = /(?:부터)$/.test(objCon.surfaceKo || "");
 						const BUTEO_INCOMPATIBLE_VERBS = HC.VERIFIED_VALIDATE_VERIFIED_SENTENCE_BUTEO_INCOMPATIBLE_VERBS;
 						const isButeoIncompatibleVerb = _hasTag(targetVerb, K.LOCATIVE_STATIC, "involuntary", "placement_transitive") || BUTEO_INCOMPATIBLE_VERBS.has(vKo);
@@ -2152,7 +2158,14 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 			const subjCons = constituents.filter(c => c.role === K.SUBJECT || c.role === K.TOPIC);
 			const subjCon = subjCons.length > 0 ? subjCons[subjCons.length - 1] : null;
 			if (subjCon && verbUnit && (pred.predType === K.DESCRIPTIVE || verbUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB) && typeof getSubjectCandidatesForDescriptiveVerb === 'function') {
-				const subjUnit = subjCon.nounUnit || subjCon.unit;
+				let subjUnit = subjCon.nounUnit || subjCon.unit;
+				// A person title after a name (유키 씨는) carries the topic particle, but the subject is the name before it.
+				const isNominal = (u) => Boolean(u) && (u[DATA_SCHEMA.PartofSpeech] === K.NOUN || u[DATA_SCHEMA.PartofSpeech] === K.PRONOUN);
+				if (subjUnit && !isNominal(subjUnit) && _hasTag(subjUnit, K.PERSON) && _hasTag(subjUnit, K.HONORIFIC)) {
+					const prevCon = constituents[constituents.indexOf(subjCon) - 1];
+					const prevUnit = prevCon && (prevCon.nounUnit || prevCon.unit);
+					if (isNominal(prevUnit)) subjUnit = prevUnit;
+				}
 				if (subjUnit && (subjCon.isVariedSlot || pred.isVariedSlot)) {
 					const vKo = verbUnit[DATA_SCHEMA.Korean] || "";
 					const STRICT_DESCRIPTIVE_VERBS = HC.VERIFIED_VALIDATE_VERIFIED_SENTENCE_STRICT_DESCRIPTIVE_VERBS;

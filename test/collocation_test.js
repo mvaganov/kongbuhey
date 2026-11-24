@@ -136,7 +136,7 @@ const drinkVerb = KR_EN_languageUnits[41]; // 마시다
 
 const eatCandidates = getNounCandidatesForVerb(eatVerb);
 assert(eatCandidates.length > 0, "먹다 has matching noun candidates", `Found ${eatCandidates.length}`);
-assert(eatCandidates.every(n => hasTag(n, K.FOOD) || hasTag(n, "medicine")), "All 먹다 candidates are food or medicine");
+assert(eatCandidates.every(n => hasTag(n, K.FOOD) || hasTag(n, "medicine") || hasTag(n, "meal")), "All 먹다 candidates are food, medicine or a meal (아침을 먹다)");
 assert(eatCandidates.every(n => !hasTag(n, K.CLOTHING)), "먹다 never takes clothing (*옷을 먹다)");
 assert(eatCandidates.every(n => !hasTag(n, K.VEHICLE)), "먹다 never takes vehicle (*버스를 먹다)");
 
@@ -674,6 +674,45 @@ assert(unregisteredDVTags.length === 0, "All descriptive_* tags are registered i
 		const r = realize(id, slot, ko);
 		assert(!r.ok && r.errs.includes('ADNOMINAL_ACTION_COLLOCATION_MISMATCH'), `${id} slot ${slot}: ${ko} still rejected by ADNOMINAL_ACTION_COLLOCATION_MISMATCH`, r.ko || r.errs.join(','));
 	}
+}
+
+// Batch 6 validator-reject gaps (verified templates, one slot varied with its tags and rules removed): an interrogative
+// thing object (뭘) fits any thing-taking verb; 하다 takes social events; 졸업하다 takes schools; 떠나다/다녀오다 take
+// motion activities; 전공하다 takes academic_field nouns; 먹다 takes meals (아침을); 싸다 takes fees; a title after a name (유키 씨는) is not the subject.
+{
+	const vg = require('../korean/generation/verified_sentence_generator.js');
+	const U_ = KR_EN_languageUnits;
+	const byKo = k => U_.findIndex(u => u && u[KoreanWord] === k && u[DATA_SCHEMA.PartofSpeech] !== 'Alias');
+	const realize = (id, slot, ko) => {
+		const tpl = JSON.parse(JSON.stringify(vg.getVerifiedSentenceById(id)));
+		tpl.slots[slot].tags = []; tpl.slots[slot].rules = [];
+		const r = vg.generateSentenceFromTemplate(tpl, { targetUnitId: byKo(ko), targetSlotIndex: slot, varyMode: 'selected', unlockedSlots: [slot] });
+		const errs = (r && r.validation && r.validation.errors || []).map(e => e.code);
+		return { ok: Boolean(r && r.ok), ko: r && r.ko, errs };
+	};
+	const accept = [['vs_520', 3, '먹다'], ['vs_520', 3, '마시다'], ['vs_520', 3, '만들다'], ['vs_537', 2, '파티'], ['vs_537', 2, '송별회'],
+		['vs_537', 2, '결혼식'], ['vs_515', 0, '고등학교'], ['vs_515', 0, '유치원'], ['vs_523', 2, '떠나다'], ['vs_523', 2, '다녀오다'],
+		['vs_1', 3, '한국학'], ['vs_1', 3, '아시아학'], ['vs_55', 0, '요금'], ['vs_55', 0, '회비'], ['vs_456', 3, '착하다'], ['vs_456', 3, '잘생기다'], ['vs_490', 2, '아침']];
+	for (const [id, slot, ko] of accept) {
+		const r = realize(id, slot, ko);
+		assert(r.ok, `${id} slot ${slot}: ${ko} is accepted`, r.errs.join(','));
+	}
+	const reject = [['vs_520', 3, '만나다', 'VERB_OBJECT_COLLOCATION_MISMATCH'], ['vs_372', 0, '뭐', 'VERB_OBJECT_COLLOCATION_MISMATCH'], ['vs_520', 3, '다니다', 'VERB_OBJECT_COLLOCATION_MISMATCH'],
+		['vs_537', 2, '생일', 'VERB_OBJECT_COLLOCATION_MISMATCH'], ['vs_537', 2, '휴가', 'VERB_OBJECT_COLLOCATION_MISMATCH'],
+		['vs_537', 2, '사고', 'VERB_OBJECT_COLLOCATION_MISMATCH'], ['vs_515', 0, '펜션', 'VERB_OBJECT_COLLOCATION_MISMATCH'],
+		['vs_1', 3, '점수', 'VERB_OBJECT_COLLOCATION_MISMATCH'], ['vs_55', 0, '월급', 'DESCRIPTIVE_VERB_SUBJECT_COLLOCATION_MISMATCH'],
+		['vs_456', 3, '맛있다', 'DESCRIPTIVE_VERB_SUBJECT_COLLOCATION_MISMATCH'], ['vs_456', 3, '싸다', 'DESCRIPTIVE_VERB_SUBJECT_COLLOCATION_MISMATCH']];
+	for (const [id, slot, ko, code] of reject) {
+		const r = realize(id, slot, ko);
+		assert(!r.ok && r.errs.includes(code), `${id} slot ${slot}: ${ko} still rejected by ${code}`, r.ko || r.errs.join(','));
+	}
+}
+
+// 팔다 sells things and tickets, not events (*노인은 콘서트를 팔았어요; seen in the batch 6 bench review).
+{
+	const byKo = k => KR_EN_languageUnits.find(u => u && u[KoreanWord] === k && u[DATA_SCHEMA.PartofSpeech] !== 'Alias');
+	const sell = new Set(getNounCandidatesForVerb(byKo('팔다')).map(u => u[KoreanWord]));
+	assert(!sell.has('콘서트') && !sell.has('음악회') && sell.has('표') && sell.has('옷'), '팔다 takes tickets and goods (표, 옷) but not events (콘서트, 음악회)');
 }
 
 console.log("\n======================================================");

@@ -179,6 +179,38 @@
 				"vs_13"
 			],
 			"order": "critical-path"
+		},
+		{
+			"n": 6,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_491",
+				"vs_388",
+				"vs_542",
+				"vs_535",
+				"vs_536",
+				"vs_104",
+				"vs_413",
+				"vs_58",
+				"vs_70",
+				"vs_55",
+				"vs_54",
+				"vs_506",
+				"vs_456",
+				"vs_436",
+				"vs_518",
+				"vs_520",
+				"vs_458",
+				"vs_515",
+				"vs_523",
+				"vs_1",
+				"vs_435",
+				"vs_166",
+				"vs_490",
+				"vs_537",
+				"vs_522"
+			],
+			"order": "critical-path"
 		}
 	],
 	"reviewed": {
@@ -753,6 +785,106 @@
 		"vs_409": {
 			"batch": 5,
 			"note": "kept: pools small/locked; vs_503 73-pool natural, vs_383 11 places natural"
+		},
+		"vs_491": {
+			"batch": 6,
+			"note": "slot1 facility instead of place/room/sinoRoot (+70 places), denied 5 odd; slot2 kept: only 가다 fits 갔어요 with 에"
+		},
+		"vs_388": {
+			"batch": 6,
+			"note": "slot2 only-list of 9 verbs fitting 우리 ...할까 suggestion; slot0 kept (우리 required for suggestion)"
+		},
+		"vs_542": {
+			"batch": 6,
+			"note": "slot2 only [돈,약속,친구,수업] with 없어요; slot3 kept (existence verb 없다 only)"
+		},
+		"vs_535": {
+			"batch": 6,
+			"note": "slot0 deny 감기,변비 (wrong collocation with 나다), allow 땀,피; slot1 deny 모두,다; slot2 kept"
+		},
+		"vs_536": {
+			"batch": 6,
+			"note": "slot0 deny 그럼/그렇지만/그래서 (only 그리고 matches 도); slot1 7 symptoms all natural, kept"
+		},
+		"vs_104": {
+			"batch": 6,
+			"note": "slot1 denied 15 odd kin/relational/rare plurals (pool kept big); slot0 countries kept; 2,4 fixed"
+		},
+		"vs_413": {
+			"batch": 6,
+			"note": "slot7 only 다니다/하다 (drops 내려가다,올라가다); slot6 deny 모두,다; slot4 deny 곳,자리,중앙; slot5 gap validator-reject 해외여행 etc; 0,1,2 kept"
+		},
+		"vs_58": {
+			"batch": 6,
+			"note": "slot1 deny 지루한; slot3 deny 모두,다; slot4 only 일어나다/시작되다/생기다 (was 9 incl. 죽다,자다); 0,2 kept"
+		},
+		"vs_70": {
+			"batch": 6,
+			"note": "slot1 only 좋다/깨끗하다 (+gap: 크다 rejected by SLOT_POLARITY_INVERSION_MISMATCH); other slots kept: 있다/요리/하다 idiomatic chain, 부엌/편하게 locked"
+		},
+		"vs_55": {
+			"batch": 6,
+			"note": "slot0 wearable tag + allow 10 price/food words (싸다 fits), gap 요금/회비 (DESCRIPTIVE_VERB_SUBJECT_COLLOCATION_MISMATCH); rest locked/pool1 kept"
+		},
+		"vs_54": {
+			"batch": 6,
+			"note": "slot1 wearable + 10 allow words; slot2 only 7 degree adverbs; slot3 gap 싸다 rejected DESCRIPTIVE_VERB_SUBJECT_COLLOCATION_MISMATCH; slot0 kept"
+		},
+		"vs_506": {
+			"batch": 6,
+			"note": "slot1 deny 5 abstract nouns; slot2 allow 6 adjectives (어렵다,쉽다,재미있다,비싸다,피곤하다,바쁘다)"
+		},
+		"vs_456": {
+			"batch": 6,
+			"note": "slot0 names kept (14 natural); slot3 gap validator-reject DESCRIPTIVE_VERB_SUBJECT_COLLOCATION_MISMATCH (씨 as subject) for 착하다/잘생기다/날씬하다/건강하다"
+		},
+		"vs_436": {
+			"batch": 6,
+			"note": "slot3 only 7 speech/thought verbs; slot0 names kept"
+		},
+		"vs_518": {
+			"batch": 6,
+			"note": "slot1 only 그치다/내리다; slot3 allow 따뜻/맑/선선/쌀쌀 + gap 덥다 (SLOT_POLARITY_INVERSION_MISMATCH); 0,2 locked, 4,5 idiom kept"
+		},
+		"vs_520": {
+			"batch": 6,
+			"note": "slot0 +내일; slot1 only 오전/아침/점심/저녁; slot3 +사다 and gap validator-reject VERB_OBJECT_COLLOCATION_MISMATCH for 먹다/마시다/보다/만들다 with 뭐"
+		},
+		"vs_458": {
+			"batch": 6,
+			"note": "slot1 +내리다; slot2 (바람 only fits locked 불어요) and 0,3 locked kept"
+		},
+		"vs_515": {
+			"batch": 6,
+			"note": "kept: only school-type nouns fit slot0 but validator rejects all (gap validator-reject VERB_OBJECT_COLLOCATION_MISMATCH); slot4 하다 only"
+		},
+		"vs_523": {
+			"batch": 6,
+			"note": "kept: slot1 9 travel nouns all natural; slot0 방학/졸업 fine; slot2 gap validator-reject VERB_OBJECT_COLLOCATION_MISMATCH 떠나다/다녀오다"
+		},
+		"vs_1": {
+			"batch": 6,
+			"note": "slot3 tags -> abstract+academic (+9 fields) + allow 역사; gap 한국학/아시아학 (VERB_OBJECT_COLLOCATION_MISMATCH); slot1 countries, slot2 대학교 only, slot4 전공하다 only kept"
+		},
+		"vs_435": {
+			"batch": 6,
+			"note": "slot0 +15 person nouns via allow; slot1 +내일; slot2 only 아침/오후/저녁; slot3 deny 약속"
+		},
+		"vs_166": {
+			"batch": 6,
+			"note": "slot2 dropped traditional tag (+8 events); slot0 +내일; slot1 names kept; 3,5,6 pool1 fixed grammar"
+		},
+		"vs_490": {
+			"batch": 6,
+			"note": "slot0 only 좋은/조용한/깨끗한/싼 + gap 맛있는/큰/작은/비싼 (ADNOMINAL_DESCRIPTIVE_COLLOCATION_MISMATCH); slot1 +학생식당,카페; slot2 +밥 and gap 아침/점심 (VERB_OBJECT_COLLOCATION_MISMATCH); 3 locked"
+		},
+		"vs_537": {
+			"batch": 6,
+			"note": "slot0 deny 지난 (tense); slot2 only 동창회 + gap validator-reject VERB_OBJECT_COLLOCATION_MISMATCH (8 event nouns + 하다)"
+		},
+		"vs_522": {
+			"batch": 6,
+			"note": "slot0 deny 지난 (tense); slot1 only 방학/주말/휴가/연휴/학기; 2,3,4 pool1 (other verbs rejected VERB_OBJECT 뭐, see vs_520 gap)"
 		}
 	}
 }
