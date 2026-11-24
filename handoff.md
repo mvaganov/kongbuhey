@@ -286,6 +286,8 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
 - Batch 16 (25, 2026-11-24): about 8 min, 159k tokens; 421 of 547 framed. Loosened vs_389, vs_476; tightened 11 (transit templates:
   places that are stations, vehicles that run lines). Bench review: vs_377 numbered routes are buses only (g443), vs_227 no tollgate
   (g444). Recurring frame limits: counters ("{n} hour(s)"), country adjectives ("songs from {0|Korea}"), 보다 976/149 identical.
+- Batch 17 (25, 2026-11-24): about 7 min, 143k tokens; 446 of 547 framed. Loosened allow lists (vs_307, vs_19, vs_238); tightened 13.
+  Bench review: vs_227/vs_216 trip time no seconds either (g-fixture "5초 정도").
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:

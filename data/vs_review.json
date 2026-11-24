@@ -541,6 +541,39 @@
 			],
 			"order": "critical-path",
 			"english": true
+		},
+		{
+			"n": 17,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_196",
+				"vs_377",
+				"vs_215",
+				"vs_221",
+				"vs_154",
+				"vs_158",
+				"vs_227",
+				"vs_279",
+				"vs_508",
+				"vs_41",
+				"vs_52",
+				"vs_69",
+				"vs_19",
+				"vs_238",
+				"vs_307",
+				"vs_48",
+				"vs_61",
+				"vs_200",
+				"vs_51",
+				"vs_72",
+				"vs_162",
+				"vs_164",
+				"vs_467",
+				"vs_145",
+				"vs_325"
+			],
+			"order": "critical-path",
+			"english": true
 		}
 	],
 	"reviewed": {
@@ -2215,6 +2248,106 @@
 		"vs_260": {
 			"batch": 16,
 			"note": "tags: kept; en: new"
+		},
+		"vs_196": {
+			"batch": 17,
+			"note": "tags: kept (slots locked/pool 1, 4 fine); en: new"
+		},
+		"vs_377": {
+			"batch": 17,
+			"note": "tags: kept; en: new"
+		},
+		"vs_215": {
+			"batch": 17,
+			"note": "tags: kept; en: new"
+		},
+		"vs_221": {
+			"batch": 17,
+			"note": "tags: kept; en: new"
+		},
+		"vs_154": {
+			"batch": 17,
+			"note": "tags: slot7 only meet/befriend/love (dropped 10 nonsense verbs); en: new"
+		},
+		"vs_158": {
+			"batch": 17,
+			"note": "tags: slot5/8 only class-event words, slot7 deny 조금; en: new"
+		},
+		"vs_227": {
+			"batch": 17,
+			"note": "tags: slot0 deny 매표소, slot1 deny train/ship/plane/motorcycle; en: new"
+		},
+		"vs_279": {
+			"batch": 17,
+			"note": "tags: slot5 deny 배달시키다; en: new"
+		},
+		"vs_508": {
+			"batch": 17,
+			"note": "tags: slot0 deny 기간/종일/오랜만/동안; en: new"
+		},
+		"vs_41": {
+			"batch": 17,
+			"note": "tags: slot7 deny 신기하다/지루하다; en: new"
+		},
+		"vs_52": {
+			"batch": 17,
+			"note": "tags: kept; en: new"
+		},
+		"vs_69": {
+			"batch": 17,
+			"note": "tags: slot3 deny 가전제품/단말기/안내기; en: new"
+		},
+		"vs_19": {
+			"batch": 17,
+			"note": "tags: slot1 +목소리/얼굴, slot2 +좋다/괜찮다, slot1 only 3 words; en: new"
+		},
+		"vs_238": {
+			"batch": 17,
+			"note": "tags: slot3 +항상/늘/날마다/자주; en: new"
+		},
+		"vs_307": {
+			"batch": 17,
+			"note": "tags: slot0 deny >=60 and 백/천/만, slot3 +반갑다/사랑스럽다; en: new"
+		},
+		"vs_48": {
+			"batch": 17,
+			"note": "tags: kept; en: new"
+		},
+		"vs_61": {
+			"batch": 17,
+			"note": "tags: kept; en: new"
+		},
+		"vs_200": {
+			"batch": 17,
+			"note": "tags: kept; en: new"
+		},
+		"vs_51": {
+			"batch": 17,
+			"note": "tags: slot0 deny 세탁소; en: new"
+		},
+		"vs_72": {
+			"batch": 17,
+			"note": "tags: kept (only 룸메이트 fits); en: new"
+		},
+		"vs_162": {
+			"batch": 17,
+			"note": "tags: slot3 deny 조금; en: new"
+		},
+		"vs_164": {
+			"batch": 17,
+			"note": "tags: slot14 only 전화하다/연락하다 (honorific/odd verbs dropped); en: new"
+		},
+		"vs_467": {
+			"batch": 17,
+			"note": "tags: kept; en: new"
+		},
+		"vs_145": {
+			"batch": 17,
+			"note": "tags: slot1 deny companies/travel agency; en: new"
+		},
+		"vs_325": {
+			"batch": 17,
+			"note": "tags: slot1 deny 길이/높이/무게/크기; en: new"
 		}
 	}
 }
