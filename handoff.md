@@ -233,6 +233,11 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
   - 아침 = "morning", not the meal ("I ate morning" in vs_490);
   - mixed verb/noun pools (vs_523).
   Fixed: `{n:the}` on period nouns (the weekend), and "American persons".
+- Batch 3 (50, English only via `en-batch --loosened`, 2026-11-24): 125 of 547 done, about 4 min and 122k tokens. en-batch output
+  (>15 KB) truncates in the agent's tool result: have it redirect to a file and read it in slices. More problems frames can't fix:
+  countries as modifiers ("China songs"), "one hours", verbs whose object/preposition differs from the original's.
+  While few templates have frames, fc2_ui_test's "repeated replacement" noun-quiz check flakes more often (fewer framed sentences
+  to draw wrong answers from); it failed once in 5 runs here.
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:

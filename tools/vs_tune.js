@@ -63,7 +63,8 @@ BATCHES (ledger: data/vs_review.json)
   done <id> "<note>"              mark a template of the open batch reviewed (note: what changed, or "kept")
 
 ENGLISH FRAMES (column VERIFIED_TEMPLATE_SCHEMA.English: the natural English the game and quiz show)
-  en-batch [--n 25] [--save F]    the next N templates with no frame, in Examples Critical Path order (from the newest
+  en-batch [--n 25] [--save F] [--loosened]  the next N templates with no frame (--loosened: only ones whose tag review is done),
+                                  in Examples Critical Path order (from the newest
                                   local/GameSave_*.json, or F): sentence, literal gloss, every slot and whether it varies
   en-set <id> "<frame>" [--dry-run]  validate and write a frame; prints it filled for the original and for variants
                                   {3} slot 3's plain gloss   {3:past} a form (base past part s ing adj | pl a the)
@@ -1090,7 +1091,8 @@ function printFramed(t, count = 4) {
 
 function cmdEnBatch(flags) {
 	const n = Number(flags.n || 25);
-	const todo = criticalPathOrder(flags.save, true).filter(t => !t.english).slice(0, n);
+	const l = flags.loosened ? readLedger() : null;   // --loosened: only templates whose tag review is done (or has nothing to tune)
+	const todo = criticalPathOrder(flags.save, true).filter(t => !t.english && (!l || !needsTags(t, l))).slice(0, n);
 	console.log(`${todo.length} templates without an English frame (critical path order):\n`);
 	for (const t of todo) {
 		const orig = vg.generateSentenceFromTemplate(t, { varyMode: 'selected', unlockedSlots: [] });
@@ -1147,7 +1149,7 @@ function cmdEnStatus(flags) {
 function parseArgs(argv) {
 	const pos = [];
 	const flags = {};
-	const BOOL = new Set(['all', 'check', 'dry-run', 'summary', 'unsure', 'open', 'sync', 'deep', 'by-tag', 'low-yield', 'ok', 'critical-path']);
+	const BOOL = new Set(['all', 'check', 'dry-run', 'summary', 'unsure', 'open', 'sync', 'deep', 'by-tag', 'low-yield', 'ok', 'critical-path', 'loosened']);
 	for (let k = 0; k < argv.length; k++) {
 		const a = argv[k];
 		if (a.startsWith('--')) {
