@@ -54,7 +54,9 @@ WRITE (all accept --dry-run; all print the admitted/dropped units realized in th
 BATCHES (ledger: data/vs_review.json)
   batch [--n 25]                  the open batch's remaining templates; opens the next batch if none is open
   batch --critical-path [--save F] open the next batch in Examples Critical Path order: templates in the order they become usable
-                                  when unlocking along the path from the newest local/GameSave_*.json (or F; fresh game if none)
+                                  when unlocking along the path from the newest local/GameSave_*.json (or F; fresh game if none).
+                                  Sentence-focused: a template is due until it is reviewed AND has an English frame; the list
+                                  says what each needs (tags, english, english-check) and done refuses one without a valid frame
   batch --low-yield               open a batch of every template with a low-yield slot (pool >= 20, under 20% realize),
                                   reviewed or not; the list marks those slots with !
   batch status                    progress of the open batch + stats (deep, ~40 s) changed since the baseline
@@ -573,6 +575,8 @@ function readLedger() {
 function writeLedger(l) { fs.writeFileSync(LEDGER_PATH, JSON.stringify(l, null, '\t') + '\n'); }
 
 const variableSlots = (t) => t.slots.map((s, i) => i).filter(i => !isLocked(t.slots[i]));
+/** Tag review still due: not reviewed and something can vary (a template with every slot locked has nothing to tune). */
+const needsTags = (t, l) => !l.reviewed[t.id] && variableSlots(t).length > 0;
 
 /**
  * Review order: templates grouped by their lowest grammar unit id (SUOBI00/01 first). Within a unit the
@@ -632,7 +636,8 @@ function printBatch(b, l) {
 		const g = U(Math.min(...t.grammarUnitIds));
 		const ly = b.lowYield ? new Set(lowYieldSlots(t)) : new Set();
 		const pools = variableSlots(t).map(i => `${i}:${vg.getSlotCandidates(t.slots[i]).count}${ly.has(i) ? '!' : ''}`).join(' ');
-		console.log(`  ${id.padEnd(16)} pools ${pools.padEnd(14)} [${g ? g[D.Korean] : '-'}]  ${sentenceOf(t)}`);
+		const needs = b.english ? `  needs ${[needsTags(t, l) ? 'tags' : '', t.english ? 'english-check' : 'english'].filter(Boolean).join('+')}` : '';
+		console.log(`  ${id.padEnd(16)} pools ${(pools || '-').padEnd(14)} [${g ? g[D.Korean] : '-'}]  ${sentenceOf(t)}${needs}`);
 	}
 	if (!left.length) console.log('  complete: run `batch status`, then hand off (see handoff.md)');
 }
@@ -665,11 +670,14 @@ function cmdBatch(sub, flags) {
 	const inBatch = new Set(l.batches.flatMap(b => b.ids));
 	const ids = flags['low-yield']
 		? vg.getAllVerifiedSentences().filter(t => lowYieldSlots(t).length > 0).map(t => t.id)
-		: (flags['critical-path'] ? criticalPathOrder(flags.save) : reviewOrder()).filter(t => !l.reviewed[t.id] && !inBatch.has(t.id)).slice(0, n).map(t => t.id);
-	if (!ids.length) { console.log('every template with a variable slot has been reviewed'); return; }
+		: flags['critical-path']
+			// Sentence-focused: a template is due until it is both reviewed (tags) and has an English frame, so either part can come first.
+			? criticalPathOrder(flags.save, true).filter(t => needsTags(t, l) || !t.english).slice(0, n).map(t => t.id)
+			: reviewOrder().filter(t => !l.reviewed[t.id] && !inBatch.has(t.id)).slice(0, n).map(t => t.id);
+	if (!ids.length) { console.log(flags['critical-path'] ? 'every template is reviewed and has an English frame' : 'every template with a variable slot has been reviewed'); return; }
 	const b = { n: l.batches.length + 1, opened: today(), ids };
 	if (flags['low-yield']) b.lowYield = true;
-	if (flags['critical-path']) b.order = 'critical-path';
+	if (flags['critical-path']) { b.order = 'critical-path'; b.english = true; }   // done also requires a valid English frame
 	if (flags['dry-run']) { console.log('(dry run: batch not opened)'); printBatch(b, l); return; }
 	l.batches.push(b);
 	writeLedger(l);
@@ -677,11 +685,19 @@ function cmdBatch(sub, flags) {
 	printBatch(b, l);
 }
 
+/** Why template t can't be marked done in batch b: sentence-focused batches (b.english) finish tags and English together. */
+function doneProblems(b, t) {
+	if (!b.english) return [];
+	return t.english ? frameProblems(t, t.english) : ['no English frame: write one with en-set first'];
+}
+
 function cmdDone(id, note, flags) {
 	const l = readLedger();
 	const b = [...l.batches].reverse().find(x => x.ids.includes(id));
 	if (!b) throw new Error(`${id} is not in any batch (run \`batch\` to see the open batch)`);
 	if (!note || note.length < 4) throw new Error('done needs a note: what changed ("-food slot 1; gap tense-time") or "kept: already right"');
+	const probs = doneProblems(b, getTpl(id));
+	if (probs.length) throw new Error(`${id} is not done: ${probs.join('; ')}`);
 	if (flags['dry-run']) { console.log('(dry run)'); return; }
 	l.reviewed[id] = { batch: b.n, note };
 	writeLedger(l);
@@ -1190,5 +1206,5 @@ if (require.main === module) {
 module.exports = {
 	splitTop, locateRow, editSlotTags, editRules, rowText, kNameMap,
 	GAP_CLASSES, RULE_KINDS, validateRule, exampleKo, reviewOrder, readLedger, isSlotFixture, slotAdmits, slotFixtureState, statsLines,
-	varyingSlots, frameProblems, editEnglish, enCheckProblems
+	varyingSlots, frameProblems, editEnglish, enCheckProblems, doneProblems, needsTags
 };

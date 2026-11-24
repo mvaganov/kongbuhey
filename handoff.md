@@ -74,8 +74,11 @@ tools/merge_units.js    merge duplicate units: alias=canonical pairs -> alias ro
 ## Priorities (in order)
 Top priority now (owner 2026-11-24): English frames for every verified template (section below), so verified sentences
 can be used in the sentence quiz. Sonnet does the drafting. Then:
-- **Reminder for the owner:** once most verified templates have an English frame (`node tools/vs_tune.js en-status`), go back
-  to the verified-sentence tuning workflow (batch 7 next, `vs_tune batch --critical-path`). It is paused until then.
+- Since 2026-11-24 the tag loosening and the English frames are one sentence-focused batch (`vs_tune batch --critical-path`):
+  each template is loosened first, then given its English, so neither has to be redone.
+- **Reminder for the owner:** the Opus implementer pass (fixing the recorded gaps) is paused to save budget; gaps keep
+  accumulating as rules (`gaps --summary`). Once most verified templates have an English frame (`node tools/vs_tune.js en-status`),
+  start running it again after batches.
 - After that tuning settles the grammar handling: upgrade the AST English realizer (`korean/translation/natural_realizer.js`):
   relative clauses, quotes, 3+ clauses. Measured 2026-11-24: only 230 of 547 templates avoid those gaps. Decide then whether
   it replaces the frames. Not before: two English generators are too much for an agent to keep in view.
@@ -113,10 +116,13 @@ validator error that the original sentence also raises is waived, so only what a
 State lives in code, not here: `vs_tune.js batch` (open batch, `data/vs_review.json`), `gaps --summary`, `fixtures --unsure`, `batch status`.
 `test/golden_sentences_test.js` enforces it: slot fixtures, gap classes, ledger ids.
 
-One agent at a time (vs_tune writes files in place; no locks). Per batch: loosener (Sonnet) -> implementer (Opus) -> owner (review,
-native-speaker list, commit). The orchestrating session starts each agent with the prompt below and does not do the batch itself.
+One agent at a time (vs_tune writes files in place; no locks). Per batch: sentence agent (Sonnet) -> implementer (Opus; paused, see
+Priorities) -> owner (review, native-speaker list, commit). Since 2026-11-24 a `--critical-path` batch is sentence-focused: each template
+gets its tags reviewed (when something varies) and an English frame, in that order; the list shows `needs tags+english` etc., and `done`
+refuses a template without a valid frame. 25 per batch. The orchestrating session starts each agent with the prompt below, does not do
+the batch itself, and may run 2 or 3 batches back to back (fresh agent each) before one review and commit.
 
-**Loosener brief (Sonnet). Paste as the agent prompt:**
+**Sentence batch brief (Sonnet). Paste as the agent prompt:**
 > Kongbuhey repo (read CLAUDE.md first: test from a local copy, never commit). Run `node tools/vs_tune.js batch --critical-path`
 > (opens or resumes the batch; new batches follow the Examples Critical Path from the owner's save, so each batch makes soon-usable
 > templates better) and `node tools/vs_tune.js gap-classes`. An open batch keeps `]vs_batch.txt` in the repo root (progress and
@@ -133,14 +139,20 @@ native-speaker list, commit). The orchestrating session starts each agent with t
 > 3. Fixtures (`fixture <id> <i> <unitId> bad|ok "<reason>"`): one `bad` per distinct kind of wrong sentence you saw (excluded ones
 >    become fixed, gap ones open with `--gap-class`), one `ok` for the newly admitted word you are surest of. `--confidence unsure`
 >    whenever you would not bet on it; `evidence <ko> ...` shows Tatoeba support. Unsure fixtures go to a native speaker.
-> 4. `done <id> "<what changed | kept: reason>"`. Locked slots never vary: skip them.
+> 4. Locked slots never vary: skip them. A template with nothing variable needs only step 6.
 > 5. A validator rejecting a natural sentence with the new word is gap class `validator-reject` (name the error code); do not work
 >    around a failing test with a deny rule: report it.
-> 6. English frame (if `show` prints one): after loosening a template, run `en-set <id> "<its frame>"
->    --dry-run` (`show <id>` prints the current frame) and read the variants.
->    A slot that now varies must become a placeholder (`en-check` in the suite fails otherwise); newly admitted words that read badly in
->    the frame mean reworking the frame with `en-set` (same rules as the English frame brief).
-> Finish: `node test.js` (local copy) passes, then report `batch status`, `gaps --summary`, and the count from `fixtures --unsure`. Stop.
+> 6. English (every template; after its tags are done). If `show` prints a frame, rerun it: `en-set <id> "<frame>" --dry-run`; otherwise
+>    write one. `en-set <id> "<frame>"` validates and prints the frame filled for the original and 4 variants. Natural English that keeps
+>    the Korean structure visible ("because I was tired, I slept"; connectives translated faithfully; relative clauses as "the X that...");
+>    dropped subjects chosen from context (questions: "you"); no words for politeness levels or -(으)시-. Fixed slots are written out;
+>    every slot that varies is a placeholder: `{3}` plain gloss, `{3:form}` (`base past part s ing adj` | `pl a the`; write "a/the"
+>    only through `{3:a}`/`{3:the}`), `{3|wording}` used while slot 3 holds its original word. Read every variant; restructure until
+>    they are grammatical. Gloss or pool problems a frame can't fix (degree adverbs, prepositions of time/motion verbs): list them.
+>    Read 10 frames from earlier batches first (`show` on a few `done` templates) to match their style.
+> 7. `done <id> "<tags: what changed | kept>; en: <new|kept|reworked>"` (refused until the frame is valid).
+> Finish: `node test.js` (local copy) passes, then report `batch status`, `gaps --summary`, the count from `fixtures --unsure`, `en-status`,
+> a table of the frames (id | Korean | frame), and the gloss/pool problems from step 6. Stop.
 
 **Implementer (Opus), after the loosener:** `gaps --summary`, take the top class (or two), implement it in the generator/concord/data
 (CLAUDE.md rules: no Hangul literals or unit ids in logic), remove the gap rules it now handles (`rule-rm`), `fixtures --sync`,
@@ -202,7 +214,7 @@ Verified templates had no English. `enNatural` was the slot glosses joined with 
 `VERIFIED_TEMPLATE_SCHEMA.English` (index 7, null Rules before it) holds a frame. `renderEnglishFrame` fills it per generation:
 `{3}` plain gloss, `{3:past}` a form (`base past part s ing adj pl a the`), `{3|wording}` used while slot 3 holds its original word.
 A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc2 then hides its 🎯, and it is never offered as a wrong answer.
-- Drafting batch: `node tools/vs_tune.js en-batch --n 25` (critical-path order), `en-set <id> "<frame>"` (validates, shows variants),
+- Normal path: the sentence-focused tuning batch (tuning workflow section). English-only pass (no tag work): `node tools/vs_tune.js en-batch --n 50` (critical-path order), `en-set <id> "<frame>"` (validates, shows variants),
   `en-check` (run by test/collocation_test.js), `en-status`. Sonnet brief: natural English that keeps the Korean structure visible
   (connectives translated faithfully, dropped subjects chosen from context, no words for politeness levels), every VARIES slot a placeholder,
   read the variants and restructure until they're grammatical.
