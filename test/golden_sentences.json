@@ -6076,6 +6076,127 @@
       "confidence": "clear",
       "status": "fixed",
       "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g496",
+      "templateId": "vs_110",
+      "slot": 0,
+      "unitId": 745,
+      "expect": "bad",
+      "ko": "여행사는 일찍 문을 닫는데 편의점은 24 시간 문을 열어서 밤 늦게도 갈 수 있어요.",
+      "reason": "travel agency does not 'close early vs 24h convenience store' like a shop",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g497",
+      "templateId": "vs_130",
+      "slot": 6,
+      "unitId": 259,
+      "expect": "bad",
+      "ko": "요즘 제일 인기 있는 스포츠용품 회사 스무 곳의 운동화를 골랐습니다.",
+      "reason": "'most popular company ... twenty places' reads absurd",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g498",
+      "templateId": "vs_130",
+      "slot": 8,
+      "unitId": 533,
+      "expect": "bad",
+      "ko": "요즘 제일 인기 있는 스포츠용품 회사 세 곳의 구두를 골랐습니다.",
+      "reason": "dress shoes from a sports goods company",
+      "confidence": "unsure",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g499",
+      "templateId": "vs_308",
+      "slot": 1,
+      "unitId": 500,
+      "expect": "bad",
+      "ko": "어제는 할머니에게 전화를 해서 한국에서 무엇을 하고 싶냐고 물었다.",
+      "reason": "grandmother needs 께 and 여쭈다, not 에게/묻다",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g500",
+      "templateId": "vs_308",
+      "slot": 1,
+      "unitId": 1120,
+      "expect": "bad",
+      "ko": "어제는 부인에게 전화를 해서 한국에서 무엇을 하고 싶냐고 물었다.",
+      "reason": "부인 is someone else's wife; 'asked my wife' wrong word",
+      "confidence": "unsure",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g501",
+      "templateId": "vs_37",
+      "slot": 6,
+      "unitId": 1785,
+      "expect": "ok",
+      "ko": "속초에서 보는 동해 바다는 정말 푸르고 시원합니다.",
+      "reason": "시원한 바다 -> blue and refreshing sea",
+      "confidence": "unsure",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g502",
+      "templateId": "vs_193",
+      "slot": 4,
+      "unitId": 197,
+      "expect": "ok",
+      "ko": "설명을 잘 하고 부탁하면 친절한 친구는 여러분의 이야기를 잘 들어줄 것입니다.",
+      "reason": "kind friend listens to your story",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g503",
+      "templateId": "vs_8",
+      "slot": 7,
+      "unitId": 1621,
+      "expect": "ok",
+      "ko": "그리고 이제 한국 문화를 좀 더 자세히 이해하고 싶어서 대학원에서 한국학을 전공하려고 합니다.",
+      "reason": "wanting to understand Korean culture in detail",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g504",
+      "templateId": "vs_2",
+      "slot": 12,
+      "unitId": 813,
+      "expect": "ok",
+      "ko": "고등학교 때 한국 친구와 중국 친구를 만난 후에 아시아 문화에 관심이 생겨서 아시아학을 전공했습니다.",
+      "reason": "아시아학을 전공했습니다",
+      "confidence": "clear",
+      "status": "fixed",
+      "addedAt": "2026-11-24"
+    },
+    {
+      "id": "g505",
+      "templateId": "vs_39",
+      "slot": 4,
+      "unitId": 418,
+      "expect": "ok",
+      "ko": "바다와 가까운 곳에 큰 공원도 있는데 산책을 하거나 자전거를 빌려서 탈 수 있습니다.",
+      "reason": "큰 공원 natural; blocked by validator",
+      "confidence": "clear",
+      "status": "open",
+      "gapClass": "validator-reject",
+      "addedAt": "2026-11-24"
     }
   ]
 }

@@ -297,6 +297,8 @@ A sentence without a frame has `glossOk: false` (shared/sentence_adapter.js). fc
   together. The brief (step 7) now warns about it.
 - Batch 19 (25, 2026-11-24): about 7 min, 145k tokens; 496 of 547 framed. Tightened 9 (cooking verbs, kin collisions, 걸리다 + illness).
   fc2_ui_test's sentence tests now pick an example whose quiz builds twice (the background build is random too).
+- Batch 20 (25, 2026-11-24): about 6 min, 147k tokens; 521 of 547 framed. Loosened allow lists (vs_8, vs_193, vs_2, vs_37); tightened 3;
+  gap rules: 크다 + 공원 rejected (vs_39, ADNOMINAL_DESCRIPTIVE_COLLOCATION_MISMATCH), honorific in vs_308 (이모/고모 + 에게/묻다 kept).
 
 ## fc2 storage, sentence queue, generation performance (2026-11-19 to 2026-11-22)
 Design and invariants now live in `docs/architecture.md` (sections 3, 4 and 6). History in brief:

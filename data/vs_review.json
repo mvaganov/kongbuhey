@@ -638,6 +638,39 @@
 				"vs_533",
 				"vs_90"
 			]
+		},
+		{
+			"n": 20,
+			"opened": "2026-11-24",
+			"ids": [
+				"vs_133",
+				"vs_193",
+				"vs_203",
+				"vs_144",
+				"vs_111",
+				"vs_130",
+				"vs_292",
+				"vs_131",
+				"vs_16",
+				"vs_39",
+				"vs_37",
+				"vs_107",
+				"vs_137",
+				"vs_35",
+				"vs_247",
+				"vs_8",
+				"vs_337",
+				"vs_308",
+				"vs_65",
+				"vs_190",
+				"vs_110",
+				"vs_485",
+				"vs_174",
+				"vs_22",
+				"vs_2"
+			],
+			"order": "critical-path",
+			"english": true
 		}
 	],
 	"reviewed": {
@@ -2612,6 +2645,106 @@
 		"vs_533": {
 			"batch": 19,
 			"note": "tags: kept; en: new"
+		},
+		"vs_8": {
+			"batch": 20,
+			"note": "slot 7 allow 이해하다; others kept; en: new"
+		},
+		"vs_193": {
+			"batch": 20,
+			"note": "slot 4 allow 친절하다, 착하다; en: new"
+		},
+		"vs_2": {
+			"batch": 20,
+			"note": "slot 12 allow 전공하다; en: new"
+		},
+		"vs_37": {
+			"batch": 20,
+			"note": "slot 6 allow 아름답다, 맑다, 시원하다; en: new"
+		},
+		"vs_39": {
+			"batch": 20,
+			"note": "kept (gap validator-reject 큰 공원); en: new"
+		},
+		"vs_110": {
+			"batch": 20,
+			"note": "slot 0 deny office-type companies; en: new"
+		},
+		"vs_130": {
+			"batch": 20,
+			"note": "slot 6 deny 11+ numbers; slot 8 deny 구두; en: new"
+		},
+		"vs_308": {
+			"batch": 20,
+			"note": "slot 1 deny 어머니/할머니/외할머니/부인 (honorific gap logged); en: new"
+		},
+		"vs_133": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_203": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_144": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_111": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_292": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_131": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_16": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_107": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_137": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_35": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_247": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_337": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_65": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_190": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_485": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_174": {
+			"batch": 20,
+			"note": "kept; en: new"
+		},
+		"vs_22": {
+			"batch": 20,
+			"note": "kept; en: new"
 		}
 	}
 }
