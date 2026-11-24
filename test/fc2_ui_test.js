@@ -341,6 +341,12 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		const q2 = app.nb.q;
 		click(`[data-act="nb-pick"][data-v="${q2.n === 1 ? 2 : 1}"]`);
 		assert(app.nb.streak === 0 && app.nb.total === 2 && app.g.games.numbersBest === 1, 'a wrong tap resets the streak and keeps the best');
+		// Closing the board and opening another modal before its next-number timer fires: the board must not reopen over it
+		// (it did, and made the later "force save" checks flaky).
+		app.closeModal(); app.openModal('Other modal', '<p>other</p>');
+		await wait(2100);
+		assert(d.querySelector('#modal h2').textContent === 'Other modal', 'the number board timer does not reopen the board over another modal');
+		app.closeModal();
 	});
 
 	await step('reload', async () => {

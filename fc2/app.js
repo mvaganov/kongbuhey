@@ -1102,7 +1102,8 @@ class FC2App {
 			FX.sfx('answer', n.streak); FX.buzz(15); FX.burstAt(el, { count: 8 + Math.min(n.streak, 20), power: 5 });
 		} else { n.streak = 0; FX.sfx('miss'); FX.buzz([20, 30, 20]); }
 		this.nbRender();
-		setTimeout(() => { if (this.nb === n && n.done && !this.modalHidden()) this.nbNext(); }, v === n.q.n ? 1100 : 1900);
+		// Only while the board is what the modal shows: closed and replaced by another modal, it must not reopen over that one.
+		setTimeout(() => { if (this.nb === n && n.done && this.$('#modal [data-act="nb-pick"]')) this.nbNext(); }, v === n.q.n ? 1100 : 1900);
 	}
 
 	// ---------- menu ----------
