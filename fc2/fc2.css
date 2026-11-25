@@ -258,3 +258,20 @@ code { background: var(--panel2); border-radius: 4px; padding: 1px 5px; }
 .vq-ok { color: var(--good); font-size: 13px; font-weight: 700; } .vq-lock { font-size: 13px; color: var(--muted); } .vq-lock.many { color: var(--bad); font-weight: 800; }
 .vq-btns { display: flex; flex-direction: column; gap: 6px; justify-content: center; } .vq-btns .btn { min-height: 36px; padding: 6px 10px; font-size: 13px; }
 .vq-alt { margin-left: 6px; color: var(--muted); font-size: 11px; }
+
+/* inventory slots */
+.slots { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.slot { background: var(--panel2); border-radius: 12px; padding: 10px 12px; }
+.slot.empty { border: 1px dashed var(--muted); background: none; }
+.slot-head { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; margin-bottom: 6px; } .slot-head small { flex-basis: 100%; }
+.kind-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; } .btn.kind { font-size: 14px; text-align: left; }
+.shelf { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.slot textarea, .slot input { width: 100%; box-sizing: border-box; } .slot .row input { width: auto; flex: 1; min-width: 0; }
+.btn-col { display: flex; flex-direction: column; gap: 8px; }
+.victory { font-size: 18px; text-align: center; padding: 12px 4px; }
+/* sparkle hint: a subtle twinkle on the right answer */
+.choice.sparkle { position: relative; overflow: visible; }
+.choice.sparkle::after { content: '✦'; position: absolute; top: -6px; right: 6px; font-size: 13px; color: var(--accent); animation: twinkle 1.8s ease-in-out infinite; pointer-events: none; }
+.choice.sparkle::before { content: '✧'; position: absolute; bottom: -5px; left: 10px; font-size: 10px; color: var(--accent); animation: twinkle 2.3s ease-in-out .6s infinite; pointer-events: none; }
+@keyframes twinkle { 0%, 100% { opacity: 0; transform: scale(.6) rotate(0); } 50% { opacity: .9; transform: scale(1) rotate(20deg); } }
+.tile.s-retired { opacity: .45; }

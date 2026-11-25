@@ -53,6 +53,8 @@ class FC2Core {
 		this.rand = env.random || Math.random;
 		this.persist = env.persist || { game() {}, unit() {}, cell() {} };
 		this.nameRows = [...this.units.values()].filter(u => G.isNameRow(u, this.C));
+		const ssi = [...this.units.values()].find(u => u[this.C.Korean] === '씨' && u[this.C.PartofSpeech] === 'Grammar');   // name slots: "Name 씨, ..."
+		this.ssiId = ssi ? ssi[this.C.Id] : null;
 		this.g = null;
 		this.prog = new Map();   // id -> { score, tier, lastCorrect, lastSeen }
 		this.notes = {};
@@ -107,7 +109,8 @@ class FC2Core {
 
 	// ---------- reading state ----------
 	unitOf(id) { return this.prog.get(id) || G.blankUnit(); }
-	classify() { return G.classify(this.prog, this.g.owned, this.clock.sec()); }
+	/** Status of every owned unit except those on the retired shelf (they never come up as cards). */
+	classify() { const off = G.retiredIds(this.g); return G.classify(this.prog, off.size ? this.g.owned.filter(id => !off.has(id)) : this.g.owned, this.clock.sec()); }
 	counts(st = this.classify()) { const c = { new: 0, learning: 0, growing: 0, ripe: 0, wilted: 0, dormant: 0 }; for (const s of st.values()) c[s]++; return c; }
 	/** Units that can be pulled, owned and shown: everything except runtime custom names. */
 	playableUnits() { return [...this.units.values()].filter(u => u[this.C.Source] !== G.CUSTOM_NAME_SOURCE); }
@@ -145,10 +148,40 @@ class FC2Core {
 			if (sentences.length) {
 				this.recent = G.pushRecent(this.recent, G.contentUnitIds(sentences));
 				this.vqUsed(sentences);
+				this.addressOne(sentences);
 				if (this.env.onSentences) this.env.onSentences(id, sentences);
 			}
 			return { sentences, msg: sentences.length ? '' : this.opts.onlyOwned ? 'No examples from your unlocked units yet. They appear as you unlock more, or allow all units in the Menu.' : (list.message || 'No example sentences are available for this unit yet.') };
 		} catch (_) { return { sentences: [], msg: 'Could not generate sentences for this unit.' }; }
+	}
+
+	/** Name slots: now and then one addressable example becomes "Name 씨, ...". Mutates the list in place. */
+	addressOne(sentences) {
+		const names = G.slotTexts(this.g, 'name');
+		if (!names.length || this.rand() >= T.ADDRESS_CHANCE) return;
+		const at = sentences.map((x, i) => i).filter(i => G.addressable(sentences[i].ko) && !sentences[i].address);
+		if (!at.length) return;
+		const i = at[Math.floor(this.rand() * at.length)], n = names[Math.floor(this.rand() * names.length)];
+		sentences[i] = G.addressSentence(sentences[i], n.text, this.ssiId, n.en || n.text);
+	}
+
+	// ---------- inventory slots (game.js has the rules) ----------
+	slots() { return G.slotsOf(this.g); }
+	slotDo(ok) { if (ok) this.persist.game(); return ok; }
+	specialize(i, kind) { return this.slotDo(G.specialize(this.g, i, kind)); }
+	setSlotUnit(i, id) { return this.slotDo(G.setSlotUnit(this.g, i, id)); }
+	setSlotText(i, text, en) { return this.slotDo(G.setSlotText(this.g, i, text, en)); }
+	retire(id) { const ok = this.slotDo(G.retire(this.g, id, this.unitOf(id))); if (ok) { this.session.due.delete(id); this.session.front = (this.session.front || []).filter(x => x !== id); } return ok; }
+	unretire(id) { return this.slotDo(G.unretire(this.g, id)); }
+	unspecialize(i) { const cost = G.unspecialize(this.g, i); if (cost) this.persist.game(); return cost; }
+	/** Unit ids whose right answers sparkle in quizzes. */
+	sparkleIds() { return new Set(G.slotUnits(this.g, 'sparkle')); }
+	/** For a sentence test: the right choice sparkles when it holds a sparkle unit that no wrong choice holds. */
+	sparkleChoice(choices) {
+		const sp = this.sparkleIds(), right = (choices || []).find(c => c.ok);
+		if (!sp.size || !right) return false;
+		const wrongIds = new Set(choices.filter(c => !c.ok).flatMap(c => c.ids || []));
+		return (right.ids || []).some(id => sp.has(id) && !wrongIds.has(id));
 	}
 
 	/** A generated verified template goes to the back of the "time to use it" queue. */
@@ -174,12 +207,12 @@ class FC2Core {
 		const ok = x => x[C.Id] !== id && x[C.Korean] !== u[C.Korean] && x[C.English] !== u[C.English] && !seen.has(key(x));
 		// Distractors: unlocked units of the same part of speech first, then the same pack, then anything.
 		for (const pool of [all.filter(x => owned.has(x[C.Id]) && pos(x)), all.filter(x => pos(x) && x[C.Source] === u[C.Source]), all.filter(pos), all]) {
-			for (const x of pool.sort(() => this.rand() - 0.5)) {
+			for (const x of G.shuffle(pool, this.rand)) {
 				if (picks.length >= n - 1) break;
 				if (ok(x)) { seen.add(key(x)); picks.push(x); }
 			}
 		}
-		return { type, tier, choices: [u, ...picks].map(x => ({ id: x[C.Id], label: label(x) })).sort(() => this.rand() - 0.5) };
+		return { type, tier, choices: G.shuffle([u, ...picks].map(x => ({ id: x[C.Id], label: label(x) })), this.rand) };
 	}
 
 	// ---------- sentence comprehension test ----------
@@ -201,7 +234,7 @@ class FC2Core {
 		const nounsOf = ids => new Set(ids.filter(isNoun));
 		const cardNoun = isNoun(k.id), nouns = nounsOf([...mine].filter(id => !(cardNoun && id === k.id)));   // when the tested unit is a noun, its slot must differ in every option
 		const seen = new Set([norm(right), norm(String(s.enLiteral || ''))]), pool = [];
-		const shuffle = a => a.sort(() => this.rand() - 0.5), owned = this.g.owned;
+		const shuffle = a => G.shuffle(a, this.rand), owned = this.g.owned;
 		const inIt = [...mine].filter(id => id !== k.id && owned.includes(id));
 		const sources = [...(cardNoun ? [] : [k.id]), ...shuffle(inIt.filter(id => !isNoun(id))), ...shuffle(owned.filter(id => id !== k.id && !mine.has(id) && !isNoun(id))).slice(0, 5), ...shuffle(inIt.filter(isNoun))].slice(0, 10);
 		// Owned set and strength mean once per quiz, not once per generation call (~30). No queue order: wrong answers follow the queue's
@@ -237,7 +270,9 @@ class FC2Core {
 			for (const p of pool) { if (by.length >= 3) break; if (!by.includes(p)) by.push(p); }
 			picked = by;
 		}
-		return [{ text: rev ? String(s.ko) : right, ok: true, ids: [...mine] }, ...picked.map(p => ({ text: p.text, ok: false, ids: p.ids }))].sort(() => this.rand() - 0.5);
+		// An addressed example ("하루카 씨, ...") addresses every wrong answer the same way, or the name would give the right one away.
+		const addr = t => !s.address ? t : rev ? `${s.address} 씨, ${t}` : G.addressSentence({ en: t }, s.address, null, (String(right).split(',')[0] || s.address)).en;
+		return G.shuffle([{ text: rev ? String(s.ko) : right, ok: true, ids: [...mine] }, ...picked.map(p => ({ text: addr(p.text), ok: false, ids: p.ids }))], this.rand);
 	}
 
 	// ---------- the card loop ----------
@@ -251,6 +286,14 @@ class FC2Core {
 		if (!pick) { this.card = null; return null; }
 		const s = st.get(pick.id), u = this.unitOf(pick.id), trial = G.isTrial(u, this.g.h[pick.id] || 0, s);
 		this.card = { id: pick.id, mode: trial ? 'trial' : pick.mode, st: s, side: 'front', shownAt: this.clock.ms(), trial: trial ? this.buildTrial(pick.id, u.tier) : null, ...this.generateFor(pick.id) };
+		// Audio slot: the card is a listening test (hear it, then flip). Focus: picked by the focus rotation.
+		if (!trial && G.slotUnits(this.g, 'audio').includes(pick.id) && this.env.canSpeak && this.env.canSpeak()) this.card.listen = true;
+		if (pick.focus) this.card.focus = true;
+		// Victory card: the first time the due cards run out (only practice is left), show one of the player's messages.
+		if (pick.mode === 'practice' && !trial) {
+			const wins = G.slotTexts(this.g, 'victory');
+			if (wins.length && !this.session.victory) { this.card.victory = wins[Math.floor(this.rand() * wins.length)].text; this.session.victory = true; }
+		} else this.session.victory = false;
 		return this.card;
 	}
 
@@ -338,7 +381,7 @@ class FC2Core {
 			coins += r.coins; xp += r.xp; ups += r.ups;
 		};
 		for (const id of R.unitIdsOf(s)) {
-			if (id === k.id || !g.owned.includes(id) || G.isTrial(this.unitOf(id), g.h[id] || 0, st.get(id))) continue;
+			if (id === k.id || !g.owned.includes(id) || !st.has(id) || G.isTrial(this.unitOf(id), g.h[id] || 0, st.get(id))) continue;
 			const row = { id, n: 0, coins: 0, xp: 0, before: { ...this.unitOf(id) } };
 			credit(id, row); credit(id, row);
 			row.after = { ...this.unitOf(id) }; rows.push(row);

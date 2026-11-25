@@ -118,9 +118,13 @@ function runEslint() {
 	return { errors, warnings };
 }
 
+// Printed in the header and on every failure: seeded goldens (fc2 trace, bench hashes) can differ between Node versions and OSes.
+const PLATFORM = `node ${process.version}, ${process.platform} ${process.arch}`;
+
 function failFast(stageName, errorDetail) {
 	console.error(`\n======================================================`);
 	console.error(`[FAIL FAST] Test Suite Failed at: ${stageName}`);
+	console.error(`Platform: ${PLATFORM}`);
 	console.error(`======================================================`);
 	console.error(errorDetail);
 	console.error(`\nExecution aborted immediately to prevent cascading issues.`);
@@ -139,6 +143,7 @@ function runTests(options = {}) {
 
 	console.log(`======================================================`);
 	console.log(`               KONGBUHEY TEST SUITE                   `);
+	console.log(`   ${PLATFORM}`);
 	console.log(`======================================================`);
 	if (targetSource) {
 		console.log(`Target Source Scope: ${targetSource}`);
@@ -471,6 +476,8 @@ function runTests(options = {}) {
 		delete require.cache[STUDYTEXTS_PATH];
 		const { analyzePassage } = require(TEXT_ANALYZER_PATH);
 		const studytexts = require(STUDYTEXTS_PATH);
+		const subsPath = path.resolve(__dirname, 'local/name_substitutions.json');
+		const NAME_SUBS = fs.existsSync(subsPath) ? JSON.parse(fs.readFileSync(subsPath, 'utf8')).map : {};
 
 		// Test all ingested study texts for 0 gaps
 		const testsToRun = targetSource && INGESTED_STUDY_TEXTS.includes(targetSource)
@@ -478,7 +485,9 @@ function runTests(options = {}) {
 			: INGESTED_STUDY_TEXTS;
 
 		for (const textKey of testsToRun) {
-			const passageText = studytexts[textKey];
+			// Names replaced in data.js to distance it from the textbook: map the passage's original names to their stand-ins (local/, gitignored).
+			let passageText = studytexts[textKey];
+			if (typeof passageText === 'string') for (const [from, to] of Object.entries(NAME_SUBS)) passageText = passageText.split(from).join(to);
 			if (!passageText) {
 				failFast("Stage 5 (Text Analyzer)", `Passage key '${textKey}' not found in studytexts.js`);
 			}

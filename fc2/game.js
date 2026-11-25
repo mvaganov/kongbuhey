@@ -54,7 +54,18 @@ const T = {
 		combo: { name: 'Long breath', desc: '+5 combo cap', per: 5, base: 150, growth: 1.9, max: 5 },
 		pull: { name: 'Wider net', desc: '+1 unit per pull', per: 1, base: 200, growth: 2.2, max: 5 },
 		nursery: { name: 'Bigger nursery', desc: '+3 learning slots', per: 3, base: 150, growth: 1.9, max: 5 }
-	}
+	},
+	// Inventory slots: one per level above 1. An empty slot is specialized once (for good); the Shop's Unspecialize resets one for coins.
+	SLOT_KINDS: {
+		retired: { icon: '🗄', name: 'Retired shelf', desc: 'Units with ★★ or more that you know well enough: they leave the card queue and their recognition never drops. Holds any number.' },
+		focus: { icon: '🎯', name: 'Focus', desc: 'One unit that comes up more often (about every 6 cards).' },
+		audio: { icon: '🔊', name: 'Audio test', desc: 'One unit whose card is always a listening test: you hear it, then flip.' },
+		sparkle: { icon: '✨', name: 'Sparkle hint', desc: 'One unit: when it is the right answer in a quiz, that answer sparkles.' },
+		name: { icon: '🙋', name: 'Name', desc: 'A name you type. Now and then an example starts "Name 씨, ..." (only questions, requests and polite sentences).' },
+		victory: { icon: '🏆', name: 'Victory card', desc: 'A message (HTML allowed) shown when you have cleared every due card.' },
+		freeze: { icon: '🧊', name: 'Streak freeze', desc: 'Covers one missed day of your streak, then recharges for a week.' }
+	},
+	RETIRE_TIER: 2, FOCUS_EVERY: 6, FREEZE_RECHARGE_DAYS: 7, ADDRESS_CHANCE: 0.35, UNSPEC_BASE: 150, UNSPEC_GROWTH: 1.6, SLOT_TEXT_MAX: 2000
 };
 
 const clamp = (n, lo = T.MIN_SCORE, hi = T.MAX_SCORE) => Math.max(lo, Math.min(hi, n));
@@ -63,7 +74,7 @@ const blankUnit = () => ({ score: 0, tier: 0, lastCorrect: 0, lastSeen: 0 });
 const blankGame = now => ({
 	v: 1, games: {}, coins: 0, xp: 0, level: 1, owned: [], h: {}, up: {}, pulls: 0, lastCollect: now,
 	streak: { day: '', n: 0 }, cos: { owned: ['midnight', 'sparks'], theme: 'midnight', particle: 'sparks' },
-	totals: { answers: 0, harvests: 0, rounds: 0, earned: 0, trials: 0 }, seals: 0, starsBanked: 0, ascensions: 0, quests: null, vq: []
+	totals: { answers: 0, harvests: 0, rounds: 0, earned: 0, trials: 0 }, seals: 0, starsBanked: 0, ascensions: 0, quests: null, vq: [], slots: [], unspec: 0
 });
 
 const NUMBER_COST = 10;
@@ -233,9 +244,87 @@ function idleRate(g, units, now) {
 /** Day streak: call on the first answer of a session. dayKey = local YYYY-MM-DD, prevKey = the day before. Returns 'kept'|'same'|'reset'. */
 function touchStreak(g, dayKey, prevKey) {
 	if (g.streak.day === dayKey) return 'same';
-	const kept = g.streak.day === prevKey;
+	let kept = g.streak.day === prevKey, frozen = false;
+	if (!kept && g.streak.day && g.streak.n > 0) {   // streak freeze slots cover the missed days, one ready slot per day
+		const missed = dayDiff(g.streak.day, dayKey) - 1, ready = slotsOf(g).filter(x => x.kind === 'freeze' && freezeReady(x, dayKey));
+		if (missed > 0 && missed <= ready.length) { ready.slice(0, missed).forEach(x => { x.used = dayKey; }); kept = frozen = true; }
+	}
 	g.streak = { day: dayKey, n: kept ? g.streak.n + 1 : 1 };
-	return kept ? 'kept' : 'reset';
+	return frozen ? 'frozen' : kept ? 'kept' : 'reset';
+}
+
+// ---------- inventory slots ----------
+/** Day keys are "Y-M-D" (clock.day); whole days from a to b. */
+function dayDiff(a, b) { const t = k => { const [y, m, d] = String(k).split('-').map(Number); return Date.UTC(y, m - 1, d); }; return Math.round((t(b) - t(a)) / 864e5); }
+const freezeReady = (slot, dayKey) => !slot.used || dayDiff(slot.used, dayKey) >= T.FREEZE_RECHARGE_DAYS;
+const slotCount = g => Math.max(0, (g.level || 1) - 1);
+/** g.slots, grown to one slot per level above 1 (never shrinks). Every reader goes through this, so old saves need no migration. */
+function slotsOf(g) {
+	if (!Array.isArray(g.slots)) g.slots = [];
+	while (g.slots.length < slotCount(g)) g.slots.push({ kind: null });
+	return g.slots;
+}
+const UNIT_KINDS = ['focus', 'audio', 'sparkle'], TEXT_KINDS = ['name', 'victory'];
+/** Specialize empty slot i. One retired shelf only (it holds any number of units). Returns false when not allowed. */
+function specialize(g, i, kind) {
+	const slots = slotsOf(g), slot = slots[i];
+	if (!slot || slot.kind || !T.SLOT_KINDS[kind]) return false;
+	if (kind === 'retired' && slots.some(x => x.kind === 'retired')) return false;
+	slots[i] = kind === 'retired' ? { kind, ids: [] } : UNIT_KINDS.includes(kind) ? { kind, id: null } : TEXT_KINDS.includes(kind) ? { kind, text: '' } : { kind, used: '' };
+	return true;
+}
+/** Put unit id into unit slot i (null empties it). */
+function setSlotUnit(g, i, id) {
+	const slot = slotsOf(g)[i];
+	if (!slot || !UNIT_KINDS.includes(slot.kind) || (id !== null && !g.owned.includes(id))) return false;
+	slot.id = id; return true;
+}
+/** Text slot i: a name (text = Korean, en = how the English says it) or a victory message. */
+function setSlotText(g, i, text, en = '') {
+	const slot = slotsOf(g)[i];
+	if (!slot || !TEXT_KINDS.includes(slot.kind)) return false;
+	slot.text = String(text || '').trim().slice(0, slot.kind === 'name' ? 12 : T.SLOT_TEXT_MAX);
+	if (slot.kind === 'name') slot.en = String(en || '').trim().slice(0, 30) || slot.text;
+	return true;
+}
+const shelf = g => slotsOf(g).find(x => x.kind === 'retired') || null;
+const retiredIds = g => new Set((shelf(g) || { ids: [] }).ids);
+const canRetire = (g, u) => Boolean(shelf(g)) && (u ? u.tier || 0 : 0) >= T.RETIRE_TIER;
+function retire(g, id, u) {
+	const sh = shelf(g);
+	if (!sh || !g.owned.includes(id) || !canRetire(g, u) || sh.ids.includes(id)) return false;
+	sh.ids.push(id);
+	for (const x of slotsOf(g)) if (UNIT_KINDS.includes(x.kind) && x.id === id) x.id = null;   // a retired unit leaves the other slots
+	return true;
+}
+function unretire(g, id) { const sh = shelf(g); if (!sh || !sh.ids.includes(id)) return false; sh.ids = sh.ids.filter(x => x !== id); return true; }
+const slotUnits = (g, kind) => slotsOf(g).filter(x => x.kind === kind && typeof x.id === 'number').map(x => x.id);
+const slotTexts = (g, kind) => slotsOf(g).filter(x => x.kind === kind && x.text);
+const unspecCost = g => Math.round(T.UNSPEC_BASE * Math.pow(T.UNSPEC_GROWTH, g.unspec || 0));
+/** The Shop entry: reset specialized slot i to empty for coins (a retired shelf returns its units to the queue). */
+function unspecialize(g, i) {
+	const slot = slotsOf(g)[i], cost = unspecCost(g);
+	if (!slot || !slot.kind || g.coins < cost) return 0;
+	g.coins -= cost; g.unspec = (g.unspec || 0) + 1; g.slots[i] = { kind: null };
+	return cost;
+}
+/**
+ * A sentence a person can be addressed in: a question, or a polite (-요, -ㅂ/습니다) or request (-세요, -십시오, -ㅂ시다) ending.
+ * "하루카 씨, 민수가 갔어" would be odd; "하루카 씨, 어디 가요?" is fine. Plain-speech statements and sentences that already address
+ * someone (a vocative -아/-야 or 씨 before a comma) are skipped.
+ */
+function addressable(ko) {
+	const t = String(ko || '').trim();
+	if (!t || /,/.test(t)) return false;
+	if (/\?$/.test(t)) return true;
+	return /(요|니다|시오|시다)[.!]?$/.test(t);
+}
+/** The sentence with "Name 씨, " in front: Korean, English and the eojeols the card renders (씨 linked to its unit when given). */
+function addressSentence(s, name, ssiId = null, nameEn = name) {
+	const lower = en => String(en || '').replace(/^(\S+)/, w => (w === 'I' || /^I'/.test(w) || /[A-Z].*[A-Z]/.test(w) ? w : w.charAt(0).toLowerCase() + w.slice(1)));
+	const pre = en => en ? `${nameEn}, ${lower(en)}` : en;
+	const ejs = [{ segments: [{ textKo: name, textEn: nameEn, unitId: null }] }, { segments: [{ textKo: '씨', textEn: '(Mr./Ms.)', unitId: ssiId }, { textKo: ',', textEn: '', unitId: null }] }];
+	return { ...s, ko: `${name} 씨, ${s.ko}`, en: pre(s.en), enNatural: pre(s.enNatural), enLiteral: pre(s.enLiteral), eojeols: [...ejs, ...(s.eojeols || [])], address: name };
 }
 
 // ---------- daily quests ----------
@@ -316,6 +405,13 @@ function pickPull(cands, n, rng = Math.random, pack = null) {
 function nextCard(g, units, st, s) {
 	const not = id => id !== s.last || g.owned.length === 1;
 	while (s.front && s.front.length) { const id = s.front.shift(); if (st.has(id)) return { id, mode: modeOf(st.get(id)) }; }
+	// Focus slots: a focused unit comes up about every T.FOCUS_EVERY cards (the least recently seen one first).
+	const focus = slotUnits(g, 'focus').filter(id => st.has(id) && not(id));
+	if (focus.length && s.n - (s.focusAt === undefined ? -T.FOCUS_EVERY : s.focusAt) >= T.FOCUS_EVERY) {
+		const id = focus.sort((a, b) => ((units.get(a) || {}).lastSeen || 0) - ((units.get(b) || {}).lastSeen || 0))[0];
+		s.focusAt = s.n;
+		return { id, mode: modeOf(st.get(id)), focus: true };
+	}
 	const by = (want, key) => g.owned.filter(id => want.includes(st.get(id)) && not(id)).sort((a, b) => key(a) - key(b));
 	const dueAt = id => s.due.has(id) ? s.due.get(id) : 0, lc = id => (units.get(id) || {}).lastCorrect || 0, ls = id => (units.get(id) || {}).lastSeen || 0;
 	const learning = by(['learning'], dueAt);
@@ -327,6 +423,16 @@ function nextCard(g, units, st, s) {
 	const practice = by(['growing'], ls);
 	return practice.length ? { id: practice[0], mode: 'practice' } : null;
 }
+/**
+ * Fisher-Yates shuffle in place with the given random. Never sort with a random comparator (() => rnd() - 0.5): that comparator is
+ * inconsistent, so the order depends on the engine's sort algorithm, and a seeded game then differs between Node versions (2026-11-26:
+ * the fc2 trace passed on Node 22 and failed on Node 26).
+ */
+function shuffle(a, rnd = Math.random) {
+	for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+	return a;
+}
+
 const modeOf = st => (st === 'new' || st === 'learning') ? 'learn' : (st === 'growing' ? 'practice' : 'harvest');
 
 /**
@@ -402,7 +508,7 @@ function ensureUnlocked(g, ids) {
 	return add.length > 0;
 }
 
-const api = { sentenceOptions, EXAMPLES_PACK, CUSTOM_NAME_SOURCE, isNameRow, normalizeNames, customNameRow, nameUse, RECENT_KEEP, pushRecent, contentUnitIds, ensureUnlocked, NUMBER_COST, NUMBER_WORDS, numberWord, numberQuestion, T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
+const api = { shuffle, slotsOf, specialize, setSlotUnit, setSlotText, retire, unretire, retiredIds, canRetire, slotUnits, slotTexts, unspecCost, unspecialize, addressable, addressSentence, dayDiff, freezeReady, sentenceOptions, EXAMPLES_PACK, CUSTOM_NAME_SOURCE, isNameRow, normalizeNames, customNameRow, nameUse, RECENT_KEEP, pushRecent, contentUnitIds, ensureUnlocked, NUMBER_COST, NUMBER_WORDS, numberWord, numberQuestion, T, HOUR, clamp, tierIndex, blankUnit, blankGame, status, decay, effectiveScore, ripeness, classify, answer, payout, xpFor, addXp, xpToNext,
 	idleEarned, idleRate, touchStreak, isTrial, answerTrial, sealMult, totalStars, sealsAvailable, ascend, ensureQuests, questEvent, claimQuest, packRank, rarity, pickPull, nextCard, modeOf, upLevel, upCost, comboCap, critChance, pullSize, pullCost,
 	nurseryCap, offlineCapH, streakMult };
 if (typeof window !== 'undefined') window.FC2Game = api;

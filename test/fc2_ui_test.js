@@ -56,7 +56,7 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 	await step('boot', async () => {
 		assert(app.debug === '' && !d.querySelector('#modal').classList.contains('hidden'), '?debug opens the scene list');
 		app.closeModal();
-		assert(d.querySelectorAll('#tabs .tab').length === 4 && d.querySelector('#screen .play-big, #screen [data-act="tab"]'), 'boots to a Map with four tabs and an empty-state call to action');
+		assert(d.querySelectorAll('#tabs .tab').length === 5 && d.querySelector('#screen .play-big, #screen [data-act="tab"]'), 'boots to a Map with five tabs and an empty-state call to action');
 	});
 
 	await step('build stamp', async () => {
@@ -149,7 +149,7 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		const pre = prefetched ? app.card.sentences[0].preTest.choices : null;
 		assert(prefetched, 'the quiz for a shown example is built in the background');
 		assert(!d.querySelector('button[data-act="sent-test"]'), 'no separate 🎯 test button: the sentence is the button');
-		const word = d.querySelector('.s-ko a[data-unit]') || d.querySelector('.s-ko');
+		const first = d.querySelector('.sentence .s-body'), word = first.querySelector('.s-ko a[data-unit]') || first.querySelector('.s-ko') || first;   // the first example: its quiz is the pre-built one
 		word.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
 		assert(pre && app.stest && app.stest.choices === pre, 'tapping a word in an example starts its quiz, using the pre-built one');
 		click(`[data-act="stest-pick"][data-i="0"]`);
@@ -590,6 +590,38 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		}
 		assert(total > 0 && preferred > 0, 'preferred units show up in generated sentences when they fit a slot');
 	});
+
+	await step('inventory slots', () => quiet(async () => {
+		app.closeModal();
+		const lv = app.g.level; app.g.level = Math.max(lv, 5);
+		app.renderTabs(); app.go('slots');
+		const n = app.core.slots().length;
+		assert(n >= 4 && d.querySelectorAll('#screen .slot.empty').length === n && d.querySelector('#tabs [data-tab="slots"] em'), 'the Slots tab lists one empty slot per level above 1, with a badge');
+		click('[data-act="slot-spec"][data-i="0"][data-kind="focus"]');
+		click('[data-act="slot-spec"][data-i="1"][data-kind="retired"]');
+		click('[data-act="slot-spec"][data-i="2"][data-kind="victory"]');
+		click('[data-act="slot-spec"][data-i="3"][data-kind="sparkle"]');
+		assert(app.core.slots()[0].kind === 'focus' && app.core.slots()[1].kind === 'retired' && !d.querySelector('[data-act="slot-spec"][data-kind="retired"]'), 'choosing a job specializes a slot; only one retired shelf');
+		d.querySelector('[data-slot-text="2"]').value = '<b class="yay">Done!</b>';
+		click('[data-act="slot-text"][data-i="2"]'); click('[data-act="slot-preview"][data-i="2"]');
+		assert(d.querySelector('#modal .victory b.yay'), 'a victory card shows the player\'s own HTML');
+		app.closeModal(); app.go('shop');
+		assert(d.querySelector('[data-act="unspec"]'), 'the Shop offers Unspecialize once a slot has a job');
+		app.go('play'); if (!app.card) app.pickCard(); app.renderScreen(false);
+		const id = app.card.id;
+		click('[data-act="slot-pick"]'); click('[data-act="slot-put"][data-i="0"]');
+		assert(app.core.slots()[0].id === id, '🎒 on a card puts its unit in a unit slot');
+		app.core.setSlotUnit(3, id);
+		app.card.mode = 'trial'; app.card.side = 'front'; app.card.trial = app.core.buildTrial(id, 0); app.renderScreen(false);
+		assert(d.querySelectorAll('#card .choice.sparkle').length === 1 && d.querySelector('#card .choice.sparkle').textContent === app.card.trial.choices.find(c => c.id === id).label, 'the sparkle slot marks the right answer in a quiz');
+		app.prog.set(id, { ...app.unitOf(id), tier: 2 });
+		app.card.mode = 'learn'; app.renderScreen(false);
+		click('[data-act="slot-pick"]'); click('[data-act="retire"]');
+		await wait(400);
+		assert(app.core.slots()[1].ids.includes(id) && !app.classify().has(id) && (!app.card || app.card.id !== id) && app.core.slots()[0].id === null, 'retiring moves the unit to the shelf, out of the card queue and its other slots');
+		app.core.unretire(id); app.prog.set(id, { ...app.unitOf(id), tier: 0 });
+		app.g.slots = []; app.g.level = lv; app.renderTabs();
+	}));
 
 	const real = errors.filter(e => !/concord|Cannot set property window|local[\\/]verified_originals/.test(e));
 	assert(real.length === 0, `no script errors during play${real.length ? ': ' + real.slice(0, 3).join(' | ') : ''}`);

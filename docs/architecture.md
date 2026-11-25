@@ -155,6 +155,13 @@ Rules that keep them exact:
   unlocked unit that fits. The path greedily unlocks the unit with the most progress, where filling one of a template's n missing
   requirements is worth 4^(1-n). From the core grammar: 23 usable templates after 40 unlocks and 204 after 300 (course order: 1 and 1).
   Enforced: `test/fc2_sim_test.js` (monotone, beats course order, pulls through the controller), fc2 UI test (Shop option, reveal).
+- **Inventory slots** (2026-11-26): one slot per level above 1 (`G.slotsOf` grows `g.slots` on read, so old saves need no migration; slots
+  never shrink). An empty slot is specialized once (`T.SLOT_KINDS`: retired shelf, focus, audio, sparkle, name, victory, freeze); the Shop's
+  Unspecialize resets one for rising coins. Rules in `game.js` (`specialize`, `retire`, `touchStreak` freezes, focus in `nextCard`,
+  `addressable`/`addressSentence`), actions in `FC2Core` (`retire` removes the unit from `classify()`, so it never comes up as a card and is not
+  credited by sentence tests; `addressOne` turns one addressable example into "Name 씨, ..." and `buildSentenceTest` addresses the wrong
+  answers the same way; `pickCard` sets `card.listen` / `card.victory`). Sim: `slot`, `retire`, `unretire` commands. Tests: `fc2_game_test`
+  (rules), `fc2_sim_test` (controller), `fc2_ui_test` (Slots tab, 🎒 on a card, sparkle, victory HTML, Unspecialize).
 - **Parity rule:** a new gameplay feature goes into `FC2Core` (not `app.js`), gets a simulator command or batch behaviour, and a
   `test/fc2_sim_test.js` case. Exempt from full parity: speech, sound, haptics, animation, layout. Stub them instead (e.g. `canSpeak`
   decides whether listening trials exist; the simulator answers them like reading trials).

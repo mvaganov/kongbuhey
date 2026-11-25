@@ -298,7 +298,7 @@ class FC2App {
 		const c = this.counts(), due = c.ripe + c.wilted, qs = this.g.quests;
 		const claim = qs ? qs.list.filter(q => !q.claimed && q.have >= q.need).length + (!qs.bonus && qs.list.every(q => q.claimed) ? 1 : 0) : 0;
 		const tab = (id, icon, label, badge = '') => `<button type="button" class="tab${this.tab === id ? ' on' : ''}" data-act="tab" data-tab="${id}"><span>${icon}</span>${label}${badge}</button>`;
-		this.$('#tabs').innerHTML = tab('map', '🗺', 'Map', claim ? `<em>${claim}</em>` : '') + tab('play', '▶', 'Play', due ? `<em>${due}</em>` : '') + tab('shop', '🛒', 'Shop') + tab('menu', '☰', 'Menu');
+		this.$('#tabs').innerHTML = tab('map', '🗺', 'Map', claim ? `<em>${claim}</em>` : '') + tab('play', '▶', 'Play', due ? `<em>${due}</em>` : '') + tab('shop', '🛒', 'Shop') + tab('slots', '🎒', 'Slots', this.emptySlots() ? `<em>${this.emptySlots()}</em>` : '') + tab('menu', '☰', 'Menu');
 	}
 
 	go(tab) {
@@ -316,7 +316,7 @@ class FC2App {
 	renderScreen(animate) {
 		const el = this.$('#screen'), y = el.scrollTop;
 		el.className = 'tab-' + this.tab;
-		el.innerHTML = this.tab === 'map' ? this.mapHtml() : this.tab === 'play' ? this.playHtml() : this.tab === 'shop' ? this.shopHtml() : this.menuHtml();
+		el.innerHTML = this.tab === 'map' ? this.mapHtml() : this.tab === 'play' ? this.playHtml() : this.tab === 'shop' ? this.shopHtml() : this.tab === 'slots' ? this.slotsHtml() : this.menuHtml();
 		if (animate) { el.classList.add('enter'); el.scrollTop = 0; } else el.scrollTop = y;
 	}
 
@@ -371,7 +371,7 @@ class FC2App {
 		const tile = id => {
 			if (!owned.has(id)) return `<button type="button" class="tile locked" data-act="tile" data-id="${id}">·</button>`;
 			const u = this.units.get(id), ko = escapeHtml(Array.from(hangulOf(u[C.Korean]) || String(u[C.Korean])).slice(0, 2).join(''));
-			const p = this.unitOf(id), s = st.get(id), fill = s === 'growing' ? Math.round(G.ripeness(p, now) * 100) : (s === 'learning' ? Math.round(100 * Math.max(0, p.score) / T.ESTABLISHED) : 0);
+			const p = this.unitOf(id), s = st.get(id) || 'retired', fill = s === 'growing' ? Math.round(G.ripeness(p, now) * 100) : (s === 'learning' ? Math.round(100 * Math.max(0, p.score) / T.ESTABLISHED) : 0);
 			return `<button type="button" class="tile s-${s} r${G.rarity(u[C.PriorityScore])}${G.isTrial(p, g.h[id] || 0, s) ? ' trial' : ''}" data-act="tile" data-id="${id}"><i style="height:${fill}%"></i><span>${ko}</span>${p.tier ? `<em>${STARS[p.tier]}</em>` : ''}</button>`;
 		};
 		const packs = shown.map(p => {
@@ -479,6 +479,40 @@ class FC2App {
 	pickCard() {
 		this.editingNotes = false;
 		this.core.pickCard();
+		if (this.card && this.card.victory) { const msg = this.card.victory; setTimeout(() => this.victoryShow(msg), 350); }
+	}
+
+	// ---------- inventory slots (rules in game.js, actions in controller.js) ----------
+	emptySlots() { return this.core.slots().filter(x => !x.kind).length; }
+	/** The player's own message (HTML allowed: it is their text, shown only on their device). */
+	victoryShow(html) {
+		FX.sfx('level'); FX.buzz([30, 40, 30]);
+		this.openModal('🏆 All caught up', `<div class="victory">${html}</div><div class="btn-row"><button type="button" class="btn primary wide" data-act="close-modal">Keep practising</button></div>`);
+	}
+	slotLabel(id) { const u = this.units.get(id); return u ? `${escapeHtml(u[C.Korean])} <small class="muted">${escapeHtml(u[C.English])}</small>` : '<span class="muted">empty</span>'; }
+	slotsHtml() {
+		const slots = this.core.slots(), K = T.SLOT_KINDS;
+		if (!slots.length) return '<section class="panel"><h2>Slots</h2><p class="muted">Every level you gain unlocks an inventory slot. Reach level 2 for the first one.</p></section>';
+		const kinds = Object.keys(K), hasShelf = slots.some(x => x.kind === 'retired');
+		const row = (x, i) => {
+			if (!x.kind) return `<li class="slot empty"><b>Slot ${i + 1}: choose what it does (for good)</b><div class="kind-grid">${kinds.filter(k => k !== 'retired' || !hasShelf).map(k =>
+				`<button type="button" class="btn kind" data-act="slot-spec" data-i="${i}" data-kind="${k}" title="${escapeHtml(K[k].desc)}">${K[k].icon} ${K[k].name}</button>`).join('')}</div></li>`;
+			const k = K[x.kind], head = `<div class="slot-head">${k.icon} <b>${k.name}</b><small class="muted">${escapeHtml(k.desc)}</small></div>`;
+			if (x.kind === 'retired') return `<li class="slot">${head}${x.ids.length ? `<ul class="shelf">${x.ids.map(id => `<li>${this.slotLabel(id)} <button type="button" class="btn small" data-act="unretire" data-id="${id}">Return to cards</button></li>`).join('')}</ul>` : '<p class="muted">Empty. Retire a unit from its card (🎒 on the card) once it has ★★.</p>'}</li>`;
+			if ('id' in x) return `<li class="slot">${head}<div class="row">${this.slotLabel(x.id)}${x.id !== null ? ` <button type="button" class="btn small" data-act="slot-clear" data-i="${i}">✕</button>` : ''}</div><p class="muted">Fill it from a card (🎒).</p></li>`;
+			if (x.kind === 'name') return `<li class="slot">${head}<div class="row"><input data-slot-ko="${i}" value="${escapeHtml(x.text)}" placeholder="Korean (민지)" maxlength="12"> <input data-slot-en="${i}" value="${escapeHtml(x.en || '')}" placeholder="English (Minji)" maxlength="30"> <button type="button" class="btn" data-act="slot-text" data-i="${i}">Save</button></div></li>`;
+			if (x.kind === 'victory') return `<li class="slot">${head}<textarea data-slot-text="${i}" rows="3" maxlength="${T.SLOT_TEXT_MAX}" placeholder="Well done! <b>Go outside</b>">${escapeHtml(x.text)}</textarea><div class="btn-row"><button type="button" class="btn" data-act="slot-text" data-i="${i}">Save</button>${x.text ? `<button type="button" class="btn ghost" data-act="slot-preview" data-i="${i}">Preview</button>` : ''}</div></li>`;
+			return `<li class="slot">${head}<p>${G.freezeReady(x, this.clock.day()) ? 'Ready' : `Recharging: used ${escapeHtml(x.used)}`}</p></li>`;
+		};
+		return `<section class="panel"><h2>Slots</h2><p class="muted">One slot per level. A slot keeps its job once chosen; the Shop can reset one.</p><ul class="slots">${slots.map(row).join('')}</ul></section>`;
+	}
+	/** 🎒 on a card: put this unit in a unit slot, or retire it. */
+	slotPickHtml() {
+		const id = this.card && this.card.id, slots = this.core.slots(), K = T.SLOT_KINDS, u = this.unitOf(id);
+		const opts = slots.map((x, i) => x.kind && 'id' in x ? `<button type="button" class="btn wide" data-act="slot-put" data-i="${i}" ${x.id === id ? 'disabled' : ''}>${K[x.kind].icon} ${K[x.kind].name}${x.id !== null ? ` (replaces ${escapeHtml((this.units.get(x.id) || [])[C.Korean] || '')})` : ''}</button>` : '').join('');
+		const shelf = slots.some(x => x.kind === 'retired'), can = G.canRetire(this.g, u);
+		const ret = shelf ? `<button type="button" class="btn wide" data-act="retire" ${can ? '' : 'disabled'}>🗄 Retire${can ? '' : ` (needs ${STARS[T.RETIRE_TIER]})`}</button>` : '';
+		return (opts || ret) ? `<div class="btn-col">${opts}${ret}</div>` : '<p class="muted">No unit slots yet. Choose what a slot does in the 🎒 Slots tab.</p>';
 	}
 
 	// G.sentenceOptions (game.js) is shared with tools/save_inspect.js, which replays a save's generation.
@@ -666,7 +700,7 @@ class FC2App {
 	maybeSpeak(side) {
 		const m = this.opts.speak, k = this.card;
 		if (!k || k.side !== side) return;
-		const t = k.mode === 'trial' && !k.done ? k.trial.type : '';   // a listening trial always speaks; a recall trial never gives the Korean away
+		const t = k.mode === 'trial' && !k.done ? k.trial.type : k.listen && side === 'front' ? 'listen' : '';   // a listening trial always speaks; a recall trial never gives the Korean away
 		if (t === 'recall' || (t !== 'listen' && (m === 'none' || (m !== 'both' && m !== side) || (side === 'front' && this.opts.reverse && !t)))) return;
 		window.speakKorean(this.units.get(this.card.id)[C.Korean]);
 	}
@@ -697,10 +731,11 @@ class FC2App {
 	cardHtml() {
 		const k = this.card, u = this.units.get(k.id), p = this.unitOf(k.id), rev = this.opts.reverse, rar = G.rarity(u[C.PriorityScore]);
 		const head = `<div class="card-tags"><span class="pill r${rar}">${RARITY[rar]}</span><span class="pill">${STARS[p.tier]}</span><span class="pill">${escapeHtml(u[C.Source])}</span></div>`;
-		const regen = '<div class="regen-row"><button type="button" class="btn ghost" data-act="regen">↻ New examples</button><button type="button" class="btn ghost" data-act="vq-open" aria-label="Sentence queue" title="Which verified sentences fit this unit, and in what order they come up">☰ Queue</button></div>';
+		const regen = '<div class="regen-row"><button type="button" class="btn ghost" data-act="regen">↻ New examples</button><button type="button" class="btn ghost" data-act="slot-pick" aria-label="Slots" title="Put this unit in a slot">🎒</button><button type="button" class="btn ghost" data-act="vq-open" aria-label="Sentence queue" title="Which verified sentences fit this unit, and in what order they come up">☰ Queue</button></div>';
 		if (k.mode === 'trial' && k.side === 'front') return this.trialHtml();
 		const verdict = k.mode !== 'trial' ? '' : k.passed ? `<div class="verdict pass">⚔ Trial passed: ${STARS[p.tier]} ${TIER_LABEL[p.tier]}</div>`
 			: '<div class="verdict fail">⚔ Not yet. Relearn it now; the trial returns the next time it is ripe.</div>';
+		if (k.side === 'front' && k.listen) return `${head}<button type="button" class="listen" data-act="speak-unit" aria-label="Play again">🔊</button><p class="ask">Listen: what does it mean? Tap the card to check.</p>${regen}`;
 		if (k.side === 'front') {
 			const main = rev ? `<h1 class="unit-main english">${escapeHtml(u[C.English])}</h1>${u[C.Disambiguation] ? `<div class="gloss">${escapeHtml(u[C.Disambiguation])}</div>` : ''}`
 				: `<div class="unit-row"><h1 class="unit-main">${escapeHtml(u[C.Korean])}</h1>${this.speakBtn('speak-unit')}</div>`;
@@ -784,6 +819,7 @@ class FC2App {
 		else if (ev.demoted) { FX.flash('bad'); this.toast(`${ko} wilted and lost a star`); }
 		else if (ev.kind === 'trial') FX.flash('bad');
 		else if (ev.kind === 'harvest' && ev.lapsed) this.toast(v > 0 ? `${ko} had faded: re-establish it` : `${ko} goes back to learning`);
+		if (r.streak === 'frozen') this.toast(`🧊 Streak freeze saved your ${g.streak.n}-day streak`);
 		if (r.streak === 'kept') this.toast(`🔥 ${g.streak.n}-day streak: +${Math.round((G.streakMult(g) - 1) * 100)}% coins`);
 		if (ups) setTimeout(() => this.levelUp(), delay + 200);
 		this.updateHud();
@@ -793,18 +829,19 @@ class FC2App {
 	levelUp() {
 		const g = this.g;
 		FX.sfx('level'); FX.buzz([40, 60, 40, 60, 120]); FX.banner(`Level ${g.level}`, `+${fmt(T.LEVEL_COINS * g.level)} 냥`, 'level');
-		this.updateHud();
+		if (this.emptySlots()) setTimeout(() => this.toast('🎒 New inventory slot: choose what it does in Slots'), 1200);
+		this.renderTabs(); this.updateHud();
 	}
 
 	buildTrial(id, tier) { return this.core.buildTrial(id, tier); }
 
 	trialHtml() {
-		const k = this.card, u = this.units.get(k.id), t = k.trial;
+		const k = this.card, u = this.units.get(k.id), t = k.trial, sp = this.core.sparkleIds();
 		const prompt = t.type === 'listen' ? '<button type="button" class="listen" data-act="speak-unit" aria-label="Play again">🔊</button><p class="ask">Listen, then pick the meaning</p>'
 			: t.type === 'recall' ? `<h1 class="unit-main english">${escapeHtml(u[C.English])}</h1>${u[C.Disambiguation] ? `<div class="gloss">${escapeHtml(u[C.Disambiguation])}</div>` : ''}<p class="ask">Which Korean is this?</p>`
 			: `<div class="unit-row"><h1 class="unit-main">${escapeHtml(u[C.Korean])}</h1>${this.speakBtn('speak-unit')}</div><p class="ask">What does it mean?</p>`;
 		return `<div class="card-tags"><span class="pill trial">⚔ Trial</span><span class="pill">${STARS[t.tier]} → ${STARS[t.tier + 1]}</span><span class="pill">+${fmt(T.PROMOTE_PAY[t.tier])} 냥</span></div>${prompt}
-			<div class="choices${t.type === 'recall' ? ' ko' : ''}">${t.choices.map((c, i) => `<button type="button" class="choice" data-act="choose" data-i="${i}">${escapeHtml(c.label)}</button>`).join('')}</div>`;
+			<div class="choices${t.type === 'recall' ? ' ko' : ''}">${t.choices.map((c, i) => `<button type="button" class="choice${c.id === k.id && sp.has(c.id) ? ' sparkle' : ''}" data-act="choose" data-i="${i}">${escapeHtml(c.label)}</button>`).join('')}</div>`;
 	}
 
 	questsHtml() {
@@ -896,7 +933,7 @@ class FC2App {
 				${blocked ? `<p class="muted center">${blocked}</p>` : ''}</section>
 			<section class="panel"><h2>Games</h2><ul class="ups"><li class="up"><div><b>Number sound board</b> <span class="pill">Lv ${nbLv}</span><small>Hear 0-12 in native and Sino-Korean, tap the number you heard.</small></div>
 				<button type="button" class="btn gold" data-act="${nbLv ? 'nb-open' : 'nb-buy'}" ${!nbLv && G.NUMBER_COST > g.coins ? 'disabled' : ''}>${nbLv ? 'Open' : fmt(G.NUMBER_COST)}</button></li></ul></section>
-			<section class="panel"><h2>Upgrades</h2><ul class="ups">${ups}</ul></section>
+			<section class="panel"><h2>Upgrades</h2><ul class="ups">${ups}</ul></section>${this.unspecHtml()}
 			<section class="panel"><h2>Ascend</h2><p class="muted">Seals: <b>${g.seals || 0}</b> (+${Math.round((G.sealMult(g) - 1) * 100)}% all coins, permanent). Ascending banks your ${G.sealsAvailable(g, this.prog)} new ★ as seals and resets coins and upgrades. Units, stars, levels and cosmetics stay.</p>
 				<button type="button" class="btn wide${G.sealsAvailable(g, this.prog) >= T.SEAL_MIN ? ' primary' : ''}" data-act="ascend" ${G.sealsAvailable(g, this.prog) >= T.SEAL_MIN ? '' : 'disabled'}>⛩ Ascend${G.sealsAvailable(g, this.prog) >= T.SEAL_MIN ? ` for +${G.sealsAvailable(g, this.prog)} seals` : ` · needs ${T.SEAL_MIN} new ★`}</button></section>
 			<section class="panel"><h2>Themes</h2><div class="cos-row">${cos('theme', THEMES, g.cos.theme)}</div><h2>Particles</h2><div class="cos-row">${cos('particle', PARTICLES, g.cos.particle)}</div></section>`;
@@ -967,9 +1004,20 @@ class FC2App {
 		this.stestRender();
 	}
 
+	/** Shop: reset one specialized slot (appears once a slot has been specialized). */
+	unspecHtml() {
+		const slots = this.core.slots(), used = slots.map((x, i) => [x, i]).filter(([x]) => x.kind);
+		if (!used.length) return '';
+		const cost = G.unspecCost(this.g), K = T.SLOT_KINDS;
+		return `<section class="panel"><h2>Unspecialize a slot</h2><p class="muted">Empties a slot so you can choose its job again. A retired shelf returns its units to the cards. The price rises each time.</p>
+			<div class="row"><select data-unspec>${used.map(([x, i]) => `<option value="${i}">Slot ${i + 1}: ${K[x.kind].icon} ${K[x.kind].name}</option>`).join('')}</select>
+			<button type="button" class="btn gold" data-act="unspec" ${cost > this.g.coins ? 'disabled' : ''}>${fmt(cost)} 냥</button></div></section>`;
+	}
+
 	stestRender() {
 		const t = this.stest, ko = this.units.get(t.k.id)[C.Korean];
-		const btns = t.choices.map((c, j) => `<button type="button" class="choice${!t.done ? '' : c.ok ? ' right' : j === t.picked ? ' wrong' : ''}" data-act="stest-pick" data-i="${j}" ${t.done ? 'disabled' : ''}>${escapeHtml(c.text)}</button>`).join('');
+		const spark = !t.done && this.core.sparkleChoice(t.choices);
+		const btns = t.choices.map((c, j) => `<button type="button" class="choice${!t.done ? (spark && c.ok ? ' sparkle' : '') : c.ok ? ' right' : j === t.picked ? ' wrong' : ''}" data-act="stest-pick" data-i="${j}" ${t.done ? 'disabled' : ''}>${escapeHtml(c.text)}</button>`).join('');
 		this.openModal('Sentence test', `<div class="sent-test"><div class="s-big${t.rev ? ' en' : ''}">${escapeHtml(t.rev ? this.enOf(t.s) : t.s.ko)}</div>${t.rev ? '' : this.speakBtn('stest-say')}
 			<p class="ask">${t.rev ? 'Which Korean sentence says this?' : 'What does it mean?'}</p><div class="choices${t.rev ? ' ko' : ''}">${btns}</div>
 			<p class="muted center">Right: 2 correct answers for every unit in it, 3 for ${escapeHtml(ko)}. Wrong: Missed it for ${escapeHtml(ko)}.</p></div>`);
@@ -1356,6 +1404,23 @@ class FC2App {
 			case 'notes-toggle': this.editingNotes = !this.editingNotes; this.renderScreen(false); break;
 			case 'pull': this.pull(); break;
 			case 'upgrade': this.upgrade(el.dataset.key, el); break;
+			case 'slot-spec': if (this.core.specialize(Number(el.dataset.i), el.dataset.kind)) { FX.sfx('tap'); this.renderTabs(); this.renderScreen(false); } break;
+			case 'slot-clear': this.core.setSlotUnit(Number(el.dataset.i), null); this.renderScreen(false); break;
+			case 'slot-text': {
+				const i = Number(el.dataset.i), ko = this.$(`[data-slot-ko="${i}"]`), en = this.$(`[data-slot-en="${i}"]`), tx = this.$(`[data-slot-text="${i}"]`);
+				if (this.core.setSlotText(i, (ko || tx || {}).value, en ? en.value : '')) { this.toast('Saved'); this.renderScreen(false); }
+				break;
+			}
+			case 'slot-preview': { const x = this.core.slots()[Number(el.dataset.i)]; if (x && x.text) this.victoryShow(x.text); break; }
+			case 'slot-pick': if (this.card) this.openModal(`🎒 ${escapeHtml(this.units.get(this.card.id)[C.Korean])}`, this.slotPickHtml()); break;
+			case 'slot-put': if (this.card && this.core.setSlotUnit(Number(el.dataset.i), this.card.id)) { this.closeModal(); this.toast('Put in the slot'); } break;
+			case 'retire': if (this.card && this.core.retire(this.card.id)) { this.closeModal(); this.toast('🗄 Retired: it will not come up as a card'); this.card = null; this.showNextCard(); } break;
+			case 'unretire': if (this.core.unretire(Number(el.dataset.id))) this.renderScreen(false); break;
+			case 'unspec': {
+				const sel = this.$('[data-unspec]'), i = sel ? Number(sel.value) : -1;
+				if (window.confirm('Reset this slot? Its job and contents are cleared.') && this.core.unspecialize(i)) { this.updateHud(); this.renderTabs(); this.renderScreen(false); this.toast('Slot is empty again'); }
+				break;
+			}
 			case 'cosmetic': this.cosmetic(el.dataset.kind, el.dataset.key, el); break;
 			case 'close-modal': this.closeModal(); break;
 			case 'flags-open': this.openModal('Flagged sentences', this.flagsHtml()); break;

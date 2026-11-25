@@ -16,6 +16,7 @@ if (typeof require === 'function' && typeof module !== 'undefined' && require.ma
  *            an interactive fc2> prompt when stdin is a terminal). --state keeps the game between calls, not the open card.
  *            commands: card | answer <-2..2> | trial right|wrong|<i> | quiz right|wrong [i] | next | pull [pack] | collect |
  *                      upgrade <key> | claim <i|-1> | ascend | buy-numbers | wait <hours> | status | units [text] | save <file>
+ *                      slot [<i> <kind> | <i> unit <id> | <i> text <text> | <i> reset] | retire <id> | unretire <id>
  *            also: path [n] (next n units of the Examples Critical Path)
  *   script   --script file.js (exports next(view) -> command string or null) or file.txt (one command per line)
  *   critical-path [--n 30]  the Examples Critical Path from the loaded state: units in order, usable verified templates after each
@@ -261,6 +262,20 @@ function makeRunner(sim, logPath) {
 			return `${ko(k.id)} quiz ${ok ? 'right' : 'wrong'}${res.rows ? `: ${res.rows.length} units credited, +${res.coins} bonus coins` : ''}`;
 		},
 		next() { if (core.card && !core.card.done) core.card.done = true; ensureCard(); return cardView(core) ? `next: ${cardView(core).ko}` : 'no card'; },
+		/**
+		 * Inventory slots: "slot" lists them; "slot <i> <kind>" specializes slot i; "slot <i> unit <id>" fills a unit slot;
+		 * "slot <i> text <text...>" sets a name or victory text; "slot <i> reset" unspecializes (pays coins).
+		 */
+		slot(i, what, ...rest) {
+			const K = G.T.SLOT_KINDS, list = () => core.slots().map((x, j) => `${j}: ${x.kind ? K[x.kind].icon + ' ' + x.kind : 'empty'}${'id' in x ? ' ' + (x.id === null ? '-' : ko(x.id)) : ''}${x.ids ? ' [' + x.ids.map(ko).join(' ') + ']' : ''}${x.text ? ' "' + x.text + '"' : ''}`).join('\n') || 'no slots (level 1)';
+			if (i === undefined) return list();
+			const n = Number(i);
+			const ok = what === 'unit' ? core.setSlotUnit(n, Number(rest[0])) : what === 'text' ? core.setSlotText(n, rest.join(' ')) : what === 'reset' ? Boolean(core.unspecialize(n)) : core.specialize(n, what);
+			if (ok) afterAction(`slot ${i} ${what}`);
+			return ok ? list() : `slot ${i} ${what}: not allowed`;
+		},
+		retire(id) { const ok = core.retire(Number(id)); if (ok) afterAction(`retire ${id}`); return ok ? `retired ${ko(Number(id))}` : 'cannot retire (needs a retired shelf slot and ★★)'; },
+		unretire(id) { return core.unretire(Number(id)) ? `returned ${ko(Number(id))}` : 'not on the shelf'; },
 		/** pack: a Source name, "examples" (the Examples Critical Path), "course" or nothing (course order). */
 		pull(pack) {
 			const res = core.pull(pack === 'examples' ? G.EXAMPLES_PACK : pack === 'course' ? null : pack || null);

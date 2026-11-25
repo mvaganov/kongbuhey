@@ -143,11 +143,19 @@ function mulberry32(a) {
 		console.log(`  recorded ${log.length} lines -> ${path.relative(ROOT, GOLDEN)}`);
 	} else {
 		const golden = JSON.parse(fs.readFileSync(GOLDEN, 'utf8')).trace;
+		// Show where two lines differ (state lines are ~1 KB: the start alone hides the difference), and the next differing lines.
+		const diffAround = (x, y) => {
+			x = String(x); y = String(y);
+			let c = 0; while (c < x.length && x[c] === y[c]) c++;
+			const cut = t => (c > 100 ? '...' : '') + t.slice(Math.max(0, c - 100), c + 160);
+			const more = log.map((l, i) => i > at && l !== golden[i] ? i : -1).filter(i => i >= 0);
+			return `      at char ${c}\n      now:    ${cut(x)}\n      golden: ${cut(y)}\n      ${more.length} more differing lines${more.length ? ` (first: ${more.slice(0, 5).join(', ')})` : ''}; node: ${process.version}, ${process.platform}`;
+		};
 		const at = log.findIndex((l, i) => l !== golden[i]);
 		const same = at < 0 && log.length === golden.length;
 		assert(log.length > 100 && log.some(l => l.includes('FX.banner')) && log.some(l => l.startsWith('t+') && l.includes('modal Round')), `the scripted session covers banners and a round end (${log.length} lines)`);
 		assert(same, same ? `effects and state match the golden trace (${log.length} lines)`
-			: `first difference at line ${at < 0 ? Math.min(log.length, golden.length) : at}:\n      now:    ${String(log[at < 0 ? golden.length : at]).slice(0, 300)}\n      golden: ${String(golden[at < 0 ? log.length : at]).slice(0, 300)}`);
+			: `first difference at line ${at < 0 ? Math.min(log.length, golden.length) : at}:\n${diffAround(log[at < 0 ? golden.length : at], golden[at < 0 ? log.length : at])}`);
 	}
 	assert(!log.some(l => l.startsWith('!!')), `no action threw${log.filter(l => l.startsWith('!!')).slice(0, 2).map(l => ': ' + l).join('')}`);
 	assert(errors.length === 0, `no page errors${errors.length ? ': ' + errors.slice(0, 2).join(' | ') : ''}`);

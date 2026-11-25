@@ -111,6 +111,47 @@ test('Examples Critical Path: monotone, beats course order, pulls through the Sh
 	assert.match(sim.runCommand(api, 'path 3'), /^verified templates usable now: \d+\n +1 /);
 });
 
+test('inventory slots in the controller: name address, audio card, victory card, retired shelf, sim commands', () => {
+	const G = require('../fc2/game.js'), s = sim.createSim({ seed: 4 }), core = s.core;
+	core.newGame(false);
+	const api = sim.makeRunner(s, null);
+	api.pull(); api.pull();
+	core.g.level = 7;
+	assert.match(api.slot(), /0: empty/);
+	for (const [i, kind] of ['name', 'victory', 'audio', 'focus', 'freeze', 'retired'].entries()) assert.doesNotMatch(api.slot(String(i), kind), /not allowed/, kind);
+	assert.match(api.slot('6', 'retired'), /not allowed/, 'one retired shelf');
+	api.slot('0', 'text', '하루카'); api.slot('1', 'text', '<b>Done</b>');
+	const id = core.g.owned[0], other = core.g.owned[1];
+	assert.match(api.slot('2', 'unit', String(id)), /🔊 audio/);
+	// Name slot: with the chance forced to 1, an addressable example in a card becomes "하루카 씨, ..." (never a plain statement).
+	const chance = G.T.ADDRESS_CHANCE; G.T.ADDRESS_CHANCE = 1;
+	let addressed = 0;
+	try {
+		for (const u of core.g.owned) for (const x of core.generateFor(u).sentences) {
+			if (!x.address) continue;
+			addressed++;
+			assert.ok(x.ko.startsWith('하루카 씨, ') && G.addressable(x.ko.slice('하루카 씨, '.length)), x.ko);
+		}
+	} finally { G.T.ADDRESS_CHANCE = chance; }
+	assert.ok(addressed > 0, 'some example was addressed by name');
+	// Audio slot: the unit's card is a listening card.
+	core.session.front = [id]; core.pickCard();
+	assert.ok(core.card.id === id && core.card.listen, 'an audio-slot unit gets a listening card');
+	// Victory: everything growing (nothing due) -> the first practice card carries the message, once.
+	const now = core.clock.sec();
+	for (const u of core.g.owned) core.prog.set(u, { score: G.T.ESTABLISHED, tier: 2, lastCorrect: now, lastSeen: now });
+	core.session.victory = false; core.pickCard();
+	assert.strictEqual(core.card.victory, '<b>Done</b>');
+	core.pickCard();
+	assert.ok(!core.card.victory, 'the victory card shows once until cards are due again');
+	// Retired shelf: out of the card queue.
+	assert.match(api.retire(String(other)), /retired/);
+	assert.ok(!core.classify().has(other) && G.retiredIds(core.g).has(other));
+	assert.match(api.unretire(String(other)), /returned/);
+	core.g.coins = 10000;
+	assert.match(api.slot('3', 'reset'), /3: empty/, 'unspecialize through the sim');
+});
+
 if (FULL) {
 	for (const policy of Object.keys(sim.POLICIES)) {
 		test(`full: 200 cards over 3 days, policy ${policy}, no check failures`, () => {

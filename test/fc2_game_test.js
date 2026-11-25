@@ -252,5 +252,51 @@ assert(G.decay(est(0, 5 * HOUR), NOW) === 0 && G.decay(est(0, 13 * HOUR), NOW) =
 	assert(mine.length > 0 && mine.every(ko => ko.includes('민지 씨')), `with only a custom name on the list, 씨 attaches to it (${mine.slice(0, 2).join(' / ')})`);
 }
 
+{
+	let x = 7; const rnd = () => { x = (x * 48271) % 2147483647; return x / 2147483647; };
+	const a = G.shuffle([1, 2, 3, 4, 5, 6], rnd);
+	x = 7; const b = G.shuffle([1, 2, 3, 4, 5, 6], rnd);
+	assert(a.join() === b.join() && a.slice().sort().join() === '1,2,3,4,5,6', 'shuffle is a permutation fixed by the random (no random sort comparator, which differs between Node versions)');
+}
+
+// ---------- inventory slots ----------
+{
+	const g = G.blankGame(0);
+	assert(G.slotsOf(g).length === 0, 'level 1: no inventory slots');
+	g.level = 5;
+	assert(G.slotsOf(g).length === 4 && G.slotsOf(g).every(x => x.kind === null), 'one empty slot per level above 1 (old saves grow their slots on read)');
+	g.level = 3; assert(G.slotsOf(g).length === 4, 'slots never shrink');
+	assert(G.specialize(g, 0, 'retired') && !G.specialize(g, 1, 'retired') && !G.specialize(g, 0, 'focus'), 'one retired shelf; a specialized slot keeps its job');
+	assert(G.specialize(g, 1, 'focus') && G.specialize(g, 2, 'name') && G.specialize(g, 3, 'freeze') && !G.specialize(g, 9, 'audio') && !G.specialize(g, 1, 'nope'), 'specialize only empty, existing slots with a known kind');
+	g.owned = [10, 11];
+	assert(!G.setSlotUnit(g, 1, 99) && G.setSlotUnit(g, 1, 10) && G.slotUnits(g, 'focus')[0] === 10, 'a unit slot takes an unlocked unit only');
+	assert(!G.retire(g, 11, { tier: 1 }) && G.retire(g, 10, { tier: 2 }) && G.retiredIds(g).has(10) && G.slotUnits(g, 'focus').length === 0, 'retire needs the shelf and ★★; a retired unit leaves the other slots');
+	assert(G.unretire(g, 10) && !G.retiredIds(g).has(10), 'a retired unit can return to the cards');
+	assert(G.setSlotText(g, 2, '  하루카 ', 'Haruka') && G.slotTexts(g, 'name')[0].text === '하루카' && G.slotTexts(g, 'name')[0].en === 'Haruka', 'name slot: Korean and English, trimmed');
+	g.coins = 1000; const c1 = G.unspecCost(g), paid = G.unspecialize(g, 1);
+	assert(paid === c1 && g.slots[1].kind === null && g.coins === 1000 - c1 && G.unspecCost(g) > c1, 'unspecialize empties a slot for coins, dearer each time');
+	assert(G.unspecialize(G.blankGame(0), 0) === 0, 'nothing to unspecialize without slots');
+	// streak freeze: covers missed days with ready slots, then recharges for a week
+	g.streak = { day: '2026-11-20', n: 5 };
+	assert(G.touchStreak(g, '2026-11-22', '2026-11-21') === 'frozen' && g.streak.n === 6 && g.slots[3].used === '2026-11-22', 'one missed day is covered by a ready freeze slot');
+	g.streak = { day: '2026-11-23', n: 6 };
+	assert(G.touchStreak(g, '2026-11-25', '2026-11-24') === 'reset' && g.streak.n === 1, 'a used freeze slot recharges before it covers again');
+	g.streak = { day: '2026-11-30', n: 2 };
+	assert(G.touchStreak(g, '2026-12-2', '2026-12-1') === 'frozen', 'a freeze slot is ready again a week later (month boundary)');
+	g.streak = { day: '2026-12-10', n: 2 };
+	assert(G.touchStreak(g, '2026-12-14', '2026-12-13') === 'reset', 'more missed days than ready freeze slots: the streak resets');
+	// focus: a focused unit comes up about every FOCUS_EVERY cards
+	const f = G.blankGame(0); f.level = 2; f.owned = [1, 2, 3]; G.specialize(f, 0, 'focus'); G.setSlotUnit(f, 0, 3);
+	const st = new Map([[1, 'growing'], [2, 'growing'], [3, 'growing']]), ses = { n: 0, due: new Map(), last: null, front: [] }, seen = [];
+	for (let i = 0; i < 18; i++) { const p = G.nextCard(f, new Map(), st, ses); seen.push(p.id); ses.last = p.id; ses.n++; }
+	assert(seen.filter(x => x === 3).length >= 3 && seen[0] === 3, `a focused unit comes up every ${G.T.FOCUS_EVERY} cards (${seen.join(',')})`);
+	// name address: only questions, requests and polite endings
+	assert(G.addressable('어디 가요?') && G.addressable('같이 갑시다.') && G.addressable('저는 학생입니다.') && G.addressable('앉으십시오.') && G.addressable('뭐 먹어?'), 'addressable: questions, polite and request endings');
+	assert(!G.addressable('민수가 갔어.') && !G.addressable('밥을 먹는다.') && !G.addressable('민수야, 가자.'), 'not addressable: plain statements, or a sentence that already addresses someone');
+	const a = G.addressSentence({ ko: '어디 가요?', en: 'Where are you going?', enNatural: 'Where are you going?', enLiteral: 'where go?', eojeols: [{ segments: [{ textKo: '어디', unitId: 5 }] }] }, '하루카', 23, 'Haruka');
+	assert(a.ko === '하루카 씨, 어디 가요?' && a.enNatural === 'Haruka, where are you going?' && a.address === '하루카' && a.eojeols.length === 3 && a.eojeols[1].segments[0].unitId === 23, 'addressSentence: "Name 씨, ..." in Korean, English and the rendered eojeols');
+	assert(G.addressSentence({ ko: '가요?', en: "I'm going?" }, '민지').en === "민지, I'm going?", 'addressSentence keeps "I" capitalized');
+}
+
 console.log(`\nfc2 game rules: ${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
