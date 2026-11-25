@@ -3,7 +3,7 @@
 Static client-side pages (no build step, no server; open from `file://`). Node 22 CLI tooling for data and tests.
 Purpose: study Korean from the course material. The sentence generator's quality is the product, and the owner cannot judge
 Korean himself, so correctness comes from flagged-sentence fixtures, not from the generator checking itself.
-Phone-first: study happens in `flashcards/` (GitHub Pages); `webapp/` is the desktop test/admin tool. Android packaging later, not iOS.
+Phone-first: study happens in `fc2/` (GitHub Pages), `flashcards/` was the first prototype; `webapp/` is the desktop test/admin tool. Android packaging later, not iOS.
 Experiment in a small separate project, not in a branch.
 **Read `docs/architecture.md` before changing generation, fc2 storage or the test harness**: runtime model, data model, generation
 caches and the invariants that keep them exact, fc2 persistence layers, test architecture, performance record. Update it when a design changes.
