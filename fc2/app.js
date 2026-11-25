@@ -678,12 +678,12 @@ class FC2App {
 	sentencesHtml(o) {
 		const k = this.card;
 		if (!k.sentences.length) return `<p class="muted">${escapeHtml(k.msg)}</p>`;
-		return '<ul class="sentences">' + k.sentences.map((s, i) => `<li class="sentence"><div class="s-body">
+		// On the front, the sentence itself (any word in it) starts the bonus quiz; there is no separate test button.
+		return '<ul class="sentences">' + k.sentences.map((s, i) => `<li class="sentence"><div class="s-body"${o.test ? ` data-act="sent-test" data-i="${i}" title="Tap to test this sentence"` : ''}>
 			${o.hideKo ? '' : `<div class="s-ko">${R.sentenceHtml(s, k.id)}</div>`}
 			${o.english || o.hideKo ? `<div class="s-en-lit">${escapeHtml(s.enLiteral)}</div><div class="s-en">${escapeHtml(s.enNatural || s.en)}</div>` : ''}</div>
 			<div class="s-actions">${o.hideKo ? '' : this.speakBtn('speak-sent', `data-i="${i}"`)}
 			${sourceBadge(s)}
-			${o.test && this.core.glossOk(s) ? `<button type="button" class="icon-btn test" data-act="sent-test" data-i="${i}" aria-label="Test my comprehension of this sentence">🎯</button>` : ''}
 			<button type="button" class="icon-btn flag${this.isFlagged(s.ko) ? ' flagged' : ''}" data-act="flag" data-i="${i}" aria-label="Flag bad sentence">⚑</button></div></li>`).join('') + '</ul>';
 	}
 
@@ -704,7 +704,7 @@ class FC2App {
 		if (k.side === 'front') {
 			const main = rev ? `<h1 class="unit-main english">${escapeHtml(u[C.English])}</h1>${u[C.Disambiguation] ? `<div class="gloss">${escapeHtml(u[C.Disambiguation])}</div>` : ''}`
 				: `<div class="unit-row"><h1 class="unit-main">${escapeHtml(u[C.Korean])}</h1>${this.speakBtn('speak-unit')}</div>`;
-			return `${head}${main}${this.sentencesHtml({ hideKo: rev, test: true })}${regen}<p class="hint">Tap the card to reveal · 🎯 tests a sentence</p>`;
+			return `${head}${main}${this.sentencesHtml({ hideKo: rev, test: true })}${regen}<p class="hint">Tap the card to reveal · tap a sentence to test it</p>`;
 		}
 		return `${verdict}${head}<div class="unit-row"><h1 class="unit-main">${escapeHtml(u[C.Korean])}</h1>${this.speakBtn('speak-unit')}</div>
 			<div class="unit-en">${escapeHtml(u[C.English])}</div>
@@ -858,14 +858,6 @@ class FC2App {
 		this.renderScreen(false);
 	}
 
-	clickExampleUnit(id) {
-		if (!this.units.has(id) || !this.card || id === this.card.id) return;
-		const ko = this.units.get(id)[C.Korean];
-		if (!this.g.owned.includes(id)) { this.toast(`${ko} is not unlocked yet`); return; }
-		this.core.queueNext(id);
-		this.toast(`${ko} is next`);
-	}
-
 	toggleFlag(i) {
 		const item = this.card && this.card.sentences[i];
 		if (!item) return false;
@@ -986,7 +978,7 @@ class FC2App {
 	stestPick(j, el) {
 		const t = this.stest;
 		if (!t || t.done || this.card !== t.k || t.k.done) return;
-		if (this.clock.ms() < t.readyAt) return;   // a tap meant for the 🎯 button (or made while the quiz was appearing) must not answer it
+		if (this.clock.ms() < t.readyAt) return;   // a tap meant for the sentence (or made while the quiz was appearing) must not answer it
 		t.done = true; t.picked = j;
 		const ok = t.choices[j].ok;
 		if (ok) { FX.sfx('answer', this.session.combo + 1); FX.buzz(15); FX.burstAt(el, { count: 20, power: 6 }); } else { FX.sfx('miss'); FX.buzz([20, 30, 20]); }
@@ -1296,8 +1288,9 @@ class FC2App {
 		this.root.addEventListener('click', ev => {
 			if (!this.g) return;
 			const link = ev.target.closest('[data-unit]');
-			if (link) { ev.preventDefault(); this.clickExampleUnit(Number(link.dataset.unit)); return; }
+			if (link) ev.preventDefault();   // unit links in examples: on the front they fall through to the sentence's quiz, elsewhere they do nothing
 			const el = ev.target.closest('[data-act]');
+			if (link && !el) return;
 			if (el) { if (!el.disabled) this.act(el.dataset.act, el); return; }
 			if (ev.target.id === 'modal') { this.closeModal(); return; }
 			if (this.tab === 'play' && ev.target.closest('#card') && !ev.target.closest('button, a, textarea, select, input, label, .notes')) this.flip();

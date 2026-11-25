@@ -148,8 +148,10 @@ const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now()
 		const prefetched = await until(() => app.card.sentences[0].preTest && app.card.sentences[0].preTest.choices, 20000);
 		const pre = prefetched ? app.card.sentences[0].preTest.choices : null;
 		assert(prefetched, 'the quiz for a shown example is built in the background');
-		click('[data-act="sent-test"]');
-		assert(pre && app.stest.choices === pre, 'tapping 🎯 uses the pre-built quiz');
+		assert(!d.querySelector('button[data-act="sent-test"]'), 'no separate 🎯 test button: the sentence is the button');
+		const word = d.querySelector('.s-ko a[data-unit]') || d.querySelector('.s-ko');
+		word.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+		assert(pre && app.stest && app.stest.choices === pre, 'tapping a word in an example starts its quiz, using the pre-built one');
 		click(`[data-act="stest-pick"][data-i="0"]`);
 		assert(app.stest && !app.stest.done, 'a tap in the first moments after the quiz opens does not answer it');
 		app.stest.readyAt = 0;

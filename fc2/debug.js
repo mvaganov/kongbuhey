@@ -78,7 +78,7 @@ const scenes = {
 	'trial-meaning': { desc: '☆ → ★ trial: see the Korean, pick the meaning (4)', expect: '.k-trial .choice', setup: trial(0) },
 	'trial-listen': { desc: '★ → ★★ trial: hear the Korean, pick the meaning (6)', expect: '.k-trial .listen', setup: trial(1) },
 	'trial-recall': { desc: '★★ → ★★★ trial: see the meaning, pick the Korean (6)', expect: '.k-trial .choices.ko, .k-trial .choice', setup: trial(2) },
-	'sentence-card': { desc: 'A card with 🎯 test buttons on its examples', expect: '[data-act="sent-test"]', setup: sentence(false, false) },
+	'sentence-card': { desc: 'A card whose examples start a sentence test when tapped', expect: '[data-act="sent-test"]', setup: sentence(false, false) },
 	'sentence-test': { desc: 'Sentence test: Korean enlarged, 4 English choices', expect: '.sent-test .choice', setup: sentence(false, true) },
 	'sentence-test-reverse': { desc: 'Reverse sentence test: English enlarged, 4 Korean choices', expect: '.sent-test .choices.ko', setup: sentence(true, true) },
 	'numbers': { desc: 'Number sound board, unlocked', expect: '[data-act="nb-pick"]', setup(app) { reset(app, 100); app.g.games = { numbers: 1 }; show(app, 'shop'); app.nbOpen(); } },
