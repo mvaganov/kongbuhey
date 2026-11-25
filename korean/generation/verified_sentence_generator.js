@@ -2233,7 +2233,7 @@ function validateVerifiedSentence(ast, realized, slotChoices) {
 			const subjCon = subjCons.length > 0 ? subjCons[subjCons.length - 1] : null;
 			if (subjCon && verbUnit && (pred.predType === K.DESCRIPTIVE || verbUnit[DATA_SCHEMA.PartofSpeech] === K.DESCRIPTIVE_VERB) && typeof getSubjectCandidatesForDescriptiveVerb === 'function') {
 				let subjUnit = subjCon.nounUnit || subjCon.unit;
-				// A person title after a name (유키 씨는) carries the topic particle, but the subject is the name before it.
+				// A person title after a name (하루카 씨는) carries the topic particle, but the subject is the name before it.
 				const isNominal = (u) => Boolean(u) && (u[DATA_SCHEMA.PartofSpeech] === K.NOUN || u[DATA_SCHEMA.PartofSpeech] === K.PRONOUN);
 				if (subjUnit && !isNominal(subjUnit) && _hasTag(subjUnit, K.PERSON) && _hasTag(subjUnit, K.HONORIFIC)) {
 					const prevCon = constituents[constituents.indexOf(subjCon) - 1];

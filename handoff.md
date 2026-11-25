@@ -199,7 +199,7 @@ fee nouns for 싸다, person/event/school slots; humble and weather verbs narrow
 40k one-slot sweep: VERB_OBJECT rejects 9,306 (~9% natural), DESCRIPTIVE_VERB_SUBJECT 1,371 (0 of 22 natural): mostly right, so it
 fixed data, not checks: 하다 + activities/events, 졸업하다 + schools, 떠나다/다녀오다 + travel nouns, 전공하다 + fields, 싸다/비싸다 +
 fees, 먹다 + meals; validator: 뭘/무엇을 skip the object-list check (still checked for intransitive and person-only verbs), and in
-유키 씨는 the subject is the name, not 씨. After the bench review: 팔다 no longer takes events (*콘서트를 팔았어요). validator-reject
+하루카 씨는 the subject is the name, not 씨. After the bench review: 팔다 no longer takes events (*콘서트를 팔았어요). validator-reject
 gaps 22 -> 15. Left: 크다/작다/맛있다 + 식당 (vs_490, vs_70), 다니다 + travel nouns (vs_413), a 도/는 noun read as object (vs_185,
 vs_329); some verbs lack an intransitive tag (open pools offer 뭘 넘어질); 다음일을 샀어요; the conjugator builds 들어주가지고.
 

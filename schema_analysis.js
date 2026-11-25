@@ -584,7 +584,7 @@ function detectProperNameCandidate(word, passageText = "", vocabByKo = null) {
 	// 3. Contextual heuristic in passageText
 	if (passageText && typeof passageText === 'string') {
 		// Matches lines consisting purely of clean (dialogue/chat script turn)
-		// e.g. "흐엉\n", "에릭\n", "민준\n" or "오전9:40\n민준"
+		// e.g. "린\n", "다니엘\n", "민준\n" or "오전9:40\n민준"
 		const speakerRegex = new RegExp(`(?:^|[\\r\\n]+)(?:\\d{1,4}[\\r\\n]+|오[전후]\\d+:\\d+[\\r\\n]+)?\\s*(${clean})\\s*(?:[\\r\\n]+|:)`, 'm');
 		if (speakerRegex.test(passageText)) {
 			return {

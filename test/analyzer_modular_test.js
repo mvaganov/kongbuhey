@@ -292,9 +292,9 @@ check("recognizeCompoundParticle scans words and isolates known nominal stems", 
 	assert.ok(r3.suggestedSpec.includes("으로는"));
 
 	// allowUnknownStem allows isolating stem for unrepresented words
-	const r4 = analyzer.recognizeCompoundParticle("북경반점에서는", index.vocabByKo, { allowUnknownStem: true });
+	const r4 = analyzer.recognizeCompoundParticle("만리장성에서는", index.vocabByKo, { allowUnknownStem: true });
 	assert.ok(r4, "Must isolate stem even if word is unrepresented when allowUnknownStem is true");
-	assert.strictEqual(r4.stem, "북경반점");
+	assert.strictEqual(r4.stem, "만리장성");
 	assert.strictEqual(r4.compoundText, "에서는");
 });
 
@@ -329,29 +329,29 @@ check("detectProperNameCandidate identifies vocative and diminutive suffixes", (
 
 check("detectProperNameCandidate extracts dialogue speakers and event associations", () => {
 	const sampleDialogue = `
-내일 리타오 집들이가 있다고 들었어?
+내일 왕웨이 집들이가 있다고 들었어?
 오전9:47
-흐엉
+서연
 그럼 근데 뭘 사가지고 가지?
-에릭
+다니엘
 글쎄...
 민준
 오전9:40
 그거 좋을 것 같아.
 	`;
 
-	// Associated celebration: "리타오 집들이"
-	const d1 = detectProperNameCandidate("리타오", sampleDialogue);
-	assert.ok(d1, "리타오 must be detected via event association");
-	assert.strictEqual(d1.baseName, "리타오");
+	// Associated celebration: "왕웨이 집들이"
+	const d1 = detectProperNameCandidate("왕웨이", sampleDialogue);
+	assert.ok(d1, "왕웨이 must be detected via event association");
+	assert.strictEqual(d1.baseName, "왕웨이");
 
-	// Dialogue speaker turns: 흐엉, 에릭, 민준
-	const d2 = detectProperNameCandidate("흐엉", sampleDialogue);
-	assert.ok(d2, "흐엉 must be detected via speaker turn");
-	assert.strictEqual(d2.baseName, "흐엉");
+	// Dialogue speaker turns: 서연, 다니엘 (one-syllable names such as 린 are below the 2-syllable floor by design), 민준
+	const d2 = detectProperNameCandidate("서연", sampleDialogue);
+	assert.ok(d2, "서연 must be detected via speaker turn");
+	assert.strictEqual(d2.baseName, "서연");
 
-	const d3 = detectProperNameCandidate("에릭", sampleDialogue);
-	assert.ok(d3, "에릭 must be detected via speaker turn");
+	const d3 = detectProperNameCandidate("다니엘", sampleDialogue);
+	assert.ok(d3, "다니엘 must be detected via speaker turn");
 
 	const d4 = detectProperNameCandidate("민준", sampleDialogue);
 	assert.ok(d4, "민준 must be detected via speaker turn");

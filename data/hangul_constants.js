@@ -384,7 +384,7 @@ const HANGUL_CONSTANTS = Object.freeze({
 	// NON_COMMODITY_NOUNS (korean/concord/argument_concord.js). Data fix: a class of words; each member is a fact about that word, so a data.tags/SemanticData tag.
 	ARG_NON_COMMODITY_NOUNS: new Set([
 		"잠", "휴대", "길이", "소화", "기온", "기분", "마음", "성격",
-		"손", "코", "얼굴", "허리", "강남스타일", "주차 금지", "경치", "생활", "대화", "태권도", "반", "제목"
+		"손", "코", "얼굴", "허리", "주차 금지", "경치", "생활", "대화", "태권도", "반", "제목"
 	]),
 	// FIRST_PERSON_SUBJECT_PRONOUNS (korean/concord/argument_concord.js). Data fix: a class of words; each member is a fact about that word, so a data.tags/SemanticData tag.
 	ARG_FIRST_PERSON_SUBJECT_PRONOUNS: new Set(["저", "나", "우리", "저희"]),
@@ -840,7 +840,7 @@ const HANGUL_CONSTANTS = Object.freeze({
 	UNITGEN_AST_NOMINAL_KO_ONE_OF_19: new Set(["꽃집", "문구점", "백화점", "마트", "가게", "서점", "빵집", "편의점", "약국", "시장"]),
 
 	// AUTONAMED (korean/generation/unit_sentence_generator.js, buildASTForNominal): table that was inline in code. Unclassified: rename to the rule it implements; Data fix if a word class.
-	UNITGEN_AST_NOMINAL_KO_ONE_OF_18: new Set(["식당", "학생식당", "카페", "빵집", "집", "기숙사", "맛집", "뷔페", "북경반점"]),
+	UNITGEN_AST_NOMINAL_KO_ONE_OF_18: new Set(["식당", "학생식당", "카페", "빵집", "집", "기숙사", "맛집", "뷔페", "만리장성"]),
 
 	// AUTONAMED (korean/generation/unit_sentence_generator.js, buildASTForNominal): table that was inline in code. Unclassified: rename to the rule it implements; Data fix if a word class.
 	UNITGEN_AST_NOMINAL_KO_ONE_OF_17: new Set(["버스", "지하철", "택시", "기차", "정류장", "버스 정류장", "지하철역", "역", "터미널", "공항", "서울역", "부산역", "이촌역", "홍대입구역", "광화문역"]),

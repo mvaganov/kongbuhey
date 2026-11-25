@@ -647,7 +647,7 @@ assert(unregisteredDVTags.length === 0, "All descriptive_* tags are registered i
 	if (slot >= 0) {
 		tpl.slots[slot].tags = ['person']; tpl.slots[slot].rules = [];
 		const ids = new Set(vg.getSlotCandidates(tpl.slots[slot]).candidates.map(u => u[DATA_SCHEMA.Id]));
-		const bad = ['민수', '유키', '얘들'].filter(k => ids.has(byKo(k)));
+		const bad = ['민수', '하루카', '얘들'].filter(k => ids.has(byKo(k)));
 		assert(bad.length === 0 && ids.has(byKo('친구')), 'a 들 slot admits person nouns (친구) but no names or plural nouns', bad.join(','));
 	}
 }
@@ -678,7 +678,7 @@ assert(unregisteredDVTags.length === 0, "All descriptive_* tags are registered i
 
 // Batch 6 validator-reject gaps (verified templates, one slot varied with its tags and rules removed): an interrogative
 // thing object (뭘) fits any thing-taking verb; 하다 takes social events; 졸업하다 takes schools; 떠나다/다녀오다 take
-// motion activities; 전공하다 takes academic_field nouns; 먹다 takes meals (아침을); 싸다 takes fees; a title after a name (유키 씨는) is not the subject.
+// motion activities; 전공하다 takes academic_field nouns; 먹다 takes meals (아침을); 싸다 takes fees; a title after a name (하루카 씨는) is not the subject.
 {
 	const vg = require('../korean/generation/verified_sentence_generator.js');
 	const U_ = KR_EN_languageUnits;
