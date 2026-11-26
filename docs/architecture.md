@@ -194,6 +194,9 @@ Rules that keep them exact:
   - a seeded output fingerprint (820 samples, hashes only). Same data + different output = generator behaviour changed.
   Both compare against `test/bench_baseline.json`; if a change is intended, re-save with `--save`. Changed data files skip the baseline
   comparisons with a message. Run it before and after any refactor of generation.
+- **Flag files** (`]name` in the repo root) say "something must happen before the next commit"; the pre-commit hook refuses commits
+  while one exists and `node test.js` names any flag it wrote. `grep 'writeFlag' tools/*.js` to see what writes them (`tools/flags.js`
+  owns the format and the registered actions that resolve them: `node tools/flags.js list`, `node tools/flags.js resolve`).
 - UI tests that generate a lot run inside `quiet()` (stubs `prefetchSoon`, restores options), or background quiz building starves later
   steps' timers. Agents on a mounted folder run tests from a local copy (see `CLAUDE.md`).
 

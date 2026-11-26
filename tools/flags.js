@@ -53,7 +53,8 @@ function writeFlag(repo, name, { head, action, args = {}, details = [], mileston
 	if (!name.startsWith(']')) throw new Error(`flag files start with ]: ${name}`);
 	const file = path.join(repo, name);
 	const old = fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split(/\r?\n/).filter(l => /^\d{4}-\d\d-\d\dT/.test(l)) : [];
-	const history = milestone ? old.concat(`${new Date().toISOString()} ${milestone}`) : old;
+	const repeat = milestone && old.length && old[old.length - 1].slice(25) === milestone;   // same milestone as the last line: no new history line
+	const history = milestone && !repeat ? old.concat(`${new Date().toISOString()} ${milestone}`) : old;
 	const body = [`${name} ${head}`, `action: ${action}`, ...Object.entries(args).map(([k, v]) => `${k}: ${[].concat(v).join(',')}`), '',
 		'Written and deleted only by project tools; never edit, delete or commit it by hand. Resolve: node tools/flags.js resolve', ...details, '', ...history.slice(-30)];
 	fs.writeFileSync(file, body.join('\n') + '\n');

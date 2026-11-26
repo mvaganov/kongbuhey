@@ -121,12 +121,27 @@ function runEslint() {
 // Printed in the header and on every failure: seeded goldens (fc2 trace, bench hashes) can differ between Node versions and OSes.
 const PLATFORM = `node ${process.version}, ${process.platform} ${process.arch}`;
 
+// Flag files (]name in the repo root) block commits until reviewed. Any flag written or rewritten during this run, by a suite or the
+// bench, is named at the end (and on failure) so it is not first discovered when the pre-commit hook refuses. ]test_full.txt has its
+// own "slower checks due" line, so it is skipped here.
+let flagRepo = __dirname, flagBefore = {};
+function readFlagFiles(repo) {
+	const out = {};
+	try { for (const f of fs.readdirSync(repo)) if (f.startsWith(']')) out[f] = fs.readFileSync(path.join(repo, f), 'utf8'); } catch (err) { /* repo unreadable: no flags to report */ }
+	return out;
+}
+function flagsWrittenLines() {
+	const now = readFlagFiles(flagRepo);
+	return Object.keys(now).filter(f => f !== Checks.FLAG && now[f] !== flagBefore[f]).map(f => `flag file written: review '${f}' before committing (${now[f].split('\n')[0].replace(/^\S+\s+/, '')})`);
+}
+
 function failFast(stageName, errorDetail) {
 	console.error(`\n======================================================`);
 	console.error(`[FAIL FAST] Test Suite Failed at: ${stageName}`);
 	console.error(`Platform: ${PLATFORM}`);
 	console.error(`======================================================`);
 	console.error(errorDetail);
+	for (const l of flagsWrittenLines()) console.error(`\n>>> ${l}`);
 	console.error(`\nExecution aborted immediately to prevent cascading issues.`);
 	process.exit(1);
 }
@@ -136,6 +151,7 @@ function runTests(options = {}) {
 	const verbose = options.verbose || false;
 	const full = options.full || false;
 	const repoDir = options.repoDir || __dirname;
+	flagRepo = repoDir; flagBefore = readFlagFiles(repoDir);
 	if (options.only) return runOnly(options.only, repoDir);
 	let dueChecks = [];
 	try { dueChecks = Checks.note(__dirname, repoDir); } catch (err) { dueChecks = [{ name: '?', changed: [`flag check failed: ${err.message}`] }]; }
@@ -589,6 +605,7 @@ function runTests(options = {}) {
 	const elapsedSec = ((Date.now() - startTime) / 1000).toFixed(2);
 	console.log(`------------------------------------------------------`);
 	console.log(`OVERALL STATUS: ALL 7 STAGES PASSED${stampNote} (Duration: ${elapsedSec}s)${sweepNote}`);
+	for (const l of flagsWrittenLines()) console.log(`>>> ${l}`);
 	console.log(`======================================================\n`);
 	return { success: true, duration: elapsedSec };
 }
@@ -606,6 +623,7 @@ function runOnly(names, repoDir) {
 	const passed = results.filter(r => r.ok).map(r => r.name);
 	const left = Checks.markPassed(__dirname, repoDir, passed);
 	console.log(left.length ? `Still due: ${left.map(x => x.name).join(', ')} (${Checks.FLAG} stays)` : `Nothing due: ${Checks.FLAG} removed`);
+	for (const l of flagsWrittenLines()) console.log(`>>> ${l}`);
 	if (passed.length < names.length) process.exit(1);
 	return { success: true };
 }

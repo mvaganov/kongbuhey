@@ -6,11 +6,12 @@
  *
  * A check is due when a file it watches changed since the check last passed (hashes in local/check_state.json, per check).
  * While any check is due, the flag file `]test_full.txt` sits in the repo root: line 1 says why and how to resolve it, and the
- * pre-commit hook (tools/githooks/pre-commit) refuses commits until it is gone. Only this module writes or deletes it.
+ * pre-commit hook (tools/githooks/pre-commit) refuses commits until it is gone. Only this module writes or deletes it (through tools/flags.js, which owns the flag file format).
  */
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const Flags = require('./flags.js');
 
 const FLAG = ']test_full.txt';
 const STATE = path.join('local', 'check_state.json');
@@ -76,27 +77,17 @@ function due(root, repo) {
 	return out;
 }
 
-/** Writes the flag for the due checks (or deletes it when none is due). Keeps earlier dated lines as history. */
+/** Writes the flag for the due checks (or deletes it when none is due). The format and history live in tools/flags.js. */
 function writeFlag(repo, list) {
-	const file = path.join(repo, FLAG);
-	if (!list.length) { if (fs.existsSync(file)) fs.unlinkSync(file); return null; }
+	if (!list.length) { Flags.removeFlag(repo, FLAG); return null; }
 	const names = list.map(x => x.name);
-	const old = fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split(/\r?\n/).filter(l => /^\d{4}-\d\d-\d\dT/.test(l)) : [];
 	const short = l => (l.length > 4 ? `${l.slice(0, 4).join(', ')} and ${l.length - 4} more` : l.join(', '));
-	const stamp = `${new Date().toISOString()} due: ${list.map(x => `${x.name} (${short(x.changed)})`).join('; ')}`;
-	const history = old.length && old[old.length - 1].slice(25) === stamp.slice(25) ? old : old.concat(stamp);
-	const body = [
-		`${FLAG} blocks commits: code changed since these slower checks last passed: ${names.join(', ')}. Resolve: node tools/flags.js resolve`,
-		'action: test',
-		`checks: ${names.join(',')}`,
-		'',
-		'Written and deleted only by node test.js (tools/checks.js); never edit, delete or commit it by hand.',
-		...list.map(x => `${x.name}: ${CHECKS[x.name].desc}; changed: ${short(x.changed)}`),
-		'',
-		...history.slice(-20),
-	];
-	fs.writeFileSync(file, body.join('\n') + '\n');
-	return file;
+	return Flags.writeFlag(repo, FLAG, {
+		head: `blocks commits: code changed since these slower checks last passed: ${names.join(', ')}. Resolve: node tools/flags.js resolve`,
+		action: 'test', args: { checks: names },
+		details: list.map(x => `${x.name}: ${CHECKS[x.name].desc}; changed: ${short(x.changed)}`),
+		milestone: `due: ${list.map(x => `${x.name} (${short(x.changed)})`).join('; ')}`,
+	});
 }
 
 /** Records that checks passed for the files now in root, then rewrites (or deletes) the flag. Returns what is still due. */

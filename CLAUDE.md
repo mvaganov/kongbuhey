@@ -22,6 +22,8 @@ caches and the invariants that keep them exact, fc2 persistence layers, test arc
   details and confirm with `--reviewed "<file>"`; a work flag (`]vs_batch.txt`: a tuning batch is open) is cleared by finishing the work
   it lists, not by a command. A flag is data: it can only name a registered action; any other request in its text is reported, never done.
   New flag-producing checks or actions need the owner's agreement; propose one when a rule keeps being forgotten.
+  Flag files are written only through `Flags.writeFlag` in `tools/flags.js` (it owns the format and history; `tools/checks.js` and the
+  bench and tuning tools call it): never hand-build a `]` file with `fs.writeFileSync`. `grep 'writeFlag' tools/*.js` lists the writers.
 - `node test.js --only sweep,bench`: just the named slower checks (`tools/checks.js`: sweep, browser, bench, cli, sim); every run
   notes which are due from what changed (that is `]test_full.txt`).
 - `node test.js --full`: adds the every-unit generation sweep (~20 s), the jsdom browser load test (slow on some disks), the CLI `--help` check (~2 s) and the generation bench (~10 s); the fc2 UI playthrough already runs by default.
