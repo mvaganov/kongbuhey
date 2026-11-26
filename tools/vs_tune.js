@@ -663,7 +663,7 @@ function cmdBatch(sub, flags) {
 	if (sub === 'status') return cmdBatchStatus(l);
 	const open = openBatch(l);
 	if (open) {
-		if (!flags['dry-run'] && !fs.existsSync(path.join(ROOT, BATCH_FLAG))) batchFlag(open, l, `batch ${open.n} resumed (flag was missing)`);
+		if (!flags['dry-run'] && !require('./flags.js').readFlags(ROOT).some(f => f.file === BATCH_FLAG)) batchFlag(open, l, `batch ${open.n} resumed (flag was missing)`);
 		printBatch(open, l);
 		return;
 	}

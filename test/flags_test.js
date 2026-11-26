@@ -94,5 +94,27 @@ const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'kb-flags-'));
 	}
 }
 
+// 4. Only tools/flags.js builds flag files. A write call or a path built from a flag name (a `]x` literal, FLAG, BATCH_FLAG,
+// Checks.FLAG) outside it is a second writer that can drift from the format (this suite once found checks.js doing exactly that).
+// Reads go through Flags.readFlags; test/ is exempt because its fixtures write deliberately malformed flags.
+{
+	const WRITE_OR_PATH = /\b(writeFileSync|appendFileSync|renameSync|copyFileSync|createWriteStream|openSync|path\.(join|resolve))\(.*((?<!['"`])\b[A-Z_]*FLAG\b|['"`]\]\w)/;
+	const handBuilt = text => text.split('\n').map((line, i) => [i + 1, line]).filter(([, l]) => !/^\s*(\/\/|\*|\/\*)/.test(l) && WRITE_OR_PATH.test(l));
+	assert(handBuilt("fs.writeFileSync(path.join(repo, FLAG), body);").length === 1 && handBuilt("const f = path.join(repo, ']x.txt');").length === 1
+		&& handBuilt("fs.writeFileSync(file, Checks.FLAG);").length === 1, 'detector: finds a write or a path built from a flag name');
+	assert(handBuilt("Flags.writeFlag(REPO, FLAG, {});").length === 0 && handBuilt("fs.writeFileSync(BASELINE, text);").length === 0
+		&& handBuilt(" * path.join(repo, FLAG) in a comment").length === 0, 'detector: ignores Flags.writeFlag, ordinary writes and comments');
+	const files = [];
+	const walk = dir => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+		if (['node_modules', 'local', 'test', 'data', 'flagged', '.git'].includes(e.name)) continue;
+		const p = path.join(dir, e.name);
+		if (e.isDirectory()) walk(p); else if (e.name.endsWith('.js')) files.push(p);
+	} };
+	walk(ROOT);
+	const flagsJs = path.join(ROOT, 'tools', 'flags.js');
+	const bad = files.filter(f => f !== flagsJs).flatMap(f => handBuilt(fs.readFileSync(f, 'utf8')).map(([n, l]) => `${path.relative(ROOT, f)}:${n}: ${l.trim()}`));
+	assert(!bad.length, 'flag files are written only through Flags.writeFlag in tools/flags.js (use it, or add a registered option to it)', '\n    ' + bad.join('\n    '));
+}
+
 console.log(`flags: ${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
